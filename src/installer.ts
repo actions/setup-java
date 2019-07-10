@@ -25,11 +25,11 @@ if (!tempDirectory) {
 }
 
 export async function getJava(
-  versionSpec: string,
+  version: string,
   arch: string,
   jdkFile: string
 ): Promise<void> {
-  let toolPath = tc.find('Java', versionSpec);
+  let toolPath = tc.find('Java', version);
 
   if (toolPath) {
     core.debug(`Tool found in cache ${toolPath}`);
@@ -46,10 +46,10 @@ export async function getJava(
       tempDir
     );
     core.debug(`jdk extracted to ${jdkDir}`);
-    toolPath = await tc.cacheDir(jdkDir, 'Java', versionSpec, arch);
+    toolPath = await tc.cacheDir(jdkDir, 'Java', `${version}.0.0`, arch);
   }
 
-  let extendedJavaHome = 'JAVA_HOME_' + versionSpec + '_' + arch;
+  let extendedJavaHome = 'JAVA_HOME_' + version + '_' + arch;
   core.exportVariable('JAVA_HOME', toolPath);
   core.exportVariable(extendedJavaHome, toolPath);
   core.addPath(path.join(toolPath, 'bin'));
