@@ -7,9 +7,11 @@ import * as tc from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as path from 'path';
 
+const IS_WINDOWS = process.platform === 'win32';
+
 if (!tempDirectory) {
   let baseLocation;
-  if (process.platform === 'win32') {
+  if (IS_WINDOWS) {
     // On windows use the USERPROFILE env variable
     baseLocation = process.env['USERPROFILE'] || 'C:\\';
   } else {
@@ -21,8 +23,6 @@ if (!tempDirectory) {
   }
   tempDirectory = path.join(baseLocation, 'actions', 'temp');
 }
-
-const IS_WINDOWS = process.platform === 'win32';
 
 export async function getJava(
   versionSpec: string,
@@ -68,42 +68,6 @@ function getFileEnding(file: string): string {
   return fileEnding;
 }
 
-async function getSevenZipLocation(): Promise<string> {
-  if (IS_WINDOWS) {
-    return path.join(__dirname, '7zip/7z.exe');
-  } else {
-    return await io.which('7z', true);
-  }
-}
-
-function isTar(file: string): boolean {
-  const name = file.toLowerCase();
-  // standard gnu-tar extension formats with recognized auto compression formats
-  // https://www.gnu.org/software/tar/manual/html_section/tar_69.html
-  return (
-    name.endsWith('.tar') || // no compression
-    name.endsWith('.tar.gz') || // gzip
-    name.endsWith('.tgz') || // gzip
-    name.endsWith('.taz') || // gzip
-    name.endsWith('.tar.z') || // compress
-    name.endsWith('.tar.bz2') || // bzip2
-    name.endsWith('.tz2') || // bzip2
-    name.endsWith('.tbz2') || // bzip2
-    name.endsWith('.tbz') || // bzip2
-    name.endsWith('.tar.lz') || // lzip
-    name.endsWith('.tar.lzma') || // lzma
-    name.endsWith('.tlz') || // lzma
-    name.endsWith('.tar.lzo') || // lzop
-    name.endsWith('.tar.xz') || // xz
-    name.endsWith('.txz')
-  ); // xz
-}
-
-async function sevenZipExtract(file: string, destinationFolder: string) {
-  console.log(`Using 7zip to extract ${file}`);
-  await tc.extract7z(file, destinationFolder, await getSevenZipLocation());
-}
-
 async function extractFiles(
   file: string,
   fileEnding: string,
@@ -116,45 +80,13 @@ async function extractFiles(
     throw new Error(`Failed to extract ${file} - it is a directory`);
   }
 
-  if (IS_WINDOWS) {
-    if ('.tar' === fileEnding) {
-      // a simple tar
-      await sevenZipExtract(file, destinationFolder);
-    } else if (isTar(file)) {
-      // a compressed tar, e.g. 'fullFilePath/test.tar.gz'
-      // e.g. 'fullFilePath/test.tar.gz' --> 'test.tar.gz'
-      const shortFileName = path.basename(file);
-      // e.g. 'destinationFolder/_test.tar.gz_'
-      const tempFolder = path.normalize(
-        destinationFolder + path.sep + '_' + shortFileName + '_'
-      );
-
-      // 0 create temp folder
-      await io.mkdirP(tempFolder);
-
-      // 1 extract compressed tar
-      await sevenZipExtract(file, tempFolder);
-      const tempTar = tempFolder + path.sep + fs.readdirSync(tempFolder)[0]; // should be only one
-
-      // 2 expand extracted tar
-      await sevenZipExtract(tempTar, destinationFolder);
-
-      // 3 cleanup temp folder
-      await io.rmRF(tempFolder);
-    } else {
-      // use sevenZip
-      await sevenZipExtract(file, destinationFolder);
-    }
+  if ('.tar' === fileEnding || '.tar.gz' === fileEnding) {
+    await tc.extractTar(file, destinationFolder);
+  } else if ('.zip' === fileEnding) {
+    await tc.extractZip(file, destinationFolder);
   } else {
-    // not windows
-    if ('.tar' === fileEnding || '.tar.gz' === fileEnding) {
-      await tc.extractTar(file, destinationFolder);
-    } else if ('.zip' === fileEnding) {
-      await tc.extractZip(file, destinationFolder);
-    } else {
-      // fall through and use sevenZip
-      await sevenZipExtract(file, destinationFolder);
-    }
+    // fall through and use sevenZip
+    await tc.extract7z(file, destinationFolder);
   }
 }
 
@@ -169,10 +101,8 @@ async function unpackJars(fsPath: string, javaBinPath: string) {
     } else if (path.extname(fsPath).toLowerCase() === '.pack') {
       // Unpack the pack file synchonously
       const p = path.parse(fsPath);
-      const toolName = process.platform.match(/^win/i)
-        ? 'unpack200.exe'
-        : 'unpack200';
-      const args = process.platform.match(/^win/i) ? '-r -v -l ""' : '';
+      const toolName = IS_WINDOWS ? 'unpack200.exe' : 'unpack200';
+      const args = IS_WINDOWS ? '-r -v -l ""' : '';
       const name = path.join(p.dir, p.name);
       await exec.exec(`"${path.join(javaBinPath, toolName)}"`, [
         `${args} "${name}.pack" "${name}.jar"`
@@ -186,10 +116,6 @@ async function unzipJavaDownload(
   fileEnding: string,
   destinationFolder: string
 ): Promise<string> {
-  let initialDirectoriesList: string[];
-  let finalDirectoriesList: string[];
-  let jdkDirectory: string;
-
   // Create the destination folder if it doesn't exist
   await io.mkdirP(destinationFolder);
 
@@ -197,7 +123,7 @@ async function unzipJavaDownload(
   const stats = fs.statSync(jdkFile);
   if (stats.isFile()) {
     await extractFiles(jdkFile, fileEnding, destinationFolder);
-    jdkDirectory = fs.readdirSync(tempDirectory)[0];
+    const jdkDirectory = fs.readdirSync(tempDirectory)[0];
     await unpackJars(jdkDirectory, path.join(jdkDirectory, 'bin'));
     return jdkDirectory;
   } else {
