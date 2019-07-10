@@ -40,8 +40,12 @@ export async function getJava(
       tempDirectory,
       'temp_' + Math.floor(Math.random() * 2000000000)
     );
-    await unzipJavaDownload(jdkFile, compressedFileExtension, tempDir);
-    toolPath = await tc.cacheDir(tempDir, 'Java', versionSpec, arch);
+    const jdkDir = await unzipJavaDownload(
+      jdkFile,
+      compressedFileExtension,
+      tempDir
+    );
+    toolPath = await tc.cacheDir(jdkDir, 'Java', versionSpec, arch);
   }
 
   let extendedJavaHome = 'JAVA_HOME_' + versionSpec + '_' + arch;
