@@ -45,6 +45,7 @@ export async function getJava(
       compressedFileExtension,
       tempDir
     );
+    core.debug(`jdk extracted to ${jdkDir}`);
     toolPath = await tc.cacheDir(jdkDir, 'Java', versionSpec, arch);
   }
 
