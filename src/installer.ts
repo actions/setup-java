@@ -128,7 +128,10 @@ async function unzipJavaDownload(
   const stats = fs.statSync(jdkFile);
   if (stats.isFile()) {
     await extractFiles(jdkFile, fileEnding, destinationFolder);
-    const jdkDirectory = fs.readdirSync(destinationFolder)[0];
+    const jdkDirectory = path.join(
+      destinationFolder,
+      fs.readdirSync(destinationFolder)[0]
+    );
     await unpackJars(jdkDirectory, path.join(jdkDirectory, 'bin'));
     return jdkDirectory;
   } else {
