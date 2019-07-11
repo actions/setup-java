@@ -5,9 +5,13 @@
             "pattern": [
                 {
                     "regexp": "^Exception in thread \"(.*)\" (.*): (.*)$",
-                    "file": 1,
                     "code": 2,
                     "message": 3
+                },
+                {
+                    "regexp": "^\\s*at .*\\((.*):(\\d*)\\)$",
+                    "message": 1,
+                    "line": 2
                 }
             ]
         }
