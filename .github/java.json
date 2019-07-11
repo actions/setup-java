@@ -1,0 +1,16 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "java",
+            "pattern": [
+                {
+                    "regexp": "^Exception in thread \".*\" (.*): (.*)\\n\\s*at .*\\((.*):(\\d*)\\)$",
+                    "severity": 1,
+                    "message": 2,
+                    "file": 3,
+                    "line": 4
+                }
+            ]
+        }
+    ]
+}
