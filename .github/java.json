@@ -4,11 +4,10 @@
             "owner": "java",
             "pattern": [
                 {
-                    "regexp": "^Exception in thread \".*\" (.*): (.*)\\n\\s*at .*\\((.*):(\\d*)\\)$",
-                    "severity": 1,
-                    "message": 2,
-                    "file": 3,
-                    "line": 4
+                    "regexp": "^Exception in thread \"(.*)\" (.*): (.*)$",
+                    "file": 1,
+                    "severity": 2,
+                    "message": 3
                 }
             ]
         }
