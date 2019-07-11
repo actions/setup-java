@@ -3,7 +3,14 @@ description: 'Setup your runner with Java'
 author: 'GitHub'
 inputs: 
   version:
-    description: 'Version of JDK to use'
+    description: 'A number that specifies the JDK version to make available on the path. Use a whole number version, such as 10'
+    required: true
+  architecture:
+    description: 'The architecture (x86, x64) of the JDK.'
+    required: true
+  jdkFile:
+    description: 'Path to where the compressed JDK is located. The path could be in your source repository or a local path on the agent.'
+    required: true
 runs:
   using: 'node12'
   main: 'lib/setup-java.js'
