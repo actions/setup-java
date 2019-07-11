@@ -4,7 +4,7 @@
             "owner": "java",
             "pattern": [
                 {
-                    "regexp": "^Exception in thread \"(.*)\" (.*): (.*)$",
+                    "regexp": "^Exception in thread \\\"(.*)\\\" (.*): (.*)$",
                     "file": 1,
                     "severity": 2,
                     "message": 3
