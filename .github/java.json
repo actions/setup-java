@@ -7,11 +7,6 @@
                     "regexp": "^Exception in thread \"(.*)\" (.*): (.*)$",
                     "code": 2,
                     "message": 3
-                },
-                {
-                    "regexp": "^\\s*at .*\\((.*):(\\d*)\\)$",
-                    "file": 1,
-                    "line": 2
                 }
             ]
         }
