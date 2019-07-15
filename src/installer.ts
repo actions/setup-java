@@ -6,6 +6,7 @@ import * as exec from '@actions/exec';
 import * as tc from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as httpm from 'typed-rest-client/HttpClient';
 
 const IS_WINDOWS = process.platform === 'win32';
 
@@ -34,13 +35,15 @@ export async function getJava(
   if (toolPath) {
     core.debug(`Tool found in cache ${toolPath}`);
   } else {
+    let compressedFileExtension = '';
     if (!jdkFile) {
-      throw new Error(
-        `Failed to find Java ${version} in the cache. Please specify a valid jdk file to install from instead.`
-      );
+      core.debug('Downloading Jdk from Azul');
+      jdkFile = await downloadJava(version);
+      compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
+    } else {
+      core.debug('Retrieving Jdk from local path');
     }
-    core.debug('Retrieving Jdk from local path');
-    const compressedFileExtension = getFileEnding(jdkFile);
+    compressedFileExtension = compressedFileExtension || getFileEnding(jdkFile);
     let tempDir: string = path.join(
       tempDirectory,
       'temp_' + Math.floor(Math.random() * 2000000000)
@@ -51,13 +54,26 @@ export async function getJava(
       tempDir
     );
     core.debug(`jdk extracted to ${jdkDir}`);
-    toolPath = await tc.cacheDir(jdkDir, 'Java', `${version}.0.0`, arch);
+    toolPath = await tc.cacheDir(
+      jdkDir,
+      'Java',
+      normalizeVersion(version),
+      arch
+    );
   }
 
   let extendedJavaHome = 'JAVA_HOME_' + version + '_' + arch;
   core.exportVariable('JAVA_HOME', toolPath);
   core.exportVariable(extendedJavaHome, toolPath);
   core.addPath(path.join(toolPath, 'bin'));
+}
+
+function normalizeVersion(version: string) {
+  const versionArray = version.split('.');
+  const major = versionArray[0];
+  const minor = versionArray.length > 1 ? versionArray[1] : '0';
+  const patch = versionArray.length > 2 ? versionArray[2] : '0';
+  return `${major}.${minor}.${patch}`;
 }
 
 function getFileEnding(file: string): string {
@@ -124,7 +140,8 @@ async function unpackJars(fsPath: string, javaBinPath: string) {
 async function unzipJavaDownload(
   repoRoot: string,
   fileEnding: string,
-  destinationFolder: string
+  destinationFolder: string,
+  extension?: string
 ): Promise<string> {
   // Create the destination folder if it doesn't exist
   await io.mkdirP(destinationFolder);
@@ -142,4 +159,39 @@ async function unzipJavaDownload(
   } else {
     throw new Error(`Jdk argument ${jdkFile} is not a file`);
   }
+}
+
+async function downloadJava(version: string): Promise<string> {
+  let filterString = '';
+  if (IS_WINDOWS) {
+    filterString = `jdk${version}-win_x64.zip`;
+  } else {
+    if (process.platform === 'darwin') {
+      filterString = `jdk${version}-macosx_x64.tar.gz`;
+    } else {
+      filterString = `jdk${version}-linux_x64.tar.gz`;
+    }
+  }
+  let http: httpm.HttpClient = new httpm.HttpClient('setup-java');
+  let contents = await (await http.get(
+    'https://static.azul.com/zulu/bin/'
+  )).readBody();
+  let refs = contents.match(/<a href.*\">/gi) || [];
+  refs = refs.filter(val => {
+    if (val.indexOf(filterString) > -1) {
+      return true;
+    }
+  });
+
+  if (refs.length == 0) {
+    throw new Error(
+      `No valid download found for version ${version}. Check https://static.azul.com/zulu/bin/ for a list of valid versions or download your own jdk file and add the jdkFile argument`
+    );
+  }
+
+  const fileName = refs[0].slice(
+    '<a href="'.length,
+    refs[0].length - '">'.length
+  );
+  return await tc.downloadTool(`https://static.azul.com/zulu/bin/${fileName}`);
 }

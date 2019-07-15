@@ -51,9 +51,27 @@ describe('installer tests', () => {
     }
   }, 100000);
 
-  it('Acquires version of Java if no matching version is installed', async () => {
+  it('Installs version of Java from jdkFile if no matching version is installed', async () => {
     await installer.getJava('12', 'x64', javaFilePath);
     const JavaDir = path.join(toolDir, 'Java', '12.0.0', 'x64');
+
+    expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
+    expect(fs.existsSync(path.join(JavaDir, 'bin'))).toBe(true);
+  }, 100000);
+
+  it('Throws if invalid directory to jdk', async () => {
+    let thrown = false;
+    try {
+      await installer.getJava('1000', 'x64', 'bad path');
+    } catch {
+      thrown = true;
+    }
+    expect(thrown).toBe(true);
+  });
+
+  it('Downloads java if no file given', async () => {
+    await installer.getJava('8.0.102', 'x64', '');
+    const JavaDir = path.join(toolDir, 'Java', '8.0.102', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
     expect(fs.existsSync(path.join(JavaDir, 'bin'))).toBe(true);
