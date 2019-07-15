@@ -54,13 +54,26 @@ export async function getJava(
       tempDir
     );
     core.debug(`jdk extracted to ${jdkDir}`);
-    toolPath = await tc.cacheDir(jdkDir, 'Java', `${version}.0.0`, arch);
+    toolPath = await tc.cacheDir(
+      jdkDir,
+      'Java',
+      normalizeVersion(version),
+      arch
+    );
   }
 
   let extendedJavaHome = 'JAVA_HOME_' + version + '_' + arch;
   core.exportVariable('JAVA_HOME', toolPath);
   core.exportVariable(extendedJavaHome, toolPath);
   core.addPath(path.join(toolPath, 'bin'));
+}
+
+function normalizeVersion(version: string) {
+  const versionArray = version.split('.');
+  const major = versionArray[0];
+  const minor = versionArray.length > 1 ? versionArray[1] : '0';
+  const patch = versionArray.length > 2 ? versionArray[2] : '0';
+  return `${major}.${minor}.${patch}`;
 }
 
 function getFileEnding(file: string): string {
