@@ -35,11 +35,13 @@ export async function getJava(
   if (toolPath) {
     core.debug(`Tool found in cache ${toolPath}`);
   } else {
+    let compressedFileExtension = '';
     if (!jdkFile) {
       jdkFile = await downloadJava(version);
+      compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
     }
     core.debug('Retrieving Jdk from local path');
-    const compressedFileExtension = getFileEnding(jdkFile);
+    compressedFileExtension = compressedFileExtension || getFileEnding(jdkFile);
     let tempDir: string = path.join(
       tempDirectory,
       'temp_' + Math.floor(Math.random() * 2000000000)
@@ -123,7 +125,8 @@ async function unpackJars(fsPath: string, javaBinPath: string) {
 async function unzipJavaDownload(
   repoRoot: string,
   fileEnding: string,
-  destinationFolder: string
+  destinationFolder: string,
+  extension?: string
 ): Promise<string> {
   // Create the destination folder if it doesn't exist
   await io.mkdirP(destinationFolder);
@@ -175,11 +178,5 @@ async function downloadJava(version: string): Promise<string> {
     '<a href="'.length,
     refs[0].length - '">'.length
   );
-  const dest = await tc.downloadTool(
-    `https://static.azul.com/zulu/bin/${fileName}`
-  );
-  if (dest) {
-    throw new Error(fs.readdirSync(dest).toString());
-  }
-  return path.join(dest, fileName);
+  return await tc.downloadTool(`https://static.azul.com/zulu/bin/${fileName}`);
 }
