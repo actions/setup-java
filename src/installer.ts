@@ -36,8 +36,7 @@ export async function getJava(
     core.debug(`Tool found in cache ${toolPath}`);
   } else {
     if (!jdkFile) {
-      const downloadUrl: string = await getDownloadUrl(version);
-      jdkFile = await tc.downloadTool(downloadUrl);
+      jdkFile = await downloadJava(version);
     }
     core.debug('Retrieving Jdk from local path');
     const compressedFileExtension = getFileEnding(jdkFile);
@@ -144,7 +143,7 @@ async function unzipJavaDownload(
   }
 }
 
-async function getDownloadUrl(version: string) {
+async function downloadJava(version: string): Promise<string> {
   let filterString = '';
   if (IS_WINDOWS) {
     filterString = `jdk${version}-win_x64.zip`;
@@ -172,9 +171,12 @@ async function getDownloadUrl(version: string) {
     );
   }
 
-  const downloadLocation = refs[0].slice(
+  const fileName = refs[0].slice(
     '<a href="'.length,
     refs[0].length - '">'.length
   );
-  return `https://static.azul.com/zulu/bin/${downloadLocation}`;
+  const dest = await tc.downloadTool(
+    `https://static.azul.com/zulu/bin/${fileName}`
+  );
+  return path.join(dest, fileName);
 }
