@@ -37,10 +37,12 @@ export async function getJava(
   } else {
     let compressedFileExtension = '';
     if (!jdkFile) {
+      core.debug('Downloading Jdk from Azul');
       jdkFile = await downloadJava(version);
       compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
+    } else {
+      core.debug('Retrieving Jdk from local path');
     }
-    core.debug('Retrieving Jdk from local path');
     compressedFileExtension = compressedFileExtension || getFileEnding(jdkFile);
     let tempDir: string = path.join(
       tempDirectory,
