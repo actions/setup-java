@@ -178,5 +178,8 @@ async function downloadJava(version: string): Promise<string> {
   const dest = await tc.downloadTool(
     `https://static.azul.com/zulu/bin/${fileName}`
   );
+  if (dest) {
+    throw new Error(fs.readdirSync(dest).toString());
+  }
   return path.join(dest, fileName);
 }
