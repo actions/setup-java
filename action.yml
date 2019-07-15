@@ -11,7 +11,7 @@ inputs:
     default: 'x64'
   jdkFile:
     description: 'Path to where the compressed JDK is located. The path could be in your source repository or a local path on the agent.'
-    required: true
+    required: false
 runs:
   using: 'node12'
   main: 'lib/setup-java.js'

@@ -34,6 +34,11 @@ export async function getJava(
   if (toolPath) {
     core.debug(`Tool found in cache ${toolPath}`);
   } else {
+    if (!jdkFile) {
+      throw new Error(
+        `Failed to find Java ${version} in the cache. Please specify a valid jdk file to install from instead.`
+      );
+    }
     core.debug('Retrieving Jdk from local path');
     const compressedFileExtension = getFileEnding(jdkFile);
     let tempDir: string = path.join(
