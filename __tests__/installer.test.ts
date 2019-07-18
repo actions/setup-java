@@ -77,6 +77,22 @@ describe('installer tests', () => {
     expect(fs.existsSync(path.join(JavaDir, 'bin'))).toBe(true);
   }, 100000);
 
+  it('Downloads java with 1.x syntax', async () => {
+    await installer.getJava('1.10', 'x64', '');
+    const JavaDir = path.join(toolDir, 'Java', '10.0.2', 'x64');
+
+    expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
+    expect(fs.existsSync(path.join(JavaDir, 'bin'))).toBe(true);
+  }, 100000);
+
+  it('Downloads java with normal semver syntax', async () => {
+    await installer.getJava('9.0.x', 'x64', '');
+    const JavaDir = path.join(toolDir, 'Java', '9.0.7', 'x64');
+
+    expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
+    expect(fs.existsSync(path.join(JavaDir, 'bin'))).toBe(true);
+  }, 100000);
+
   it('Throws if invalid directory to jdk', async () => {
     let thrown = false;
     try {
