@@ -14,7 +14,7 @@ Basic:
 actions:
 - uses: actions/setup-java@latest
   with:
-    version: 9.0.4 // The JDK version to make available on the path. Use a whole version, such as 9.0.4, not a semver version
+    version: 9.0.4 // The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)
     architecture: x64 // (x64 or x86) - defaults to x64
 - run: java -cp java HelloWorldApp
 ```
@@ -36,7 +36,7 @@ jobs:
   build:
     strategy:
       matrix:
-        java: [ 6.0.119, 9.0.4, 12.0.2 ]
+        java: [ 1.6, 9.0.x, 12.0.2 ]
     name: Java ${{ matrix.java }} sample
     actions:
       - name: Setup java

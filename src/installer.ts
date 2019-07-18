@@ -6,6 +6,7 @@ import * as exec from '@actions/exec';
 import * as tc from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as semver from 'semver';
 import * as httpm from 'typed-rest-client/HttpClient';
 
 const IS_WINDOWS = process.platform === 'win32';
@@ -38,7 +39,16 @@ export async function getJava(
     let compressedFileExtension = '';
     if (!jdkFile) {
       core.debug('Downloading Jdk from Azul');
-      jdkFile = await downloadJava(version);
+      let http: httpm.HttpClient = new httpm.HttpClient('setup-java');
+      let contents = await (await http.get(
+        'https://static.azul.com/zulu/bin/'
+      )).readBody();
+      let refs = contents.match(/<a href.*\">/gi) || [];
+
+      const downloadInfo = getDownloadInfo(refs, version);
+
+      jdkFile = await tc.downloadTool(downloadInfo.url);
+      version = downloadInfo.version;
       compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
     } else {
       core.debug('Retrieving Jdk from local path');
@@ -57,7 +67,7 @@ export async function getJava(
     toolPath = await tc.cacheDir(
       jdkDir,
       'Java',
-      normalizeVersion(version),
+      getCacheVersionString(version),
       arch
     );
   }
@@ -68,7 +78,7 @@ export async function getJava(
   core.addPath(path.join(toolPath, 'bin'));
 }
 
-function normalizeVersion(version: string) {
+function getCacheVersionString(version: string) {
   const versionArray = version.split('.');
   const major = versionArray[0];
   const minor = versionArray.length > 1 ? versionArray[1] : '0';
@@ -161,37 +171,88 @@ async function unzipJavaDownload(
   }
 }
 
-async function downloadJava(version: string): Promise<string> {
-  let filterString = '';
+function getDownloadInfo(
+  refs: string[],
+  version: string
+): {version: string; url: string} {
+  version = normalizeVersion(version);
+  let extension = '';
   if (IS_WINDOWS) {
-    filterString = `jdk${version}-win_x64.zip`;
+    extension = `-win_x64.zip`;
   } else {
     if (process.platform === 'darwin') {
-      filterString = `jdk${version}-macosx_x64.tar.gz`;
+      extension = `-macosx_x64.tar.gz`;
     } else {
-      filterString = `jdk${version}-linux_x64.tar.gz`;
+      extension = `-linux_x64.tar.gz`;
     }
   }
-  let http: httpm.HttpClient = new httpm.HttpClient('setup-java');
-  let contents = await (await http.get(
-    'https://static.azul.com/zulu/bin/'
-  )).readBody();
-  let refs = contents.match(/<a href.*\">/gi) || [];
-  refs = refs.filter(val => {
-    if (val.indexOf(filterString) > -1) {
-      return true;
+
+  // Maps version to url
+  let versionMap = new Map();
+
+  // Filter by platform
+  refs.forEach(ref => {
+    if (ref.indexOf(extension) < 0) {
+      return;
+    }
+
+    // If we haven't returned, means we're looking at the correct platform
+    let versions = ref.match(/jdk.*-/gi) || [];
+    if (versions.length > 1) {
+      throw new Error(
+        `Invalid ref received from https://static.azul.com/zulu/bin/: ${ref}`
+      );
+    }
+    if (versions.length == 0) {
+      return;
+    }
+    const refVersion = versions[0].slice('jdk'.length, versions[0].length - 1);
+
+    if (semver.satisfies(refVersion, version)) {
+      versionMap.set(
+        refVersion,
+        'https://static.azul.com/zulu/bin/' +
+          ref.slice('<a href="'.length, ref.length - '">'.length)
+      );
     }
   });
 
-  if (refs.length == 0) {
+  // Choose the most recent satisfying version
+  let curVersion = '0.0.0';
+  let curUrl = '';
+  for (const entry of versionMap.entries()) {
+    const entryVersion = entry[0];
+    const entryUrl = entry[1];
+    if (semver.gt(entryVersion, curVersion)) {
+      curUrl = entryUrl;
+      curVersion = entryVersion;
+    }
+  }
+
+  if (curUrl == '') {
     throw new Error(
       `No valid download found for version ${version}. Check https://static.azul.com/zulu/bin/ for a list of valid versions or download your own jdk file and add the jdkFile argument`
     );
   }
 
-  const fileName = refs[0].slice(
-    '<a href="'.length,
-    refs[0].length - '">'.length
-  );
-  return await tc.downloadTool(`https://static.azul.com/zulu/bin/${fileName}`);
+  return {version: curVersion, url: curUrl};
+}
+
+function normalizeVersion(version: string): string {
+  if (version.slice(0, 2) === '1.') {
+    // Trim leading 1. for versions like 1.8
+    version = version.slice(2);
+    if (!version) {
+      throw new Error('1. is not a valid version');
+    }
+  }
+
+  // Add trailing .x if it is missing
+  if (version.split('.').length != 3) {
+    if (version[version.length - 1] != 'x') {
+      version = version + '.x';
+    }
+  }
+
+  return version;
 }
