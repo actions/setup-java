@@ -23,8 +23,8 @@ actions:
 From local file:
 ```yaml
 actions:
-- uses: actions/checkout@latest
-- uses: actions/setup-java@latest
+- uses: actions/checkout@master
+- uses: actions/setup-java@master
   with:
     version: 4.0.0
     architecture: x64
@@ -41,9 +41,9 @@ jobs:
         java: [ 1.6, 9.0.x, 12.0.2 ]
     name: Java ${{ matrix.java }} sample
     actions:
-      - uses: actions/checkout@latest
+      - uses: actions/checkout@master
       - name: Setup java
-        uses: actions/setup-java@latest
+        uses: actions/setup-java@master
         with:
           version: ${{ matrix.java }}
           architecture: x64
