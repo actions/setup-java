@@ -12,6 +12,7 @@ See [action.yml](action.yml)
 Basic:
 ```yaml
 actions:
+- uses: actions/checkout@latest
 - uses: actions/setup-java@latest
   with:
     version: 9.0.4 // The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)
@@ -22,6 +23,7 @@ actions:
 From local file:
 ```yaml
 actions:
+- uses: actions/checkout@latest
 - uses: actions/setup-java@latest
   with:
     version: 4.0.0
@@ -39,6 +41,7 @@ jobs:
         java: [ 1.6, 9.0.x, 12.0.2 ]
     name: Java ${{ matrix.java }} sample
     actions:
+      - uses: actions/checkout@latest
       - name: Setup java
         uses: actions/setup-java@latest
         with:
