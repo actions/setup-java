@@ -11,7 +11,7 @@ See [action.yml](action.yml)
 
 Basic:
 ```yaml
-actions:
+steps:
 - uses: actions/checkout@latest
 - uses: actions/setup-java@latest
   with:
@@ -22,7 +22,7 @@ actions:
 
 From local file:
 ```yaml
-actions:
+steps:
 - uses: actions/checkout@master
 - uses: actions/setup-java@master
   with:
@@ -40,7 +40,7 @@ jobs:
       matrix:
         java: [ 1.6, 9.0.x, 12.0.2 ]
     name: Java ${{ matrix.java }} sample
-    actions:
+    steps:
       - uses: actions/checkout@master
       - name: Setup java
         uses: actions/setup-java@master
