@@ -7,8 +7,8 @@ const toolDir = path.join(__dirname, 'runner', 'tools');
 const tempDir = path.join(__dirname, 'runner', 'temp');
 const javaDir = path.join(__dirname, 'runner', 'java');
 
-process.env['RUNNER_TOOLSDIRECTORY'] = toolDir;
-process.env['RUNNER_TEMPDIRECTORY'] = tempDir;
+process.env['RUNNER_TOOL_CACHE'] = toolDir;
+process.env['RUNNER_TEMP'] = tempDir;
 import * as installer from '../src/installer';
 
 let javaFilePath = '';

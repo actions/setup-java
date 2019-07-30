@@ -1,4 +1,4 @@
-let tempDirectory = process.env['RUNNER_TEMPDIRECTORY'] || '';
+let tempDirectory = process.env['RUNNER_TEMP'] || '';
 
 import * as core from '@actions/core';
 import * as io from '@actions/io';
