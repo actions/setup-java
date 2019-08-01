@@ -15,7 +15,7 @@ steps:
 - uses: actions/checkout@latest
 - uses: actions/setup-java@v1
   with:
-    version: 9.0.4 // The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)
+    version: '9.0.4' // The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)
     architecture: x64 // (x64 or x86) - defaults to x64
 - run: java -cp java HelloWorldApp
 ```
@@ -26,7 +26,7 @@ steps:
 - uses: actions/checkout@master
 - uses: actions/setup-java@v1
   with:
-    version: 4.0.0
+    version: '4.0.0'
     architecture: x64
     jdkFile: <path to jdkFile> // Optional - jdkFile to install java from. Useful for versions not supported by Azul
 - run: java -cp java HelloWorldApp
@@ -36,9 +36,10 @@ Matrix Testing:
 ```yaml
 jobs:
   build:
+    runs-on: ubuntu-16.04
     strategy:
       matrix:
-        java: [ 1.6, 9.0.x, 12.0.2 ]
+        java: [ '1.6', '9.0.x', '12.0.2' ]
     name: Java ${{ matrix.java }} sample
     steps:
       - uses: actions/checkout@master
