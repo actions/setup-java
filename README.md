@@ -13,7 +13,7 @@ Basic:
 ```yaml
 steps:
 - uses: actions/checkout@latest
-- uses: actions/setup-java@latest
+- uses: actions/setup-java@v1
   with:
     version: 9.0.4 // The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)
     architecture: x64 // (x64 or x86) - defaults to x64
@@ -24,7 +24,7 @@ From local file:
 ```yaml
 steps:
 - uses: actions/checkout@master
-- uses: actions/setup-java@master
+- uses: actions/setup-java@v1
   with:
     version: 4.0.0
     architecture: x64
@@ -43,7 +43,7 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - name: Setup java
-        uses: actions/setup-java@master
+        uses: actions/setup-java@v1
         with:
           version: ${{ matrix.java }}
           architecture: x64
