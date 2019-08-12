@@ -1,4 +1,4 @@
-name: 'Setup Java Action'
+name: 'Setup Java environment'
 description: 'Setup your runner with Java'
 author: 'GitHub'
 inputs: 
