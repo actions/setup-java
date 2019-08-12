@@ -1,5 +1,9 @@
 # setup-java
 
+<p align="left">
+  <a href="https://github.com/actions/setup-java"><img alt="GitHub Actions status" src="https://github.com/actions/setup-java/workflows/Main%20workflow/badge.svg"></a>
+</p>
+
 This action sets up a java environment for use in actions by:
 
 - optionally downloading and caching a version of java by version and adding to PATH. Downloads from [Azul's Zulu distribution](http://static.azul.com/zulu/bin/).
