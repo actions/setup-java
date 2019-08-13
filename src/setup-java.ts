@@ -4,7 +4,10 @@ import * as path from 'path';
 
 async function run() {
   try {
-    const version = core.getInput('version', {required: true});
+    let version = core.getInput('version');
+    if (!version) {
+      version = core.getInput('java-version', {required: true});
+    }
     const arch = core.getInput('architecture', {required: true});
     const jdkFile = core.getInput('jdkFile', {required: false}) || '';
 
