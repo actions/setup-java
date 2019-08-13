@@ -19,7 +19,7 @@ steps:
 - uses: actions/checkout@latest
 - uses: actions/setup-java@v1
   with:
-    version: '9.0.4' // The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)
+    java-version: '9.0.4' // The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)
     architecture: x64 // (x64 or x86) - defaults to x64
 - run: java -cp java HelloWorldApp
 ```
@@ -30,7 +30,7 @@ steps:
 - uses: actions/checkout@master
 - uses: actions/setup-java@v1
   with:
-    version: '4.0.0'
+    java-version: '4.0.0'
     architecture: x64
     jdkFile: <path to jdkFile> // Optional - jdkFile to install java from. Useful for versions not supported by Azul
 - run: java -cp java HelloWorldApp
@@ -50,7 +50,7 @@ jobs:
       - name: Setup java
         uses: actions/setup-java@v1
         with:
-          version: ${{ matrix.java }}
+          java-version: ${{ matrix.java }}
           architecture: x64
       - run: java -cp java HelloWorldApp
 ```
