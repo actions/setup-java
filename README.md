@@ -32,7 +32,7 @@ steps:
   with:
     java-version: '4.0.0'
     architecture: x64
-    jdkFile: <path to jdkFile> // Optional - jdkFile to install java from. Useful for versions not supported by Azul
+    jdkFile: <path to jdkFile> # Optional - jdkFile to install java from. Useful for versions not supported by Azul
 - run: java -cp java HelloWorldApp
 ```
 
