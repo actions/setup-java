@@ -29,9 +29,10 @@ if (!tempDirectory) {
 export async function getJava(
   version: string,
   arch: string,
-  jdkFile: string
+  jdkFile: string,
+  javafx: boolean
 ): Promise<void> {
-  let toolPath = tc.find('Java', version);
+  let toolPath = tc.find(javafx ? 'fx-jdk' : 'jdk', version);
 
   if (toolPath) {
     core.debug(`Tool found in cache ${toolPath}`);
@@ -45,8 +46,8 @@ export async function getJava(
       )).readBody();
       let refs = contents.match(/<a href.*\">/gi) || [];
 
-      const downloadInfo = getDownloadInfo(refs, version);
-
+      const downloadInfo = getDownloadInfo(refs, version, javafx);
+ 
       jdkFile = await tc.downloadTool(downloadInfo.url);
       version = downloadInfo.version;
       compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
@@ -66,7 +67,7 @@ export async function getJava(
     core.debug(`jdk extracted to ${jdkDir}`);
     toolPath = await tc.cacheDir(
       jdkDir,
-      'Java',
+      javafx ? 'fx-jdk' : 'jdk',
       getCacheVersionString(version),
       arch
     );
@@ -173,7 +174,8 @@ async function unzipJavaDownload(
 
 function getDownloadInfo(
   refs: string[],
-  version: string
+  version: string,
+  javafx: boolean
 ): {version: string; url: string} {
   version = normalizeVersion(version);
   let extension = '';
@@ -198,6 +200,9 @@ function getDownloadInfo(
 
     // If we haven't returned, means we're looking at the correct platform
     let versions = ref.match(/jdk.*-/gi) || [];
+    if (javafx) { // If getting a JDK with JavaFX, the version prefix is different
+      versions = ref.match(/ca-fx-jdk.*-/gi) || [];
+    }
     if (versions.length > 1) {
       throw new Error(
         `Invalid ref received from https://static.azul.com/zulu/bin/: ${ref}`
@@ -206,7 +211,9 @@ function getDownloadInfo(
     if (versions.length == 0) {
       return;
     }
-    const refVersion = versions[0].slice('jdk'.length, versions[0].length - 1);
+    // If getting a JDK with JavaFX, the version prefix is different
+    let jdkVersionPrefix = javafx ? 'ca-fx-jdk' : 'jdk';
+    const refVersion = versions[0].slice(jdkVersionPrefix.length, versions[0].length - 1);
 
     if (semver.satisfies(refVersion, version)) {
       versionMap.set(

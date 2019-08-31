@@ -52,7 +52,7 @@ describe('installer tests', () => {
   }, 100000);
 
   it('Installs version of Java from jdkFile if no matching version is installed', async () => {
-    await installer.getJava('12', 'x64', javaFilePath);
+    await installer.getJava('12', 'x64', javaFilePath, false);
     const JavaDir = path.join(toolDir, 'Java', '12.0.0', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
@@ -62,7 +62,7 @@ describe('installer tests', () => {
   it('Throws if invalid directory to jdk', async () => {
     let thrown = false;
     try {
-      await installer.getJava('1000', 'x64', 'bad path');
+      await installer.getJava('1000', 'x64', 'bad path', false);
     } catch {
       thrown = true;
     }
@@ -70,7 +70,7 @@ describe('installer tests', () => {
   });
 
   it('Downloads java if no file given', async () => {
-    await installer.getJava('8.0.102', 'x64', '');
+    await installer.getJava('8.0.102', 'x64', '', false);
     const JavaDir = path.join(toolDir, 'Java', '8.0.102', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
@@ -78,7 +78,7 @@ describe('installer tests', () => {
   }, 100000);
 
   it('Downloads java with 1.x syntax', async () => {
-    await installer.getJava('1.10', 'x64', '');
+    await installer.getJava('1.10', 'x64', '', false);
     const JavaDir = path.join(toolDir, 'Java', '10.0.2', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
@@ -86,7 +86,7 @@ describe('installer tests', () => {
   }, 100000);
 
   it('Downloads java with normal semver syntax', async () => {
-    await installer.getJava('9.0.x', 'x64', '');
+    await installer.getJava('9.0.x', 'x64', '', false);
     const JavaDir = path.join(toolDir, 'Java', '9.0.7', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
@@ -96,7 +96,7 @@ describe('installer tests', () => {
   it('Throws if invalid directory to jdk', async () => {
     let thrown = false;
     try {
-      await installer.getJava('1000', 'x64', 'bad path');
+      await installer.getJava('1000', 'x64', 'bad path', false);
     } catch {
       thrown = true;
     }
@@ -111,7 +111,8 @@ describe('installer tests', () => {
     await installer.getJava(
       '250',
       'x64',
-      'path shouldnt matter, found in cache'
+      'path shouldnt matter, found in cache',
+      false
     );
     return;
   });
@@ -122,7 +123,7 @@ describe('installer tests', () => {
     let thrown = false;
     try {
       // This will throw if it doesn't find it in the cache (because no such version exists)
-      await installer.getJava('251', 'x64', 'bad path');
+      await installer.getJava('251', 'x64', 'bad path', false);
     } catch {
       thrown = true;
     }

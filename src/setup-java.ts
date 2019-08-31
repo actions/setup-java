@@ -10,8 +10,9 @@ async function run() {
     }
     const arch = core.getInput('architecture', {required: true});
     const jdkFile = core.getInput('jdkFile', {required: false}) || '';
+    const javafx = core.getInput('javafx', {required: false}) == 'true';
 
-    await installer.getJava(version, arch, jdkFile);
+    await installer.getJava(version, arch, jdkFile, javafx);
 
     const matchersPath = path.join(__dirname, '..', '.github');
     console.log(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
