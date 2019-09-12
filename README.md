@@ -19,7 +19,7 @@ steps:
 - uses: actions/checkout@latest
 - uses: actions/setup-java@v1
   with:
-    java-version: '9.0.4' // The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)
+    java-version: '9.0.4' // The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x). To specify a specific version for JDK 8 or older use the following pattern (8.0.x)
     architecture: x64 // (x64 or x86) - defaults to x64
 - run: java -cp java HelloWorldApp
 ```
