@@ -192,7 +192,7 @@ function getDownloadInfo(
 
   // Filter by platform
   refs.forEach(ref => {
-    if (ref.indexOf(extension) < 0) {
+    if (!ref.endsWith(extension + '">')) {
       return;
     }
 
