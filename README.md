@@ -6,7 +6,7 @@
 
 This action sets up a java environment for use in actions by:
 
-- optionally downloading and caching a version of java by version and adding to PATH. Downloads from [Azul's Zulu distribution](http://static.azul.com/zulu/bin/).
+- optionally downloading and caching a version of java by version and adding to PATH. Default downloads are populated from the [Zulu Community distribution of OpenJDK](http://static.azul.com/zulu/bin/).
 - registering problem matchers for error output
 
 # Usage
