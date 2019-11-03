@@ -20,7 +20,7 @@ steps:
 - uses: actions/setup-java@v1
   with:
     java-version: '11.0.4' // The Java version to make available on the path. Takes a whole or semver Java version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)
-    java-package: jdk // (jre, jdk, or jdk-fx) - defaults to jdk
+    java-package: jdk // (jre, jdk, or jdk+fx) - defaults to jdk
     architecture: x64 // (x64 or x86) - defaults to x64
 - run: java -cp java HelloWorldApp
 ```
