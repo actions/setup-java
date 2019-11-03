@@ -9,8 +9,8 @@ async function run() {
       version = core.getInput('java-version', {required: true});
     }
     const arch = core.getInput('architecture', {required: true});
+    const javaPackage = core.getInput('java-package', {required: true});
     const jdkFile = core.getInput('jdkFile', {required: false}) || '';
-    const javaPackage = core.getInput('java-package', {required: false}) || 'jdk';
 
     await installer.getJava(version, arch, jdkFile, javaPackage);
 
