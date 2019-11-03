@@ -244,7 +244,7 @@ function getDownloadInfo(
 
   if (curUrl == '') {
     throw new Error(
-      `No valid download found for version ${version}. Check https://static.azul.com/zulu/bin/ for a list of valid versions or download your own jdk file and add the jdkFile argument`
+      `No valid download found for version ${version} and package ${javaPackage}. Check https://static.azul.com/zulu/bin/ for a list of valid versions or download your own jdk file and add the jdkFile argument`
     );
   }
 
