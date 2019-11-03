@@ -79,7 +79,6 @@ describe('installer tests', () => {
 
   it('Downloads java with 1.x syntax', async () => {
     await installer.getJava('1.10', 'x64', '', 'jdk');
-    // Relies on knowledge that the latest version of 10.0.x is 10.0.2, and it will likely not update again:
     const JavaDir = path.join(toolDir, 'jdk', '10.0.2', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
@@ -88,7 +87,6 @@ describe('installer tests', () => {
 
   it('Downloads java with normal semver syntax', async () => {
     await installer.getJava('9.0.x', 'x64', '', 'jdk');
-    // Relies on knowledge that the latest version of 9.0.x is 9.0.7, and it will likely not update again:
     const JavaDir = path.join(toolDir, 'jdk', '9.0.7', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
@@ -130,7 +128,7 @@ describe('installer tests', () => {
       '250',
       'x64',
       'path shouldnt matter, found in cache',
-        'jdk'
+      'jdk'
     );
     return;
   });
