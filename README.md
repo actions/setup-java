@@ -43,7 +43,8 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        java: [ 1.6, 7, 7.0.181, 8, 8.0.192, 9.0.x, 11.0.x, 11.0.3, 12, 13, 13.0.1 ]
+        # test on latest update of each major Java version, as well as specific updates of each LTS:
+        java: [ 1.6, 6.0.83, 7, 7.0.181, 8, 8.0.192, 9, 10, 11.0.x, 11.0.3, 12, 13 ]
     name: Java ${{ matrix.java }} sample
     steps:
       - uses: actions/checkout@master
