@@ -67,7 +67,7 @@ export async function getJava(
     core.debug(`jdk extracted to ${jdkDir}`);
     toolPath = await tc.cacheDir(
       jdkDir,
-        javaPackage,
+      javaPackage,
       getCacheVersionString(version),
       arch
     );
@@ -190,14 +190,20 @@ function getDownloadInfo(
   }
 
   let pkgRegexp = new RegExp('');
+  let pkgTypeLength = 0;
   if (javaPackage === 'jdk') {
     pkgRegexp = /jdk.*-/gi;
+    pkgTypeLength = 'jdk'.length;
   } else if (javaPackage == 'jre') {
     pkgRegexp = /jre.*-/gi;
+    pkgTypeLength = 'jre'.length;
   } else if (javaPackage == 'jdk+fx') {
     pkgRegexp = /fx-jdk.*-/gi;
+    pkgTypeLength = 'fx-jdk'.length;
   } else {
-    throw new Error(`package argument ${javaPackage} is not in [jdk | jre | jdk+fx]`);
+    throw new Error(
+      `package argument ${javaPackage} is not in [jdk | jre | jdk+fx]`
+    );
   }
 
   // Maps version to url
@@ -219,7 +225,7 @@ function getDownloadInfo(
     if (versions.length == 0) {
       return;
     }
-    const refVersion = versions[0].slice('jdk'.length, versions[0].length - 1);
+    const refVersion = versions[0].slice(pkgTypeLength, versions[0].length - 1);
 
     if (semver.satisfies(refVersion, version)) {
       versionMap.set(
