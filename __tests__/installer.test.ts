@@ -109,10 +109,10 @@ describe('installer tests', () => {
     expect(fs.existsSync(path.join(JavaDir, 'bin'))).toBe(true);
   }, 100000);
 
-  it('Throws if invalid java packge specified', async () => {
+  it('Throws if invalid java package specified', async () => {
     let thrown = false;
     try {
-      await installer.getJava('8.0.222', 'x64', '', 'badjdk');
+      await installer.getJava('8.0.222', 'x64', '', 'bad jdk');
     } catch {
       thrown = true;
     }
