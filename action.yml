@@ -3,10 +3,14 @@ description: 'Setup your runner with Java'
 author: 'GitHub'
 inputs: 
   java-version:
-    description: 'The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)'
+    description: 'The Java version to make available on the path. Takes a whole or semver Java version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)'
     required: true
+  java-package:
+    description: 'The package type (jre, jdk, jdk+fx)'
+    required: true
+    default: 'jdk'
   architecture:
-    description: 'The architecture (x86, x64) of the JDK.'
+    description: 'The architecture (x86, x64) of the package.'
     required: true
     default: 'x64'
   jdkFile:
