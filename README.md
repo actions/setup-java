@@ -6,7 +6,7 @@
 
 This action sets up a java environment for use in actions by:
 
-- optionally downloading and caching a version of java by version and adding to PATH. Default downloads are populated from the [Zulu Community distribution of OpenJDK](http://static.azul.com/zulu/bin/).
+- optionally downloading and caching a version of java by version and adding to PATH. Default downloads are populated from the [Zulu Community distribution of OpenJDK](http://static.azul.com/zulu/bin/). 
 - registering problem matchers for error output
 
 # Usage
@@ -19,8 +19,9 @@ steps:
 - uses: actions/checkout@latest
 - uses: actions/setup-java@v1
   with:
-    java-version: '9.0.4' // The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)
-    architecture: x64 // (x64 or x86) - defaults to x64
+    java-version: '11.0.4' // The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)
+    java-package: jdk // (jre, jdk, or jdk+fx) - optional, defaults to jdk
+    architecture: x64 // (x64 or x86) - optional, defaults to x64
 - run: java -cp java HelloWorldApp
 ```
 
@@ -31,8 +32,7 @@ steps:
 - uses: actions/setup-java@v1
   with:
     java-version: '4.0.0'
-    architecture: x64
-    jdkFile: <path to jdkFile> # Optional - jdkFile to install java from. Useful for versions not supported by Azul
+    jdkFile: <path to jdkFile> # Optional - jdkFile to install java from. Useful for versions not on the Zulu Community CDN.
 - run: java -cp java HelloWorldApp
 ```
 
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        java: [ '1.6', '9.0.x', '12.0.2' ]
+        java: [ 1.6, 7, 7.0.181, 8, 8.0.192, 9.0.x, 11.0.x, 11.0.3, 12, 13, 13.0.1 ]
     name: Java ${{ matrix.java }} sample
     steps:
       - uses: actions/checkout@master
@@ -51,7 +51,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java }}
-          architecture: x64
       - run: java -cp java HelloWorldApp
 ```
 
