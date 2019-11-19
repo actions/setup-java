@@ -1,9 +1,9 @@
-name: 'Setup Java environment'
-description: 'Setup your runner with Java'
+name: 'Setup Java JDK'
+description: 'Set up a specific version of the Java JDK and add the command-line tools to the PATH'
 author: 'GitHub'
 inputs: 
   java-version:
-    description: 'The JDK version to make available on the path. Takes a whole or semver Jdk version, or 1.x syntax (e.g. 1.8 => Jdk 8.x)'
+    description: 'The JDK version to make available on the path. Takes a whole or semver JDK version, or 1.x syntax (e.g. 1.8 => JDK 8.x)'
     required: true
   architecture:
     description: 'The architecture (x86, x64) of the JDK.'
