@@ -18,9 +18,7 @@ async function run() {
     const username = core.getInput('username', {required: false});
     const password = core.getInput('password', {required: false});
 
-    if (username && password) {
-      await auth.configAuthentication(username, password);
-    }
+    await auth.configAuthentication(username, password);
 
     const matchersPath = path.join(__dirname, '..', '.github');
     console.log(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);

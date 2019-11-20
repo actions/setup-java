@@ -1,15 +1,22 @@
 import io = require('@actions/io');
 import fs = require('fs');
+import os = require('os');
 import path = require('path');
-import child_process = require('child_process');
 
-const m2Dir = path.join(__dirname, '.m2');
-const settingsFile = path.join(m2Dir, 'settings.xml');
+// make the os.homedir() call be local to the tests
+jest.doMock('os', () => {
+  return {
+    homedir: jest.fn(() => __dirname)
+  };
+});
 
 import * as auth from '../src/auth';
 
+const m2Dir = path.join(__dirname, auth.M2_DIR);
+const settingsFile = path.join(m2Dir, auth.SETTINGS_FILE);
+
 describe('auth tests', () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     await io.rmRF(m2Dir);
   }, 300000);
 
@@ -21,7 +28,7 @@ describe('auth tests', () => {
     }
   }, 100000);
 
-  it('Creates settings.xml file with username and password', async () => {
+  it('creates settings.xml with username and password', async () => {
     const username = 'bluebottle';
     const password = 'SingleOrigin';
 
@@ -32,5 +39,22 @@ describe('auth tests', () => {
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
       auth.generate(username, password)
     );
+  }, 100000);
+
+  it('does not create settings.xml without username and / or password', async () => {
+    await auth.configAuthentication('FOO', '');
+
+    expect(fs.existsSync(m2Dir)).toBe(false);
+    expect(fs.existsSync(settingsFile)).toBe(false);
+
+    await auth.configAuthentication('', 'BAR');
+
+    expect(fs.existsSync(m2Dir)).toBe(false);
+    expect(fs.existsSync(settingsFile)).toBe(false);
+
+    await auth.configAuthentication('', ''); // BAZ!!!
+
+    expect(fs.existsSync(m2Dir)).toBe(false);
+    expect(fs.existsSync(settingsFile)).toBe(false);
   }, 100000);
 });
