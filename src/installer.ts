@@ -29,9 +29,10 @@ if (!tempDirectory) {
 export async function getJava(
   version: string,
   arch: string,
-  jdkFile: string
+  jdkFile: string,
+  javaPackage: string
 ): Promise<void> {
-  let toolPath = tc.find('Java', version);
+  let toolPath = tc.find(javaPackage, version);
 
   if (toolPath) {
     core.debug(`Tool found in cache ${toolPath}`);
@@ -45,7 +46,7 @@ export async function getJava(
       )).readBody();
       let refs = contents.match(/<a href.*\">/gi) || [];
 
-      const downloadInfo = getDownloadInfo(refs, version);
+      const downloadInfo = getDownloadInfo(refs, version, javaPackage);
 
       jdkFile = await tc.downloadTool(downloadInfo.url);
       version = downloadInfo.version;
@@ -66,7 +67,7 @@ export async function getJava(
     core.debug(`jdk extracted to ${jdkDir}`);
     toolPath = await tc.cacheDir(
       jdkDir,
-      'Java',
+      javaPackage,
       getCacheVersionString(version),
       arch
     );
@@ -173,7 +174,8 @@ async function unzipJavaDownload(
 
 function getDownloadInfo(
   refs: string[],
-  version: string
+  version: string,
+  javaPackage: string
 ): {version: string; url: string} {
   version = normalizeVersion(version);
   let extension = '';
@@ -187,17 +189,34 @@ function getDownloadInfo(
     }
   }
 
+  let pkgRegexp = new RegExp('');
+  let pkgTypeLength = 0;
+  if (javaPackage === 'jdk') {
+    pkgRegexp = /jdk.*-/gi;
+    pkgTypeLength = 'jdk'.length;
+  } else if (javaPackage == 'jre') {
+    pkgRegexp = /jre.*-/gi;
+    pkgTypeLength = 'jre'.length;
+  } else if (javaPackage == 'jdk+fx') {
+    pkgRegexp = /fx-jdk.*-/gi;
+    pkgTypeLength = 'fx-jdk'.length;
+  } else {
+    throw new Error(
+      `package argument ${javaPackage} is not in [jdk | jre | jdk+fx]`
+    );
+  }
+
   // Maps version to url
   let versionMap = new Map();
 
   // Filter by platform
   refs.forEach(ref => {
-    if (ref.indexOf(extension) < 0) {
+    if (!ref.endsWith(extension + '">')) {
       return;
     }
 
     // If we haven't returned, means we're looking at the correct platform
-    let versions = ref.match(/jdk.*-/gi) || [];
+    let versions = ref.match(pkgRegexp) || [];
     if (versions.length > 1) {
       throw new Error(
         `Invalid ref received from https://static.azul.com/zulu/bin/: ${ref}`
@@ -206,7 +225,7 @@ function getDownloadInfo(
     if (versions.length == 0) {
       return;
     }
-    const refVersion = versions[0].slice('jdk'.length, versions[0].length - 1);
+    const refVersion = versions[0].slice(pkgTypeLength, versions[0].length - 1);
 
     if (semver.satisfies(refVersion, version)) {
       versionMap.set(
@@ -231,7 +250,7 @@ function getDownloadInfo(
 
   if (curUrl == '') {
     throw new Error(
-      `No valid download found for version ${version}. Check https://static.azul.com/zulu/bin/ for a list of valid versions or download your own jdk file and add the jdkFile argument`
+      `No valid download found for version ${version} and package ${javaPackage}. Check https://static.azul.com/zulu/bin/ for a list of valid versions or download your own jdk file and add the jdkFile argument`
     );
   }
 
