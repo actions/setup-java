@@ -18,4 +18,4 @@ inputs:
     required: false
 runs:
   using: 'node12'
-  main: 'lib/setup-java.js'
+  main: 'dist/index.js'
