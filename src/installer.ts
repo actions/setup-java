@@ -41,9 +41,9 @@ export async function getJava(
     if (!jdkFile) {
       core.debug('Downloading Jdk from Azul');
       let http: httpm.HttpClient = new httpm.HttpClient('setup-java');
-      let contents = await (await http.get(
-        'https://static.azul.com/zulu/bin/'
-      )).readBody();
+      let contents = await (
+        await http.get('https://static.azul.com/zulu/bin/')
+      ).readBody();
       let refs = contents.match(/<a href.*\">/gi) || [];
 
       const downloadInfo = getDownloadInfo(refs, version, javaPackage);
