@@ -56,6 +56,28 @@ jobs:
       - run: java -cp java HelloWorldApp
 ```
 
+Publising to an Apache Maven Repository:
+```yaml
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@master
+      with:
+        java-version: 1.8
+        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        username: ${{ github.actor }} # username for server authentication
+        password: ${{ github.token }} # password or token for authentication
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+    - name: Publish to GitHub Packages Apache Maven
+      run: mvn deploy
+```
+
 # License
 
 The scripts and documentation in this project are released under the [MIT License](LICENSE)
