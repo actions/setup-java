@@ -7,7 +7,11 @@ import * as io from '@actions/io';
 export const M2_DIR = '.m2';
 export const SETTINGS_FILE = 'settings.xml';
 
-export async function configAuthentication(id: string, username: string, password: string) {
+export async function configAuthentication(
+  id: string,
+  username: string,
+  password: string
+) {
   if (id && username && password) {
     core.debug(`configAuthentication with ${username} and a password`);
     const directory: string = path.join(os.homedir(), M2_DIR);

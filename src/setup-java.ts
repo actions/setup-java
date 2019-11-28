@@ -25,7 +25,6 @@ async function run() {
     if (id && username && password) {
       await auth.configAuthentication(id, username, password);
     }
-
   } catch (error) {
     core.setFailed(error.message);
   }
