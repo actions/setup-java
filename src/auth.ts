@@ -13,14 +13,16 @@ export async function configAuthentication(
   password: string
 ) {
   if (id && username && password) {
-    core.debug(`configAuthentication with ${username} and a password`);
+    console.log(
+      `creating ${SETTINGS_FILE} with server-id: ${id}, username: ${username}, and a password`
+    );
     const directory: string = path.join(os.homedir(), M2_DIR);
     await io.mkdirP(directory);
     core.debug(`created directory ${directory}`);
     await write(directory, generate(id, username, password));
   } else {
     core.debug(
-      `no auth without username: ${username} and password: ${password}`
+      `no ${SETTINGS_FILE} without server-id: ${id}, username: ${username}, and a password`
     );
   }
 }
@@ -43,6 +45,6 @@ export function generate(id: string, username: string, password: string) {
 async function write(directory: string, settings: string) {
   const options = {encoding: 'utf-8'};
   const location = path.join(directory, SETTINGS_FILE);
-  core.debug(`writing ${location}`);
+  console.log(`writing ${location}`);
   return fs.writeFileSync(location, settings, options);
 }
