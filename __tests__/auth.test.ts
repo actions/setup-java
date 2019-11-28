@@ -29,30 +29,36 @@ describe('auth tests', () => {
   }, 100000);
 
   it('creates settings.xml with username and password', async () => {
+    const id = 'packages';
     const username = 'bluebottle';
     const password = 'SingleOrigin';
 
-    await auth.configAuthentication(username, password);
+    await auth.configAuthentication(id, username, password);
 
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(username, password)
+      auth.generate(id, username, password)
     );
   }, 100000);
 
   it('does not create settings.xml without username and / or password', async () => {
-    await auth.configAuthentication('FOO', '');
+    await auth.configAuthentication('FOO', '', '');
 
     expect(fs.existsSync(m2Dir)).toBe(false);
     expect(fs.existsSync(settingsFile)).toBe(false);
 
-    await auth.configAuthentication('', 'BAR');
+    await auth.configAuthentication('', 'BAR', '');
 
     expect(fs.existsSync(m2Dir)).toBe(false);
     expect(fs.existsSync(settingsFile)).toBe(false);
 
-    await auth.configAuthentication('', ''); // BAZ!!!
+    await auth.configAuthentication('', '', 'BAZ');
+
+    expect(fs.existsSync(m2Dir)).toBe(false);
+    expect(fs.existsSync(settingsFile)).toBe(false);
+
+    await auth.configAuthentication('', '', '');
 
     expect(fs.existsSync(m2Dir)).toBe(false);
     expect(fs.existsSync(settingsFile)).toBe(false);

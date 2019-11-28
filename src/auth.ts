@@ -7,13 +7,13 @@ import * as io from '@actions/io';
 export const M2_DIR = '.m2';
 export const SETTINGS_FILE = 'settings.xml';
 
-export async function configAuthentication(username: string, password: string) {
-  if (username && password) {
+export async function configAuthentication(id: string, username: string, password: string) {
+  if (id && username && password) {
     core.debug(`configAuthentication with ${username} and a password`);
     const directory: string = path.join(os.homedir(), M2_DIR);
     await io.mkdirP(directory);
     core.debug(`created directory ${directory}`);
-    await write(directory, generate(username, password));
+    await write(directory, generate(id, username, password));
   } else {
     core.debug(
       `no auth without username: ${username} and password: ${password}`
@@ -22,11 +22,12 @@ export async function configAuthentication(username: string, password: string) {
 }
 
 // only exported for testing purposes
-export function generate(username: string, password: string) {
+export function generate(id: string, username: string, password: string) {
   return `
   <settings>
       <servers>
         <server>
+          <id>${id}</id>
           <username>${username}</username>
           <password>${password}</password>
         </server>
