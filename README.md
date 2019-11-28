@@ -77,6 +77,7 @@ jobs:
     - name: Publish to GitHub Packages Apache Maven
       run: mvn deploy
 ```
+See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
 # License
 
