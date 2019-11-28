@@ -15,13 +15,16 @@ async function run() {
 
     await installer.getJava(version, arch, jdkFile, javaPackage);
 
+    const matchersPath = path.join(__dirname, '..', '.github');
+    console.log(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
+
     const username = core.getInput('username', {required: false});
     const password = core.getInput('password', {required: false});
 
-    await auth.configAuthentication(username, password);
+    if (username && password) {
+      await auth.configAuthentication(username, password);
+    }
 
-    const matchersPath = path.join(__dirname, '..', '.github');
-    console.log(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
   } catch (error) {
     core.setFailed(error.message);
   }
