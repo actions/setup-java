@@ -1,2 +1,2 @@
-lib/*.js    -diff -merge
-lib/*.js    linguist-generated=true
+dist/index.js    -diff -merge
+dist/index.js    linguist-generated=true
