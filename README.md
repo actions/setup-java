@@ -76,6 +76,15 @@ jobs:
       run: mvn -B package --file pom.xml
     - name: Publish to GitHub Packages Apache Maven
       run: mvn deploy
+    - name: Set up Apache Maven Central
+      uses: actions/setup-java@master
+      with: # running setup-java again overwrites the settings.xml
+        java-version: 1.8
+        server-id: maven
+        username: maven_username
+        password: ${{ secrets.MAVEN_CENTRAL_TOKEN }} # password from secrets store
+    - name: Publish to Apache Maven Central
+      run: mvn deploy 
 ```
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
