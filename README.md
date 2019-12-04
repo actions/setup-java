@@ -45,7 +45,7 @@ jobs:
     strategy:
       matrix:
         # test against latest update of each major Java version, as well as specific updates of LTS versions:
-        java: [ 1.6, 6.0.83, 7, 7.0.181, 8, 8.0.192, 9.0,x, 10, 11.0.x, 11.0.3, 12, 13 ]
+        java: [ 1.6, 6.0.83, 7, 7.0.181, 8, 8.0.192, 9.0.x, 10, 11.0.x, 11.0.3, 12, 13 ]
     name: Java ${{ matrix.java }} sample
     steps:
       - uses: actions/checkout@master
