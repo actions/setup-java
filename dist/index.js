@@ -4175,6 +4175,7 @@ function write(directory, settings) {
                 // default flag is 'w'
                 return fs.writeFileSync(location, settings, { encoding: 'utf-8' });
             }
+            console.log(`code ${e.code} and O_EXCL ${fs.constants.O_EXCL}`);
             throw e;
         }
     });
