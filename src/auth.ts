@@ -48,7 +48,7 @@ async function write(directory: string, settings: string) {
   const location = path.join(directory, SETTINGS_FILE);
   console.log(`writing ${location} with options ${options}`);
   try {
-    fs.writeFileSync(location, settings, options);
+    return fs.writeFileSync(location, settings, options);
   } catch (e) {
     if (e.code == fs.constants.O_EXCL) {
       console.log(`overwriting existing file ${location}`);
