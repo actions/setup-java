@@ -16,7 +16,8 @@ export async function configAuthentication(
     console.log(
       `creating ${SETTINGS_FILE} with server-id: ${id}, username: ${username}, and a password`
     );
-    const directory: string = path.join(os.homedir(), M2_DIR);
+    const home: string = process.env['GITHUB_WORKSPACE'] || os.homedir();
+    const directory: string = path.join(home, M2_DIR);
     await io.mkdirP(directory);
     core.debug(`created directory ${directory}`);
     await write(directory, generate(id, username, password));
@@ -43,8 +44,17 @@ export function generate(id: string, username: string, password: string) {
 }
 
 async function write(directory: string, settings: string) {
-  const options = {encoding: 'utf-8'};
+  const options = {encoding: 'utf-8', flag: 'wx'}; // 'wx': Like 'w' but fails if path exists
   const location = path.join(directory, SETTINGS_FILE);
   console.log(`writing ${location}`);
-  return fs.writeFileSync(location, settings, options);
+  try {
+    return fs.writeFileSync(location, settings, options);
+  } catch (e) {
+    if (e.code == fs.constants.O_EXCL) {
+      console.log(`overwriting existing file ${location}`);
+      // default flag is 'w'
+      return fs.writeFileSync(location, settings, {encoding: 'utf-8'});
+    }
+    throw e;
+  }
 }
