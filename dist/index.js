@@ -4170,12 +4170,11 @@ function write(directory, settings) {
             return fs.writeFileSync(location, settings, options);
         }
         catch (e) {
-            if (e.code == fs.constants.O_EXCL) {
+            if (e.code == "EEXIST") {
                 console.log(`overwriting existing file ${location}`);
                 // default flag is 'w'
                 return fs.writeFileSync(location, settings, { encoding: 'utf-8' });
             }
-            console.log(`error ${JSON.stringify(e)} and O_EXCL ${fs.constants.O_EXCL}`);
             throw e;
         }
     });
