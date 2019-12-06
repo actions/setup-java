@@ -86,6 +86,9 @@ jobs:
     - name: Publish to Apache Maven Central
       run: mvn deploy 
 ```
+
+***NOTE: The `settings.xml` is created in the Actons $HOME directory by default and will overwrite existing files.***	
+
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
 # License
