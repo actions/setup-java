@@ -50,9 +50,8 @@ async function write(directory: string, settings: string) {
     return fs.writeFileSync(location, settings, options);
   } catch (e) {
     if (e.code == "EEXIST") {
-      console.log(`overwriting existing file ${location}`);
-      // default flag is 'w'
-      return fs.writeFileSync(location, settings, {encoding: 'utf-8'});
+      console.warn(`overwriting existing file ${location}`);
+      return fs.writeFileSync(location, settings, {encoding: 'utf-8', flag: 'w'});
     }
     throw e;
   }
