@@ -24,11 +24,11 @@ inputs:
        file.'
     required: false
   username:
-    description: 'Username for authentication to the Apache Maven server.'
+    description: 'Username for authentication to the Apache Maven repository.'
     required: false
   password:
-    description: 'Passowrd or token for authentication to the Apache Maven
-       server.'
+    description: 'Password or token for authentication to the Apache Maven
+       repository.'
     required: false
 runs:
   using: 'node12'
