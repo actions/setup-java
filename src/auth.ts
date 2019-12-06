@@ -45,7 +45,7 @@ export function generate(id: string, username: string, password: string) {
 async function write(directory: string, settings: string) {
   const options = {encoding: 'utf-8', flag: 'wx'}; // 'wx': Like 'w' but fails if path exists
   const location = path.join(directory, SETTINGS_FILE);
-  console.log(`writing ${location} with options ${options}`);
+  console.log(`writing ${location}`);
   try {
     return fs.writeFileSync(location, settings, options);
   } catch (e) {
