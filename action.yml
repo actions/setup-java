@@ -2,7 +2,7 @@ name: 'Setup Java JDK'
 description: 'Set up a specific version of the Java JDK and add the
    command-line tools to the PATH'
 author: 'GitHub'
-inputs: 
+inputs:
   java-version:
     description: 'The Java version to make available on the path. Takes a whole
        or semver Java version, or 1.x syntax (e.g. 1.8 => Java 8.x)'
