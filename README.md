@@ -56,7 +56,7 @@ jobs:
       - run: java -cp java HelloWorldApp
 ```
 
-Publising to an Apache Maven Repository:
+Publishing using Apache Maven:
 ```yaml
 jobs:
   build:
@@ -90,6 +90,33 @@ jobs:
 ***NOTE: The `settings.xml` is created in the Actons $HOME directory by default and will overwrite existing files.***	
 
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
+
+Publishing using Gradle:
+```yaml
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+
+    - name: Build with Gradle
+      run: gradle build
+
+    - name: Publish to GitHub Packages
+      run: gradle publish
+      env:
+        USERNAME: ${{ github.actor }}
+        PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+```
+
+***NOTE: The `USERNAME` and `PASSWORD` need to correspond to the credentials environment variables used in the publishing section of your `build.gradle`..***	
+
+See the help docs on [Publishing a Package with Gradle](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-gradle-for-use-with-github-packages#example-using-gradle-groovy-for-a-single-package-in-a-repository) for more information on the `build.gradle` configuration file.
 
 # License
 
