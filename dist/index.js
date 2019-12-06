@@ -4134,8 +4134,7 @@ function configAuthentication(id, username, password) {
     return __awaiter(this, void 0, void 0, function* () {
         if (id && username && password) {
             console.log(`creating ${exports.SETTINGS_FILE} with server-id: ${id}, username: ${username}, and a password`);
-            const home = process.env['GITHUB_WORKSPACE'] || os.homedir();
-            const directory = path.join(home, exports.M2_DIR);
+            const directory = path.join(os.homedir(), exports.M2_DIR);
             yield io.mkdirP(directory);
             core.debug(`created directory ${directory}`);
             yield write(directory, generate(id, username, password));
@@ -4165,15 +4164,17 @@ function write(directory, settings) {
     return __awaiter(this, void 0, void 0, function* () {
         const options = { encoding: 'utf-8', flag: 'wx' }; // 'wx': Like 'w' but fails if path exists
         const location = path.join(directory, exports.SETTINGS_FILE);
-        console.log(`writing ${location} with options ${options}`);
+        console.log(`writing ${location}`);
         try {
             return fs.writeFileSync(location, settings, options);
         }
         catch (e) {
-            if (e.code == "EEXIST") {
-                console.log(`overwriting existing file ${location}`);
-                // default flag is 'w'
-                return fs.writeFileSync(location, settings, { encoding: 'utf-8' });
+            if (e.code == 'EEXIST') {
+                console.warn(`overwriting existing file ${location}`);
+                return fs.writeFileSync(location, settings, {
+                    encoding: 'utf-8',
+                    flag: 'w'
+                });
             }
             throw e;
         }
