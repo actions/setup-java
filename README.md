@@ -87,7 +87,7 @@ jobs:
       run: mvn deploy 
 ```
 
-***NOTE: The `settings.xml` is created in the Actons $HOME directory by default and will overwrite existing files.***	
+***NOTE: The `settings.xml` file is created in the Actions $HOME directory. If you have an existing `settings.xml` file at that location, it will be overwritten***	
 
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
