@@ -16,7 +16,12 @@ export async function configAuthentication(
     console.log(
       `creating ${SETTINGS_FILE} with server-id: ${id}, username: ${username}, and a password`
     );
-    const directory: string = path.join(os.homedir(), M2_DIR);
+    // when an alternate m2 location is specified use only that location (no .m2 directory)
+    // otherwise use the home/.m2/ path
+    const directory: string = path.join(
+      core.getInput('m2-home') || os.homedir(),
+      core.getInput('m2-home') ? '' : M2_DIR
+    );
     await io.mkdirP(directory);
     core.debug(`created directory ${directory}`);
     await write(directory, generate(id, username, password));

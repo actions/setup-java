@@ -137,11 +137,11 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         username: ${{ github.actor }} # username for server authentication
         password: ${{ github.token }} # password or token for authentication
-        m2-home: ${{ $GITHUB_WORKSPACE }} # location of the .m2 directory
+        m2-home: ${{ $GITHUB_WORKSPACE }} # location for the settings.xml file
     - name: Build with Maven
       run: mvn -B package --file pom.xml
     - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy
+      run: mvn deploy -s ${{ $GITHUB_WORKSPACE }}/settings.xml
 ```
 
 # License

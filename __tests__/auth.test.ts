@@ -28,6 +28,31 @@ describe('auth tests', () => {
     }
   }, 100000);
 
+  it('creates settings.xml in alternate locations', async () => {
+    const id = 'packages';
+    const username = 'bluebottle';
+    const password = 'SingleOrigin';
+
+    const altHome = path.join(__dirname, 'runner', 'settings');
+    const altSettingsFile = path.join(altHome, auth.SETTINGS_FILE);
+    process.env[`INPUT_M2-HOME`] = altHome;
+    await io.rmRF(altHome); // ensure it doesn't already exist
+
+    await auth.configAuthentication(id, username, password);
+
+    expect(fs.existsSync(m2Dir)).toBe(false);
+    expect(fs.existsSync(settingsFile)).toBe(false);
+
+    expect(fs.existsSync(altHome)).toBe(true);
+    expect(fs.existsSync(altSettingsFile)).toBe(true);
+    expect(fs.readFileSync(altSettingsFile, 'utf-8')).toEqual(
+      auth.generate(id, username, password)
+    );
+
+    delete process.env[`INPUT_M2-HOME`];
+    await io.rmRF(altHome);
+  }, 100000);
+
   it('creates settings.xml with username and password', async () => {
     const id = 'packages';
     const username = 'bluebottle';
