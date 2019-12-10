@@ -82,4 +82,22 @@ describe('auth tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(false);
     expect(fs.existsSync(settingsFile)).toBe(false);
   }, 100000);
+
+  it('escapes invalid XML inputs', () => {
+    const id = 'packages';
+    const username = 'bluebottle';
+    const password = '&<>"\'\'"><&';
+
+    expect(auth.generate(id, username, password)).toEqual(`
+  <settings>
+      <servers>
+        <server>
+          <id>${id}</id>
+          <username>${username}</username>
+          <password>&amp;&lt;&gt;&quot;&apos;&apos;&quot;&gt;&lt;&amp;</password>
+        </server>
+      </servers>
+  </settings>
+  `);
+  });
 });

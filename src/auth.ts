@@ -27,15 +27,24 @@ export async function configAuthentication(
   }
 }
 
+function escapeXML(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 // only exported for testing purposes
 export function generate(id: string, username: string, password: string) {
   return `
   <settings>
       <servers>
         <server>
-          <id>${id}</id>
-          <username>${username}</username>
-          <password>${password}</password>
+          <id>${escapeXML(id)}</id>
+          <username>${escapeXML(username)}</username>
+          <password>${escapeXML(password)}</password>
         </server>
       </servers>
   </settings>

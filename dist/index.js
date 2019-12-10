@@ -4145,15 +4145,23 @@ function configAuthentication(id, username, password) {
     });
 }
 exports.configAuthentication = configAuthentication;
+function escapeXML(value) {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+}
 // only exported for testing purposes
 function generate(id, username, password) {
     return `
   <settings>
       <servers>
         <server>
-          <id>${id}</id>
-          <username>${username}</username>
-          <password>${password}</password>
+          <id>${escapeXML(id)}</id>
+          <username>${escapeXML(username)}</username>
+          <password>${escapeXML(password)}</password>
         </server>
       </servers>
   </settings>
