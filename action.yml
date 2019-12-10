@@ -30,6 +30,9 @@ inputs:
     description: 'Password or token for authentication to the Apache Maven
        repository.'
     required: false
+  settings-path:
+    description: 'Path to where the settings.xml file will be written.'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'

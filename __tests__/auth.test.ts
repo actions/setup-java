@@ -35,7 +35,7 @@ describe('auth tests', () => {
 
     const altHome = path.join(__dirname, 'runner', 'settings');
     const altSettingsFile = path.join(altHome, auth.SETTINGS_FILE);
-    process.env[`INPUT_M2-HOME`] = altHome;
+    process.env[`INPUT_SETTINGS-PATH`] = altHome;
     await io.rmRF(altHome); // ensure it doesn't already exist
 
     await auth.configAuthentication(id, username, password);
@@ -49,7 +49,7 @@ describe('auth tests', () => {
       auth.generate(id, username, password)
     );
 
-    delete process.env[`INPUT_M2-HOME`];
+    delete process.env[`INPUT_SETTINGS-PATH`];
     await io.rmRF(altHome);
   }, 100000);
 

@@ -118,9 +118,9 @@ jobs:
 
 See the help docs on [Publishing a Package with Gradle](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-gradle-for-use-with-github-packages#example-using-gradle-groovy-for-a-single-package-in-a-repository) for more information on the `build.gradle` configuration file.
 
-## Apache Maven within a Shared Runner
+## Apache Maven within a self-hosted runner
 
-When using an Actions shared runner the default `$HOME` directory can be shared by a number of workflows at the same time which could overwrite existing settings file. Setting the `m2-home` variable allows you to choose a unique location for your settings file.
+When using an Actions self-hosted runner with multiple shared runners the default `$HOME` directory can be shared by a number runners at the same time which could overwrite existing settings file. Setting the `settings-path` variable allows you to choose a unique location for your settings file.
 
 ```yaml
 jobs:
@@ -137,11 +137,11 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         username: ${{ github.actor }} # username for server authentication
         password: ${{ github.token }} # password or token for authentication
-        m2-home: ${{ $GITHUB_WORKSPACE }} # location for the settings.xml file
+        settings-path: ./config # location for the settings.xml file
     - name: Build with Maven
       run: mvn -B package --file pom.xml
     - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy -s ${{ $GITHUB_WORKSPACE }}/settings.xml
+      run: mvn deploy -s ./config/settings.xml
 ```
 
 # License

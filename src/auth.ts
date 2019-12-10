@@ -19,8 +19,8 @@ export async function configAuthentication(
     // when an alternate m2 location is specified use only that location (no .m2 directory)
     // otherwise use the home/.m2/ path
     const directory: string = path.join(
-      core.getInput('m2-home') || os.homedir(),
-      core.getInput('m2-home') ? '' : M2_DIR
+      core.getInput('settings-path') || os.homedir(),
+      core.getInput('settings-path') ? '' : M2_DIR
     );
     await io.mkdirP(directory);
     core.debug(`created directory ${directory}`);

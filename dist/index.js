@@ -4136,7 +4136,7 @@ function configAuthentication(id, username, password) {
             console.log(`creating ${exports.SETTINGS_FILE} with server-id: ${id}, username: ${username}, and a password`);
             // when an alternate m2 location is specified use only that location (no .m2 directory)
             // otherwise use the home/.m2/ path
-            const directory = path.join(core.getInput('m2-home') || os.homedir(), core.getInput('m2-home') ? '' : exports.M2_DIR);
+            const directory = path.join(core.getInput('settings-path') || os.homedir(), core.getInput('settings-path') ? '' : exports.M2_DIR);
             yield io.mkdirP(directory);
             core.debug(`created directory ${directory}`);
             yield write(directory, generate(id, username, password));
