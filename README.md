@@ -13,7 +13,7 @@ This action sets up a java environment for use in actions by:
 
 See [action.yml](action.yml)
 
-Basic:
+## Basic
 ```yaml
 steps:
 - uses: actions/checkout@v1
@@ -25,7 +25,7 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
-From local file:
+## Local file
 ```yaml
 steps:
 - uses: actions/checkout@v1
@@ -37,7 +37,7 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
-Matrix Testing:
+## Matrix Testing
 ```yaml
 jobs:
   build:
@@ -56,7 +56,7 @@ jobs:
       - run: java -cp java HelloWorldApp
 ```
 
-Publishing using Apache Maven:
+## Publishing using Apache Maven
 ```yaml
 jobs:
   build:
@@ -91,7 +91,7 @@ jobs:
 
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
-Publishing using Gradle:
+## Publishing using Gradle
 ```yaml
 jobs:
 
@@ -117,6 +117,32 @@ jobs:
 ***NOTE: The `USERNAME` and `PASSWORD` need to correspond to the credentials environment variables used in the publishing section of your `build.gradle`..***	
 
 See the help docs on [Publishing a Package with Gradle](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-gradle-for-use-with-github-packages#example-using-gradle-groovy-for-a-single-package-in-a-repository) for more information on the `build.gradle` configuration file.
+
+## Apache Maven within a Shared Runner
+
+When using an Actions shared runner the default `$HOME` directory can be shared by a number of workflows at the same time which could overwrite existing settings file. Setting the `m2-home` variable allows you to choose a unique location for your settings file.
+
+```yaml
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up JDK 1.8 for Shared Runner
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        username: ${{ github.actor }} # username for server authentication
+        password: ${{ github.token }} # password or token for authentication
+        m2-home: ${{ $GITHUB_WORKSPACE }} # location of the .m2 directory
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+    - name: Publish to GitHub Packages Apache Maven
+      run: mvn deploy
+```
 
 # License
 
