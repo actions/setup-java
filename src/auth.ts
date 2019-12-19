@@ -7,29 +7,28 @@ import * as io from '@actions/io';
 export const M2_DIR = '.m2';
 export const SETTINGS_FILE = 'settings.xml';
 
+export const DEFAULT_ID = 'github';
+export const DEFAULT_USERNAME = 'GITHUB_ACTOR';
+export const DEFAULT_PASSWORD = 'GITHUB_TOKEN';
+
 export async function configAuthentication(
-  id: string,
-  username: string,
-  password: string
+  id = DEFAULT_ID,
+  username = DEFAULT_USERNAME,
+  password = DEFAULT_PASSWORD
 ) {
-  if (id && username && password) {
-    console.log(
-      `creating ${SETTINGS_FILE} with server-id: ${id}, username: ${username}, and a password`
-    );
-    // when an alternate m2 location is specified use only that location (no .m2 directory)
-    // otherwise use the home/.m2/ path
-    const directory: string = path.join(
-      core.getInput('settings-path') || os.homedir(),
-      core.getInput('settings-path') ? '' : M2_DIR
-    );
-    await io.mkdirP(directory);
-    core.debug(`created directory ${directory}`);
-    await write(directory, generate(id, username, password));
-  } else {
-    core.debug(
-      `no ${SETTINGS_FILE} without server-id: ${id}, username: ${username}, and a password`
-    );
-  }
+  console.log(
+    `creating ${SETTINGS_FILE} with server-id: ${id};`,
+    `environment variables: username=\$${username} and password=\$${password}`
+  );
+  // when an alternate m2 location is specified use only that location (no .m2 directory)
+  // otherwise use the home/.m2/ path
+  const directory: string = path.join(
+    core.getInput('settings-path') || os.homedir(),
+    core.getInput('settings-path') ? '' : M2_DIR
+  );
+  await io.mkdirP(directory);
+  core.debug(`created directory ${directory}`);
+  await write(directory, generate(id, username, password));
 }
 
 function escapeXML(value: string) {
@@ -42,14 +41,18 @@ function escapeXML(value: string) {
 }
 
 // only exported for testing purposes
-export function generate(id: string, username: string, password: string) {
+export function generate(
+  id = DEFAULT_ID,
+  username = DEFAULT_USERNAME,
+  password = DEFAULT_PASSWORD
+) {
   return `
   <settings>
       <servers>
         <server>
           <id>${escapeXML(id)}</id>
-          <username>${escapeXML(username)}</username>
-          <password>${escapeXML(password)}</password>
+          <username>\${env.${escapeXML(username)}}</username>
+          <password>\${env.${escapeXML(password)}}</password>
         </server>
       </servers>
   </settings>

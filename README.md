@@ -69,9 +69,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        username: ${{ github.actor }} # username for server authentication
-        password: ${{ github.token }} # password or token for authentication
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
@@ -83,9 +82,12 @@ jobs:
       uses: actions/setup-java@v1
       with: # running setup-java again overwrites the settings.xml
         java-version: 1.8
-        server-id: maven
-        server-username: maven_username
-        server-password: ${{ secrets.MAVEN_CENTRAL_TOKEN }} # password from secrets store
+        server-id: maven # Value of the distributionManagement/repository/id field of the pom.xml
+        server-username: MAVEN_USERNAME # env variable for username below
+        server-password: MAVEN_CENTRAL_TOKEN # env variable for token below
+      env:
+        MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
+        MAVEN_USERNAME: maven_username123
 
     - name: Publish to Apache Maven Central
       run: mvn deploy 
@@ -139,9 +141,9 @@ jobs:
       with:
         java-version: 1.8
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        server-username: ${{ github.actor }} # username for server authentication
-        server-password: ${{ github.token }} # password or token for authentication
         settings-path: ${{ github.workspace }} # location for the settings.xml file
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml

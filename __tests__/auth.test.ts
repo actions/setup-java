@@ -30,8 +30,8 @@ describe('auth tests', () => {
 
   it('creates settings.xml in alternate locations', async () => {
     const id = 'packages';
-    const username = 'bluebottle';
-    const password = 'SingleOrigin';
+    const username = 'UNAMI';
+    const password = 'TOLKIEN';
 
     const altHome = path.join(__dirname, 'runner', 'settings');
     const altSettingsFile = path.join(altHome, auth.SETTINGS_FILE);
@@ -55,8 +55,8 @@ describe('auth tests', () => {
 
   it('creates settings.xml with username and password', async () => {
     const id = 'packages';
-    const username = 'bluebottle';
-    const password = 'SingleOrigin';
+    const username = 'UNAME';
+    const password = 'TOKEN';
 
     await auth.configAuthentication(id, username, password);
 
@@ -69,8 +69,8 @@ describe('auth tests', () => {
 
   it('overwrites existing settings.xml files', async () => {
     const id = 'packages';
-    const username = 'bluebottle';
-    const password = 'SingleOrigin';
+    const username = 'USERNAME';
+    const password = 'PASSWORD';
 
     fs.mkdirSync(m2Dir, {recursive: true});
     fs.writeFileSync(settingsFile, 'FAKE FILE');
@@ -87,30 +87,42 @@ describe('auth tests', () => {
   }, 100000);
 
   it('does not create settings.xml without required parameters', async () => {
-    await auth.configAuthentication('FOO', '', '');
+    await auth.configAuthentication('FOO');
 
-    expect(fs.existsSync(m2Dir)).toBe(false);
-    expect(fs.existsSync(settingsFile)).toBe(false);
+    expect(fs.existsSync(m2Dir)).toBe(true);
+    expect(fs.existsSync(settingsFile)).toBe(true);
+    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
+      auth.generate('FOO')
+    );
 
-    await auth.configAuthentication('', 'BAR', '');
+    await auth.configAuthentication(undefined, 'BAR', undefined);
 
-    expect(fs.existsSync(m2Dir)).toBe(false);
-    expect(fs.existsSync(settingsFile)).toBe(false);
+    expect(fs.existsSync(m2Dir)).toBe(true);
+    expect(fs.existsSync(settingsFile)).toBe(true);
+    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
+      auth.generate(undefined, 'BAR', undefined)
+    );
 
-    await auth.configAuthentication('', '', 'BAZ');
+    await auth.configAuthentication(undefined, undefined, 'BAZ');
 
-    expect(fs.existsSync(m2Dir)).toBe(false);
-    expect(fs.existsSync(settingsFile)).toBe(false);
+    expect(fs.existsSync(m2Dir)).toBe(true);
+    expect(fs.existsSync(settingsFile)).toBe(true);
+    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
+      auth.generate(undefined, undefined, 'BAZ')
+    );
 
-    await auth.configAuthentication('', '', '');
+    await auth.configAuthentication();
 
-    expect(fs.existsSync(m2Dir)).toBe(false);
-    expect(fs.existsSync(settingsFile)).toBe(false);
+    expect(fs.existsSync(m2Dir)).toBe(true);
+    expect(fs.existsSync(settingsFile)).toBe(true);
+    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
+      auth.generate(undefined, undefined, undefined)
+    );
   }, 100000);
 
   it('escapes invalid XML inputs', () => {
     const id = 'packages';
-    const username = 'bluebottle';
+    const username = 'USER';
     const password = '&<>"\'\'"><&';
 
     expect(auth.generate(id, username, password)).toEqual(`
@@ -118,8 +130,8 @@ describe('auth tests', () => {
       <servers>
         <server>
           <id>${id}</id>
-          <username>${username}</username>
-          <password>&amp;&lt;&gt;&quot;&apos;&apos;&quot;&gt;&lt;&amp;</password>
+          <username>\${env.${username}}</username>
+          <password>\${env.&amp;&lt;&gt;&quot;&apos;&apos;&quot;&gt;&lt;&amp;}</password>
         </server>
       </servers>
   </settings>

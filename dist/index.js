@@ -2848,20 +2848,18 @@ const core = __importStar(__webpack_require__(470));
 const io = __importStar(__webpack_require__(1));
 exports.M2_DIR = '.m2';
 exports.SETTINGS_FILE = 'settings.xml';
-function configAuthentication(id, username, password) {
+exports.DEFAULT_ID = 'github';
+exports.DEFAULT_USERNAME = 'GITHUB_ACTOR';
+exports.DEFAULT_PASSWORD = 'GITHUB_TOKEN';
+function configAuthentication(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, password = exports.DEFAULT_PASSWORD) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (id && username && password) {
-            console.log(`creating ${exports.SETTINGS_FILE} with server-id: ${id}, username: ${username}, and a password`);
-            // when an alternate m2 location is specified use only that location (no .m2 directory)
-            // otherwise use the home/.m2/ path
-            const directory = path.join(core.getInput('settings-path') || os.homedir(), core.getInput('settings-path') ? '' : exports.M2_DIR);
-            yield io.mkdirP(directory);
-            core.debug(`created directory ${directory}`);
-            yield write(directory, generate(id, username, password));
-        }
-        else {
-            core.debug(`no ${exports.SETTINGS_FILE} without server-id: ${id}, username: ${username}, and a password`);
-        }
+        console.log(`creating ${exports.SETTINGS_FILE} with server-id: ${id};`, `environment variables: username=\$${username} and password=\$${password}`);
+        // when an alternate m2 location is specified use only that location (no .m2 directory)
+        // otherwise use the home/.m2/ path
+        const directory = path.join(core.getInput('settings-path') || os.homedir(), core.getInput('settings-path') ? '' : exports.M2_DIR);
+        yield io.mkdirP(directory);
+        core.debug(`created directory ${directory}`);
+        yield write(directory, generate(id, username, password));
     });
 }
 exports.configAuthentication = configAuthentication;
@@ -2874,14 +2872,14 @@ function escapeXML(value) {
         .replace(/'/g, '&apos;');
 }
 // only exported for testing purposes
-function generate(id, username, password) {
+function generate(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, password = exports.DEFAULT_PASSWORD) {
     return `
   <settings>
       <servers>
         <server>
           <id>${escapeXML(id)}</id>
-          <username>${escapeXML(username)}</username>
-          <password>${escapeXML(password)}</password>
+          <username>\${env.${escapeXML(username)}}</username>
+          <password>\${env.${escapeXML(password)}}</password>
         </server>
       </servers>
   </settings>
@@ -3883,12 +3881,7 @@ function run() {
             const id = core.getInput('server-id', { required: false });
             const username = core.getInput('server-username', { required: false });
             const password = core.getInput('server-password', { required: false });
-            if (id && username && password) {
-                yield auth.configAuthentication(id, username, password);
-            }
-            else if (id || username || password) {
-                console.warn('All 3 server-(id, username, and password) are required.');
-            }
+            yield auth.configAuthentication(id, username, password);
         }
         catch (error) {
             core.setFailed(error.message);

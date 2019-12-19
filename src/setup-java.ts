@@ -22,11 +22,7 @@ async function run() {
     const username = core.getInput('server-username', {required: false});
     const password = core.getInput('server-password', {required: false});
 
-    if (id && username && password) {
-      await auth.configAuthentication(id, username, password);
-    } else if (id || username || password) {
-      console.warn('All 3 server-(id, username, and password) are required.');
-    }
+    await auth.configAuthentication(id, username, password);
   } catch (error) {
     core.setFailed(error.message);
   }

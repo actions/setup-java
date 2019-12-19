@@ -24,11 +24,12 @@ inputs:
        file.'
     required: false
   server-username:
-    description: 'Username for authentication to the Apache Maven repository.'
+    description: 'Environment variable name for the username for authentication
+       to the Apache Maven repository.'
     required: false
   server-password:
-    description: 'Password or token for authentication to the Apache Maven
-       repository.'
+    description: 'Environment variable name for password or token for
+       authentication to the Apache Maven repository.'
     required: false
   settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
