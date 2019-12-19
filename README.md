@@ -89,8 +89,32 @@ jobs:
     - name: Publish to Apache Maven Central
       run: mvn deploy 
       env:
-        MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
         MAVEN_USERNAME: maven_username123
+        MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
+```
+
+The two `settings.xml` files created from the above example look like the following.
+
+`settings.xml` file created for the first deploy to GitHub Packages
+```xml
+<servers>
+    <server>
+      <id>github</id>
+      <username>${env.GITHUB_ACTOR}</username>
+      <password>${env.GITHUB_TOKEN}</password>
+    </server>
+</servers>
+```
+
+`settings.xml` file created for the second deploy to Apache Maven Central
+```xml
+<servers>
+    <server>
+      <id>maven</id>
+      <username>${env.MAVEN_USERNAME}</username>
+      <password>${env.MAVEN_CENTRAL_TOKEN}</password>
+    </server>
+</servers>
 ```
 
 ***NOTE: The `settings.xml` file is created in the Actions $HOME directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See below for using the `settings-path` to change your `settings.xml` file location.***	
