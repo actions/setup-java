@@ -19,8 +19,10 @@ async function run() {
     console.log(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
     const id = core.getInput('server-id', {required: false}) || undefined;
-    const username = core.getInput('server-username', {required: false}) || undefined;
-    const password = core.getInput('server-password', {required: false}) || undefined;
+    const username =
+      core.getInput('server-username', {required: false}) || undefined;
+    const password =
+      core.getInput('server-password', {required: false}) || undefined;
 
     await auth.configAuthentication(id, username, password);
   } catch (error) {
