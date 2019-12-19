@@ -23,10 +23,10 @@ inputs:
     description: 'ID of the distributionManagement repository in the pom.xml
        file.'
     required: false
-  username:
+  server-username:
     description: 'Username for authentication to the Apache Maven repository.'
     required: false
-  password:
+  server-password:
     description: 'Password or token for authentication to the Apache Maven
        repository.'
     required: false

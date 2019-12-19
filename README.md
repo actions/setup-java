@@ -72,22 +72,26 @@ jobs:
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         username: ${{ github.actor }} # username for server authentication
         password: ${{ github.token }} # password or token for authentication
+
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+
     - name: Publish to GitHub Packages Apache Maven
       run: mvn deploy
+
     - name: Set up Apache Maven Central
       uses: actions/setup-java@v1
       with: # running setup-java again overwrites the settings.xml
         java-version: 1.8
         server-id: maven
-        username: maven_username
-        password: ${{ secrets.MAVEN_CENTRAL_TOKEN }} # password from secrets store
+        server-username: maven_username
+        server-password: ${{ secrets.MAVEN_CENTRAL_TOKEN }} # password from secrets store
+
     - name: Publish to Apache Maven Central
       run: mvn deploy 
 ```
 
-***NOTE: The `settings.xml` file is created in the Actions $HOME directory. If you have an existing `settings.xml` file at that location, it will be overwritten***	
+***NOTE: The `settings.xml` file is created in the Actions $HOME directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See below for using the `settings-path` to change your `settings.xml` file location.***	
 
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
@@ -114,7 +118,7 @@ jobs:
         PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-***NOTE: The `USERNAME` and `PASSWORD` need to correspond to the credentials environment variables used in the publishing section of your `build.gradle`..***	
+***NOTE: The `USERNAME` and `PASSWORD` need to correspond to the credentials environment variables used in the publishing section of your `build.gradle`.***	
 
 See the help docs on [Publishing a Package with Gradle](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-gradle-for-use-with-github-packages#example-using-gradle-groovy-for-a-single-package-in-a-repository) for more information on the `build.gradle` configuration file.
 
@@ -135,11 +139,13 @@ jobs:
       with:
         java-version: 1.8
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        username: ${{ github.actor }} # username for server authentication
-        password: ${{ github.token }} # password or token for authentication
+        server-username: ${{ github.actor }} # username for server authentication
+        server-password: ${{ github.token }} # password or token for authentication
         settings-path: ${{ github.workspace }} # location for the settings.xml file
+
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+
     - name: Publish to GitHub Packages Apache Maven
       run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
 ```

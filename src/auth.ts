@@ -57,19 +57,15 @@ export function generate(id: string, username: string, password: string) {
 }
 
 async function write(directory: string, settings: string) {
-  const options = {encoding: 'utf-8', flag: 'wx'}; // 'wx': Like 'w' but fails if path exists
   const location = path.join(directory, SETTINGS_FILE);
-  console.log(`writing ${location}`);
-  try {
-    return fs.writeFileSync(location, settings, options);
-  } catch (e) {
-    if (e.code == 'EEXIST') {
-      console.warn(`overwriting existing file ${location}`);
-      return fs.writeFileSync(location, settings, {
-        encoding: 'utf-8',
-        flag: 'w'
-      });
-    }
-    throw e;
+  if (fs.existsSync(location)) {
+    console.warn(`overwriting existing file ${location}`);
+  } else {
+    console.log(`writing ${location}`);
   }
+
+  return fs.writeFileSync(location, settings, {
+    encoding: 'utf-8',
+    flag: 'w'
+  });
 }

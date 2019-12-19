@@ -19,11 +19,13 @@ async function run() {
     console.log(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
     const id = core.getInput('server-id', {required: false});
-    const username = core.getInput('username', {required: false});
-    const password = core.getInput('password', {required: false});
+    const username = core.getInput('server-username', {required: false});
+    const password = core.getInput('server-password', {required: false});
 
     if (id && username && password) {
       await auth.configAuthentication(id, username, password);
+    } else if (id || username || password) {
+      console.warn('All 3 server-(id, username, and password) are required.');
     }
   } catch (error) {
     core.setFailed(error.message);
