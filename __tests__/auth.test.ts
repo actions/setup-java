@@ -92,7 +92,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate('FOO')
+      auth.generate('FOO', auth.DEFAULT_USERNAME, auth.DEFAULT_PASSWORD)
     );
 
     await auth.configAuthentication(undefined, 'BAR', undefined);
@@ -100,7 +100,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(undefined, 'BAR', undefined)
+      auth.generate(auth.DEFAULT_ID, 'BAR', auth.DEFAULT_PASSWORD)
     );
 
     await auth.configAuthentication(undefined, undefined, 'BAZ');
@@ -108,7 +108,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(undefined, undefined, 'BAZ')
+      auth.generate(auth.DEFAULT_ID, auth.DEFAULT_USERNAME, 'BAZ')
     );
 
     await auth.configAuthentication();
@@ -116,7 +116,11 @@ describe('auth tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(undefined, undefined, undefined)
+      auth.generate(
+        auth.DEFAULT_ID,
+        auth.DEFAULT_USERNAME,
+        auth.DEFAULT_PASSWORD
+      )
     );
   }, 100000);
 
