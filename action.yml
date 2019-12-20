@@ -21,15 +21,15 @@ inputs:
     required: false
   server-id:
     description: 'ID of the distributionManagement repository in the pom.xml
-       file.'
+       file. Default is `github`'
     required: false
   server-username:
     description: 'Environment variable name for the username for authentication
-       to the Apache Maven repository.'
+       to the Apache Maven repository. Default is $GITHUB_ACTOR'
     required: false
   server-password:
     description: 'Environment variable name for password or token for
-       authentication to the Apache Maven repository.'
+       authentication to the Apache Maven repository. Default is $GITHUB_TOKEN'
     required: false
   settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
