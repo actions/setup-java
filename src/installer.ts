@@ -271,7 +271,7 @@ function normalizeVersion(version: string): string {
     if (version.indexOf('.') == -1) {
       version = version.slice(0, version.length - 3) + '.0.0-ea';
     }
-    // match anything in -ea.X (semver won't do .x matching on pre-release versions) 
+    // match anything in -ea.X (semver won't do .x matching on pre-release versions)
     if (version[0] >= '0' && version[0] <= '9') {
       version = '>=' + version;
     }
@@ -281,6 +281,6 @@ function normalizeVersion(version: string): string {
       version = version + '.x';
     }
   }
-  
+
   return version;
 }
