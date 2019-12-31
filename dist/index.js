@@ -4643,12 +4643,21 @@ function normalizeVersion(version) {
             throw new Error('1. is not a valid version');
         }
     }
-    // Add trailing .x if it is missing
-    if (version.split('.').length != 3) {
+    if (version.endsWith('-ea')) {
+        // convert e.g. 14-ea to 14.0.0-ea
+        if (version.indexOf('.') == -1) {
+            version = version.slice(0, version.length - 3) + '.0.0-ea';
+        }
+        // match anything in -ea.X (semver won't do .x matching on pre-release versions) 
+        if (version[0] >= '0' && version[0] <= '9') {
+            version = '>=' + version;
+        }
+    } else if (version.split('.').length < 3) {
+        // For non-ea versions, add trailing .x if it is missing
         if (version[version.length - 1] != 'x') {
             version = version + '.x';
         }
-    }
+    }	
     return version;
 }
 
