@@ -5,10 +5,11 @@
   "description": "setup java action",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "ncc build src/setup-java.ts",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
-    "release": "ncc build && git add -f dist/",
+    "prerelease": "npm run-script build",
+    "release": "git add -f dist/index.js",
     "test": "jest"
   },
   "repository": {

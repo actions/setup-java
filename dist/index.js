@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(264);
+/******/ 		return __webpack_require__(41);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -50,6 +50,59 @@ module.exports = require("tls");
 
 /***/ }),
 
+/***/ 41:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const core = __importStar(__webpack_require__(694));
+const installer = __importStar(__webpack_require__(389));
+const auth = __importStar(__webpack_require__(280));
+const path = __importStar(__webpack_require__(622));
+function run() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let version = core.getInput('version');
+            if (!version) {
+                version = core.getInput('java-version', { required: true });
+            }
+            const arch = core.getInput('architecture', { required: true });
+            const javaPackage = core.getInput('java-package', { required: true });
+            const jdkFile = core.getInput('jdkFile', { required: false }) || '';
+            yield installer.getJava(version, arch, jdkFile, javaPackage);
+            const matchersPath = path.join(__dirname, '..', '.github');
+            console.log(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
+            const id = core.getInput('server-id', { required: false }) || undefined;
+            const username = core.getInput('server-username', { required: false }) || undefined;
+            const password = core.getInput('server-password', { required: false }) || undefined;
+            yield auth.configAuthentication(id, username, password);
+        }
+        catch (error) {
+            core.setFailed(error.message);
+        }
+    });
+}
+run();
+
+
+/***/ }),
+
 /***/ 87:
 /***/ (function(module) {
 
@@ -57,250 +110,8 @@ module.exports = require("os");
 
 /***/ }),
 
-/***/ 129:
-/***/ (function(module) {
-
-module.exports = require("child_process");
-
-/***/ }),
-
-/***/ 211:
-/***/ (function(module) {
-
-module.exports = require("https");
-
-/***/ }),
-
-/***/ 264:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-module.exports =
-/******/ (function(modules, runtime) { // webpackBootstrap
-/******/ 	"use strict";
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	__webpack_require__.ab = __dirname + "/";
-/******/
-/******/ 	// the startup function
-/******/ 	function startup() {
-/******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(264);
-/******/ 	};
-/******/
-/******/ 	// run startup
-/******/ 	return startup();
-/******/ })
-/************************************************************************/
-/******/ ({
-
-/***/ 16:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(16);
-
-/***/ }),
-
-/***/ 87:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(87);
-
-/***/ }),
-
-/***/ 129:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(129);
-
-/***/ }),
-
-/***/ 211:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(211);
-
-/***/ }),
-
-/***/ 264:
-/***/ (function(module, __unusedexports, __nested_webpack_require_1759__) {
-
-module.exports =
-/******/ (function(modules, runtime) { // webpackBootstrap
-/******/ 	"use strict";
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	__webpack_require__.ab = __dirname + "/";
-/******/
-/******/ 	// the startup function
-/******/ 	function startup() {
-/******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(429);
-/******/ 	};
-/******/
-/******/ 	// run startup
-/******/ 	return startup();
-/******/ })
-/************************************************************************/
-/******/ ({
-
-/***/ 16:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(16);
-
-/***/ }),
-
-/***/ 87:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(87);
-
-/***/ }),
-
-/***/ 129:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(129);
-
-/***/ }),
-
-/***/ 211:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(211);
-
-/***/ }),
-
-/***/ 357:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(357);
-
-/***/ }),
-
-/***/ 417:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(417);
-
-/***/ }),
-
-/***/ 429:
-/***/ (function(module, __unusedexports, __nested_webpack_require_1931__) {
-
-module.exports =
-/******/ (function(modules, runtime) { // webpackBootstrap
-/******/ 	"use strict";
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	__webpack_require__.ab = __dirname + "/";
-/******/
-/******/ 	// the startup function
-/******/ 	function startup() {
-/******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(606);
-/******/ 	};
-/******/
-/******/ 	// run startup
-/******/ 	return startup();
-/******/ })
-/************************************************************************/
-/******/ ({
-
-/***/ 16:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1931__(16);
-
-/***/ }),
-
-/***/ 87:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1931__(87);
-
-/***/ }),
-
 /***/ 113:
-/***/ (function(__unusedmodule, exports, __nested_webpack_require_1581__) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
@@ -315,9 +126,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const url = __nested_webpack_require_1581__(835);
-const http = __nested_webpack_require_1581__(605);
-const https = __nested_webpack_require_1581__(211);
+const url = __webpack_require__(835);
+const http = __webpack_require__(605);
+const https = __webpack_require__(211);
 let fs;
 let tunnel;
 var HttpCodes;
@@ -408,7 +219,7 @@ class HttpClient {
             this._certConfig = requestOptions.cert;
             if (this._certConfig) {
                 // If using cert, need fs
-                fs = __nested_webpack_require_1581__(747);
+                fs = __webpack_require__(747);
                 // cache the cert content into memory, so we don't have to read it from disk every time 
                 if (this._certConfig.caFile && fs.existsSync(this._certConfig.caFile)) {
                     this._ca = fs.readFileSync(this._certConfig.caFile, 'utf8');
@@ -665,7 +476,7 @@ class HttpClient {
         if (useProxy) {
             // If using proxy, need tunnel
             if (!tunnel) {
-                tunnel = __nested_webpack_require_1581__(802);
+                tunnel = __webpack_require__(802);
             }
             const agentOptions = {
                 maxSockets: maxSockets,
@@ -765,7 +576,7 @@ exports.HttpClient = HttpClient;
 /***/ 129:
 /***/ (function(module) {
 
-module.exports = __nested_webpack_require_1931__(129);
+module.exports = require("child_process");
 
 /***/ }),
 
@@ -803,17 +614,17 @@ module.exports = bytesToUuid;
 /***/ 211:
 /***/ (function(module) {
 
-module.exports = __nested_webpack_require_1931__(211);
+module.exports = require("https");
 
 /***/ }),
 
 /***/ 227:
-/***/ (function(__unusedmodule, exports, __nested_webpack_require_22880__) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const os = __nested_webpack_require_22880__(87);
+const os = __webpack_require__(87);
 /**
  * Commands
  *
@@ -877,6 +688,91 @@ function escape(s) {
         .replace(/;/g, '%3B');
 }
 //# sourceMappingURL=command.js.map
+
+/***/ }),
+
+/***/ 280:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs = __importStar(__webpack_require__(747));
+const os = __importStar(__webpack_require__(87));
+const path = __importStar(__webpack_require__(622));
+const core = __importStar(__webpack_require__(694));
+const io = __importStar(__webpack_require__(999));
+exports.M2_DIR = '.m2';
+exports.SETTINGS_FILE = 'settings.xml';
+exports.DEFAULT_ID = 'github';
+exports.DEFAULT_USERNAME = 'GITHUB_ACTOR';
+exports.DEFAULT_PASSWORD = 'GITHUB_TOKEN';
+function configAuthentication(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, password = exports.DEFAULT_PASSWORD) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log(`creating ${exports.SETTINGS_FILE} with server-id: ${id};`, `environment variables: username=\$${username} and password=\$${password}`);
+        // when an alternate m2 location is specified use only that location (no .m2 directory)
+        // otherwise use the home/.m2/ path
+        const directory = path.join(core.getInput('settings-path') || os.homedir(), core.getInput('settings-path') ? '' : exports.M2_DIR);
+        yield io.mkdirP(directory);
+        core.debug(`created directory ${directory}`);
+        yield write(directory, generate(id, username, password));
+    });
+}
+exports.configAuthentication = configAuthentication;
+function escapeXML(value) {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+}
+// only exported for testing purposes
+function generate(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, password = exports.DEFAULT_PASSWORD) {
+    return `
+  <settings>
+      <servers>
+        <server>
+          <id>${escapeXML(id)}</id>
+          <username>\${env.${escapeXML(username)}}</username>
+          <password>\${env.${escapeXML(password)}}</password>
+        </server>
+      </servers>
+  </settings>
+  `;
+}
+exports.generate = generate;
+function write(directory, settings) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const location = path.join(directory, exports.SETTINGS_FILE);
+        if (fs.existsSync(location)) {
+            console.warn(`overwriting existing file ${location}`);
+        }
+        else {
+            console.log(`writing ${location}`);
+        }
+        return fs.writeFileSync(location, settings, {
+            encoding: 'utf-8',
+            flag: 'w'
+        });
+    });
+}
+
 
 /***/ }),
 
@@ -2486,19 +2382,285 @@ function coerce (version, options) {
 /***/ 357:
 /***/ (function(module) {
 
-module.exports = __nested_webpack_require_1931__(357);
+module.exports = require("assert");
+
+/***/ }),
+
+/***/ 389:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+let tempDirectory = process.env['RUNNER_TEMP'] || '';
+const core = __importStar(__webpack_require__(694));
+const io = __importStar(__webpack_require__(999));
+const exec = __importStar(__webpack_require__(430));
+const tc = __importStar(__webpack_require__(871));
+const fs = __importStar(__webpack_require__(747));
+const path = __importStar(__webpack_require__(622));
+const semver = __importStar(__webpack_require__(284));
+const httpm = __importStar(__webpack_require__(113));
+const IS_WINDOWS = process.platform === 'win32';
+if (!tempDirectory) {
+    let baseLocation;
+    if (IS_WINDOWS) {
+        // On windows use the USERPROFILE env variable
+        baseLocation = process.env['USERPROFILE'] || 'C:\\';
+    }
+    else {
+        if (process.platform === 'darwin') {
+            baseLocation = '/Users';
+        }
+        else {
+            baseLocation = '/home';
+        }
+    }
+    tempDirectory = path.join(baseLocation, 'actions', 'temp');
+}
+function getJava(version, arch, jdkFile, javaPackage) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let toolPath = tc.find(javaPackage, version);
+        if (toolPath) {
+            core.debug(`Tool found in cache ${toolPath}`);
+        }
+        else {
+            let compressedFileExtension = '';
+            if (!jdkFile) {
+                core.debug('Downloading Jdk from Azul');
+                let http = new httpm.HttpClient('setup-java');
+                let contents = yield (yield http.get('https://static.azul.com/zulu/bin/')).readBody();
+                let refs = contents.match(/<a href.*\">/gi) || [];
+                const downloadInfo = getDownloadInfo(refs, version, javaPackage);
+                jdkFile = yield tc.downloadTool(downloadInfo.url);
+                version = downloadInfo.version;
+                compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
+            }
+            else {
+                core.debug('Retrieving Jdk from local path');
+            }
+            compressedFileExtension = compressedFileExtension || getFileEnding(jdkFile);
+            let tempDir = path.join(tempDirectory, 'temp_' + Math.floor(Math.random() * 2000000000));
+            const jdkDir = yield unzipJavaDownload(jdkFile, compressedFileExtension, tempDir);
+            core.debug(`jdk extracted to ${jdkDir}`);
+            toolPath = yield tc.cacheDir(jdkDir, javaPackage, getCacheVersionString(version), arch);
+        }
+        let extendedJavaHome = 'JAVA_HOME_' + version + '_' + arch;
+        core.exportVariable('JAVA_HOME', toolPath);
+        core.exportVariable(extendedJavaHome, toolPath);
+        core.addPath(path.join(toolPath, 'bin'));
+    });
+}
+exports.getJava = getJava;
+function getCacheVersionString(version) {
+    const versionArray = version.split('.');
+    const major = versionArray[0];
+    const minor = versionArray.length > 1 ? versionArray[1] : '0';
+    const patch = versionArray.length > 2 ? versionArray[2] : '0';
+    return `${major}.${minor}.${patch}`;
+}
+function getFileEnding(file) {
+    let fileEnding = '';
+    if (file.endsWith('.tar')) {
+        fileEnding = '.tar';
+    }
+    else if (file.endsWith('.tar.gz')) {
+        fileEnding = '.tar.gz';
+    }
+    else if (file.endsWith('.zip')) {
+        fileEnding = '.zip';
+    }
+    else if (file.endsWith('.7z')) {
+        fileEnding = '.7z';
+    }
+    else {
+        throw new Error(`${file} has an unsupported file extension`);
+    }
+    return fileEnding;
+}
+function extractFiles(file, fileEnding, destinationFolder) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const stats = fs.statSync(file);
+        if (!stats) {
+            throw new Error(`Failed to extract ${file} - it doesn't exist`);
+        }
+        else if (stats.isDirectory()) {
+            throw new Error(`Failed to extract ${file} - it is a directory`);
+        }
+        if ('.tar' === fileEnding || '.tar.gz' === fileEnding) {
+            yield tc.extractTar(file, destinationFolder);
+        }
+        else if ('.zip' === fileEnding) {
+            yield tc.extractZip(file, destinationFolder);
+        }
+        else {
+            // fall through and use sevenZip
+            yield tc.extract7z(file, destinationFolder);
+        }
+    });
+}
+// This method recursively finds all .pack files under fsPath and unpacks them with the unpack200 tool
+function unpackJars(fsPath, javaBinPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (fs.existsSync(fsPath)) {
+            if (fs.lstatSync(fsPath).isDirectory()) {
+                for (const file in fs.readdirSync(fsPath)) {
+                    const curPath = path.join(fsPath, file);
+                    yield unpackJars(curPath, javaBinPath);
+                }
+            }
+            else if (path.extname(fsPath).toLowerCase() === '.pack') {
+                // Unpack the pack file synchonously
+                const p = path.parse(fsPath);
+                const toolName = IS_WINDOWS ? 'unpack200.exe' : 'unpack200';
+                const args = IS_WINDOWS ? '-r -v -l ""' : '';
+                const name = path.join(p.dir, p.name);
+                yield exec.exec(`"${path.join(javaBinPath, toolName)}"`, [
+                    `${args} "${name}.pack" "${name}.jar"`
+                ]);
+            }
+        }
+    });
+}
+function unzipJavaDownload(repoRoot, fileEnding, destinationFolder, extension) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // Create the destination folder if it doesn't exist
+        yield io.mkdirP(destinationFolder);
+        const jdkFile = path.normalize(repoRoot);
+        const stats = fs.statSync(jdkFile);
+        if (stats.isFile()) {
+            yield extractFiles(jdkFile, fileEnding, destinationFolder);
+            const jdkDirectory = path.join(destinationFolder, fs.readdirSync(destinationFolder)[0]);
+            yield unpackJars(jdkDirectory, path.join(jdkDirectory, 'bin'));
+            return jdkDirectory;
+        }
+        else {
+            throw new Error(`Jdk argument ${jdkFile} is not a file`);
+        }
+    });
+}
+function getDownloadInfo(refs, version, javaPackage) {
+    version = normalizeVersion(version);
+    let extension = '';
+    if (IS_WINDOWS) {
+        extension = `-win_x64.zip`;
+    }
+    else {
+        if (process.platform === 'darwin') {
+            extension = `-macosx_x64.tar.gz`;
+        }
+        else {
+            extension = `-linux_x64.tar.gz`;
+        }
+    }
+    let pkgRegexp = new RegExp('');
+    let pkgTypeLength = 0;
+    if (javaPackage === 'jdk') {
+        pkgRegexp = /jdk.*-/gi;
+        pkgTypeLength = 'jdk'.length;
+    }
+    else if (javaPackage == 'jre') {
+        pkgRegexp = /jre.*-/gi;
+        pkgTypeLength = 'jre'.length;
+    }
+    else if (javaPackage == 'jdk+fx') {
+        pkgRegexp = /fx-jdk.*-/gi;
+        pkgTypeLength = 'fx-jdk'.length;
+    }
+    else {
+        throw new Error(`package argument ${javaPackage} is not in [jdk | jre | jdk+fx]`);
+    }
+    // Maps version to url
+    let versionMap = new Map();
+    // Filter by platform
+    refs.forEach(ref => {
+        if (!ref.endsWith(extension + '">')) {
+            return;
+        }
+        // If we haven't returned, means we're looking at the correct platform
+        let versions = ref.match(pkgRegexp) || [];
+        if (versions.length > 1) {
+            throw new Error(`Invalid ref received from https://static.azul.com/zulu/bin/: ${ref}`);
+        }
+        if (versions.length == 0) {
+            return;
+        }
+        const refVersion = versions[0].slice(pkgTypeLength, versions[0].length - 1);
+        if (semver.satisfies(refVersion, version)) {
+            versionMap.set(refVersion, 'https://static.azul.com/zulu/bin/' +
+                ref.slice('<a href="'.length, ref.length - '">'.length));
+        }
+    });
+    // Choose the most recent satisfying version
+    let curVersion = '0.0.0';
+    let curUrl = '';
+    for (const entry of versionMap.entries()) {
+        const entryVersion = entry[0];
+        const entryUrl = entry[1];
+        if (semver.gt(entryVersion, curVersion)) {
+            curUrl = entryUrl;
+            curVersion = entryVersion;
+        }
+    }
+    if (curUrl == '') {
+        throw new Error(`No valid download found for version ${version} and package ${javaPackage}. Check https://static.azul.com/zulu/bin/ for a list of valid versions or download your own jdk file and add the jdkFile argument`);
+    }
+    return { version: curVersion, url: curUrl };
+}
+function normalizeVersion(version) {
+    if (version.slice(0, 2) === '1.') {
+        // Trim leading 1. for versions like 1.8
+        version = version.slice(2);
+        if (!version) {
+            throw new Error('1. is not a valid version');
+        }
+    }
+    if (version.endsWith('-ea')) {
+        // convert e.g. 14-ea to 14.0.0-ea
+        if (version.indexOf('.') == -1) {
+            version = version.slice(0, version.length - 3) + '.0.0-ea';
+        }
+        // match anything in -ea.X (semver won't do .x matching on pre-release versions)
+        if (version[0] >= '0' && version[0] <= '9') {
+            version = '>=' + version;
+        }
+    }
+    else if (version.split('.').length < 3) {
+        // For non-ea versions, add trailing .x if it is missing
+        if (version[version.length - 1] != 'x') {
+            version = version + '.x';
+        }
+    }
+    return version;
+}
+
 
 /***/ }),
 
 /***/ 417:
 /***/ (function(module) {
 
-module.exports = __nested_webpack_require_1931__(417);
+module.exports = require("crypto");
 
 /***/ }),
 
 /***/ 430:
-/***/ (function(__unusedmodule, exports, __nested_webpack_require_69116__) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
@@ -2511,7 +2673,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const tr = __nested_webpack_require_69116__(654);
+const tr = __webpack_require__(654);
 /**
  * Exec a command.
  * Output will be streamed to the live console.
@@ -2543,81 +2705,33 @@ exports.exec = exec;
 /***/ 605:
 /***/ (function(module) {
 
-module.exports = __nested_webpack_require_1931__(605);
-
-/***/ }),
-
-/***/ 606:
-/***/ (function(__unusedmodule, exports, __nested_webpack_require_71081__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const core = __importStar(__nested_webpack_require_71081__(694));
-const installer = __importStar(__nested_webpack_require_71081__(938));
-const path = __importStar(__nested_webpack_require_71081__(622));
-function run() {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            let version = core.getInput('version');
-            if (!version) {
-                version = core.getInput('java-version', { required: true });
-            }
-            const arch = core.getInput('architecture', { required: true });
-            const javaPackage = core.getInput('java-package', { required: true });
-            const jdkFile = core.getInput('jdkFile', { required: false }) || '';
-            yield installer.getJava(version, arch, jdkFile, javaPackage);
-            const matchersPath = path.join(__dirname, '..', '.github');
-            console.log(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
-        }
-        catch (error) {
-            core.setFailed(error.message);
-        }
-    });
-}
-run();
-
+module.exports = require("http");
 
 /***/ }),
 
 /***/ 614:
 /***/ (function(module) {
 
-module.exports = __nested_webpack_require_1931__(614);
+module.exports = require("events");
 
 /***/ }),
 
 /***/ 622:
 /***/ (function(module) {
 
-module.exports = __nested_webpack_require_1931__(622);
+module.exports = require("path");
 
 /***/ }),
 
 /***/ 631:
 /***/ (function(module) {
 
-module.exports = __nested_webpack_require_1931__(631);
+module.exports = require("net");
 
 /***/ }),
 
 /***/ 654:
-/***/ (function(__unusedmodule, exports, __nested_webpack_require_73421__) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
@@ -2630,9 +2744,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const os = __nested_webpack_require_73421__(87);
-const events = __nested_webpack_require_73421__(614);
-const child = __nested_webpack_require_73421__(129);
+const os = __webpack_require__(87);
+const events = __webpack_require__(614);
+const child = __webpack_require__(129);
 /* eslint-disable @typescript-eslint/unbound-method */
 const IS_WINDOWS = process.platform === 'win32';
 /*
@@ -3199,15 +3313,15 @@ class ExecState extends events.EventEmitter {
 /***/ 669:
 /***/ (function(module) {
 
-module.exports = __nested_webpack_require_1931__(669);
+module.exports = require("util");
 
 /***/ }),
 
 /***/ 683:
-/***/ (function(module, __unusedexports, __nested_webpack_require_97006__) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
-var rng = __nested_webpack_require_97006__(853);
-var bytesToUuid = __nested_webpack_require_97006__(146);
+var rng = __webpack_require__(853);
+var bytesToUuid = __webpack_require__(146);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -3240,13 +3354,13 @@ module.exports = v4;
 /***/ }),
 
 /***/ 694:
-/***/ (function(__unusedmodule, exports, __nested_webpack_require_97804__) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const command_1 = __nested_webpack_require_97804__(227);
-const path = __nested_webpack_require_97804__(622);
+const command_1 = __webpack_require__(227);
+const path = __webpack_require__(622);
 /**
  * The code to exit an action
  */
@@ -3363,18 +3477,18 @@ exports.warning = warning;
 /***/ }),
 
 /***/ 725:
-/***/ (function(__unusedmodule, exports, __nested_webpack_require_101530__) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
 
-var net = __nested_webpack_require_101530__(631);
-var tls = __nested_webpack_require_101530__(16);
-var http = __nested_webpack_require_101530__(605);
-var https = __nested_webpack_require_101530__(211);
-var events = __nested_webpack_require_101530__(614);
-var assert = __nested_webpack_require_101530__(357);
-var util = __nested_webpack_require_101530__(669);
+var net = __webpack_require__(631);
+var tls = __webpack_require__(16);
+var http = __webpack_require__(605);
+var https = __webpack_require__(211);
+var events = __webpack_require__(614);
+var assert = __webpack_require__(357);
+var util = __webpack_require__(669);
 
 
 exports.httpOverHttp = httpOverHttp;
@@ -3620,14 +3734,14 @@ exports.debug = debug; // for test
 /***/ 747:
 /***/ (function(module) {
 
-module.exports = __nested_webpack_require_1931__(747);
+module.exports = require("fs");
 
 /***/ }),
 
 /***/ 802:
-/***/ (function(module, __unusedexports, __nested_webpack_require_109150__) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
-module.exports = __nested_webpack_require_109150__(725);
+module.exports = __webpack_require__(725);
 
 
 /***/ }),
@@ -3635,17 +3749,17 @@ module.exports = __nested_webpack_require_109150__(725);
 /***/ 835:
 /***/ (function(module) {
 
-module.exports = __nested_webpack_require_1931__(835);
+module.exports = require("url");
 
 /***/ }),
 
 /***/ 853:
-/***/ (function(module, __unusedexports, __nested_webpack_require_109366__) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
 // Unique ID creation requires a high quality random # generator.  In node.js
 // this is pretty straight-forward - we use the crypto API.
 
-var crypto = __nested_webpack_require_109366__(417);
+var crypto = __webpack_require__(417);
 
 module.exports = function nodeRNG() {
   return crypto.randomBytes(16);
@@ -3655,7 +3769,7 @@ module.exports = function nodeRNG() {
 /***/ }),
 
 /***/ 871:
-/***/ (function(__unusedmodule, exports, __nested_webpack_require_109716__) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
@@ -3668,16 +3782,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const core = __nested_webpack_require_109716__(694);
-const io = __nested_webpack_require_109716__(999);
-const fs = __nested_webpack_require_109716__(747);
-const os = __nested_webpack_require_109716__(87);
-const path = __nested_webpack_require_109716__(622);
-const httpm = __nested_webpack_require_109716__(113);
-const semver = __nested_webpack_require_109716__(284);
-const uuidV4 = __nested_webpack_require_109716__(683);
-const exec_1 = __nested_webpack_require_109716__(430);
-const assert_1 = __nested_webpack_require_109716__(357);
+const core = __webpack_require__(694);
+const io = __webpack_require__(999);
+const fs = __webpack_require__(747);
+const os = __webpack_require__(87);
+const path = __webpack_require__(622);
+const httpm = __webpack_require__(113);
+const semver = __webpack_require__(284);
+const uuidV4 = __webpack_require__(683);
+const exec_1 = __webpack_require__(430);
+const assert_1 = __webpack_require__(357);
 class HTTPError extends Error {
     constructor(httpStatusCode) {
         super(`Unexpected HTTP response: ${httpStatusCode}`);
@@ -3905,7 +4019,7 @@ function extractZipWin(file, dest) {
 }
 function extractZipNix(file, dest) {
     return __awaiter(this, void 0, void 0, function* () {
-        const unzipPath = __nested_webpack_require_109716__.ab + "unzip";
+        const unzipPath = __webpack_require__.ab + "unzip";
         yield exec_1.exec(`"${unzipPath}"`, [file], { cwd: dest });
     });
 }
@@ -4097,264 +4211,8 @@ function _evaluateVersions(versions, versionSpec) {
 
 /***/ }),
 
-/***/ 938:
-/***/ (function(__unusedmodule, exports, __nested_webpack_require_127205__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-let tempDirectory = process.env['RUNNER_TEMP'] || '';
-const core = __importStar(__nested_webpack_require_127205__(694));
-const io = __importStar(__nested_webpack_require_127205__(999));
-const exec = __importStar(__nested_webpack_require_127205__(430));
-const tc = __importStar(__nested_webpack_require_127205__(871));
-const fs = __importStar(__nested_webpack_require_127205__(747));
-const path = __importStar(__nested_webpack_require_127205__(622));
-const semver = __importStar(__nested_webpack_require_127205__(284));
-const httpm = __importStar(__nested_webpack_require_127205__(113));
-const IS_WINDOWS = process.platform === 'win32';
-if (!tempDirectory) {
-    let baseLocation;
-    if (IS_WINDOWS) {
-        // On windows use the USERPROFILE env variable
-        baseLocation = process.env['USERPROFILE'] || 'C:\\';
-    }
-    else {
-        if (process.platform === 'darwin') {
-            baseLocation = '/Users';
-        }
-        else {
-            baseLocation = '/home';
-        }
-    }
-    tempDirectory = path.join(baseLocation, 'actions', 'temp');
-}
-function getJava(version, arch, jdkFile, javaPackage) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let toolPath = tc.find(javaPackage, version);
-        if (toolPath) {
-            core.debug(`Tool found in cache ${toolPath}`);
-        }
-        else {
-            let compressedFileExtension = '';
-            if (!jdkFile) {
-                core.debug('Downloading Jdk from Azul');
-                let http = new httpm.HttpClient('setup-java');
-                let contents = yield (yield http.get('https://static.azul.com/zulu/bin/')).readBody();
-                let refs = contents.match(/<a href.*\">/gi) || [];
-                const downloadInfo = getDownloadInfo(refs, version, javaPackage);
-                jdkFile = yield tc.downloadTool(downloadInfo.url);
-                version = downloadInfo.version;
-                compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
-            }
-            else {
-                core.debug('Retrieving Jdk from local path');
-            }
-            compressedFileExtension = compressedFileExtension || getFileEnding(jdkFile);
-            let tempDir = path.join(tempDirectory, 'temp_' + Math.floor(Math.random() * 2000000000));
-            const jdkDir = yield unzipJavaDownload(jdkFile, compressedFileExtension, tempDir);
-            core.debug(`jdk extracted to ${jdkDir}`);
-            toolPath = yield tc.cacheDir(jdkDir, javaPackage, getCacheVersionString(version), arch);
-        }
-        let extendedJavaHome = 'JAVA_HOME_' + version + '_' + arch;
-        core.exportVariable('JAVA_HOME', toolPath);
-        core.exportVariable(extendedJavaHome, toolPath);
-        core.addPath(path.join(toolPath, 'bin'));
-    });
-}
-exports.getJava = getJava;
-function getCacheVersionString(version) {
-    const versionArray = version.split('.');
-    const major = versionArray[0];
-    const minor = versionArray.length > 1 ? versionArray[1] : '0';
-    const patch = versionArray.length > 2 ? versionArray[2] : '0';
-    return `${major}.${minor}.${patch}`;
-}
-function getFileEnding(file) {
-    let fileEnding = '';
-    if (file.endsWith('.tar')) {
-        fileEnding = '.tar';
-    }
-    else if (file.endsWith('.tar.gz')) {
-        fileEnding = '.tar.gz';
-    }
-    else if (file.endsWith('.zip')) {
-        fileEnding = '.zip';
-    }
-    else if (file.endsWith('.7z')) {
-        fileEnding = '.7z';
-    }
-    else {
-        throw new Error(`${file} has an unsupported file extension`);
-    }
-    return fileEnding;
-}
-function extractFiles(file, fileEnding, destinationFolder) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const stats = fs.statSync(file);
-        if (!stats) {
-            throw new Error(`Failed to extract ${file} - it doesn't exist`);
-        }
-        else if (stats.isDirectory()) {
-            throw new Error(`Failed to extract ${file} - it is a directory`);
-        }
-        if ('.tar' === fileEnding || '.tar.gz' === fileEnding) {
-            yield tc.extractTar(file, destinationFolder);
-        }
-        else if ('.zip' === fileEnding) {
-            yield tc.extractZip(file, destinationFolder);
-        }
-        else {
-            // fall through and use sevenZip
-            yield tc.extract7z(file, destinationFolder);
-        }
-    });
-}
-// This method recursively finds all .pack files under fsPath and unpacks them with the unpack200 tool
-function unpackJars(fsPath, javaBinPath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (fs.existsSync(fsPath)) {
-            if (fs.lstatSync(fsPath).isDirectory()) {
-                for (const file in fs.readdirSync(fsPath)) {
-                    const curPath = path.join(fsPath, file);
-                    yield unpackJars(curPath, javaBinPath);
-                }
-            }
-            else if (path.extname(fsPath).toLowerCase() === '.pack') {
-                // Unpack the pack file synchonously
-                const p = path.parse(fsPath);
-                const toolName = IS_WINDOWS ? 'unpack200.exe' : 'unpack200';
-                const args = IS_WINDOWS ? '-r -v -l ""' : '';
-                const name = path.join(p.dir, p.name);
-                yield exec.exec(`"${path.join(javaBinPath, toolName)}"`, [
-                    `${args} "${name}.pack" "${name}.jar"`
-                ]);
-            }
-        }
-    });
-}
-function unzipJavaDownload(repoRoot, fileEnding, destinationFolder, extension) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Create the destination folder if it doesn't exist
-        yield io.mkdirP(destinationFolder);
-        const jdkFile = path.normalize(repoRoot);
-        const stats = fs.statSync(jdkFile);
-        if (stats.isFile()) {
-            yield extractFiles(jdkFile, fileEnding, destinationFolder);
-            const jdkDirectory = path.join(destinationFolder, fs.readdirSync(destinationFolder)[0]);
-            yield unpackJars(jdkDirectory, path.join(jdkDirectory, 'bin'));
-            return jdkDirectory;
-        }
-        else {
-            throw new Error(`Jdk argument ${jdkFile} is not a file`);
-        }
-    });
-}
-function getDownloadInfo(refs, version, javaPackage) {
-    version = normalizeVersion(version);
-    let extension = '';
-    if (IS_WINDOWS) {
-        extension = `-win_x64.zip`;
-    }
-    else {
-        if (process.platform === 'darwin') {
-            extension = `-macosx_x64.tar.gz`;
-        }
-        else {
-            extension = `-linux_x64.tar.gz`;
-        }
-    }
-    let pkgRegexp = new RegExp('');
-    let pkgTypeLength = 0;
-    if (javaPackage === 'jdk') {
-        pkgRegexp = /jdk.*-/gi;
-        pkgTypeLength = 'jdk'.length;
-    }
-    else if (javaPackage == 'jre') {
-        pkgRegexp = /jre.*-/gi;
-        pkgTypeLength = 'jre'.length;
-    }
-    else if (javaPackage == 'jdk+fx') {
-        pkgRegexp = /fx-jdk.*-/gi;
-        pkgTypeLength = 'fx-jdk'.length;
-    }
-    else {
-        throw new Error(`package argument ${javaPackage} is not in [jdk | jre | jdk+fx]`);
-    }
-    // Maps version to url
-    let versionMap = new Map();
-    // Filter by platform
-    refs.forEach(ref => {
-        if (!ref.endsWith(extension + '">')) {
-            return;
-        }
-        // If we haven't returned, means we're looking at the correct platform
-        let versions = ref.match(pkgRegexp) || [];
-        if (versions.length > 1) {
-            throw new Error(`Invalid ref received from https://static.azul.com/zulu/bin/: ${ref}`);
-        }
-        if (versions.length == 0) {
-            return;
-        }
-        const refVersion = versions[0].slice(pkgTypeLength, versions[0].length - 1);
-        if (semver.satisfies(refVersion, version)) {
-            versionMap.set(refVersion, 'https://static.azul.com/zulu/bin/' +
-                ref.slice('<a href="'.length, ref.length - '">'.length));
-        }
-    });
-    // Choose the most recent satisfying version
-    let curVersion = '0.0.0';
-    let curUrl = '';
-    for (const entry of versionMap.entries()) {
-        const entryVersion = entry[0];
-        const entryUrl = entry[1];
-        if (semver.gt(entryVersion, curVersion)) {
-            curUrl = entryUrl;
-            curVersion = entryVersion;
-        }
-    }
-    if (curUrl == '') {
-        throw new Error(`No valid download found for version ${version} and package ${javaPackage}. Check https://static.azul.com/zulu/bin/ for a list of valid versions or download your own jdk file and add the jdkFile argument`);
-    }
-    return { version: curVersion, url: curUrl };
-}
-function normalizeVersion(version) {
-    if (version.slice(0, 2) === '1.') {
-        // Trim leading 1. for versions like 1.8
-        version = version.slice(2);
-        if (!version) {
-            throw new Error('1. is not a valid version');
-        }
-    }
-    // Add trailing .x if it is missing
-    if (version.split('.').length != 3) {
-        if (version[version.length - 1] != 'x') {
-            version = version + '.x';
-        }
-    }
-    return version;
-}
-
-
-/***/ }),
-
 /***/ 960:
-/***/ (function(__unusedmodule, exports, __nested_webpack_require_137410__) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
@@ -4368,9 +4226,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-const assert_1 = __nested_webpack_require_137410__(357);
-const fs = __nested_webpack_require_137410__(747);
-const path = __nested_webpack_require_137410__(622);
+const assert_1 = __webpack_require__(357);
+const fs = __webpack_require__(747);
+const path = __webpack_require__(622);
 _a = fs.promises, exports.chmod = _a.chmod, exports.copyFile = _a.copyFile, exports.lstat = _a.lstat, exports.mkdir = _a.mkdir, exports.readdir = _a.readdir, exports.readlink = _a.readlink, exports.rename = _a.rename, exports.rmdir = _a.rmdir, exports.stat = _a.stat, exports.symlink = _a.symlink, exports.unlink = _a.unlink;
 exports.IS_WINDOWS = process.platform === 'win32';
 function exists(fsPath) {
@@ -4555,7 +4413,7 @@ function isUnixExecutable(stats) {
 /***/ }),
 
 /***/ 999:
-/***/ (function(__unusedmodule, exports, __nested_webpack_require_145200__) {
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
@@ -4568,10 +4426,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const childProcess = __nested_webpack_require_145200__(129);
-const path = __nested_webpack_require_145200__(622);
-const util_1 = __nested_webpack_require_145200__(669);
-const ioUtil = __nested_webpack_require_145200__(960);
+const childProcess = __webpack_require__(129);
+const path = __webpack_require__(622);
+const util_1 = __webpack_require__(669);
+const ioUtil = __webpack_require__(960);
 const exec = util_1.promisify(childProcess.exec);
 /**
  * Copies a file or folder.
@@ -4847,193 +4705,6 @@ function copyFile(srcFile, destFile, force) {
     });
 }
 //# sourceMappingURL=io.js.map
-
-/***/ })
-
-/******/ });
-
-/***/ }),
-
-/***/ 605:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(605);
-
-/***/ }),
-
-/***/ 614:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(614);
-
-/***/ }),
-
-/***/ 622:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(622);
-
-/***/ }),
-
-/***/ 631:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(631);
-
-/***/ }),
-
-/***/ 669:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(669);
-
-/***/ }),
-
-/***/ 747:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(747);
-
-/***/ }),
-
-/***/ 835:
-/***/ (function(module) {
-
-module.exports = __nested_webpack_require_1759__(835);
-
-/***/ })
-
-/******/ });
-
-/***/ }),
-
-/***/ 357:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(357);
-
-/***/ }),
-
-/***/ 417:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(417);
-
-/***/ }),
-
-/***/ 605:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(605);
-
-/***/ }),
-
-/***/ 614:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(614);
-
-/***/ }),
-
-/***/ 622:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(622);
-
-/***/ }),
-
-/***/ 631:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(631);
-
-/***/ }),
-
-/***/ 669:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(669);
-
-/***/ }),
-
-/***/ 747:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(747);
-
-/***/ }),
-
-/***/ 835:
-/***/ (function(module) {
-
-module.exports = __webpack_require__(835);
-
-/***/ })
-
-/******/ });
-
-/***/ }),
-
-/***/ 357:
-/***/ (function(module) {
-
-module.exports = require("assert");
-
-/***/ }),
-
-/***/ 417:
-/***/ (function(module) {
-
-module.exports = require("crypto");
-
-/***/ }),
-
-/***/ 605:
-/***/ (function(module) {
-
-module.exports = require("http");
-
-/***/ }),
-
-/***/ 614:
-/***/ (function(module) {
-
-module.exports = require("events");
-
-/***/ }),
-
-/***/ 622:
-/***/ (function(module) {
-
-module.exports = require("path");
-
-/***/ }),
-
-/***/ 631:
-/***/ (function(module) {
-
-module.exports = require("net");
-
-/***/ }),
-
-/***/ 669:
-/***/ (function(module) {
-
-module.exports = require("util");
-
-/***/ }),
-
-/***/ 747:
-/***/ (function(module) {
-
-module.exports = require("fs");
-
-/***/ }),
-
-/***/ 835:
-/***/ (function(module) {
-
-module.exports = require("url");
 
 /***/ })
 
