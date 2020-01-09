@@ -26,7 +26,7 @@ steps:
 ```
 Examples of version specifications that the java-version parameter will accept:
 
-- A major java version
+- A major Java version
 
   e.g. ```6, 7, 8, 9, 10, 11, 12, 13, ...```
  
