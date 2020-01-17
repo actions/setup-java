@@ -1,5 +1,7 @@
 import * as core from '@actions/core';
 import * as installer from './installer';
+import * as mavenInstaller from './maven-installer';
+import * as gradleInstaller from './gradle-installer';
 import * as auth from './auth';
 import * as path from 'path';
 
@@ -14,6 +16,19 @@ async function run() {
     const jdkFile = core.getInput('jdkFile', {required: false}) || '';
 
     await installer.getJava(version, arch, jdkFile, javaPackage);
+
+    const mavenVersion = core.getInput('maven-version', {required: false});
+    const mavenFile = core.getInput('maven-file', {required: false}) || '';
+    const mavenMirror = core.getInput('maven-mirror', {required: false});
+    if (mavenVersion) {
+      await mavenInstaller.getMaven(mavenVersion, mavenFile, mavenMirror);
+    }
+
+    const gradleVersion = core.getInput('gradle-version', {required: false});
+    const gradleFile = core.getInput('gradle-file', {required: false}) || '';
+    if (gradleVersion) {
+      await gradleInstaller.getGradle(gradleVersion, gradleFile);
+    }
 
     const matchersPath = path.join(__dirname, '..', '.github');
     console.log(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);

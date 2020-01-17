@@ -32,8 +32,22 @@ steps:
 - uses: actions/setup-java@v1
   with:
     java-version: '4.0.0'
-    architecture: x64
     jdkFile: <path to jdkFile> # Optional - jdkFile to install java from. Useful for versions not found on Zulu Community CDN
+- run: java -cp java HelloWorldApp
+```
+
+## Maven/Gradle Versions
+```yaml
+steps:
+- uses: actions/checkout@v1
+- uses: actions/setup-java@v1
+  with:
+    java-version: '9.0.4'
+    maven-version: '3.6.2'
+    maven-mirror: <uri to maven mirror directory> # Optional - defaults to https://archive.apache.org/dist/maven/maven-3/
+    maven-file: <path to maven-file> # Optional - to install maven from.
+    gradle-version: '5.6.2'
+    gradle-file: <path to gradle-file> # Optional - to install gradle from.
 - run: java -cp java HelloWorldApp
 ```
 
@@ -87,7 +101,7 @@ jobs:
         server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
 
     - name: Publish to Apache Maven Central
-      run: mvn deploy 
+      run: mvn deploy
       env:
         MAVEN_USERNAME: maven_username123
         MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
@@ -117,7 +131,7 @@ The two `settings.xml` files created from the above example look like the follow
 </servers>
 ```
 
-***NOTE: The `settings.xml` file is created in the Actions $HOME directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See below for using the `settings-path` to change your `settings.xml` file location.***	
+***NOTE: The `settings.xml` file is created in the Actions $HOME directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See below for using the `settings-path` to change your `settings.xml` file location.***
 
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
@@ -144,7 +158,7 @@ jobs:
         PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-***NOTE: The `USERNAME` and `PASSWORD` need to correspond to the credentials environment variables used in the publishing section of your `build.gradle`.***	
+***NOTE: The `USERNAME` and `PASSWORD` need to correspond to the credentials environment variables used in the publishing section of your `build.gradle`.***
 
 See the help docs on [Publishing a Package with Gradle](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-gradle-for-use-with-github-packages#example-using-gradle-groovy-for-a-single-package-in-a-repository) for more information on the `build.gradle` configuration file.
 

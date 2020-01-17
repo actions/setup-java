@@ -118,12 +118,12 @@ async function extractFiles(
   }
 
   if ('.tar' === fileEnding || '.tar.gz' === fileEnding) {
-    await tc.extractTar(file, destinationFolder);
+    await tc.extractTar(path.resolve(file), destinationFolder);
   } else if ('.zip' === fileEnding) {
-    await tc.extractZip(file, destinationFolder);
+    await tc.extractZip(path.resolve(file), destinationFolder);
   } else {
     // fall through and use sevenZip
-    await tc.extract7z(file, destinationFolder);
+    await tc.extract7z(path.resolve(file), destinationFolder);
   }
 }
 

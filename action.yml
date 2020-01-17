@@ -34,6 +34,26 @@ inputs:
   settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false
+  maven-version:
+    description: 'The Maven version to make available on the path. Takes a whole
+       or semver Maven version, or 3.x syntax (e.g. 3.6 => Maven 3.x)'
+    required: false
+  maven-file:
+    description: 'Path to where the compressed Maven is located. The path could
+       be in your source repository or a local path on the agent.'
+    required: false
+  maven-mirror:
+    description: 'Uri hosting Maven3 mirror packages.'
+    required: false
+    default: 'https://archive.apache.org/dist/maven/maven-3/'
+  gradle-version:
+    description: 'The Gradle version to make available on the path. Takes a whole
+       or semver Gradle version, or 6.x syntax (e.g. 6.0 => Gradle 6.x)'
+    required: false
+  gradle-file:
+    description: 'Path to where the compressed Gradle is located. The path could
+       be in your source repository or a local path on the agent.'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
