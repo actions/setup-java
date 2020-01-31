@@ -16,7 +16,7 @@ See [action.yml](action.yml)
 ## Basic
 ```yaml
 steps:
-- uses: actions/checkout@v1
+- uses: actions/checkout@v2
 - uses: actions/setup-java@v1
   with:
     java-version: '9.0.4' # The JDK version to make available on the path. Takes a whole or semver JDK version, or 1.x syntax (e.g. 1.8 => Jdk 8.x). To specify a specific version for JDK 8 or older use the following pattern (8.0.x)
@@ -28,7 +28,7 @@ steps:
 ## Local file
 ```yaml
 steps:
-- uses: actions/checkout@v1
+- uses: actions/checkout@v2
 - uses: actions/setup-java@v1
   with:
     java-version: '4.0.0'
@@ -48,7 +48,7 @@ jobs:
         java: [ 1.6, 6.0.83, 7, 7.0.181, 8, 8.0.192, 9.0.x, 10, 11.0.x, 11.0.3, 12, 13 ]
     name: Java ${{ matrix.java }} sample
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - name: Setup java
         uses: actions/setup-java@v1
         with:
@@ -64,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Set up JDK 1.8
       uses: actions/setup-java@v1
       with:
@@ -129,7 +129,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
 
     - name: Set up JDK 1.8
       uses: actions/setup-java@v1
@@ -159,7 +159,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Set up JDK 1.8 for Shared Runner
       uses: actions/setup-java@v1
       with:
