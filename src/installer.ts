@@ -3,11 +3,11 @@ let tempDirectory = process.env['RUNNER_TEMP'] || '';
 import * as core from '@actions/core';
 import * as io from '@actions/io';
 import * as exec from '@actions/exec';
+import * as httpm from '@actions/http-client';
 import * as tc from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as semver from 'semver';
-import * as httpm from 'typed-rest-client/HttpClient';
 
 const IS_WINDOWS = process.platform === 'win32';
 
