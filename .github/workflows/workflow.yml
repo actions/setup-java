@@ -55,8 +55,3 @@ jobs:
 
     - name: npm test
       run: npm test
-
-    - name: Check proxy logs
-      run: |
-        docker cp ${{ job.services.squid.id }}:/var/log/squid/access.log access.log
-        cat access.log
