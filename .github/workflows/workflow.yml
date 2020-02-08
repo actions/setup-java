@@ -24,7 +24,7 @@ jobs:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
-        operating-system: [ubuntu-latest, windows-latest]
+        operating-system: [ubuntu-latest] #, windows-latest]
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -32,3 +32,4 @@ jobs:
       uses: ./
       with:
         java-version: 7.x
+    - run: java --version
