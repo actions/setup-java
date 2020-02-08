@@ -32,4 +32,6 @@ jobs:
       uses: ./
       with:
         java-version: 7.x
-    - run: java --version
+    - run: |
+        which java
+        java --help
