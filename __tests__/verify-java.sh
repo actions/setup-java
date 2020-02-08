@@ -5,7 +5,7 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-java_version="$(java -version)"
+java_version="$(java -version 2>&1)"
 echo "Found java version: $java_version"
 if [ -z "$(echo $java_version | grep --fixed-strings $1)" ]; then
   echo "Unexpected version"
