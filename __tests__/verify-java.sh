@@ -6,8 +6,8 @@ if [ -z "$1" ]; then
 fi
 
 java_version="$(java -version)"
-echo "Found java version: $node_version"
-if [ -z "$(echo $node_version | grep --fixed-strings $1)" ]; then
+echo "Found java version: $java_version"
+if [ -z "$(echo $java_version | grep --fixed-strings $1)" ]; then
   echo "Unexpected version"
   exit 1
 fi
