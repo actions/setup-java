@@ -13,7 +13,7 @@ if [ -z "$(echo $java_version | grep --fixed-strings $1)" ]; then
 fi
 
 echo "Building sample proj"
-proj_dir=__tests/sample-proj
+proj_dir=__tests__/sample-proj
 mvn --file $proj_dir clean install dependency:copy-dependencies || exit 1
 
 echo "Testing compiled app"
