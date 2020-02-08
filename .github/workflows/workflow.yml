@@ -28,10 +28,16 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+    - name: Clear tool cache
+      run: mv "${{ runner.tool_cache }}" "${{ runner.tool_cache }}.old"
+    - name: Clear local maven repository
+      run: mv "~/.m2/repository" "~/.m2/repository.bak" && mkdir ~/.m2/repository
     - name: Setup java 7
       uses: ./
       with:
-        java-version: 7.x
+        java-version: 7.0.242
+    - name: Verify java 7
+      run: __tests__/verify-java.sh
     - run: |
         which java
         java -version
