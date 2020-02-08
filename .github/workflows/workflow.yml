@@ -34,12 +34,12 @@ jobs:
         printenv|sort
     # - name: Clear local maven repository
     #   run: mv "~/.m2/repository" "~/.m2/repository.bak" && mkdir ~/.m2/repository
-    - name: Setup java 7
+    - name: Setup java 13
       uses: ./
       with:
-        java-version: 7.0.242
-    - name: Verify java 7
-      run: __tests__/verify-java.sh 7.0_242
+        java-version: 13.0.2
+    - name: Verify java 13
+      run: __tests__/verify-java.sh 13.0_2
     - run: |
         which java
         java -version
