@@ -39,7 +39,7 @@ jobs:
       with:
         java-version: 13.0.2
     - name: Verify java 13
-      run: __tests__/verify-java.sh 13.0_2
+      run: __tests__/verify-java.sh 13.0.2
     - run: |
         which java
         java -version
