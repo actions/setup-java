@@ -1,6 +1,7 @@
 # Ignore node_modules, ncc is used to compile nodejs modules into a single file
 node_modules/
 __tests__/runner/*
+__tests__/sample-proj/target/
 
 # Ignore js files that are transpiled from ts files in src/
 lib/
