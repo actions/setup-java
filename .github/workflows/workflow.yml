@@ -30,6 +30,8 @@ jobs:
       uses: actions/checkout@v2
     - name: Clear tool cache
       run: mv "${{ runner.tool_cache }}" "${{ runner.tool_cache }}.old"
+    - run: |
+        printenv|sort
     - name: Clear local maven repository
       run: mv "~/.m2/repository" "~/.m2/repository.bak" && mkdir ~/.m2/repository
     - name: Setup java 7
