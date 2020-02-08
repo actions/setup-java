@@ -30,18 +30,33 @@ jobs:
       uses: actions/checkout@v2
     - name: Clear tool cache
       run: mv "${{ runner.tool_cache }}" "${{ runner.tool_cache }}.old"
-    - run: |
-        printenv|sort
-    # - name: Clear local maven repository
-    #   run: mv "~/.m2/repository" "~/.m2/repository.bak" && mkdir ~/.m2/repository
     - name: Setup java 13
       uses: ./
       with:
         java-version: 13.0.2
     - name: Verify java 13
       run: __tests__/verify-java.sh 13.0.2
-    - run: |
-        which java
-        java -version
-    - run: |
-        printenv|sort
+
+  test-proxy:
+    runs-on: ubuntu-latest
+    container:
+      image: maven:3.6.3-jdk-14
+      options: --dns 127.0.0.1
+    services:
+      squid-proxy:
+        image: datadog/squid:latest
+        ports:
+          - 3128:3128
+    env:
+      https_proxy: http://squid-proxy:3128
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Clear tool cache
+      run: rm -rf $RUNNER_TOOL_CACHE/*
+    - name: Setup java 13
+      uses: ./
+      with:
+        java-version: 13.0.2
+    - name: Verify java 13
+      run: __tests__/verify-java.sh 13.0.2
