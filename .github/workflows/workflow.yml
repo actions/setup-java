@@ -34,4 +34,4 @@ jobs:
         java-version: 7.x
     - run: |
         which java
-        java -? || java -h || java -help
+        java -version
