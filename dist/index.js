@@ -4644,11 +4644,11 @@ let tempDirectory = process.env['RUNNER_TEMP'] || '';
 const core = __importStar(__webpack_require__(470));
 const io = __importStar(__webpack_require__(1));
 const exec = __importStar(__webpack_require__(986));
+const httpm = __importStar(__webpack_require__(539));
 const tc = __importStar(__webpack_require__(533));
 const fs = __importStar(__webpack_require__(747));
 const path = __importStar(__webpack_require__(622));
 const semver = __importStar(__webpack_require__(280));
-const httpm = __importStar(__webpack_require__(539));
 const IS_WINDOWS = process.platform === 'win32';
 if (!tempDirectory) {
     let baseLocation;
@@ -4675,10 +4675,27 @@ function getJava(version, arch, jdkFile, javaPackage) {
         else {
             let compressedFileExtension = '';
             if (!jdkFile) {
-                core.debug('Downloading Jdk from Azul');
-                let http = new httpm.HttpClient('setup-java');
-                let contents = yield (yield http.get('https://static.azul.com/zulu/bin/')).readBody();
-                let refs = contents.match(/<a href.*\">/gi) || [];
+                core.debug('Downloading JDK from Azul');
+                const http = new httpm.HttpClient('setup-java', undefined, {
+                    allowRetries: true,
+                    maxRetries: 3
+                });
+                const url = 'https://static.azul.com/zulu/bin/';
+                const response = yield http.get(url);
+                const statusCode = response.message.statusCode || 0;
+                if (statusCode < 200 || statusCode > 299) {
+                    let body = '';
+                    try {
+                        body = yield response.readBody();
+                    }
+                    catch (err) {
+                        core.debug(`Unable to read body: ${err.message}`);
+                    }
+                    const message = `Unexpected HTTP status code '${response.message.statusCode}' when retrieving versions from '${url}'. ${body}`.trim();
+                    throw new Error(message);
+                }
+                const contents = yield response.readBody();
+                const refs = contents.match(/<a href.*\">/gi) || [];
                 const downloadInfo = getDownloadInfo(refs, version, javaPackage);
                 jdkFile = yield tc.downloadTool(downloadInfo.url);
                 version = downloadInfo.version;

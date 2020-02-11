@@ -9,12 +9,12 @@ jobs:
         operating-system: [ubuntu-latest, windows-latest]
     steps:
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@v2
 
-    - name: Set Node.js 10.x
-      uses: actions/setup-node@master
+    - name: Setup Node.js 12.x
+      uses: actions/setup-node@v1
       with:
-        node-version: 10.x
+        node-version: 12.x
 
     - name: npm install
       run: npm install
@@ -40,12 +40,12 @@ jobs:
       run: |
         echo "127.0.0.0 registry.npm.js nodejs.org github.com api.github.com download.java.net static.azul.com" | sudo tee -a /etc/hosts
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@v2
 
-    - name: Set Node.js 10.x
-      uses: actions/setup-node@master
+    - name: Setup Node.js 12.x
+      uses: actions/setup-node@v1
       with:
-        node-version: 10.x
+        node-version: 12.x
 
     - name: npm install
       run: npm install
