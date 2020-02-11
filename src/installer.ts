@@ -39,15 +39,28 @@ export async function getJava(
   } else {
     let compressedFileExtension = '';
     if (!jdkFile) {
-      core.debug('Downloading Jdk from Azul');
-      let http: httpm.HttpClient = new httpm.HttpClient('setup-java');
-      let contents = await (
-        await http.get('https://static.azul.com/zulu/bin/')
-      ).readBody();
-      let refs = contents.match(/<a href.*\">/gi) || [];
+      core.debug('Downloading JDK from Azul');
+      const http = new httpm.HttpClient('setup-java', undefined, {
+        allowRetries: true,
+        maxRetries: 3
+      });
+      const url = 'https://static.azul.com/zulu/bin/';
+      const response = await http.get(url);
+      const statusCode = response.message.statusCode || 0;
+      if (statusCode < 200 || statusCode > 299) {
+        let body = '';
+        try {
+          body = await response.readBody();
+        } catch (err) {
+          core.debug(`Unable to read body: ${err.message}`);
+        }
+        const message = `Unexpected HTTP status code '${response.message.statusCode}' when retrieving versions from '${url}'. ${body}`.trim();
+        throw new Error(message);
+      }
 
+      const contents = await response.readBody();
+      const refs = contents.match(/<a href.*\">/gi) || [];
       const downloadInfo = getDownloadInfo(refs, version, javaPackage);
-
       jdkFile = await tc.downloadTool(downloadInfo.url);
       version = downloadInfo.version;
       compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
