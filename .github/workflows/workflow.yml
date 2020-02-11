@@ -24,3 +24,34 @@ jobs:
 
     - name: npm test
       run: npm test
+  run-with-proxy:
+    name: Run with proxy
+    runs-on: ubuntu-latest
+    services:
+      squid:
+        image: dakale/squid
+        ports: ['3128:3128']
+        options: '--health-cmd "exit 0" --health-interval 3s'
+    env:
+      http_proxy: http://localhost:3128
+      https_proxy: http://localhost:3128
+    steps:
+    - name: Block non proxied traffic
+      run: |
+        echo "127.0.0.0 registry.npm.js nodejs.org github.com api.github.com download.java.net static.azul.com" | sudo tee -a /etc/hosts
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: Set Node.js 10.x
+      uses: actions/setup-node@master
+      with:
+        node-version: 10.x
+
+    - name: npm install
+      run: npm install
+
+    - name: Lint
+      run: npm run format-check
+
+    - name: npm test
+      run: npm test
