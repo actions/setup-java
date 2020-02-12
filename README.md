@@ -19,11 +19,39 @@ steps:
 - uses: actions/checkout@v2
 - uses: actions/setup-java@v1
   with:
-    java-version: '9.0.4' # The JDK version to make available on the path. Takes a whole or semver JDK version, or 1.x syntax (e.g. 1.8 => Jdk 8.x). To specify a specific version for JDK 8 or older use the following pattern (8.0.x)
+    java-version: '9.0.4' # The JDK version to make available on the path.
     java-package: jdk # (jre, jdk, or jdk+fx) - defaults to jdk
     architecture: x64 # (x64 or x86) - defaults to x64
 - run: java -cp java HelloWorldApp
 ```
+Examples of version specifications that the java-version parameter will accept:
+
+- A major Java version
+
+  e.g. ```6, 7, 8, 9, 10, 11, 12, 13, ...```
+ 
+- A semver Java version specification
+
+  e.g. ```8.0.232, 7.0.181, 11.0.4```
+  
+  e.g. ```8.0.x, >11.0.3, >=13.0.1, <8.0.212```
+  
+- An early access (EA) Java version
+
+  e.g. ```14-ea, 15-ea```
+  
+  e.g. ```14.0.0-ea, 15.0.0-ea```
+   
+  e.g. ```14.0.0-ea.28, 15.0.0-ea.2``` (syntax for specifying an EA build number)
+  
+  Note that, per semver rules, EA builds will be matched by explicit EA version specifications.
+  
+- 1.x syntax
+
+    e.g. ```1.8``` (same as ```8```)
+    
+    e.g. ```1.8.0.212``` (same as ```8.0.212```)
+
 
 ## Local file
 ```yaml
