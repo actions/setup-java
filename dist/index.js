@@ -4873,6 +4873,11 @@ function getDownloadInfo(refs, version, javaPackage) {
     return { version: curVersion, url: curUrl };
 }
 function normalizeVersion(version) {
+    // 'latest' means the most recent of any JDK version
+    // semver won't match pre-release versions
+    if (version === 'latest') {
+        version = 'x';
+    }
     if (version.slice(0, 2) === '1.') {
         // Trim leading 1. for versions like 1.8
         version = version.slice(2);
