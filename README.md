@@ -36,6 +36,8 @@ Examples of version specifications that the java-version parameter will accept:
   
   e.g. ```8.0.x, >11.0.3, >=13.0.1, <8.0.212```
   
+  e.g. ```latest``` (same as ```x```)
+
 - An early access (EA) Java version
 
   e.g. ```14-ea, 15-ea```
