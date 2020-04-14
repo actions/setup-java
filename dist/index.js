@@ -4668,6 +4668,7 @@ if (!tempDirectory) {
 }
 function getJava(version, arch, jdkFile, javaPackage) {
     return __awaiter(this, void 0, void 0, function* () {
+        version = normalizeVersion(version);
         let toolPath = tc.find(javaPackage, version);
         if (toolPath) {
             core.debug(`Tool found in cache ${toolPath}`);
@@ -4805,7 +4806,6 @@ function unzipJavaDownload(repoRoot, fileEnding, destinationFolder, extension) {
     });
 }
 function getDownloadInfo(refs, version, javaPackage) {
-    version = normalizeVersion(version);
     let extension = '';
     if (IS_WINDOWS) {
         extension = `-win_x64.zip`;
