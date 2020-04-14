@@ -143,6 +143,20 @@ describe('installer tests', () => {
     return;
   });
 
+  it('Uses 1.x version of Java installed in cache', async () => {
+    const JavaDir: string = path.join(toolDir, 'jdk', '8.0.181', 'x64');
+    await io.mkdirP(JavaDir);
+    fs.writeFileSync(`${JavaDir}.complete`, 'hello');
+    // This will throw if it doesn't find it in the cache
+    await installer.getJava(
+      '1.8',
+      'x64',
+      'path shouldnt matter, found in cache',
+      'jdk'
+    );
+    return;
+  });
+
   it('Doesnt use version of Java that was only partially installed in cache', async () => {
     const JavaDir: string = path.join(toolDir, 'jdk', '251.0.0', 'x64');
     await io.mkdirP(JavaDir);

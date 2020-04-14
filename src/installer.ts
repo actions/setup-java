@@ -32,6 +32,8 @@ export async function getJava(
   jdkFile: string,
   javaPackage: string
 ): Promise<void> {
+  version = normalizeVersion(version);
+
   let toolPath = tc.find(javaPackage, version);
 
   if (toolPath) {
@@ -190,7 +192,6 @@ function getDownloadInfo(
   version: string,
   javaPackage: string
 ): {version: string; url: string} {
-  version = normalizeVersion(version);
   let extension = '';
   if (IS_WINDOWS) {
     extension = `-win_x64.zip`;
