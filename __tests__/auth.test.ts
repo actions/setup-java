@@ -23,7 +23,7 @@ const env = process.env;
 const m2Dir = path.join(__dirname, auth.M2_DIR);
 const settingsFile = path.join(m2Dir, auth.SETTINGS_FILE);
 const gpgDir = path.join(__dirname, auth.GPG_DIR);
-const gpgFile = path.join(gpgDir, auth.GPG_FILE);
+const gpgFile = auth.GPG_FILE;
 
 describe('auth tests', () => {
   beforeEach(async () => {
@@ -180,7 +180,11 @@ describe('auth tests', () => {
 
     await auth.configAuthentication(id, username, password, gpgPrivateKey);
 
-    expect(exec.exec).toHaveBeenCalledWith(`gpg --import --batch ${gpgFile}`);
+    expect(exec.exec).toHaveBeenCalledWith(
+      'gpg',
+      ['--import', '--batch', gpgFile],
+      {cwd: gpgDir}
+    );
 
     expect(fs.existsSync(gpgDir)).toBe(false);
   }, 100000);
@@ -193,7 +197,9 @@ describe('auth tests', () => {
     await auth.configAuthentication(id, username, password);
 
     expect(exec.exec).not.toHaveBeenCalledWith(
-      `gpg --import --batch ${gpgFile}`
+      'gpg',
+      ['--import', '--batch', gpgFile],
+      {cwd: gpgDir}
     );
 
     expect(fs.existsSync(gpgDir)).toBe(false);

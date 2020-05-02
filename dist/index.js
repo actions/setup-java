@@ -2887,8 +2887,8 @@ exports.GPG_FILE = 'private.asc';
 exports.DEFAULT_ID = 'github';
 exports.DEFAULT_USERNAME = 'GITHUB_ACTOR';
 exports.DEFAULT_PASSWORD = 'GITHUB_TOKEN';
-exports.DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 exports.DEFAULT_GPG_PRIVATE_KEY = '';
+exports.DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 function configAuthentication(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, password = exports.DEFAULT_PASSWORD, gpgPrivateKey = exports.DEFAULT_GPG_PRIVATE_KEY, gpgPassphrase = exports.DEFAULT_GPG_PASSPHRASE) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`creating ${exports.SETTINGS_FILE} with server-id: ${id};`, 'environment variables:', `username=\$${username},`, `password=\$${password},`, `and gpg-passphrase=\$${gpgPassphrase}`);
@@ -2961,8 +2961,7 @@ function write(directory, file, contents) {
 }
 function importGpgKey(directory, file) {
     return __awaiter(this, void 0, void 0, function* () {
-        const location = path.join(directory, file);
-        exec.exec(`gpg --import --batch ${location}`);
+        exec.exec('gpg', ['--import', '--batch', file], { cwd: directory });
     });
 }
 

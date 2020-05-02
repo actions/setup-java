@@ -13,8 +13,8 @@ export const GPG_FILE = 'private.asc';
 export const DEFAULT_ID = 'github';
 export const DEFAULT_USERNAME = 'GITHUB_ACTOR';
 export const DEFAULT_PASSWORD = 'GITHUB_TOKEN';
-export const DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 export const DEFAULT_GPG_PRIVATE_KEY = '';
+export const DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 
 export async function configAuthentication(
   id = DEFAULT_ID,
@@ -110,6 +110,5 @@ async function write(directory: string, file: string, contents: string) {
 }
 
 async function importGpgKey(directory: string, file: string) {
-  const location = path.join(directory, file);
-  exec.exec(`gpg --import --batch ${location}`);
+  exec.exec('gpg', ['--import', '--batch', file], {cwd: directory});
 }
