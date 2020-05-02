@@ -2939,7 +2939,7 @@ function generate(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, 
             <gpg.passphrase>\${env.${escapeXML(gpgPassphrase)}}</gpg.passphrase>
           </properties>
         </profile>
-      <profiles>
+      </profiles>
   </settings>
   `;
 }
@@ -4581,6 +4581,8 @@ const path = __importStar(__webpack_require__(622));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            // Set secrets before use
+            core.setSecret('gpg-private-key');
             let version = core.getInput('version');
             if (!version) {
                 version = core.getInput('java-version', { required: true });

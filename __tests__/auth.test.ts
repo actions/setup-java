@@ -167,7 +167,7 @@ describe('auth tests', () => {
             <gpg.passphrase>\${env.${gpgPassphrase}}</gpg.passphrase>
           </properties>
         </profile>
-      <profiles>
+      </profiles>
   </settings>
   `);
   });

@@ -90,7 +90,7 @@ export function generate(
             <gpg.passphrase>\${env.${escapeXML(gpgPassphrase)}}</gpg.passphrase>
           </properties>
         </profile>
-      <profiles>
+      </profiles>
   </settings>
   `;
 }
