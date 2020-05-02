@@ -26,17 +26,17 @@ async function run() {
       core.getInput('server-username', {required: false}) || undefined;
     const password =
       core.getInput('server-password', {required: false}) || undefined;
-    const gpgPassphrase =
-      core.getInput('gpg-passphrase', {required: false}) || undefined;
     const gpgPrivateKey =
       core.getInput('gpg-private-key', {required: false}) || undefined;
+    const gpgPassphrase =
+      core.getInput('gpg-passphrase', {required: false}) || undefined;
 
     await auth.configAuthentication(
       id,
       username,
       password,
-      gpgPassphrase,
-      gpgPrivateKey
+      gpgPrivateKey,
+      gpgPassphrase
     );
   } catch (error) {
     core.setFailed(error.message);

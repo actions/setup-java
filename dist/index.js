@@ -4595,9 +4595,9 @@ function run() {
             const id = core.getInput('server-id', { required: false }) || undefined;
             const username = core.getInput('server-username', { required: false }) || undefined;
             const password = core.getInput('server-password', { required: false }) || undefined;
-            const gpgPassphrase = core.getInput('gpg-passphrase', { required: false }) || undefined;
             const gpgPrivateKey = core.getInput('gpg-private-key', { required: false }) || undefined;
-            yield auth.configAuthentication(id, username, password, gpgPassphrase, gpgPrivateKey);
+            const gpgPassphrase = core.getInput('gpg-passphrase', { required: false }) || undefined;
+            yield auth.configAuthentication(id, username, password, gpgPrivateKey, gpgPassphrase);
         }
         catch (error) {
             core.setFailed(error.message);
