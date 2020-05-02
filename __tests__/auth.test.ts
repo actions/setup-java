@@ -147,7 +147,7 @@ describe('auth tests', () => {
     const id = 'packages';
     const username = 'USER';
     const password = '&<>"\'\'"><&';
-    const gpgPassphrase = 'PASSWORD';
+    const gpgPassphrase = 'PASSPHRASE';
 
     expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(`
   <settings>
