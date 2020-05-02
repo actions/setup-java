@@ -2879,20 +2879,35 @@ const os = __importStar(__webpack_require__(87));
 const path = __importStar(__webpack_require__(622));
 const core = __importStar(__webpack_require__(470));
 const io = __importStar(__webpack_require__(1));
+const exec = __importStar(__webpack_require__(986));
 exports.M2_DIR = '.m2';
 exports.SETTINGS_FILE = 'settings.xml';
+exports.GPG_DIR = '.gpgtmp';
+exports.GPG_FILE = 'private.asc';
 exports.DEFAULT_ID = 'github';
 exports.DEFAULT_USERNAME = 'GITHUB_ACTOR';
 exports.DEFAULT_PASSWORD = 'GITHUB_TOKEN';
-function configAuthentication(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, password = exports.DEFAULT_PASSWORD) {
+exports.DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
+exports.DEFAULT_GPG_PRIVATE_KEY = '';
+function configAuthentication(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, password = exports.DEFAULT_PASSWORD, gpgPrivateKey = exports.DEFAULT_GPG_PRIVATE_KEY, gpgPassphrase = exports.DEFAULT_GPG_PASSPHRASE) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(`creating ${exports.SETTINGS_FILE} with server-id: ${id};`, `environment variables: username=\$${username} and password=\$${password}`);
+        console.log(`creating ${exports.SETTINGS_FILE} with server-id: ${id};`, 'environment variables:', `username=\$${username},`, `password=\$${password},`, `and gpg-passphrase=\$${gpgPassphrase}`);
         // when an alternate m2 location is specified use only that location (no .m2 directory)
         // otherwise use the home/.m2/ path
-        const directory = path.join(core.getInput('settings-path') || os.homedir(), core.getInput('settings-path') ? '' : exports.M2_DIR);
-        yield io.mkdirP(directory);
-        core.debug(`created directory ${directory}`);
-        yield write(directory, generate(id, username, password));
+        const settingsDirectory = path.join(core.getInput('settings-path') || os.homedir(), core.getInput('settings-path') ? '' : exports.M2_DIR);
+        yield io.mkdirP(settingsDirectory);
+        core.debug(`created directory ${settingsDirectory}`);
+        yield write(settingsDirectory, exports.SETTINGS_FILE, generate(id, username, password, gpgPassphrase));
+        if (gpgPrivateKey !== exports.DEFAULT_GPG_PRIVATE_KEY) {
+            console.log('importing gpg key');
+            const gpgDirectory = path.join(os.homedir(), exports.GPG_DIR);
+            yield io.mkdirP(gpgDirectory);
+            core.debug(`created directory ${gpgDirectory}`);
+            yield write(gpgDirectory, exports.GPG_FILE, gpgPrivateKey);
+            yield importGpgKey(gpgDirectory, exports.GPG_FILE);
+            yield io.rmRF(gpgDirectory);
+            core.debug(`removed directory ${gpgDirectory}`);
+        }
     });
 }
 exports.configAuthentication = configAuthentication;
@@ -2905,7 +2920,7 @@ function escapeXML(value) {
         .replace(/'/g, '&apos;');
 }
 // only exported for testing purposes
-function generate(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, password = exports.DEFAULT_PASSWORD) {
+function generate(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, password = exports.DEFAULT_PASSWORD, gpgPassphrase = exports.DEFAULT_GPG_PASSPHRASE) {
     return `
   <settings>
       <servers>
@@ -2915,23 +2930,39 @@ function generate(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, 
           <password>\${env.${escapeXML(password)}}</password>
         </server>
       </servers>
+      <profiles>
+        <profile>
+          <activation>
+            <activeByDefault>true</activeByDefault>
+          </activation>
+          <properties>
+            <gpg.passphrase>\${env.${escapeXML(gpgPassphrase)}}</gpg.passphrase>
+          </properties>
+        </profile>
+      <profiles>
   </settings>
   `;
 }
 exports.generate = generate;
-function write(directory, settings) {
+function write(directory, file, contents) {
     return __awaiter(this, void 0, void 0, function* () {
-        const location = path.join(directory, exports.SETTINGS_FILE);
+        const location = path.join(directory, file);
         if (fs.existsSync(location)) {
             console.warn(`overwriting existing file ${location}`);
         }
         else {
             console.log(`writing ${location}`);
         }
-        return fs.writeFileSync(location, settings, {
+        return fs.writeFileSync(location, contents, {
             encoding: 'utf-8',
             flag: 'w'
         });
+    });
+}
+function importGpgKey(directory, file) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const location = path.join(directory, file);
+        exec.exec(`gpg --import --batch ${location}`);
     });
 }
 
@@ -4563,7 +4594,9 @@ function run() {
             const id = core.getInput('server-id', { required: false }) || undefined;
             const username = core.getInput('server-username', { required: false }) || undefined;
             const password = core.getInput('server-password', { required: false }) || undefined;
-            yield auth.configAuthentication(id, username, password);
+            const gpgPassphrase = core.getInput('gpg-passphrase', { required: false }) || undefined;
+            const gpgPrivateKey = core.getInput('gpg-private-key', { required: false }) || undefined;
+            yield auth.configAuthentication(id, username, password, gpgPassphrase, gpgPrivateKey);
         }
         catch (error) {
             core.setFailed(error.message);

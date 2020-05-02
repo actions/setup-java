@@ -2,6 +2,7 @@ import io = require('@actions/io');
 import fs = require('fs');
 import os = require('os');
 import path = require('path');
+import exec = require('@actions/exec');
 
 // make the os.homedir() call be local to the tests
 jest.doMock('os', () => {
@@ -10,10 +11,19 @@ jest.doMock('os', () => {
   };
 });
 
+jest.mock('@actions/exec', () => {
+  return {
+    exec: jest.fn()
+  };
+});
+
 import * as auth from '../src/auth';
 
+const env = process.env;
 const m2Dir = path.join(__dirname, auth.M2_DIR);
 const settingsFile = path.join(m2Dir, auth.SETTINGS_FILE);
+const gpgDir = path.join(__dirname, auth.GPG_DIR);
+const gpgFile = path.join(gpgDir, auth.GPG_FILE);
 
 describe('auth tests', () => {
   beforeEach(async () => {
@@ -23,6 +33,7 @@ describe('auth tests', () => {
   afterAll(async () => {
     try {
       await io.rmRF(m2Dir);
+      await io.rmRF(gpgDir);
     } catch {
       console.log('Failed to remove test directories');
     }
@@ -53,17 +64,25 @@ describe('auth tests', () => {
     await io.rmRF(altHome);
   }, 100000);
 
-  it('creates settings.xml with username and password', async () => {
+  it('creates settings.xml with all data', async () => {
     const id = 'packages';
     const username = 'UNAME';
     const password = 'TOKEN';
+    const gpgPrivateKey = 'PRIVATE';
+    const gpgPassphrase = 'GPG';
 
-    await auth.configAuthentication(id, username, password);
+    await auth.configAuthentication(
+      id,
+      username,
+      password,
+      gpgPrivateKey,
+      gpgPassphrase
+    );
 
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(id, username, password)
+      auth.generate(id, username, password, gpgPassphrase)
     );
   }, 100000);
 
@@ -128,8 +147,9 @@ describe('auth tests', () => {
     const id = 'packages';
     const username = 'USER';
     const password = '&<>"\'\'"><&';
+    const gpgPassphrase = 'PASSWORD';
 
-    expect(auth.generate(id, username, password)).toEqual(`
+    expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(`
   <settings>
       <servers>
         <server>
@@ -138,7 +158,44 @@ describe('auth tests', () => {
           <password>\${env.&amp;&lt;&gt;&quot;&apos;&apos;&quot;&gt;&lt;&amp;}</password>
         </server>
       </servers>
+      <profiles>
+        <profile>
+          <activation>
+            <activeByDefault>true</activeByDefault>
+          </activation>
+          <properties>
+            <gpg.passphrase>\${env.${gpgPassphrase}}</gpg.passphrase>
+          </properties>
+        </profile>
+      <profiles>
   </settings>
   `);
   });
+
+  it('imports gpg private key', async () => {
+    const id = 'packages';
+    const username = 'USERNAME';
+    const password = 'PASSWORD';
+    const gpgPrivateKey = 'KEY CONTENTS';
+
+    await auth.configAuthentication(id, username, password, gpgPrivateKey);
+
+    expect(exec.exec).toHaveBeenCalledWith(`gpg --import --batch ${gpgFile}`);
+
+    expect(fs.existsSync(gpgDir)).toBe(false);
+  }, 100000);
+
+  it('does not import gpg private key when private key is not set', async () => {
+    const id = 'packages';
+    const username = 'USERNAME';
+    const password = 'PASSWORD';
+
+    await auth.configAuthentication(id, username, password);
+
+    expect(exec.exec).not.toHaveBeenCalledWith(
+      `gpg --import --batch ${gpgFile}`
+    );
+
+    expect(fs.existsSync(gpgDir)).toBe(false);
+  }, 100000);
 });
