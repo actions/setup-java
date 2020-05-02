@@ -5,6 +5,9 @@ import * as path from 'path';
 
 async function run() {
   try {
+    // Set secrets before use
+    core.setSecret('gpg-private-key');
+
     let version = core.getInput('version');
     if (!version) {
       version = core.getInput('java-version', {required: true});
