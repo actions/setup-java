@@ -157,17 +157,11 @@ describe('auth tests', () => {
           <username>\${env.${username}}</username>
           <password>\${env.&amp;&lt;&gt;&quot;&apos;&apos;&quot;&gt;&lt;&amp;}</password>
         </server>
+        <server>
+          <id>gpg.passphrase</id>
+          <passphrase>\${env.${gpgPassphrase}}</passphrase>
+        </server>
       </servers>
-      <profiles>
-        <profile>
-          <activation>
-            <activeByDefault>true</activeByDefault>
-          </activation>
-          <properties>
-            <gpg.passphrase>\${env.${gpgPassphrase}}</gpg.passphrase>
-          </properties>
-        </profile>
-      </profiles>
   </settings>
   `);
   });

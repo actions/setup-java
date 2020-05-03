@@ -82,17 +82,11 @@ export function generate(
           <username>\${env.${escapeXML(username)}}</username>
           <password>\${env.${escapeXML(password)}}</password>
         </server>
+        <server>
+          <id>gpg.passphrase</id>
+          <passphrase>\${env.${escapeXML(gpgPassphrase)}}</passphrase>
+        </server>
       </servers>
-      <profiles>
-        <profile>
-          <activation>
-            <activeByDefault>true</activeByDefault>
-          </activation>
-          <properties>
-            <gpg.passphrase>\${env.${escapeXML(gpgPassphrase)}}</gpg.passphrase>
-          </properties>
-        </profile>
-      </profiles>
   </settings>
   `;
 }

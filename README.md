@@ -134,16 +134,10 @@ The two `settings.xml` files created from the above example look like the follow
       <username>${env.GITHUB_ACTOR}</username>
       <password>${env.GITHUB_TOKEN}</password>
     </server>
-    <profiles>
-      <profile>
-        <activation>
-          <activeByDefault>true</activeByDefault>
-        </activation>
-        <properties>
-          <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
-        </properties>
-      </profile>
-    <profiles>
+    <server>
+      <id>gpg.passphrase</id>
+      <passphrase>${env.GPG_PASSPHRASE}</passphrase>
+    </server>
 </servers>
 ```
 
@@ -155,16 +149,10 @@ The two `settings.xml` files created from the above example look like the follow
       <username>${env.MAVEN_USERNAME}</username>
       <password>${env.MAVEN_CENTRAL_TOKEN}</password>
     </server>
-    <profiles>
-      <profile>
-        <activation>
-          <activeByDefault>true</activeByDefault>
-        </activation>
-        <properties>
-          <gpg.passphrase>${env.MAVEN_GPG_PASSPHRASE}</gpg.passphrase>
-        </properties>
-      </profile>
-    <profiles>
+    <server>
+      <id>gpg.passphrase</id>
+      <passphrase>${env.MAVEN_GPG_PASSPHRASE}</passphrase>
+    </server>
 </servers>
 ```
 
