@@ -7,8 +7,8 @@ import * as exec from '@actions/exec';
 
 export const M2_DIR = '.m2';
 export const SETTINGS_FILE = 'settings.xml';
-export const GPG_DIR = '.gpgtmp';
-export const GPG_FILE = 'private.asc';
+export const PRIVATE_KEY_DIR = '.keys';
+export const PRIVATE_KEY_FILE = 'private-key.asc';
 
 export const DEFAULT_ID = 'github';
 export const DEFAULT_USERNAME = 'GITHUB_ACTOR';
@@ -46,13 +46,15 @@ export async function configAuthentication(
 
   if (gpgPrivateKey !== DEFAULT_GPG_PRIVATE_KEY) {
     console.log('importing gpg key');
-    const gpgDirectory: string = path.join(os.homedir(), GPG_DIR);
-    await io.mkdirP(gpgDirectory);
-    core.debug(`created directory ${gpgDirectory}`);
-    await write(gpgDirectory, GPG_FILE, gpgPrivateKey);
-    await importGpgKey(gpgDirectory, GPG_FILE);
-    await io.rmRF(gpgDirectory);
-    core.debug(`removed directory ${gpgDirectory}`);
+    const privateKeyDirectory: string = path.join(
+      os.homedir(),
+      PRIVATE_KEY_DIR
+    );
+    await io.mkdirP(privateKeyDirectory);
+    core.debug(`created directory ${privateKeyDirectory}`);
+    await write(privateKeyDirectory, PRIVATE_KEY_FILE, gpgPrivateKey);
+    await importGpgKey(privateKeyDirectory, PRIVATE_KEY_FILE);
+    await remove(privateKeyDirectory);
   }
 }
 
@@ -109,6 +111,11 @@ async function write(directory: string, file: string, contents: string) {
   });
 }
 
+async function remove(path: string) {
+  console.log(`removing ${path}`);
+  return io.rmRF(path);
+}
+
 async function importGpgKey(directory: string, file: string) {
-  exec.exec('gpg', ['--import', '--batch', file], {cwd: directory});
+  return exec.exec('gpg', ['--import', '--batch', file], {cwd: directory});
 }

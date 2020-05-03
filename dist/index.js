@@ -2882,8 +2882,8 @@ const io = __importStar(__webpack_require__(1));
 const exec = __importStar(__webpack_require__(986));
 exports.M2_DIR = '.m2';
 exports.SETTINGS_FILE = 'settings.xml';
-exports.GPG_DIR = '.gpgtmp';
-exports.GPG_FILE = 'private.asc';
+exports.PRIVATE_KEY_DIR = '.keys';
+exports.PRIVATE_KEY_FILE = 'private-key.asc';
 exports.DEFAULT_ID = 'github';
 exports.DEFAULT_USERNAME = 'GITHUB_ACTOR';
 exports.DEFAULT_PASSWORD = 'GITHUB_TOKEN';
@@ -2900,13 +2900,12 @@ function configAuthentication(id = exports.DEFAULT_ID, username = exports.DEFAUL
         yield write(settingsDirectory, exports.SETTINGS_FILE, generate(id, username, password, gpgPassphrase));
         if (gpgPrivateKey !== exports.DEFAULT_GPG_PRIVATE_KEY) {
             console.log('importing gpg key');
-            const gpgDirectory = path.join(os.homedir(), exports.GPG_DIR);
-            yield io.mkdirP(gpgDirectory);
-            core.debug(`created directory ${gpgDirectory}`);
-            yield write(gpgDirectory, exports.GPG_FILE, gpgPrivateKey);
-            yield importGpgKey(gpgDirectory, exports.GPG_FILE);
-            yield io.rmRF(gpgDirectory);
-            core.debug(`removed directory ${gpgDirectory}`);
+            const privateKeyDirectory = path.join(os.homedir(), exports.PRIVATE_KEY_DIR);
+            yield io.mkdirP(privateKeyDirectory);
+            core.debug(`created directory ${privateKeyDirectory}`);
+            yield write(privateKeyDirectory, exports.PRIVATE_KEY_FILE, gpgPrivateKey);
+            yield importGpgKey(privateKeyDirectory, exports.PRIVATE_KEY_FILE);
+            yield remove(privateKeyDirectory);
         }
     });
 }
@@ -2959,9 +2958,15 @@ function write(directory, file, contents) {
         });
     });
 }
+function remove(path) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log(`removing ${path}`);
+        return io.rmRF(path);
+    });
+}
 function importGpgKey(directory, file) {
     return __awaiter(this, void 0, void 0, function* () {
-        exec.exec('gpg', ['--import', '--batch', file], { cwd: directory });
+        return exec.exec('gpg', ['--import', '--batch', file], { cwd: directory });
     });
 }
 

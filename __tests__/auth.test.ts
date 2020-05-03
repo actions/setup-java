@@ -22,8 +22,8 @@ import * as auth from '../src/auth';
 const env = process.env;
 const m2Dir = path.join(__dirname, auth.M2_DIR);
 const settingsFile = path.join(m2Dir, auth.SETTINGS_FILE);
-const gpgDir = path.join(__dirname, auth.GPG_DIR);
-const gpgFile = auth.GPG_FILE;
+const privateKeyDir = path.join(__dirname, auth.PRIVATE_KEY_DIR);
+const privateKeyFile = auth.PRIVATE_KEY_FILE;
 
 describe('auth tests', () => {
   beforeEach(async () => {
@@ -33,7 +33,7 @@ describe('auth tests', () => {
   afterAll(async () => {
     try {
       await io.rmRF(m2Dir);
-      await io.rmRF(gpgDir);
+      await io.rmRF(privateKeyDir);
     } catch {
       console.log('Failed to remove test directories');
     }
@@ -182,11 +182,11 @@ describe('auth tests', () => {
 
     expect(exec.exec).toHaveBeenCalledWith(
       'gpg',
-      ['--import', '--batch', gpgFile],
-      {cwd: gpgDir}
+      ['--import', '--batch', privateKeyFile],
+      {cwd: privateKeyDir}
     );
 
-    expect(fs.existsSync(gpgDir)).toBe(false);
+    expect(fs.existsSync(privateKeyDir)).toBe(false);
   }, 100000);
 
   it('does not import gpg private key when private key is not set', async () => {
@@ -198,10 +198,10 @@ describe('auth tests', () => {
 
     expect(exec.exec).not.toHaveBeenCalledWith(
       'gpg',
-      ['--import', '--batch', gpgFile],
-      {cwd: gpgDir}
+      ['--import', '--batch', privateKeyFile],
+      {cwd: privateKeyDir}
     );
 
-    expect(fs.existsSync(gpgDir)).toBe(false);
+    expect(fs.existsSync(privateKeyDir)).toBe(false);
   }, 100000);
 });
