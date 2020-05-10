@@ -37,8 +37,7 @@ inputs:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false
   gpg-private-key:
-    description: 'Environment variable name for the GPG private key to import. Default is
-       $GPG_PRIVATE_KEY.'
+    description: 'GPG private key to import. Default is empty string.'
     required: false
   gpg-passphrase:
     description: 'Environment variable name for the GPG private key passphrase. Default is
