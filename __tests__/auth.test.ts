@@ -192,8 +192,8 @@ describe('auth tests', () => {
 
     expect(exec.exec).not.toHaveBeenCalledWith(
       'gpg',
-      ['--import', '--batch', privateKeyFile],
-      {cwd: privateKeyDir}
+      expect.anything(),
+      expect.anything()
     );
 
     expect(fs.existsSync(privateKeyDir)).toBe(false);
