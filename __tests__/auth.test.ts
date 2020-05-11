@@ -19,11 +19,12 @@ jest.mock('@actions/exec', () => {
 
 import * as auth from '../src/auth';
 
-const env = process.env;
 const m2Dir = path.join(__dirname, auth.M2_DIR);
 const settingsFile = path.join(m2Dir, auth.SETTINGS_FILE);
-const privateKeyDir = path.join(__dirname, auth.PRIVATE_KEY_DIR);
-const privateKeyFile = auth.PRIVATE_KEY_FILE;
+const tempDir = path.join(__dirname, 'runner', 'temp');
+const privateKeyFile = path.join(tempDir, auth.PRIVATE_KEY_FILE);
+
+process.env['RUNNER_TEMP'] = tempDir;
 
 describe('auth tests', () => {
   beforeEach(async () => {
@@ -33,7 +34,7 @@ describe('auth tests', () => {
   afterAll(async () => {
     try {
       await io.rmRF(m2Dir);
-      await io.rmRF(privateKeyDir);
+      await io.rmRF(tempDir);
     } catch {
       console.log('Failed to remove test directories');
     }
@@ -176,11 +177,11 @@ describe('auth tests', () => {
 
     expect(exec.exec).toHaveBeenCalledWith(
       'gpg',
-      ['--import', '--batch', privateKeyFile],
-      {cwd: privateKeyDir}
+      expect.anything(),
+      expect.anything()
     );
 
-    expect(fs.existsSync(privateKeyDir)).toBe(false);
+    expect(fs.existsSync(privateKeyFile)).toBe(false);
   }, 100000);
 
   it('does not import gpg private key when private key is not set', async () => {
@@ -196,6 +197,6 @@ describe('auth tests', () => {
       expect.anything()
     );
 
-    expect(fs.existsSync(privateKeyDir)).toBe(false);
+    expect(fs.existsSync(privateKeyFile)).toBe(false);
   }, 100000);
 });

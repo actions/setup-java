@@ -2881,8 +2881,8 @@ const core = __importStar(__webpack_require__(470));
 const io = __importStar(__webpack_require__(1));
 const exec = __importStar(__webpack_require__(986));
 exports.M2_DIR = '.m2';
+exports.TEMP_DIR = process.env['RUNNER_TEMP'] || '';
 exports.SETTINGS_FILE = 'settings.xml';
-exports.PRIVATE_KEY_DIR = '.keys';
 exports.PRIVATE_KEY_FILE = 'private-key.asc';
 exports.DEFAULT_ID = 'github';
 exports.DEFAULT_USERNAME = 'GITHUB_ACTOR';
@@ -2900,12 +2900,7 @@ function configAuthentication(id = exports.DEFAULT_ID, username = exports.DEFAUL
         yield write(settingsDirectory, exports.SETTINGS_FILE, generate(id, username, password, gpgPassphrase));
         if (gpgPrivateKey !== exports.DEFAULT_GPG_PRIVATE_KEY) {
             console.log('importing gpg key');
-            const privateKeyDirectory = path.join(os.homedir(), exports.PRIVATE_KEY_DIR);
-            yield io.mkdirP(privateKeyDirectory);
-            core.debug(`created directory ${privateKeyDirectory}`);
-            yield write(privateKeyDirectory, exports.PRIVATE_KEY_FILE, gpgPrivateKey);
-            yield importGpgKey(privateKeyDirectory, exports.PRIVATE_KEY_FILE);
-            yield remove(privateKeyDirectory);
+            yield importGPG(gpgPrivateKey);
         }
     });
 }
@@ -2958,9 +2953,13 @@ function remove(path) {
         return io.rmRF(path);
     });
 }
-function importGpgKey(directory, file) {
+function importGPG(gpgPrivateKey) {
     return __awaiter(this, void 0, void 0, function* () {
-        return exec.exec('gpg', ['--import', '--batch', file], { cwd: directory });
+        yield write(exports.TEMP_DIR, exports.PRIVATE_KEY_FILE, gpgPrivateKey);
+        yield exec.exec('gpg', ['--import', '--batch', exports.PRIVATE_KEY_FILE], {
+            cwd: exports.TEMP_DIR
+        });
+        yield remove(path.join(exports.TEMP_DIR, exports.PRIVATE_KEY_FILE));
     });
 }
 
