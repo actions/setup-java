@@ -5,6 +5,7 @@ import * as core from '@actions/core';
 import * as io from '@actions/io';
 import * as exec from '@actions/exec';
 import * as util from './util';
+import {create as xmlCreate} from 'xmlbuilder2';
 
 export const M2_DIR = '.m2';
 export const TEMP_DIR = util.getTempDir();
@@ -39,10 +40,11 @@ export async function configAuthentication(
   );
   await io.mkdirP(settingsDirectory);
   core.debug(`created directory ${settingsDirectory}`);
+  const isGpgEnabled = gpgPrivateKey !== DEFAULT_GPG_PRIVATE_KEY;
   await write(
     settingsDirectory,
     SETTINGS_FILE,
-    generate(id, username, password, gpgPassphrase)
+    generate(id, username, password, isGpgEnabled ? gpgPassphrase : null)
   );
 
   if (gpgPrivateKey !== DEFAULT_GPG_PRIVATE_KEY) {
@@ -51,37 +53,53 @@ export async function configAuthentication(
   }
 }
 
-function escapeXML(value: string) {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
 // only exported for testing purposes
 export function generate(
-  id = DEFAULT_ID,
-  username = DEFAULT_USERNAME,
-  password = DEFAULT_PASSWORD,
-  gpgPassphrase = DEFAULT_GPG_PASSPHRASE
+  id: string,
+  username: string,
+  password: string,
+  gpgPassphrase: string | null = null
 ) {
-  return `
-  <settings>
-      <servers>
-        <server>
-          <id>${escapeXML(id)}</id>
-          <username>\${env.${escapeXML(username)}}</username>
-          <password>\${env.${escapeXML(password)}}</password>
-        </server>
-        <server>
-          <id>gpg.passphrase</id>
-          <passphrase>\${env.${escapeXML(gpgPassphrase)}}</passphrase>
-        </server>
-      </servers>
-  </settings>
-  `;
+  const xmlObj: any = {
+    settings: {
+      '@xmlns': 'http://maven.apache.org/SETTINGS/1.0.0',
+      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+      '@xsi:schemaLocation':
+        'http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd',
+      servers: {
+        server: [
+          {
+            id: id,
+            username: `\${env.${username}}`,
+            password: `\${env.${password}}`
+          }
+        ]
+      }
+    }
+  };
+
+  if (gpgPassphrase !== null) {
+    const gpgServer = {
+      id: 'gpg.passphrase',
+      passphrase: `\${env.${gpgPassphrase}}`
+    };
+    xmlObj.settings.servers.server.push(gpgServer);
+
+    xmlObj.settings.profiles = {
+      profile: [
+        {
+          activation: {
+            activeByDefault: true
+          },
+          properties: {
+            'gpg.homedir': TEMP_DIR
+          }
+        }
+      ]
+    };
+  }
+
+  return xmlCreate(xmlObj).end({headless: true, prettyPrint: true, width: 80});
 }
 
 async function write(directory: string, file: string, contents: string) {

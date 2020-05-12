@@ -10,7 +10,7 @@ describe('util tests', () => {
 
   describe('getTempDir', () => {
     it('gets temp dir using env', () => {
-      process.env['RUNNER_TEMP'] = 'defaulttmp'
+      process.env['RUNNER_TEMP'] = 'defaulttmp';
       const util = require('../src/util');
 
       const tempDir = util.getTempDir();
@@ -25,7 +25,9 @@ describe('util tests', () => {
 
       const tempDir = util.getTempDir();
 
-      expect(tempDir).toEqual(path.join(process.env['USERPROFILE'], 'actions', 'temp'));
+      expect(tempDir).toEqual(
+        path.join(process.env['USERPROFILE'], 'actions', 'temp')
+      );
     });
 
     it('gets temp dir for windows using c drive', () => {

@@ -6,7 +6,9 @@ export function getTempDir() {
     let baseLocation;
     if (isWindows()) {
       // On windows use the USERPROFILE env variable
-      baseLocation = (process.env['USERPROFILE']) ? process.env['USERPROFILE'] : 'C:\\';
+      baseLocation = process.env['USERPROFILE']
+        ? process.env['USERPROFILE']
+        : 'C:\\';
     } else {
       if (process.platform === 'darwin') {
         baseLocation = '/Users';
@@ -20,5 +22,5 @@ export function getTempDir() {
 }
 
 export function isWindows() {
-  return (process.platform === 'win32');
+  return process.platform === 'win32';
 }

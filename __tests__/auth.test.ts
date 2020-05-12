@@ -66,7 +66,21 @@ describe('auth tests', () => {
     await io.rmRF(altHome);
   }, 100000);
 
-  it('creates settings.xml with all data', async () => {
+  it('creates settings.xml with minimal configuration', async () => {
+    const id = 'packages';
+    const username = 'UNAME';
+    const password = 'TOKEN';
+
+    await auth.configAuthentication(id, username, password);
+
+    expect(fs.existsSync(m2Dir)).toBe(true);
+    expect(fs.existsSync(settingsFile)).toBe(true);
+    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
+      auth.generate(id, username, password)
+    );
+  }, 100000);
+
+  it('creates settings.xml with gpg data', async () => {
     const id = 'packages';
     const username = 'UNAME';
     const password = 'TOKEN';
@@ -145,27 +159,41 @@ describe('auth tests', () => {
     );
   }, 100000);
 
-  it('escapes invalid XML inputs', () => {
+  it('generates valid settings.xml', () => {
     const id = 'packages';
     const username = 'USER';
     const password = '&<>"\'\'"><&';
     const gpgPassphrase = 'PASSPHRASE';
 
-    expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(`
-  <settings>
-      <servers>
-        <server>
-          <id>${id}</id>
-          <username>\${env.${username}}</username>
-          <password>\${env.&amp;&lt;&gt;&quot;&apos;&apos;&quot;&gt;&lt;&amp;}</password>
-        </server>
-        <server>
-          <id>gpg.passphrase</id>
-          <passphrase>\${env.${gpgPassphrase}}</passphrase>
-        </server>
-      </servers>
-  </settings>
-  `);
+    const expectedSettings = `<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <server>
+      <id>${id}</id>
+      <username>\${env.${username}}</username>
+      <password>\${env.&amp;&lt;&gt;"''"&gt;&lt;&amp;}</password>
+    </server>
+    <server>
+      <id>gpg.passphrase</id>
+      <passphrase>\${env.${gpgPassphrase}}</passphrase>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <gpg.homedir>${tempDir}</gpg.homedir>
+      </properties>
+    </profile>
+  </profiles>
+</settings>`;
+
+    expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(
+      expectedSettings
+    );
   });
 
   it('imports gpg private key', async () => {
