@@ -93,7 +93,7 @@ export function generate(
             activeByDefault: true
           },
           properties: {
-            'gpg.homedir': TEMP_DIR
+            'gpg.homedir': GPG_HOME_DIR
           }
         }
       ]

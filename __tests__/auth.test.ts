@@ -23,6 +23,7 @@ process.env['RUNNER_TEMP'] = tempDir;
 import * as auth from '../src/auth';
 
 const m2Dir = path.join(__dirname, auth.M2_DIR);
+const gpgHomeDir = auth.GPG_HOME_DIR;
 const settingsFile = path.join(m2Dir, auth.SETTINGS_FILE);
 const privateKeyFile = path.join(tempDir, auth.PRIVATE_KEY_FILE);
 
@@ -185,7 +186,7 @@ describe('auth tests', () => {
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <gpg.homedir>${tempDir}</gpg.homedir>
+        <gpg.homedir>${gpgHomeDir}</gpg.homedir>
       </properties>
     </profile>
   </profiles>
