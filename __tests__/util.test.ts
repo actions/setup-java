@@ -4,7 +4,10 @@ const env = process.env;
 
 describe('util tests', () => {
   beforeEach(() => {
-    process.env = Object.assign({}, env);
+    const tempEnv = Object.assign({}, env);
+    delete tempEnv.RUNNER_TEMP;
+    delete tempEnv.USERPROFILE;
+    process.env = tempEnv;
     Object.defineProperty(process, 'platform', {value: 'linux'});
   });
 
