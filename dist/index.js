@@ -2852,6 +2852,46 @@ function coerce (version, options) {
 
 /***/ }),
 
+/***/ 322:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const path = __importStar(__webpack_require__(622));
+function getTempDir() {
+    let tempDirectory = process.env['RUNNER_TEMP'] || '';
+    if (!tempDirectory) {
+        let baseLocation;
+        const IS_WINDOWS = process.platform === 'win32';
+        if (IS_WINDOWS) {
+            // On windows use the USERPROFILE env variable
+            baseLocation = process.env['USERPROFILE'] || 'C:\\';
+        }
+        else {
+            if (process.platform === 'darwin') {
+                baseLocation = '/Users';
+            }
+            else {
+                baseLocation = '/home';
+            }
+        }
+        tempDirectory = path.join(baseLocation, 'actions', 'temp');
+    }
+    return tempDirectory;
+}
+exports.getTempDir = getTempDir;
+
+
+/***/ }),
+
 /***/ 331:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -2880,9 +2920,11 @@ const path = __importStar(__webpack_require__(622));
 const core = __importStar(__webpack_require__(470));
 const io = __importStar(__webpack_require__(1));
 const exec = __importStar(__webpack_require__(986));
+const util = __importStar(__webpack_require__(322));
 exports.M2_DIR = '.m2';
-exports.TEMP_DIR = process.env['RUNNER_TEMP'] || '';
+exports.TEMP_DIR = util.getTempDir();
 exports.SETTINGS_FILE = 'settings.xml';
+exports.KEYRING_FILE = 'temporary-keyring.gpg';
 exports.PRIVATE_KEY_FILE = 'private-key.asc';
 exports.DEFAULT_ID = 'github';
 exports.DEFAULT_USERNAME = 'GITHUB_ACTOR';
@@ -2955,11 +2997,20 @@ function remove(path) {
 }
 function importGPG(gpgPrivateKey) {
     return __awaiter(this, void 0, void 0, function* () {
+        const temporaryKeyRingPath = path.join(exports.TEMP_DIR, exports.KEYRING_FILE);
+        const temporaryPrivateKeyPath = path.join(exports.TEMP_DIR, exports.PRIVATE_KEY_FILE);
         yield write(exports.TEMP_DIR, exports.PRIVATE_KEY_FILE, gpgPrivateKey);
-        yield exec.exec('gpg', ['--import', '--batch', exports.PRIVATE_KEY_FILE], {
+        yield exec.exec('gpg', [
+            '--primary-keyring',
+            temporaryKeyRingPath,
+            '--import',
+            '--batch',
+            exports.PRIVATE_KEY_FILE
+        ], {
             cwd: exports.TEMP_DIR
         });
-        yield remove(path.join(exports.TEMP_DIR, exports.PRIVATE_KEY_FILE));
+        yield remove(temporaryKeyRingPath);
+        yield remove(temporaryPrivateKeyPath);
     });
 }
 
@@ -4672,7 +4723,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-let tempDirectory = process.env['RUNNER_TEMP'] || '';
 const core = __importStar(__webpack_require__(470));
 const io = __importStar(__webpack_require__(1));
 const exec = __importStar(__webpack_require__(986));
@@ -4681,23 +4731,9 @@ const tc = __importStar(__webpack_require__(533));
 const fs = __importStar(__webpack_require__(747));
 const path = __importStar(__webpack_require__(622));
 const semver = __importStar(__webpack_require__(280));
+const util = __importStar(__webpack_require__(322));
+const tempDirectory = util.getTempDir();
 const IS_WINDOWS = process.platform === 'win32';
-if (!tempDirectory) {
-    let baseLocation;
-    if (IS_WINDOWS) {
-        // On windows use the USERPROFILE env variable
-        baseLocation = process.env['USERPROFILE'] || 'C:\\';
-    }
-    else {
-        if (process.platform === 'darwin') {
-            baseLocation = '/Users';
-        }
-        else {
-            baseLocation = '/home';
-        }
-    }
-    tempDirectory = path.join(baseLocation, 'actions', 'temp');
-}
 function getJava(version, arch, jdkFile, javaPackage) {
     return __awaiter(this, void 0, void 0, function* () {
         let toolPath = tc.find(javaPackage, version);

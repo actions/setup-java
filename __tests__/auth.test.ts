@@ -17,18 +17,19 @@ jest.mock('@actions/exec', () => {
   };
 });
 
+const tempDir = path.join(__dirname, 'runner', 'temp');
+process.env['RUNNER_TEMP'] = tempDir;
+
 import * as auth from '../src/auth';
 
 const m2Dir = path.join(__dirname, auth.M2_DIR);
 const settingsFile = path.join(m2Dir, auth.SETTINGS_FILE);
-const tempDir = path.join(__dirname, 'runner', 'temp');
 const privateKeyFile = path.join(tempDir, auth.PRIVATE_KEY_FILE);
-
-process.env['RUNNER_TEMP'] = tempDir;
 
 describe('auth tests', () => {
   beforeEach(async () => {
     await io.rmRF(m2Dir);
+    await io.mkdirP(tempDir);
   }, 300000);
 
   afterAll(async () => {

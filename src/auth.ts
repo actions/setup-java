@@ -4,9 +4,10 @@ import * as path from 'path';
 import * as core from '@actions/core';
 import * as io from '@actions/io';
 import * as exec from '@actions/exec';
+import * as util from './util';
 
 export const M2_DIR = '.m2';
-export const TEMP_DIR = process.env['RUNNER_TEMP'] || '';
+export const TEMP_DIR = util.getTempDir();
 export const SETTINGS_FILE = 'settings.xml';
 export const PRIVATE_KEY_FILE = 'private-key.asc';
 
