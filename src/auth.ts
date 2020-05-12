@@ -9,6 +9,7 @@ import {create as xmlCreate} from 'xmlbuilder2';
 
 export const M2_DIR = '.m2';
 export const TEMP_DIR = util.getTempDir();
+export const GPG_HOME_DIR = path.join(TEMP_DIR, '.gnupg');
 export const SETTINGS_FILE = 'settings.xml';
 export const PRIVATE_KEY_FILE = 'private-key.asc';
 
@@ -123,7 +124,7 @@ async function remove(path: string) {
 
 async function importGPG(gpgPrivateKey: string) {
   await write(TEMP_DIR, PRIVATE_KEY_FILE, gpgPrivateKey);
-  await exec.exec('gpg', ['--import', '--batch', PRIVATE_KEY_FILE], {
+  await exec.exec('gpg', ['--homedir', GPG_HOME_DIR, '--import', '--batch', PRIVATE_KEY_FILE], {
     cwd: TEMP_DIR
   });
   await remove(path.join(TEMP_DIR, PRIVATE_KEY_FILE));
