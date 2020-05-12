@@ -13208,6 +13208,7 @@ const util = __importStar(__webpack_require__(322));
 const xmlbuilder2_1 = __webpack_require__(255);
 exports.M2_DIR = '.m2';
 exports.TEMP_DIR = util.getTempDir();
+exports.GPG_HOME_DIR = path.join(exports.TEMP_DIR, '.gnupg');
 exports.SETTINGS_FILE = 'settings.xml';
 exports.PRIVATE_KEY_FILE = 'private-key.asc';
 exports.DEFAULT_ID = 'github';
@@ -13263,7 +13264,7 @@ function generate(id, username, password, gpgPassphrase = null) {
                         activeByDefault: true
                     },
                     properties: {
-                        'gpg.homedir': exports.TEMP_DIR
+                        'gpg.homedir': exports.GPG_HOME_DIR
                     }
                 }
             ]
@@ -13296,7 +13297,7 @@ function remove(path) {
 function importGPG(gpgPrivateKey) {
     return __awaiter(this, void 0, void 0, function* () {
         yield write(exports.TEMP_DIR, exports.PRIVATE_KEY_FILE, gpgPrivateKey);
-        yield exec.exec('gpg', ['--import', '--batch', exports.PRIVATE_KEY_FILE], {
+        yield exec.exec('gpg', ['--homedir', exports.GPG_HOME_DIR, '--import', '--batch', exports.PRIVATE_KEY_FILE], {
             cwd: exports.TEMP_DIR
         });
         yield remove(path.join(exports.TEMP_DIR, exports.PRIVATE_KEY_FILE));

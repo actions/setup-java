@@ -124,8 +124,12 @@ async function remove(path: string) {
 
 async function importGPG(gpgPrivateKey: string) {
   await write(TEMP_DIR, PRIVATE_KEY_FILE, gpgPrivateKey);
-  await exec.exec('gpg', ['--homedir', GPG_HOME_DIR, '--import', '--batch', PRIVATE_KEY_FILE], {
-    cwd: TEMP_DIR
-  });
+  await exec.exec(
+    'gpg',
+    ['--homedir', GPG_HOME_DIR, '--import', '--batch', PRIVATE_KEY_FILE],
+    {
+      cwd: TEMP_DIR
+    }
+  );
   await remove(path.join(TEMP_DIR, PRIVATE_KEY_FILE));
 }
