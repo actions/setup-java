@@ -9,7 +9,7 @@ import {create as xmlCreate} from 'xmlbuilder2';
 
 export const M2_DIR = '.m2';
 export const TEMP_DIR = util.getTempDir();
-export const GPG_HOME_DIR = path.join(TEMP_DIR, '.gnupg');
+export const GPG_HOME_DIR = path.join(TEMP_DIR, '.gnupg').replace(/\\/g, '/'); // Enforce posix path
 export const SETTINGS_FILE = 'settings.xml';
 export const PRIVATE_KEY_FILE = 'private-key.asc';
 
