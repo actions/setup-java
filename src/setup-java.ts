@@ -12,9 +12,6 @@ const DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 
 async function run() {
   try {
-    // Set secrets before use
-    core.setSecret('gpg-private-key');
-
     let version = core.getInput('version');
     if (!version) {
       version = core.getInput('java-version', {required: true});
@@ -39,6 +36,10 @@ async function run() {
     const gpgPassphrase =
       core.getInput('gpg-passphrase', {required: false}) ||
       (gpgPrivateKey ? DEFAULT_GPG_PASSPHRASE : undefined);
+
+    if (gpgPrivateKey) {
+      core.setSecret(gpgPrivateKey);
+    }
 
     await auth.configAuthentication(id, username, password, gpgPassphrase);
 

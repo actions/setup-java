@@ -28628,8 +28628,6 @@ const DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            // Set secrets before use
-            core.setSecret('gpg-private-key');
             let version = core.getInput('version');
             if (!version) {
                 version = core.getInput('java-version', { required: true });
@@ -28647,6 +28645,9 @@ function run() {
                 DEFAULT_GPG_PRIVATE_KEY;
             const gpgPassphrase = core.getInput('gpg-passphrase', { required: false }) ||
                 (gpgPrivateKey ? DEFAULT_GPG_PASSPHRASE : undefined);
+            if (gpgPrivateKey) {
+                core.setSecret(gpgPrivateKey);
+            }
             yield auth.configAuthentication(id, username, password, gpgPassphrase);
             if (gpgPrivateKey) {
                 console.log('importing private key');
