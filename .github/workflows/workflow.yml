@@ -35,15 +35,16 @@ jobs:
       if: runner.os == 'windows'
       run: move "${{ runner.tool_cache }}" "${{ runner.tool_cache }}.old"
     - name: Setup Java 13
+      id: setup-java
       uses: ./
       with:
         java-version: 13.0.2
     - name: Verify Java 13
       if: runner.os != 'windows'
-      run: __tests__/verify-java.sh 13.0.2
+      run: __tests__/verify-java.sh 13.0.2 "${{ steps.setup-java.outputs.path }}" "${{ steps.setup-java.outputs.version }}"
     - name: Verify Java 13 (Windows)
       if: runner.os == 'windows'
-      run: __tests__/verify-java.ps1 13.0.2
+      run: __tests__/verify-java.ps1 13.0.2 "${{ steps.setup-java.outputs.path }}" "${{ steps.setup-java.outputs.version }}"
 
   test-proxy:
     runs-on: ubuntu-latest
@@ -62,11 +63,12 @@ jobs:
     - name: Clear tool cache
       run: rm -rf $RUNNER_TOOL_CACHE/*
     - name: Setup Java 13
+      id: setup-java
       uses: ./
       with:
         java-version: 13.0.2
     - name: Verify Java 13
-      run: __tests__/verify-java.sh 13.0.2
+      run: __tests__/verify-java.sh 13.0.2 "${{ steps.setup-java.outputs.path }}" "${{ steps.setup-java.outputs.version }}"
 
   test-bypass-proxy:
     runs-on: ubuntu-latest
@@ -78,8 +80,9 @@ jobs:
     - name: Clear tool cache
       run: rm -rf $RUNNER_TOOL_CACHE/*
     - name: Setup Java 13
+      id: setup-java
       uses: ./
       with:
         java-version: 13.0.2
     - name: Verify Java 13
-      run: __tests__/verify-java.sh 13.0.2
+      run: __tests__/verify-java.sh 13.0.2 "${{ steps.setup-java.outputs.path }}" "${{ steps.setup-java.outputs.version }}"

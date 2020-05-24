@@ -36,6 +36,11 @@ inputs:
   settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false
+outputs:
+  path:
+    description: 'Path to where the java environment has been installed (same as $JAVA_HOME)'
+  version:
+    description: 'Actual version of the java environment that has been installed'
 runs:
   using: 'node12'
   main: 'dist/index.js'
