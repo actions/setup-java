@@ -9,7 +9,7 @@ inputs:
        Early access versions can be specified in the form of e.g. 14-ea,
        14.0.0-ea, or 14.0.0-ea.28'
     required: true
-  vendor:
+  distro:
     description: 'The vendor to fetch the binary from (adoptopenjdk, zulu).
     Defaults to adoptopenjdk'
     required: false
