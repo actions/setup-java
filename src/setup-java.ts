@@ -11,13 +11,14 @@ async function run() {
     if (!version) {
       version = core.getInput(constants.INPUT_JAVA_VERSION, {required: true});
     }
+    const vendor = core.getInput('vendor', {required: true});
     const arch = core.getInput(constants.INPUT_ARCHITECTURE, {required: true});
     const javaPackage = core.getInput(constants.INPUT_JAVA_PACKAGE, {
       required: true
     });
     const jdkFile = core.getInput(constants.INPUT_JDK_FILE, {required: false});
 
-    await installer.getJava(version, arch, jdkFile, javaPackage);
+    await installer.getJava(version, vendor, arch, jdkFile, javaPackage);
 
     const matchersPath = path.join(__dirname, '..', '..', '.github');
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);

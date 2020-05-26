@@ -13,6 +13,7 @@ const IS_WINDOWS = util.isWindows();
 
 export async function getJava(
   version: string,
+  vendor: string,
   arch: string,
   jdkFile: string,
   javaPackage: string
@@ -23,31 +24,26 @@ export async function getJava(
     core.debug(`Tool found in cache ${toolPath}`);
   } else {
     let compressedFileExtension = '';
+
     if (!jdkFile) {
-      core.debug('Downloading JDK from Azul');
-      const http = new httpm.HttpClient('setup-java', undefined, {
-        allowRetries: true,
-        maxRetries: 3
-      });
-      const url = 'https://static.azul.com/zulu/bin/';
-      const response = await http.get(url);
-      const statusCode = response.message.statusCode || 0;
-      if (statusCode < 200 || statusCode > 299) {
-        let body = '';
-        try {
-          body = await response.readBody();
-        } catch (err) {
-          core.debug(`Unable to read body: ${err.message}`);
+      async function setupVendor(vendor: string) {
+        switch (vendor) {
+          case 'adoptopenjdk':
+            [jdkFile, version] = await getJavaAdoptOpenJDK(
+              version,
+              javaPackage,
+              arch
+            );
+            break;
+          case 'zulu':
+            [jdkFile, version] = await getJavaZulu(version, javaPackage);
+            break;
         }
-        const message = `Unexpected HTTP status code '${response.message.statusCode}' when retrieving versions from '${url}'. ${body}`.trim();
-        throw new Error(message);
+        return [jdkFile, version];
       }
 
-      const contents = await response.readBody();
-      const refs = contents.match(/<a href.*\">/gi) || [];
-      const downloadInfo = getDownloadInfo(refs, version, javaPackage);
-      jdkFile = await tc.downloadTool(downloadInfo.url);
-      version = downloadInfo.version;
+      [jdkFile, version] = await setupVendor(vendor);
+
       compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
     } else {
       core.debug('Retrieving Jdk from local path');
@@ -71,6 +67,8 @@ export async function getJava(
     );
   }
 
+  if (process.platform === 'darwin') toolPath += '/Contents/Home';
+
   let extendedJavaHome = 'JAVA_HOME_' + version + '_' + arch;
   core.exportVariable(extendedJavaHome, toolPath); //TODO: remove for v2
   // For portability reasons environment variables should only consist of
@@ -83,6 +81,52 @@ export async function getJava(
   core.addPath(path.join(toolPath, 'bin'));
   core.setOutput('path', toolPath);
   core.setOutput('version', version);
+}
+
+async function getJavaZulu(version: string, javaPackage: string) {
+  core.debug('Downloading JDK from Azul');
+  const http = new httpm.HttpClient('setup-java', undefined, {
+    allowRetries: true,
+    maxRetries: 3
+  });
+
+  const url = 'https://static.azul.com/zulu/bin/';
+
+  const response = await http.get(url);
+  const statusCode = response.message.statusCode || 0;
+  if (statusCode < 200 || statusCode > 299) {
+    let body = '';
+    try {
+      body = await response.readBody();
+    } catch (err) {
+      core.debug(`Unable to read body: ${err.message}`);
+    }
+    const message = `Unexpected HTTP status code '${response.message.statusCode}' when retrieving versions from '${url}'. ${body}`.trim();
+    throw new Error(message);
+  }
+
+  const contents = await response.readBody();
+  const refs = contents.match(/<a href.*\">/gi) || [];
+  const downloadInfo = getDownloadInfo(refs, version, javaPackage);
+  const jdkFile = await tc.downloadTool(downloadInfo.url);
+
+  version = downloadInfo.version;
+  return [jdkFile, version];
+}
+
+async function getJavaAdoptOpenJDK(
+  version: string,
+  javaPackage: string,
+  arch: string
+) {
+  core.debug('Downloading JDK from AdoptOpenJDK');
+
+  const jdkFile = await tc.downloadTool(
+    `https://api.adoptopenjdk.net/v3/binary/latest/${normalizeAdoptOpenJDK(
+      version
+    )}/ga/${OS}/${arch}/${javaPackage}/hotspot/normal/adoptopenjdk`
+  );
+  return [jdkFile, version];
 }
 
 function getCacheVersionString(version: string) {
@@ -288,5 +332,10 @@ function normalizeVersion(version: string): string {
     }
   }
 
+  return version;
+}
+
+function normalizeAdoptOpenJDK(version: string): string {
+  if (version == '1.8') return '8';
   return version;
 }

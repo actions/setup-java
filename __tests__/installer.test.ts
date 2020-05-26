@@ -13,12 +13,15 @@ import * as installer from '../src/installer';
 
 let javaFilePath = '';
 let javaUrl = '';
+let additionalPath = '';
 if (process.platform === 'win32') {
   javaFilePath = path.join(javaDir, 'java_win.zip');
   javaUrl =
     'https://download.java.net/java/GA/jdk12/33/GPL/openjdk-12_windows-x64_bin.zip';
 } else if (process.platform === 'darwin') {
   javaFilePath = path.join(javaDir, 'java_mac.tar.gz');
+  // macOS tarballs are in bundle format
+  additionalPath = '/Contents/Home';
   javaUrl =
     'https://download.java.net/java/GA/jdk12/33/GPL/openjdk-12_osx-x64_bin.tar.gz';
 } else {
@@ -51,34 +54,57 @@ describe('installer tests', () => {
     }
   }, 100000);
 
-  it('Installs version of Java from jdkFile if no matching version is installed', async () => {
-    await installer.getJava('12', 'x64', javaFilePath, 'jdk');
+  it('Installs version of Java from jdkFile if no matching version is installed AdoptOpenJDK', async () => {
+    await installer.getJava('12', 'adoptopenjdk', 'x64', javaFilePath, 'jdk');
     const JavaDir = path.join(toolDir, 'jdk', '12.0.0', 'x64');
-
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
-    expect(fs.existsSync(path.join(JavaDir, 'bin'))).toBe(true);
+    expect(fs.existsSync(path.join(JavaDir, additionalPath, 'bin'))).toBe(true);
   }, 100000);
 
-  it('Throws if invalid directory to jdk', async () => {
+  it('Installs version of Java from jdkFile if no matching version is installed Zulu', async () => {
+    await installer.getJava('12', 'zulu', 'x64', javaFilePath, 'jdk');
+    const JavaDir = path.join(toolDir, 'jdk', '12.0.0', 'x64');
+    expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
+    expect(fs.existsSync(path.join(JavaDir, additionalPath, 'bin'))).toBe(true);
+  }, 100000);
+
+  it('Throws if invalid directory to jdk AdoptOpenJDK', async () => {
     let thrown = false;
     try {
-      await installer.getJava('1000', 'x64', 'bad path', 'jdk');
+      await installer.getJava('1000', 'adoptopenjdk', 'x64', 'bad path', 'jdk');
     } catch {
       thrown = true;
     }
     expect(thrown).toBe(true);
   });
 
-  it('Downloads java if no file given', async () => {
-    await installer.getJava('8.0.102', 'x64', '', 'jdk');
-    const JavaDir = path.join(toolDir, 'jdk', '8.0.102', 'x64');
+  it('Throws if invalid directory to jdk Zulu', async () => {
+    let thrown = false;
+    try {
+      await installer.getJava('1000', 'zulu', 'x64', 'bad path', 'jdk');
+    } catch {
+      thrown = true;
+    }
+    expect(thrown).toBe(true);
+  });
 
+  it('Downloads java if no file given AdoptOpenJDK', async () => {
+    await installer.getJava('8', 'adoptopenjdk', 'x64', '', 'jdk');
+    const JavaDir = path.join(toolDir, 'jdk', '8.0.0', 'x64');
+
+    expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
+    expect(fs.existsSync(path.join(JavaDir, additionalPath, 'bin'))).toBe(true);
+  }, 100000);
+
+  it('Downloads java if no file given Zulu', async () => {
+    await installer.getJava('8.0.102', 'zulu', 'x64', '', 'jdk');
+    const JavaDir = path.join(toolDir, 'jdk', '8.0.102', 'x64');
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
     expect(fs.existsSync(path.join(JavaDir, 'bin'))).toBe(true);
   }, 100000);
 
   it('Downloads java with 1.x syntax', async () => {
-    await installer.getJava('1.10', 'x64', '', 'jdk');
+    await installer.getJava('1.10', 'zulu', 'x64', '', 'jdk');
     const JavaDir = path.join(toolDir, 'jdk', '10.0.2', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
@@ -86,15 +112,23 @@ describe('installer tests', () => {
   }, 100000);
 
   it('Downloads java with normal semver syntax', async () => {
-    await installer.getJava('9.0.x', 'x64', '', 'jdk');
+    await installer.getJava('9.0.x', 'zulu', 'x64', '', 'jdk');
     const JavaDir = path.join(toolDir, 'jdk', '9.0.7', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
     expect(fs.existsSync(path.join(JavaDir, 'bin'))).toBe(true);
   }, 100000);
 
-  it('Downloads java if package is jre', async () => {
-    await installer.getJava('8.0.222', 'x64', '', 'jre');
+  it('Downloads java if package is jre AdoptOpenJDK', async () => {
+    await installer.getJava('11', 'adoptopenjdk', 'x64', '', 'jre');
+    const JavaDir = path.join(toolDir, 'jre', '11.0.0', 'x64');
+
+    expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
+    expect(fs.existsSync(path.join(JavaDir, additionalPath, 'bin'))).toBe(true);
+  }, 100000);
+
+  it('Downloads java if package is jre Zulu', async () => {
+    await installer.getJava('8.0.222', 'zulu', 'x64', '', 'jre');
     const JavaDir = path.join(toolDir, 'jre', '8.0.222', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
@@ -102,17 +136,27 @@ describe('installer tests', () => {
   }, 100000);
 
   it('Downloads java if package is jdk+fx', async () => {
-    await installer.getJava('8.0.222', 'x64', '', 'jdk+fx');
+    await installer.getJava('8.0.222', 'zulu', 'x64', '', 'jdk+fx');
     const JavaDir = path.join(toolDir, 'jdk+fx', '8.0.222', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
     expect(fs.existsSync(path.join(JavaDir, 'bin'))).toBe(true);
   }, 100000);
 
-  it('Throws if invalid java package is specified', async () => {
+  it('Throws if invalid java package is specified AdoptOpenJDK', async () => {
     let thrown = false;
     try {
-      await installer.getJava('8.0.222', 'x64', '', 'bad jdk');
+      await installer.getJava('8', 'adoptopenjdk', 'x64', '', 'bad jdk');
+    } catch {
+      thrown = true;
+    }
+    expect(thrown).toBe(true);
+  });
+
+  it('Throws if invalid java package is specified Zulu', async () => {
+    let thrown = false;
+    try {
+      await installer.getJava('8.0.222', 'zulu', 'x64', '', 'bad jdk');
     } catch {
       thrown = true;
     }
@@ -122,7 +166,7 @@ describe('installer tests', () => {
   it('Throws if invalid directory to jdk', async () => {
     let thrown = false;
     try {
-      await installer.getJava('1000', 'x64', 'bad path', 'jdk');
+      await installer.getJava('1000', 'zulu', 'x64', 'bad path', 'jdk');
     } catch {
       thrown = true;
     }
@@ -136,6 +180,7 @@ describe('installer tests', () => {
     // This will throw if it doesn't find it in the cache (because no such version exists)
     await installer.getJava(
       '250',
+      'zulu',
       'x64',
       'path shouldnt matter, found in cache',
       'jdk'
@@ -149,7 +194,7 @@ describe('installer tests', () => {
     let thrown = false;
     try {
       // This will throw if it doesn't find it in the cache (because no such version exists)
-      await installer.getJava('251', 'x64', 'bad path', 'jdk');
+      await installer.getJava('251', 'zulu', 'x64', 'bad path', 'jdk');
     } catch {
       thrown = true;
     }

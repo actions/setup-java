@@ -19,7 +19,8 @@ steps:
 - uses: actions/checkout@v2
 - uses: actions/setup-java@v1
   with:
-    java-version: '9.0.4' # The JDK version to make available on the path.
+    java-version: '11' # The JDK version to make available on the path.
+    vendor: adoptopenjdk # (adoptopenjdk or zulu) - defaults to adoptopenjdk
     java-package: jdk # (jre, jdk, or jdk+fx) - defaults to jdk
     architecture: x64 # (x64 or x86) - defaults to x64
 - run: java -cp java HelloWorldApp
@@ -30,13 +31,13 @@ Examples of version specifications that the java-version parameter will accept:
 
   e.g. ```6, 7, 8, 9, 10, 11, 12, 13, ...```
 
-- A semver Java version specification
+- A semver Java version specification (Zulu only)
 
   e.g. ```8.0.232, 7.0.181, 11.0.4```
 
   e.g. ```8.0.x, >11.0.3, >=13.0.1, <8.0.212```
-
-- An early access (EA) Java version
+  
+- An early access (EA) Java version (Zulu only)
 
   e.g. ```14-ea, 15-ea```
 
@@ -46,7 +47,7 @@ Examples of version specifications that the java-version parameter will accept:
 
   Note that, per semver rules, EA builds will be matched by explicit EA version specifications.
 
-- 1.x syntax
+- 1.x syntax (Zulu only)
 
     e.g. ```1.8``` (same as ```8```)
 

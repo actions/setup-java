@@ -12,6 +12,7 @@ export function getTempDir() {
     } else {
       if (process.platform === 'darwin') {
         baseLocation = '/Users';
+        toolPath += '/Contents/Home';
       } else {
         baseLocation = '/home';
       }
