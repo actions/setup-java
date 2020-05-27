@@ -36,6 +36,9 @@ export async function getJavaAdoptOpenJDK(
 
   const parsedContents = JSON.parse(contents)[0];
 
+  // turn 13.0.2+8.1 into 13.0.2
+  version = parsedContents.version_data.semver.split('+')[0];
+
   const jdkFile = await tc.downloadTool(
     parsedContents.binaries[0].package.link
   );
