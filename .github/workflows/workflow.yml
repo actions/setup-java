@@ -20,7 +20,33 @@ jobs:
     - name: npm test
       run: npm test
 
-  test:
+  testAdoptOpenJDK:
+      runs-on: ${{ matrix.operating-system }}
+      strategy:
+        matrix:
+          operating-system: [ubuntu-latest, windows-latest]
+      steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Clear tool cache
+        if: runner.os != 'windows'
+        run: mv "${{ runner.tool_cache }}" "${{ runner.tool_cache }}.old"
+      - name: Clear tool cache (Windows)
+        if: runner.os == 'windows'
+        run: move "${{ runner.tool_cache }}" "${{ runner.tool_cache }}.old"
+      - name: Setup Java 13
+        uses: ./
+        with:
+          java-version: 13.0.2
+          distro: adoptopenjdk
+      - name: Verify Java 13
+        if: runner.os != 'windows'
+        run: __tests__/verify-java.sh 13.0.2
+      - name: Verify Java 13 (Windows)
+        if: runner.os == 'windows'
+        run: __tests__/verify-java.ps1 13.0.2
+
+  testZulu:
     runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
@@ -46,6 +72,7 @@ jobs:
       if: runner.os == 'windows'
       run: __tests__/verify-java.ps1 13.0.2 "${{ steps.setup-java.outputs.path }}" "${{ steps.setup-java.outputs.version }}"
 
+<<<<<<< HEAD
   test-proxy-adopt:
     runs-on: ubuntu-latest
     container:
@@ -72,6 +99,9 @@ jobs:
 
 
   test-proxy-zulu:
+=======
+  test-proxy:
+>>>>>>> add more capabilities
     runs-on: ubuntu-latest
     container:
       image: ubuntu:latest

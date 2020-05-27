@@ -89,8 +89,8 @@ describe('installer tests', () => {
   });
 
   it('Downloads java if no file given AdoptOpenJDK', async () => {
-    await installer.getJava('8', 'adoptopenjdk', 'x64', '', 'jdk');
-    const JavaDir = path.join(toolDir, 'jdk', '8.0.0', 'x64');
+    await installer.getJava('8.0.252', 'adoptopenjdk', 'x64', '', 'jdk');
+    const JavaDir = path.join(toolDir, 'jdk', '8.0.252', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
     expect(fs.existsSync(path.join(JavaDir, additionalPath, 'bin'))).toBe(true);
@@ -103,7 +103,15 @@ describe('installer tests', () => {
     expect(fs.existsSync(path.join(JavaDir, 'bin'))).toBe(true);
   }, 100000);
 
-  it('Downloads java with 1.x syntax', async () => {
+  it('Downloads java with 1.x syntax AdoptOpenJDK', async () => {
+    await installer.getJava('1.13', 'adoptopenjdk', 'x64', '', 'jdk');
+    const JavaDir = path.join(toolDir, 'jdk', '13.0.2', 'x64');
+
+    expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
+    expect(fs.existsSync(path.join(JavaDir, additionalPath, 'bin'))).toBe(true);
+  }, 100000);
+
+  it('Downloads java with 1.x syntax Zulu', async () => {
     await installer.getJava('1.10', 'zulu', 'x64', '', 'jdk');
     const JavaDir = path.join(toolDir, 'jdk', '10.0.2', 'x64');
 
@@ -111,7 +119,15 @@ describe('installer tests', () => {
     expect(fs.existsSync(path.join(JavaDir, 'bin'))).toBe(true);
   }, 100000);
 
-  it('Downloads java with normal semver syntax', async () => {
+  it('Downloads java with normal semver syntax AdoptOpenJDK', async () => {
+    await installer.getJava('13.0.x', 'adoptopenjdk', 'x64', '', 'jdk');
+    const JavaDir = path.join(toolDir, 'jdk', '13.0.2', 'x64');
+
+    expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
+    expect(fs.existsSync(path.join(JavaDir, additionalPath, 'bin'))).toBe(true);
+  }, 100000);
+
+  it('Downloads java with normal semver syntax Zulu', async () => {
     await installer.getJava('9.0.x', 'zulu', 'x64', '', 'jdk');
     const JavaDir = path.join(toolDir, 'jdk', '9.0.7', 'x64');
 
@@ -120,8 +136,8 @@ describe('installer tests', () => {
   }, 100000);
 
   it('Downloads java if package is jre AdoptOpenJDK', async () => {
-    await installer.getJava('11', 'adoptopenjdk', 'x64', '', 'jre');
-    const JavaDir = path.join(toolDir, 'jre', '11.0.0', 'x64');
+    await installer.getJava('11.0.2', 'adoptopenjdk', 'x64', '', 'jre');
+    const JavaDir = path.join(toolDir, 'jre', '11.0.2', 'x64');
 
     expect(fs.existsSync(`${JavaDir}.complete`)).toBe(true);
     expect(fs.existsSync(path.join(JavaDir, additionalPath, 'bin'))).toBe(true);
