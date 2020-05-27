@@ -35,17 +35,17 @@ jobs:
         if: runner.os == 'windows'
         run: move "${{ runner.tool_cache }}" "${{ runner.tool_cache }}.old"
       - name: Setup Java 13
-        id: setup-java
+        id: setup-java-adopt
         uses: ./
         with:
           java-version: 13.0.2
           distro: adoptopenjdk
       - name: Verify Java 13
         if: runner.os != 'windows'
-        run: __tests__/verify-java.sh 13.0.2 "${{ steps.setup-java.outputs.path }}" "${{ steps.setup-java.outputs.version }}"
+        run: __tests__/verify-java.sh 13.0.2 "${{ steps.setup-java-adopt.outputs.path }}" "${{ steps.setup-java-adopt.outputs.version }}"
       - name: Verify Java 13 (Windows)
         if: runner.os == 'windows'
-        run: __tests__/verify-java.ps1 13.0.2 "${{ steps.setup-java.outputs.path }}" "${{ steps.setup-java.outputs.version }}"
+        run: __tests__/verify-java.ps1 13.0.2 "${{ steps.setup-java-adopt.outputs.path }}" "${{ steps.setup-java-adopt.outputs.version }}"
 
   testZulu:
     runs-on: ${{ matrix.operating-system }}
@@ -62,16 +62,16 @@ jobs:
       if: runner.os == 'windows'
       run: move "${{ runner.tool_cache }}" "${{ runner.tool_cache }}.old"
     - name: Setup Java 13
-      id: setup-java
+      id: setup-java-zulu
       uses: ./
       with:
         java-version: 13.0.2
     - name: Verify Java 13
       if: runner.os != 'windows'
-      run: __tests__/verify-java.sh 13.0.2 "${{ steps.setup-java.outputs.path }}" "${{ steps.setup-java.outputs.version }}"
+      run: __tests__/verify-java.sh 13.0.2 "${{ steps.setup-java-zulu.outputs.path }}" "${{ steps.setup-java-zulu.outputs.version }}"
     - name: Verify Java 13 (Windows)
       if: runner.os == 'windows'
-      run: __tests__/verify-java.ps1 13.0.2 "${{ steps.setup-java.outputs.path }}" "${{ steps.setup-java.outputs.version }}"
+      run: __tests__/verify-java.ps1 13.0.2 "${{ steps.setup-java-zulu.outputs.path }}" "${{ steps.setup-java-zulu.outputs.version }}"
 
 <<<<<<< HEAD
   test-proxy-adopt:
