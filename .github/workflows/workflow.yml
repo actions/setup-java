@@ -73,7 +73,6 @@ jobs:
       if: runner.os == 'windows'
       run: __tests__/verify-java.ps1 13.0.2 "${{ steps.setup-java-zulu.outputs.path }}" "${{ steps.setup-java-zulu.outputs.version }}"
 
-<<<<<<< HEAD
   test-proxy-adopt:
     runs-on: ubuntu-latest
     container:
@@ -100,9 +99,6 @@ jobs:
 
 
   test-proxy-zulu:
-=======
-  test-proxy:
->>>>>>> add more capabilities
     runs-on: ubuntu-latest
     container:
       image: ubuntu:latest
