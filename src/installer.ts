@@ -87,6 +87,7 @@ export async function getJava(
   }
 
   let extendedJavaHome = 'JAVA_HOME_' + version + '_' + arch;
+  extendedJavaHome = extendedJavaHome.toUpperCase().replace(/[^0-9A-Z_]/g, '_');
   core.exportVariable('JAVA_HOME', toolPath);
   core.exportVariable(extendedJavaHome, toolPath);
   core.addPath(path.join(toolPath, 'bin'));

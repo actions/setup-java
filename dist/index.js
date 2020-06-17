@@ -4742,6 +4742,7 @@ function getJava(version, arch, jdkFile, javaPackage) {
             toolPath = yield tc.cacheDir(jdkDir, javaPackage, getCacheVersionString(version), arch);
         }
         let extendedJavaHome = 'JAVA_HOME_' + version + '_' + arch;
+        extendedJavaHome = extendedJavaHome.toUpperCase().replace(/[^0-9A-Z_]/g, '_');
         core.exportVariable('JAVA_HOME', toolPath);
         core.exportVariable(extendedJavaHome, toolPath);
         core.addPath(path.join(toolPath, 'bin'));
