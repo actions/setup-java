@@ -87,6 +87,12 @@ export async function getJava(
   }
 
   let extendedJavaHome = 'JAVA_HOME_' + version + '_' + arch;
+  core.exportVariable(extendedJavaHome, toolPath); //TODO: remove for v2
+  // For portability reasons environment variables should only consist of
+  // uppercase letters, digits, and the underscore. Therefore we convert
+  // the extendedJavaHome variable to upper case and replace '.' symbols and
+  // any other non-alphanumeric characters with an underscore.
+  extendedJavaHome = extendedJavaHome.toUpperCase().replace(/[^0-9A-Z_]/g, '_');
   core.exportVariable('JAVA_HOME', toolPath);
   core.exportVariable(extendedJavaHome, toolPath);
   core.addPath(path.join(toolPath, 'bin'));
