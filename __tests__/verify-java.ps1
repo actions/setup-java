@@ -9,3 +9,23 @@ if (!$java_version.Contains($args[0]))
 {
   throw "Unexpected version"
 }
+
+if ($args.Count -lt 2 -or !$args[1])
+{
+  throw "Must supply java path argument"
+}
+
+if ($args[1] -ne $Env:JAVA_HOME)
+{
+  throw "Unexpected path"
+}
+
+if ($args.Count -lt 3 -or !$args[2])
+{
+  throw "Must supply java version argument"
+}
+
+if ($args[0] -ne $args[2])
+{
+  throw "Unexpected version"
+}
