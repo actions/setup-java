@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as core from '@actions/core';
 import * as io from '@actions/io';
 import {create as xmlCreate} from 'xmlbuilder2';
+import * as constants from './constants';
 
 export const M2_DIR = '.m2';
 export const SETTINGS_FILE = 'settings.xml';
@@ -24,8 +25,8 @@ export async function configAuthentication(
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
   const settingsDirectory: string = path.join(
-    core.getInput('settings-path') || os.homedir(),
-    core.getInput('settings-path') ? '' : M2_DIR
+    core.getInput(constants.INPUT_SETTINGS_PATH) || os.homedir(),
+    core.getInput(constants.INPUT_SETTINGS_PATH) ? '' : M2_DIR
   );
   await io.mkdirP(settingsDirectory);
   core.debug(`created directory ${settingsDirectory}`);
