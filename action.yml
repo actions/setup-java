@@ -21,18 +21,22 @@ inputs:
     description: 'Path to where the compressed JDK is located. The path could
        be in your source repository or a local path on the agent.'
     required: false
+    default: ''
   server-id:
     description: 'ID of the distributionManagement repository in the pom.xml
        file. Default is `github`'
     required: false
+    default: 'github'
   server-username:
     description: 'Environment variable name for the username for authentication
        to the Apache Maven repository. Default is $GITHUB_ACTOR'
     required: false
+    default: 'GITHUB_ACTOR'
   server-password:
     description: 'Environment variable name for password or token for
        authentication to the Apache Maven repository. Default is $GITHUB_TOKEN'
     required: false
+    default: 'GITHUB_TOKEN'
   settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false
@@ -43,6 +47,7 @@ inputs:
     description: 'Environment variable name for the GPG private key passphrase. Default is
        $GPG_PASSPHRASE.'
     required: false
+    default: 'GPG_PASSHPRASE'
 outputs:
   path:
     description: 'Path to where the java environment has been installed (same as $JAVA_HOME)'

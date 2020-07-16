@@ -25647,6 +25647,28 @@ exports.range = range;
 
 /***/ }),
 
+/***/ 694:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.INPUT_VERSION = 'version';
+exports.INPUT_JAVA_VERSION = 'java-version';
+exports.INPUT_ARCHITECTURE = 'architecture';
+exports.INPUT_JAVA_PACKAGE = 'java-package';
+exports.INPUT_JDK_FILE = 'jdkFile';
+exports.INPUT_SERVER_ID = 'server-id';
+exports.INPUT_SERVER_USERNAME = 'server-username';
+exports.INPUT_SERVER_PASSWORD = 'server-password';
+exports.INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
+exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
+exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
+exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
+
+
+/***/ }),
+
 /***/ 695:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -28650,40 +28672,46 @@ const core = __importStar(__webpack_require__(470));
 const installer = __importStar(__webpack_require__(923));
 const auth = __importStar(__webpack_require__(331));
 const gpg = __importStar(__webpack_require__(884));
+const constants = __importStar(__webpack_require__(694));
 const path = __importStar(__webpack_require__(622));
-const DEFAULT_ID = 'github';
-const DEFAULT_USERNAME = 'GITHUB_ACTOR';
-const DEFAULT_PASSWORD = 'GITHUB_TOKEN';
-const DEFAULT_GPG_PRIVATE_KEY = undefined;
-const DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let version = core.getInput('version');
+            let version = core.getInput(constants.INPUT_VERSION);
             if (!version) {
-                version = core.getInput('java-version', { required: true });
+                version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
             }
-            const arch = core.getInput('architecture', { required: true });
-            const javaPackage = core.getInput('java-package', { required: true });
-            const jdkFile = core.getInput('jdkFile', { required: false }) || '';
+            const arch = core.getInput(constants.INPUT_ARCHITECTURE, { required: true });
+            const javaPackage = core.getInput(constants.INPUT_JAVA_PACKAGE, {
+                required: true
+            });
+            const jdkFile = core.getInput(constants.INPUT_JDK_FILE, { required: false });
             yield installer.getJava(version, arch, jdkFile, javaPackage);
             const matchersPath = path.join(__dirname, '..', '..', '.github');
-            console.log(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
-            const id = core.getInput('server-id', { required: false }) || DEFAULT_ID;
-            const username = core.getInput('server-username', { required: false }) || DEFAULT_USERNAME;
-            const password = core.getInput('server-password', { required: false }) || DEFAULT_PASSWORD;
-            const gpgPrivateKey = core.getInput('gpg-private-key', { required: false }) ||
-                DEFAULT_GPG_PRIVATE_KEY;
-            const gpgPassphrase = core.getInput('gpg-passphrase', { required: false }) ||
-                (gpgPrivateKey ? DEFAULT_GPG_PASSPHRASE : undefined);
+            core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
+            const id = core.getInput(constants.INPUT_SERVER_ID, { required: false });
+            const username = core.getInput(constants.INPUT_SERVER_USERNAME, {
+                required: false
+            });
+            const password = core.getInput(constants.INPUT_SERVER_PASSWORD, {
+                required: false
+            });
+            const gpgPrivateKey = core.getInput(constants.INPUT_GPG_PRIVATE_KEY, {
+                required: false
+            });
+            const gpgPassphrase = core.getInput(constants.INPUT_GPG_PASSPHRASE, { required: false }) ||
+                (gpgPrivateKey ? constants.INPUT_DEFAULT_GPG_PASSPHRASE : undefined);
             if (gpgPrivateKey) {
                 core.setSecret(gpgPrivateKey);
             }
+            if (gpgPassphrase) {
+                core.setSecret(gpgPassphrase);
+            }
             yield auth.configAuthentication(id, username, password, gpgPassphrase);
             if (gpgPrivateKey) {
-                console.log('importing private key');
+                core.info('importing private key');
                 const keyFingerprint = (yield gpg.importKey(gpgPrivateKey)) || '';
-                core.saveState('gpg-private-key-fingerprint', keyFingerprint);
+                core.saveState(constants.STATE_GPG_PRIVATE_KEY_FINGERPRINT, keyFingerprint);
             }
         }
         catch (error) {

@@ -16,7 +16,7 @@ import gpg = require('../src/gpg');
 describe('gpg tests', () => {
   beforeEach(async () => {
     await io.mkdirP(tempDir);
-  }, 300000);
+  });
 
   afterAll(async () => {
     try {

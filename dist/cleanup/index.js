@@ -948,6 +948,28 @@ module.exports = require("child_process");
 
 /***/ }),
 
+/***/ 211:
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.INPUT_VERSION = 'version';
+exports.INPUT_JAVA_VERSION = 'java-version';
+exports.INPUT_ARCHITECTURE = 'architecture';
+exports.INPUT_JAVA_PACKAGE = 'java-package';
+exports.INPUT_JDK_FILE = 'jdkFile';
+exports.INPUT_SERVER_ID = 'server-id';
+exports.INPUT_SERVER_USERNAME = 'server-username';
+exports.INPUT_SERVER_PASSWORD = 'server-password';
+exports.INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
+exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
+exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
+exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
+
+
+/***/ }),
+
 /***/ 219:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -972,12 +994,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const gpg = __importStar(__webpack_require__(884));
+const constants = __importStar(__webpack_require__(211));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        if (core.getInput('gpg-private-key', { required: false })) {
-            console.log('removing private key from keychain');
+        if (core.getInput(constants.INPUT_GPG_PRIVATE_KEY, { required: false })) {
+            core.info('removing private key from keychain');
             try {
-                const keyFingerprint = core.getState('gpg-private-key-fingerprint');
+                const keyFingerprint = core.getState(constants.STATE_GPG_PRIVATE_KEY_FINGERPRINT);
                 yield gpg.deleteKey(keyFingerprint);
             }
             catch (error) {
