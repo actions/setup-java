@@ -25665,6 +25665,7 @@ exports.INPUT_SERVER_PASSWORD = 'server-password';
 exports.INPUT_SETTINGS_PATH = 'settings-path';
 exports.INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
+exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
 
@@ -28698,9 +28699,8 @@ function run() {
             const password = core.getInput(constants.INPUT_SERVER_PASSWORD, {
                 required: false
             });
-            const gpgPrivateKey = core.getInput(constants.INPUT_GPG_PRIVATE_KEY, {
-                required: false
-            });
+            const gpgPrivateKey = core.getInput(constants.INPUT_GPG_PRIVATE_KEY, { required: false }) ||
+                constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
             const gpgPassphrase = core.getInput(constants.INPUT_GPG_PASSPHRASE, { required: false }) ||
                 (gpgPrivateKey ? constants.INPUT_DEFAULT_GPG_PASSPHRASE : undefined);
             if (gpgPrivateKey) {

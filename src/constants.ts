@@ -10,6 +10,7 @@ export const INPUT_SETTINGS_PATH = 'settings-path';
 export const INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 export const INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 
+export const INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 export const INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 
 export const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';

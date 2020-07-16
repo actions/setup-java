@@ -965,6 +965,7 @@ exports.INPUT_SERVER_PASSWORD = 'server-password';
 exports.INPUT_SETTINGS_PATH = 'settings-path';
 exports.INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
+exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
 
