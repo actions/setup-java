@@ -40,10 +40,6 @@ async function run() {
       core.setSecret(gpgPrivateKey);
     }
 
-    if (gpgPassphrase) {
-      core.setSecret(gpgPassphrase);
-    }
-
     await auth.configAuthentication(id, username, password, gpgPassphrase);
 
     if (gpgPrivateKey) {

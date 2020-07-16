@@ -28706,9 +28706,6 @@ function run() {
             if (gpgPrivateKey) {
                 core.setSecret(gpgPrivateKey);
             }
-            if (gpgPassphrase) {
-                core.setSecret(gpgPassphrase);
-            }
             yield auth.configAuthentication(id, username, password, gpgPassphrase);
             if (gpgPrivateKey) {
                 core.info('importing private key');
