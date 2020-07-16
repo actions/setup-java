@@ -962,6 +962,7 @@ exports.INPUT_JDK_FILE = 'jdkFile';
 exports.INPUT_SERVER_ID = 'server-id';
 exports.INPUT_SERVER_USERNAME = 'server-username';
 exports.INPUT_SERVER_PASSWORD = 'server-password';
+exports.INPUT_SETTINGS_PATH = 'settings-path';
 exports.INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';

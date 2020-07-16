@@ -13204,6 +13204,7 @@ const path = __importStar(__webpack_require__(622));
 const core = __importStar(__webpack_require__(470));
 const io = __importStar(__webpack_require__(1));
 const xmlbuilder2_1 = __webpack_require__(255);
+const constants = __importStar(__webpack_require__(694));
 exports.M2_DIR = '.m2';
 exports.SETTINGS_FILE = 'settings.xml';
 function configAuthentication(id, username, password, gpgPassphrase = undefined) {
@@ -13211,7 +13212,7 @@ function configAuthentication(id, username, password, gpgPassphrase = undefined)
         console.log(`creating ${exports.SETTINGS_FILE} with server-id: ${id};`, 'environment variables:', `username=\$${username},`, `password=\$${password},`, `and gpg-passphrase=${gpgPassphrase ? '$' + gpgPassphrase : null}`);
         // when an alternate m2 location is specified use only that location (no .m2 directory)
         // otherwise use the home/.m2/ path
-        const settingsDirectory = path.join(core.getInput('settings-path') || os.homedir(), core.getInput('settings-path') ? '' : exports.M2_DIR);
+        const settingsDirectory = path.join(core.getInput(constants.INPUT_SETTINGS_PATH) || os.homedir(), core.getInput(constants.INPUT_SETTINGS_PATH) ? '' : exports.M2_DIR);
         yield io.mkdirP(settingsDirectory);
         core.debug(`created directory ${settingsDirectory}`);
         yield write(settingsDirectory, generate(id, username, password, gpgPassphrase));
@@ -25661,6 +25662,7 @@ exports.INPUT_JDK_FILE = 'jdkFile';
 exports.INPUT_SERVER_ID = 'server-id';
 exports.INPUT_SERVER_USERNAME = 'server-username';
 exports.INPUT_SERVER_PASSWORD = 'server-password';
+exports.INPUT_SETTINGS_PATH = 'settings-path';
 exports.INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
