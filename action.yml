@@ -46,7 +46,6 @@ inputs:
     description: 'Environment variable name for the GPG private key passphrase. Default is
        $GPG_PASSPHRASE.'
     required: false
-    default: 'GPG_PASSHPRASE'
 outputs:
   path:
     description: 'Path to where the java environment has been installed (same as $JAVA_HOME)'
