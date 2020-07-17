@@ -24,7 +24,7 @@ describe('gpg tests', () => {
     } catch {
       console.log('Failed to remove test directories');
     }
-  }, 100000);
+  });
 
   describe('importKey', () => {
     it('attempts to import private key and returns null key id on failure', async () => {
