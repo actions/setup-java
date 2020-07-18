@@ -1006,7 +1006,7 @@ function run() {
                 yield gpg.deleteKey(keyFingerprint);
             }
             catch (error) {
-                core.setFailed(error.message);
+                core.setFailed('failed to remove private key');
             }
         }
     });
