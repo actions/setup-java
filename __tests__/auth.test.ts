@@ -86,6 +86,23 @@ describe('auth tests', () => {
     );
   }, 100000);
 
+  it('does not overwrite existing settings.xml files', async () => {
+    const id = 'packages';
+    const username = 'USERNAME';
+    const password = 'PASSWORD';
+
+    fs.mkdirSync(m2Dir, {recursive: true});
+    fs.writeFileSync(settingsFile, 'FAKE FILE');
+    expect(fs.existsSync(m2Dir)).toBe(true);
+    expect(fs.existsSync(settingsFile)).toBe(true);
+
+    await auth.configAuthentication(id, username, password, false);
+
+    expect(fs.existsSync(m2Dir)).toBe(true);
+    expect(fs.existsSync(settingsFile)).toBe(true);
+    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual('FAKE FILE');
+  }, 100000);
+
   it('does not create settings.xml without required parameters', async () => {
     await auth.configAuthentication('FOO');
 
@@ -94,6 +111,7 @@ describe('auth tests', () => {
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
       auth.generate('FOO', auth.DEFAULT_USERNAME, auth.DEFAULT_PASSWORD)
     );
+    fs.unlinkSync(settingsFile);
 
     await auth.configAuthentication(undefined, 'BAR', undefined);
 
@@ -102,6 +120,7 @@ describe('auth tests', () => {
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
       auth.generate(auth.DEFAULT_ID, 'BAR', auth.DEFAULT_PASSWORD)
     );
+    fs.unlinkSync(settingsFile);
 
     await auth.configAuthentication(undefined, undefined, 'BAZ');
 
@@ -110,6 +129,7 @@ describe('auth tests', () => {
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
       auth.generate(auth.DEFAULT_ID, auth.DEFAULT_USERNAME, 'BAZ')
     );
+    fs.unlinkSync(settingsFile);
 
     await auth.configAuthentication();
 

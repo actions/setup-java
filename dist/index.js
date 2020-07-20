@@ -2884,7 +2884,7 @@ exports.SETTINGS_FILE = 'settings.xml';
 exports.DEFAULT_ID = 'github';
 exports.DEFAULT_USERNAME = 'GITHUB_ACTOR';
 exports.DEFAULT_PASSWORD = 'GITHUB_TOKEN';
-function configAuthentication(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, password = exports.DEFAULT_PASSWORD) {
+function configAuthentication(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, password = exports.DEFAULT_PASSWORD, overwriteSettings = true) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`creating ${exports.SETTINGS_FILE} with server-id: ${id};`, `environment variables: username=\$${username} and password=\$${password}`);
         // when an alternate m2 location is specified use only that location (no .m2 directory)
@@ -2892,7 +2892,7 @@ function configAuthentication(id = exports.DEFAULT_ID, username = exports.DEFAUL
         const directory = path.join(core.getInput('settings-path') || os.homedir(), core.getInput('settings-path') ? '' : exports.M2_DIR);
         yield io.mkdirP(directory);
         core.debug(`created directory ${directory}`);
-        yield write(directory, generate(id, username, password));
+        yield write(directory, generate(id, username, password), overwriteSettings);
     });
 }
 exports.configAuthentication = configAuthentication;
@@ -2919,14 +2919,19 @@ function generate(id = exports.DEFAULT_ID, username = exports.DEFAULT_USERNAME, 
   `;
 }
 exports.generate = generate;
-function write(directory, settings) {
+function write(directory, settings, overwriteSettings) {
     return __awaiter(this, void 0, void 0, function* () {
         const location = path.join(directory, exports.SETTINGS_FILE);
-        if (fs.existsSync(location)) {
+        const exists = fs.existsSync(location);
+        if (exists && overwriteSettings) {
             console.warn(`overwriting existing file ${location}`);
         }
-        else {
+        else if (!exists) {
             console.log(`writing ${location}`);
+        }
+        else {
+            console.log(`not overwriting existing file ${location}`);
+            return;
         }
         return fs.writeFileSync(location, settings, {
             encoding: 'utf-8',
@@ -4594,7 +4599,8 @@ function run() {
             const id = core.getInput('server-id', { required: false }) || undefined;
             const username = core.getInput('server-username', { required: false }) || undefined;
             const password = core.getInput('server-password', { required: false }) || undefined;
-            yield auth.configAuthentication(id, username, password);
+            const overwriteSettings = core.getInput('overwrite-settings', { required: false }) || 'true';
+            yield auth.configAuthentication(id, username, password, overwriteSettings === 'true');
         }
         catch (error) {
             core.setFailed(error.message);

@@ -36,6 +36,9 @@ inputs:
   settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false
+  overwrite-settings:
+    description: 'Overwrite the settings.xml file if it exists. Default is "true".'
+    required: false
 outputs:
   path:
     description: 'Path to where the java environment has been installed (same as $JAVA_HOME)'

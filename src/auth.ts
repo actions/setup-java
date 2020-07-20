@@ -14,7 +14,8 @@ export const DEFAULT_PASSWORD = 'GITHUB_TOKEN';
 export async function configAuthentication(
   id = DEFAULT_ID,
   username = DEFAULT_USERNAME,
-  password = DEFAULT_PASSWORD
+  password = DEFAULT_PASSWORD,
+  overwriteSettings = true
 ) {
   console.log(
     `creating ${SETTINGS_FILE} with server-id: ${id};`,
@@ -28,7 +29,7 @@ export async function configAuthentication(
   );
   await io.mkdirP(directory);
   core.debug(`created directory ${directory}`);
-  await write(directory, generate(id, username, password));
+  await write(directory, generate(id, username, password), overwriteSettings);
 }
 
 function escapeXML(value: string) {
@@ -59,12 +60,20 @@ export function generate(
   `;
 }
 
-async function write(directory: string, settings: string) {
+async function write(
+  directory: string,
+  settings: string,
+  overwriteSettings: boolean
+) {
   const location = path.join(directory, SETTINGS_FILE);
-  if (fs.existsSync(location)) {
+  const exists = fs.existsSync(location);
+  if (exists && overwriteSettings) {
     console.warn(`overwriting existing file ${location}`);
-  } else {
+  } else if (!exists) {
     console.log(`writing ${location}`);
+  } else {
+    console.log(`not overwriting existing file ${location}`);
+    return;
   }
 
   return fs.writeFileSync(location, settings, {

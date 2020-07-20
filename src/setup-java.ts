@@ -23,8 +23,15 @@ async function run() {
       core.getInput('server-username', {required: false}) || undefined;
     const password =
       core.getInput('server-password', {required: false}) || undefined;
+    const overwriteSettings =
+      core.getInput('overwrite-settings', {required: false}) || 'true';
 
-    await auth.configAuthentication(id, username, password);
+    await auth.configAuthentication(
+      id,
+      username,
+      password,
+      overwriteSettings === 'true'
+    );
   } catch (error) {
     core.setFailed(error.message);
   }
