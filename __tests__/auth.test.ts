@@ -53,7 +53,7 @@ describe('auth tests', () => {
     await io.rmRF(altHome);
   }, 100000);
 
-  it('creates settings.xml with username and password', async () => {
+  it('creates settings.xml with minimal configuration', async () => {
     const id = 'packages';
     const username = 'UNAME';
     const password = 'TOKEN';
@@ -64,6 +64,21 @@ describe('auth tests', () => {
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
       auth.generate(id, username, password)
+    );
+  }, 100000);
+
+  it('creates settings.xml with additional configuration', async () => {
+    const id = 'packages';
+    const username = 'UNAME';
+    const password = 'TOKEN';
+    const gpgPassphrase = 'GPG';
+
+    await auth.configAuthentication(id, username, password, gpgPassphrase);
+
+    expect(fs.existsSync(m2Dir)).toBe(true);
+    expect(fs.existsSync(settingsFile)).toBe(true);
+    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
+      auth.generate(id, username, password, gpgPassphrase)
     );
   }, 100000);
 
@@ -86,59 +101,50 @@ describe('auth tests', () => {
     );
   }, 100000);
 
-  it('does not create settings.xml without required parameters', async () => {
-    await auth.configAuthentication('FOO');
-
-    expect(fs.existsSync(m2Dir)).toBe(true);
-    expect(fs.existsSync(settingsFile)).toBe(true);
-    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate('FOO', auth.DEFAULT_USERNAME, auth.DEFAULT_PASSWORD)
-    );
-
-    await auth.configAuthentication(undefined, 'BAR', undefined);
-
-    expect(fs.existsSync(m2Dir)).toBe(true);
-    expect(fs.existsSync(settingsFile)).toBe(true);
-    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(auth.DEFAULT_ID, 'BAR', auth.DEFAULT_PASSWORD)
-    );
-
-    await auth.configAuthentication(undefined, undefined, 'BAZ');
-
-    expect(fs.existsSync(m2Dir)).toBe(true);
-    expect(fs.existsSync(settingsFile)).toBe(true);
-    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(auth.DEFAULT_ID, auth.DEFAULT_USERNAME, 'BAZ')
-    );
-
-    await auth.configAuthentication();
-
-    expect(fs.existsSync(m2Dir)).toBe(true);
-    expect(fs.existsSync(settingsFile)).toBe(true);
-    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(
-        auth.DEFAULT_ID,
-        auth.DEFAULT_USERNAME,
-        auth.DEFAULT_PASSWORD
-      )
-    );
-  }, 100000);
-
-  it('escapes invalid XML inputs', () => {
+  it('generates valid settings.xml with minimal configuration', () => {
     const id = 'packages';
     const username = 'USER';
     const password = '&<>"\'\'"><&';
 
-    expect(auth.generate(id, username, password)).toEqual(`
-  <settings>
-      <servers>
-        <server>
-          <id>${id}</id>
-          <username>\${env.${username}}</username>
-          <password>\${env.&amp;&lt;&gt;&quot;&apos;&apos;&quot;&gt;&lt;&amp;}</password>
-        </server>
-      </servers>
-  </settings>
-  `);
+    const expectedSettings = `<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <server>
+      <id>${id}</id>
+      <username>\${env.${username}}</username>
+      <password>\${env.&amp;&lt;&gt;"''"&gt;&lt;&amp;}</password>
+    </server>
+  </servers>
+</settings>`;
+
+    expect(auth.generate(id, username, password)).toEqual(expectedSettings);
+  });
+
+  it('generates valid settings.xml with additional configuration', () => {
+    const id = 'packages';
+    const username = 'USER';
+    const password = '&<>"\'\'"><&';
+    const gpgPassphrase = 'PASSPHRASE';
+
+    const expectedSettings = `<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <server>
+      <id>${id}</id>
+      <username>\${env.${username}}</username>
+      <password>\${env.&amp;&lt;&gt;"''"&gt;&lt;&amp;}</password>
+    </server>
+    <server>
+      <id>gpg.passphrase</id>
+      <passphrase>\${env.${gpgPassphrase}}</passphrase>
+    </server>
+  </servers>
+</settings>`;
+
+    expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(
+      expectedSettings
+    );
   });
 });

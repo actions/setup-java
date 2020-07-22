@@ -1,5 +1,3 @@
-let tempDirectory = process.env['RUNNER_TEMP'] || '';
-
 import * as core from '@actions/core';
 import * as io from '@actions/io';
 import * as exec from '@actions/exec';
@@ -8,23 +6,10 @@ import * as tc from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as semver from 'semver';
+import * as util from './util';
 
-const IS_WINDOWS = process.platform === 'win32';
-
-if (!tempDirectory) {
-  let baseLocation;
-  if (IS_WINDOWS) {
-    // On windows use the USERPROFILE env variable
-    baseLocation = process.env['USERPROFILE'] || 'C:\\';
-  } else {
-    if (process.platform === 'darwin') {
-      baseLocation = '/Users';
-    } else {
-      baseLocation = '/home';
-    }
-  }
-  tempDirectory = path.join(baseLocation, 'actions', 'temp');
-}
+const tempDirectory = util.getTempDir();
+const IS_WINDOWS = util.isWindows();
 
 export async function getJava(
   version: string,
