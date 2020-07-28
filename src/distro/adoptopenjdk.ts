@@ -5,10 +5,17 @@ import * as httpm from '@actions/http-client';
 export async function getJavaAdoptOpenJDK(
   version: string,
   javaPackage: string,
-  arch: string,
-  OS: string
+  arch: string
 ) {
   core.debug('Downloading JDK from AdoptOpenJDK');
+
+  let OS = process.platform.toString();
+
+  switch(process.platform) {
+    case 'darwin':
+      OS = 'mac';
+      break;
+  }
 
   const http = new httpm.HttpClient('setup-java', undefined, {
     allowRetries: true,

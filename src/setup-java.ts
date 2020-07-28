@@ -11,23 +11,13 @@ async function run() {
     if (!version) {
       version = core.getInput(constants.INPUT_JAVA_VERSION, {required: true});
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
     const vendor = core.getInput('vendor', {required: true});
     const arch = core.getInput(constants.INPUT_ARCHITECTURE, {required: true});
     const javaPackage = core.getInput(constants.INPUT_JAVA_PACKAGE, {
       required: true
     });
     const jdkFile = core.getInput(constants.INPUT_JDK_FILE, {required: false});
-=======
     const distro = core.getInput('vendor', {required: true});
-=======
-    const distro = core.getInput('distro', {required: true});
->>>>>>> fix lint issues
-    const arch = core.getInput('architecture', {required: true});
-    const javaPackage = core.getInput('java-package', {required: true});
-    const jdkFile = core.getInput('jdkFile', {required: false}) || '';
->>>>>>> break distro out into separate files
 
     await installer.getJava(version, distro, arch, jdkFile, javaPackage);
 

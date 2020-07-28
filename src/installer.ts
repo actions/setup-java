@@ -4,14 +4,11 @@ import * as exec from '@actions/exec';
 import * as tc from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as path from 'path';
-<<<<<<< HEAD
 import * as semver from 'semver';
 import * as util from './util';
-=======
 
 import {getJavaAdoptOpenJDK} from './distro/adoptopenjdk';
 import {getJavaZulu} from './distro/zulu';
->>>>>>> break distro out into separate files
 
 const tempDirectory = util.getTempDir();
 const IS_WINDOWS = util.isWindows();
@@ -37,8 +34,7 @@ export async function getJava(
             [jdkFile, version] = await getJavaAdoptOpenJDK(
               version,
               javaPackage,
-              arch,
-              OS
+              arch
             );
             break;
           case 'zulu':

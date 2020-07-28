@@ -7905,7 +7905,7 @@ const RangeImpl_1 = __webpack_require__(90);
 exports.Range = RangeImpl_1.RangeImpl;
 const ShadowRootImpl_1 = __webpack_require__(581);
 exports.ShadowRoot = ShadowRootImpl_1.ShadowRootImpl;
-const SlotableImpl_1 = __webpack_require__(476);
+const SlotableImpl_1 = __webpack_require__(340);
 const StaticRangeImpl_1 = __webpack_require__(688);
 exports.StaticRange = StaticRangeImpl_1.StaticRangeImpl;
 const TextImpl_1 = __webpack_require__(820);
@@ -13681,6 +13681,33 @@ exports.utf8Decode = utf8Decode;
 
 /***/ }),
 
+/***/ 340:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const algorithm_1 = __webpack_require__(163);
+/**
+ * Represents a mixin that allows nodes to become the contents of
+ * a <slot> element. This mixin is implemented by {@link Element} and
+ * {@link Text}.
+ */
+class SlotableImpl {
+    get _name() { return this.__name || ''; }
+    set _name(val) { this.__name = val; }
+    get _assignedSlot() { return this.__assignedSlot || null; }
+    set _assignedSlot(val) { this.__assignedSlot = val; }
+    /** @inheritdoc */
+    get assignedSlot() {
+        return algorithm_1.shadowTree_findASlot(this, true);
+    }
+}
+exports.SlotableImpl = SlotableImpl;
+//# sourceMappingURL=SlotableImpl.js.map
+
+/***/ }),
+
 /***/ 344:
 /***/ (function(__unusedmodule, exports) {
 
@@ -17406,25 +17433,83 @@ exports.getState = getState;
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const algorithm_1 = __webpack_require__(163);
-/**
- * Represents a mixin that allows nodes to become the contents of
- * a <slot> element. This mixin is implemented by {@link Element} and
- * {@link Text}.
- */
-class SlotableImpl {
-    get _name() { return this.__name || ''; }
-    set _name(val) { this.__name = val; }
-    get _assignedSlot() { return this.__assignedSlot || null; }
-    set _assignedSlot(val) { this.__assignedSlot = val; }
-    /** @inheritdoc */
-    get assignedSlot() {
-        return algorithm_1.shadowTree_findASlot(this, true);
-    }
+const core = __importStar(__webpack_require__(470));
+const tc = __importStar(__webpack_require__(533));
+const httpm = __importStar(__webpack_require__(539));
+function getJavaAdoptOpenJDK(version, javaPackage, arch) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.debug('Downloading JDK from AdoptOpenJDK');
+        let OS = process.platform.toString();
+        switch (process.platform) {
+            case 'darwin':
+                OS = 'mac';
+                break;
+        }
+        const http = new httpm.HttpClient('setup-java', undefined, {
+            allowRetries: true,
+            maxRetries: 3
+        });
+        const url = `https://api.adoptopenjdk.net/v3/assets/version/${normalizeVersion(version)}?architecture=${arch}&heap_size=normal&image_type=${javaPackage}&jvm_impl=hotspot&os=${OS}&page_size=1&release_type=ga&vendor=adoptopenjdk`;
+        const response = yield http.get(url);
+        const statusCode = response.message.statusCode || 0;
+        if (statusCode < 200 || statusCode > 299) {
+            let body = '';
+            try {
+                body = yield response.readBody();
+            }
+            catch (err) {
+                core.debug(`Unable to read body: ${err.message}`);
+            }
+            const message = `Unexpected HTTP status code '${response.message.statusCode}' when retrieving versions from '${url}'. ${body}`.trim();
+            throw new Error(message);
+        }
+        const contents = yield response.readBody();
+        const parsedContents = JSON.parse(contents)[0];
+        // turn 13.0.2+8.1 into 13.0.2
+        version = parsedContents.version_data.semver.split('+')[0];
+        const jdkFile = yield tc.downloadTool(parsedContents.binaries[0].package.link);
+        return [jdkFile, version];
+    });
 }
-exports.SlotableImpl = SlotableImpl;
-//# sourceMappingURL=SlotableImpl.js.map
+exports.getJavaAdoptOpenJDK = getJavaAdoptOpenJDK;
+function normalizeVersion(version) {
+    if (version.slice(0, 2) === '1.') {
+        // Trim leading 1. for versions like 1.8
+        version = version.slice(2);
+        if (!version) {
+            throw new Error('1. is not a valid version');
+        }
+    }
+    const parsedVersion = version.split('.');
+    let versionNumber;
+    if (parsedVersion[1]) {
+        versionNumber = parseInt(parsedVersion[parsedVersion.length - 1]) + 1;
+        version = `%28%2C${version.replace(parsedVersion[parsedVersion.length - 1], versionNumber.toString())}%29`;
+    }
+    else {
+        versionNumber = parseInt(version) + 1;
+        version = `%28%2C${versionNumber.toString()}%29`;
+    }
+    return version;
+}
+
 
 /***/ }),
 
@@ -28684,12 +28769,14 @@ function run() {
             if (!version) {
                 version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
             }
+            const vendor = core.getInput('vendor', { required: true });
             const arch = core.getInput(constants.INPUT_ARCHITECTURE, { required: true });
             const javaPackage = core.getInput(constants.INPUT_JAVA_PACKAGE, {
                 required: true
             });
             const jdkFile = core.getInput(constants.INPUT_JDK_FILE, { required: false });
-            yield installer.getJava(version, arch, jdkFile, javaPackage);
+            const distro = core.getInput('vendor', { required: true });
+            yield installer.getJava(version, distro, arch, jdkFile, javaPackage);
             const matchersPath = path.join(__dirname, '..', '..', '.github');
             core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
             const id = core.getInput(constants.INPUT_SERVER_ID, { required: false });
@@ -33360,6 +33447,161 @@ WebIDLAlgorithm_1.idl_defineConst(CDATASectionImpl.prototype, "_nodeType", inter
 
 /***/ }),
 
+/***/ 922:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const core = __importStar(__webpack_require__(470));
+const tc = __importStar(__webpack_require__(533));
+const httpm = __importStar(__webpack_require__(539));
+const semver = __importStar(__webpack_require__(280));
+const IS_WINDOWS = process.platform === 'win32';
+function getJavaZulu(version, javaPackage) {
+    return __awaiter(this, void 0, void 0, function* () {
+        core.debug('Downloading JDK from Azul');
+        const http = new httpm.HttpClient('setup-java', undefined, {
+            allowRetries: true,
+            maxRetries: 3
+        });
+        const url = 'https://static.azul.com/zulu/bin/';
+        const response = yield http.get(url);
+        const statusCode = response.message.statusCode || 0;
+        if (statusCode < 200 || statusCode > 299) {
+            let body = '';
+            try {
+                body = yield response.readBody();
+            }
+            catch (err) {
+                core.debug(`Unable to read body: ${err.message}`);
+            }
+            const message = `Unexpected HTTP status code '${response.message.statusCode}' when retrieving versions from '${url}'. ${body}`.trim();
+            throw new Error(message);
+        }
+        const contents = yield response.readBody();
+        const refs = contents.match(/<a href.*\">/gi) || [];
+        const downloadInfo = getDownloadInfo(refs, version, javaPackage);
+        const jdkFile = yield tc.downloadTool(downloadInfo.url);
+        version = downloadInfo.version;
+        return [jdkFile, version];
+    });
+}
+exports.getJavaZulu = getJavaZulu;
+function getDownloadInfo(refs, version, javaPackage) {
+    version = normalizeVersion(version);
+    let extension = '';
+    if (IS_WINDOWS) {
+        extension = `-win_x64.zip`;
+    }
+    else {
+        if (process.platform === 'darwin') {
+            extension = `-macosx_x64.tar.gz`;
+        }
+        else {
+            extension = `-linux_x64.tar.gz`;
+        }
+    }
+    let pkgRegexp = new RegExp('');
+    let pkgTypeLength = 0;
+    if (javaPackage === 'jdk') {
+        pkgRegexp = /jdk.*-/gi;
+        pkgTypeLength = 'jdk'.length;
+    }
+    else if (javaPackage == 'jre') {
+        pkgRegexp = /jre.*-/gi;
+        pkgTypeLength = 'jre'.length;
+    }
+    else if (javaPackage == 'jdk+fx') {
+        pkgRegexp = /fx-jdk.*-/gi;
+        pkgTypeLength = 'fx-jdk'.length;
+    }
+    else {
+        throw new Error(`package argument ${javaPackage} is not in [jdk | jre | jdk+fx]`);
+    }
+    // Maps version to url
+    let versionMap = new Map();
+    // Filter by platform
+    refs.forEach(ref => {
+        if (!ref.endsWith(extension + '">')) {
+            return;
+        }
+        // If we haven't returned, means we're looking at the correct platform
+        let versions = ref.match(pkgRegexp) || [];
+        if (versions.length > 1) {
+            throw new Error(`Invalid ref received from https://static.azul.com/zulu/bin/: ${ref}`);
+        }
+        if (versions.length == 0) {
+            return;
+        }
+        const refVersion = versions[0].slice(pkgTypeLength, versions[0].length - 1);
+        if (semver.satisfies(refVersion, version)) {
+            versionMap.set(refVersion, 'https://static.azul.com/zulu/bin/' +
+                ref.slice('<a href="'.length, ref.length - '">'.length));
+        }
+    });
+    // Choose the most recent satisfying version
+    let curVersion = '0.0.0';
+    let curUrl = '';
+    for (const entry of versionMap.entries()) {
+        const entryVersion = entry[0];
+        const entryUrl = entry[1];
+        if (semver.gt(entryVersion, curVersion)) {
+            curUrl = entryUrl;
+            curVersion = entryVersion;
+        }
+    }
+    if (curUrl == '') {
+        throw new Error(`No valid download found for version ${version} and package ${javaPackage}. Check https://static.azul.com/zulu/bin/ for a list of valid versions or download your own jdk file and add the jdkFile argument`);
+    }
+    return { version: curVersion, url: curUrl };
+}
+function normalizeVersion(version) {
+    if (version.slice(0, 2) === '1.') {
+        // Trim leading 1. for versions like 1.8
+        version = version.slice(2);
+        if (!version) {
+            throw new Error('1. is not a valid version');
+        }
+    }
+    if (version.endsWith('-ea')) {
+        // convert e.g. 14-ea to 14.0.0-ea
+        if (version.indexOf('.') == -1) {
+            version = version.slice(0, version.length - 3) + '.0.0-ea';
+        }
+        // match anything in -ea.X (semver won't do .x matching on pre-release versions)
+        if (version[0] >= '0' && version[0] <= '9') {
+            version = '>=' + version;
+        }
+    }
+    else if (version.split('.').length < 3) {
+        // For non-ea versions, add trailing .x if it is missing
+        if (version[version.length - 1] != 'x') {
+            version = version + '.x';
+        }
+    }
+    return version;
+}
+
+
+/***/ }),
+
 /***/ 923:
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -33385,15 +33627,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const io = __importStar(__webpack_require__(1));
 const exec = __importStar(__webpack_require__(986));
-const httpm = __importStar(__webpack_require__(539));
 const tc = __importStar(__webpack_require__(533));
 const fs = __importStar(__webpack_require__(747));
 const path = __importStar(__webpack_require__(622));
-const semver = __importStar(__webpack_require__(280));
 const util = __importStar(__webpack_require__(322));
+const adoptopenjdk_1 = __webpack_require__(476);
+const zulu_1 = __webpack_require__(922);
 const tempDirectory = util.getTempDir();
 const IS_WINDOWS = util.isWindows();
-function getJava(version, arch, jdkFile, javaPackage) {
+function getJava(version, distro, arch, jdkFile, javaPackage) {
     return __awaiter(this, void 0, void 0, function* () {
         let toolPath = tc.find(javaPackage, version);
         if (toolPath) {
@@ -33402,30 +33644,20 @@ function getJava(version, arch, jdkFile, javaPackage) {
         else {
             let compressedFileExtension = '';
             if (!jdkFile) {
-                core.debug('Downloading JDK from Azul');
-                const http = new httpm.HttpClient('setup-java', undefined, {
-                    allowRetries: true,
-                    maxRetries: 3
-                });
-                const url = 'https://static.azul.com/zulu/bin/';
-                const response = yield http.get(url);
-                const statusCode = response.message.statusCode || 0;
-                if (statusCode < 200 || statusCode > 299) {
-                    let body = '';
-                    try {
-                        body = yield response.readBody();
-                    }
-                    catch (err) {
-                        core.debug(`Unable to read body: ${err.message}`);
-                    }
-                    const message = `Unexpected HTTP status code '${response.message.statusCode}' when retrieving versions from '${url}'. ${body}`.trim();
-                    throw new Error(message);
+                function setupVendor(distro) {
+                    return __awaiter(this, void 0, void 0, function* () {
+                        switch (distro) {
+                            case 'adoptopenjdk':
+                                [jdkFile, version] = yield adoptopenjdk_1.getJavaAdoptOpenJDK(version, javaPackage, arch);
+                                break;
+                            case 'zulu':
+                                [jdkFile, version] = yield zulu_1.getJavaZulu(version, javaPackage);
+                                break;
+                        }
+                        return [jdkFile, version];
+                    });
                 }
-                const contents = yield response.readBody();
-                const refs = contents.match(/<a href.*\">/gi) || [];
-                const downloadInfo = getDownloadInfo(refs, version, javaPackage);
-                jdkFile = yield tc.downloadTool(downloadInfo.url);
-                version = downloadInfo.version;
+                [jdkFile, version] = yield setupVendor(distro);
                 compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
             }
             else {
@@ -33437,6 +33669,8 @@ function getJava(version, arch, jdkFile, javaPackage) {
             core.debug(`jdk extracted to ${jdkDir}`);
             toolPath = yield tc.cacheDir(jdkDir, javaPackage, getCacheVersionString(version), arch);
         }
+        if (process.platform === 'darwin')
+            toolPath += '/Contents/Home';
         let extendedJavaHome = 'JAVA_HOME_' + version + '_' + arch;
         core.exportVariable(extendedJavaHome, toolPath); //TODO: remove for v2
         // For portability reasons environment variables should only consist of
@@ -33538,100 +33772,6 @@ function unzipJavaDownload(repoRoot, fileEnding, destinationFolder, extension) {
             throw new Error(`Jdk argument ${jdkFile} is not a file`);
         }
     });
-}
-function getDownloadInfo(refs, version, javaPackage) {
-    version = normalizeVersion(version);
-    let extension = '';
-    if (IS_WINDOWS) {
-        extension = `-win_x64.zip`;
-    }
-    else {
-        if (process.platform === 'darwin') {
-            extension = `-macosx_x64.tar.gz`;
-        }
-        else {
-            extension = `-linux_x64.tar.gz`;
-        }
-    }
-    let pkgRegexp = new RegExp('');
-    let pkgTypeLength = 0;
-    if (javaPackage === 'jdk') {
-        pkgRegexp = /jdk.*-/gi;
-        pkgTypeLength = 'jdk'.length;
-    }
-    else if (javaPackage == 'jre') {
-        pkgRegexp = /jre.*-/gi;
-        pkgTypeLength = 'jre'.length;
-    }
-    else if (javaPackage == 'jdk+fx') {
-        pkgRegexp = /fx-jdk.*-/gi;
-        pkgTypeLength = 'fx-jdk'.length;
-    }
-    else {
-        throw new Error(`package argument ${javaPackage} is not in [jdk | jre | jdk+fx]`);
-    }
-    // Maps version to url
-    let versionMap = new Map();
-    // Filter by platform
-    refs.forEach(ref => {
-        if (!ref.endsWith(extension + '">')) {
-            return;
-        }
-        // If we haven't returned, means we're looking at the correct platform
-        let versions = ref.match(pkgRegexp) || [];
-        if (versions.length > 1) {
-            throw new Error(`Invalid ref received from https://static.azul.com/zulu/bin/: ${ref}`);
-        }
-        if (versions.length == 0) {
-            return;
-        }
-        const refVersion = versions[0].slice(pkgTypeLength, versions[0].length - 1);
-        if (semver.satisfies(refVersion, version)) {
-            versionMap.set(refVersion, 'https://static.azul.com/zulu/bin/' +
-                ref.slice('<a href="'.length, ref.length - '">'.length));
-        }
-    });
-    // Choose the most recent satisfying version
-    let curVersion = '0.0.0';
-    let curUrl = '';
-    for (const entry of versionMap.entries()) {
-        const entryVersion = entry[0];
-        const entryUrl = entry[1];
-        if (semver.gt(entryVersion, curVersion)) {
-            curUrl = entryUrl;
-            curVersion = entryVersion;
-        }
-    }
-    if (curUrl == '') {
-        throw new Error(`No valid download found for version ${version} and package ${javaPackage}. Check https://static.azul.com/zulu/bin/ for a list of valid versions or download your own jdk file and add the jdkFile argument`);
-    }
-    return { version: curVersion, url: curUrl };
-}
-function normalizeVersion(version) {
-    if (version.slice(0, 2) === '1.') {
-        // Trim leading 1. for versions like 1.8
-        version = version.slice(2);
-        if (!version) {
-            throw new Error('1. is not a valid version');
-        }
-    }
-    if (version.endsWith('-ea')) {
-        // convert e.g. 14-ea to 14.0.0-ea
-        if (version.indexOf('.') == -1) {
-            version = version.slice(0, version.length - 3) + '.0.0-ea';
-        }
-        // match anything in -ea.X (semver won't do .x matching on pre-release versions)
-        if (version[0] >= '0' && version[0] <= '9') {
-            version = '>=' + version;
-        }
-    }
-    else if (version.split('.').length < 3) {
-        // For non-ea versions, add trailing .x if it is missing
-        if (version[version.length - 1] != 'x') {
-            version = version + '.x';
-        }
-    }
-    return version;
 }
 
 
