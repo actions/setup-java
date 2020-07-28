@@ -11,7 +11,7 @@ inputs:
     required: true
   distro:
     description: 'The vendor to fetch the binary from (adoptopenjdk, zulu).
-    Defaults to adoptopenjdk'
+        Defaults to adoptopenjdk'
     required: false
     default: 'adoptopenjdk'
   java-package:
