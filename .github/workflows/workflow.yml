@@ -91,6 +91,7 @@ jobs:
     - name: Clear tool cache
       run: rm -rf $RUNNER_TOOL_CACHE/*
     - name: Setup Java 13
+      id: setup-java
       uses: ./
       with:
         java-version: 13
