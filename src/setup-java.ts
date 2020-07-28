@@ -11,13 +11,12 @@ async function run() {
     if (!version) {
       version = core.getInput(constants.INPUT_JAVA_VERSION, {required: true});
     }
-    const vendor = core.getInput('vendor', {required: true});
     const arch = core.getInput(constants.INPUT_ARCHITECTURE, {required: true});
     const javaPackage = core.getInput(constants.INPUT_JAVA_PACKAGE, {
       required: true
     });
     const jdkFile = core.getInput(constants.INPUT_JDK_FILE, {required: false});
-    const distro = core.getInput('vendor', {required: true});
+    const distro = core.getInput('distro', {required: true});
 
     await installer.getJava(version, distro, arch, jdkFile, javaPackage);
 

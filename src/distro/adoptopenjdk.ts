@@ -11,9 +11,12 @@ export async function getJavaAdoptOpenJDK(
 
   let OS = process.platform.toString();
 
-  switch(process.platform) {
+  switch (process.platform) {
     case 'darwin':
       OS = 'mac';
+      break;
+    case 'win32':
+      OS = 'windows';
       break;
   }
 

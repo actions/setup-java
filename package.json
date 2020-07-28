@@ -6,8 +6,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "ncc build -o dist/setup src/setup-java.ts && ncc build -o dist/cleanup src/cleanup-java.ts",
-    "format": "prettier --write **/*.ts",
-    "format-check": "prettier --check **/*.ts",
+    "format": "prettier --write **/*.ts src/distro/*.ts",
+    "format-check": "prettier --check **/*.ts src/distro/*.ts",
     "prerelease": "npm run-script build",
     "release": "git add -f dist/setup/index.js dist/cleanup/index.js",
     "test": "jest"

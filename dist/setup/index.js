@@ -17461,6 +17461,9 @@ function getJavaAdoptOpenJDK(version, javaPackage, arch) {
             case 'darwin':
                 OS = 'mac';
                 break;
+            case 'win32':
+                OS = 'windows';
+                break;
         }
         const http = new httpm.HttpClient('setup-java', undefined, {
             allowRetries: true,
@@ -28769,13 +28772,12 @@ function run() {
             if (!version) {
                 version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
             }
-            const vendor = core.getInput('vendor', { required: true });
             const arch = core.getInput(constants.INPUT_ARCHITECTURE, { required: true });
             const javaPackage = core.getInput(constants.INPUT_JAVA_PACKAGE, {
                 required: true
             });
             const jdkFile = core.getInput(constants.INPUT_JDK_FILE, { required: false });
-            const distro = core.getInput('vendor', { required: true });
+            const distro = core.getInput('distro', { required: true });
             yield installer.getJava(version, distro, arch, jdkFile, javaPackage);
             const matchersPath = path.join(__dirname, '..', '..', '.github');
             core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
