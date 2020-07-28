@@ -39,7 +39,7 @@ jobs:
         uses: ./
         with:
           java-version: 13.0.2
-          distro: adoptopenjdk
+          vendor: adoptopenjdk
       - name: Verify Java 13
         if: runner.os != 'windows'
         run: __tests__/verify-java.sh 13.0.2 "${{ steps.setup-java-adopt.outputs.path }}" "${{ steps.setup-java-adopt.outputs.version }}"
@@ -66,6 +66,7 @@ jobs:
       uses: ./
       with:
         java-version: 13.0.2
+        vendor: zulu
     - name: Verify Java 13
       if: runner.os != 'windows'
       run: __tests__/verify-java.sh 13.0.2 "${{ steps.setup-java-zulu.outputs.path }}" "${{ steps.setup-java-zulu.outputs.version }}"
@@ -119,6 +120,7 @@ jobs:
       uses: ./
       with:
         java-version: 13.0.2
+        vendor: zulu
     - name: Verify Java 13
       run: __tests__/verify-java.sh 13.0.2 "${{ steps.setup-java.outputs.path }}" "${{ steps.setup-java.outputs.version }}"
 
@@ -136,5 +138,6 @@ jobs:
       uses: ./
       with:
         java-version: 13.0.2
+        vendor: zulu
     - name: Verify Java 13
       run: __tests__/verify-java.sh 13.0.2 "${{ steps.setup-java.outputs.path }}" "${{ steps.setup-java.outputs.version }}"
