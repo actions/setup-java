@@ -170,6 +170,8 @@ If `gpg-private-key` input is provided, the private key will be written to a fil
 
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
+Alternatively, you can use `gpg-private-key-path` to point to a key file.
+
 ## Publishing using Gradle
 ```yaml
 jobs:

@@ -42,6 +42,9 @@ inputs:
   gpg-private-key:
     description: 'GPG private key to import. Default is empty string.'
     required: false
+  gpg-private-key-path:
+    description: 'Path to the GPG private key to import. Default is empty string. Overriden by gpg-private-key'
+    required: false
   gpg-passphrase:
     description: 'Environment variable name for the GPG private key passphrase. Default is
        $GPG_PASSPHRASE.'

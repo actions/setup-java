@@ -1,4 +1,5 @@
 import path = require('path');
+import fs = require('fs');
 import io = require('@actions/io');
 import exec = require('@actions/exec');
 
@@ -30,6 +31,23 @@ describe('gpg tests', () => {
     it('attempts to import private key and returns null key id on failure', async () => {
       const privateKey = 'KEY CONTENTS';
       const keyId = await gpg.importKey(privateKey);
+
+      expect(keyId).toBeNull();
+
+      expect(exec.exec).toHaveBeenCalledWith(
+        'gpg',
+        expect.anything(),
+        expect.anything()
+      );
+    });
+  });
+
+  describe('importKeyFromPath', () => {
+    it('attempts to import private key from path and returns null key id on failure', async () => {
+      const privateKey = 'KEY CONTENTS';
+      const privateKeyPath = path.join(tempDir, 'test.asc');
+      fs.writeFileSync(privateKeyPath, privateKey);
+      const keyId = await gpg.importKeyFromPath(privateKeyPath);
 
       expect(keyId).toBeNull();
 

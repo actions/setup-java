@@ -7,9 +7,11 @@ export const INPUT_SERVER_ID = 'server-id';
 export const INPUT_SERVER_USERNAME = 'server-username';
 export const INPUT_SERVER_PASSWORD = 'server-password';
 export const INPUT_SETTINGS_PATH = 'settings-path';
+export const INPUT_GPG_PRIVATE_KEY_PATH = 'gpg-private-key-path';
 export const INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 export const INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 
+export const INPUT_DEFAULT_GPG_PRIVATE_KEY_PATH = undefined;
 export const INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 export const INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 

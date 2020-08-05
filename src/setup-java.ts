@@ -29,12 +29,17 @@ async function run() {
     const password = core.getInput(constants.INPUT_SERVER_PASSWORD, {
       required: false
     });
+    const gpgPrivateKeyPath =
+      core.getInput(constants.INPUT_GPG_PRIVATE_KEY_PATH, {required: false}) ||
+      constants.INPUT_DEFAULT_GPG_PRIVATE_KEY_PATH;
     const gpgPrivateKey =
       core.getInput(constants.INPUT_GPG_PRIVATE_KEY, {required: false}) ||
       constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
     const gpgPassphrase =
       core.getInput(constants.INPUT_GPG_PASSPHRASE, {required: false}) ||
-      (gpgPrivateKey ? constants.INPUT_DEFAULT_GPG_PASSPHRASE : undefined);
+      (gpgPrivateKey || gpgPrivateKeyPath
+        ? constants.INPUT_DEFAULT_GPG_PASSPHRASE
+        : undefined);
 
     if (gpgPrivateKey) {
       core.setSecret(gpgPrivateKey);
@@ -42,12 +47,16 @@ async function run() {
 
     await auth.configAuthentication(id, username, password, gpgPassphrase);
 
-    if (gpgPrivateKey) {
+    if (gpgPrivateKey || gpgPrivateKeyPath) {
       core.info('importing private key');
-      const keyFingerprint = (await gpg.importKey(gpgPrivateKey)) || '';
+      const keyFingerprint = gpgPrivateKey
+        ? await gpg.importKey(gpgPrivateKey)
+        : gpgPrivateKeyPath
+        ? await gpg.importKeyFromPath(gpgPrivateKeyPath)
+        : null;
       core.saveState(
         constants.STATE_GPG_PRIVATE_KEY_FINGERPRINT,
-        keyFingerprint
+        keyFingerprint || ''
       );
     }
   } catch (error) {

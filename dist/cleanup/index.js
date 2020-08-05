@@ -963,8 +963,10 @@ exports.INPUT_SERVER_ID = 'server-id';
 exports.INPUT_SERVER_USERNAME = 'server-username';
 exports.INPUT_SERVER_PASSWORD = 'server-password';
 exports.INPUT_SETTINGS_PATH = 'settings-path';
+exports.INPUT_GPG_PRIVATE_KEY_PATH = 'gpg-private-key-path';
 exports.INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
+exports.INPUT_DEFAULT_GPG_PRIVATE_KEY_PATH = undefined;
 exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
@@ -1627,6 +1629,15 @@ function importKey(privateKey) {
             encoding: 'utf-8',
             flag: 'w'
         });
+        const keyFingerprint = yield importKeyFromPath(exports.PRIVATE_KEY_FILE);
+        yield io.rmRF(exports.PRIVATE_KEY_FILE);
+        return keyFingerprint;
+    });
+}
+exports.importKey = importKey;
+function importKeyFromPath(privateKeyPath) {
+    return __awaiter(this, void 0, void 0, function* () {
+        console.log(`from path: ${privateKeyPath}`);
         let output = '';
         const options = {
             silent: true,
@@ -1636,19 +1647,12 @@ function importKey(privateKey) {
                 }
             }
         };
-        yield exec.exec('gpg', [
-            '--batch',
-            '--import-options',
-            'import-show',
-            '--import',
-            exports.PRIVATE_KEY_FILE
-        ], options);
-        yield io.rmRF(exports.PRIVATE_KEY_FILE);
+        yield exec.exec('gpg', ['--batch', '--import-options', 'import-show', '--import', privateKeyPath], options);
         const match = output.match(PRIVATE_KEY_FINGERPRINT_REGEX);
         return match && match[0];
     });
 }
-exports.importKey = importKey;
+exports.importKeyFromPath = importKeyFromPath;
 function deleteKey(keyFingerprint) {
     return __awaiter(this, void 0, void 0, function* () {
         yield exec.exec('gpg', ['--batch', '--yes', '--delete-secret-keys', keyFingerprint], { silent: true });

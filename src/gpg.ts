@@ -15,6 +15,15 @@ export async function importKey(privateKey: string) {
     flag: 'w'
   });
 
+  const keyFingerprint = await importKeyFromPath(PRIVATE_KEY_FILE);
+
+  await io.rmRF(PRIVATE_KEY_FILE);
+
+  return keyFingerprint;
+}
+
+export async function importKeyFromPath(privateKeyPath: string) {
+  console.log(`from path: ${privateKeyPath}`);
   let output = '';
 
   const options: ExecOptions = {
@@ -28,17 +37,9 @@ export async function importKey(privateKey: string) {
 
   await exec.exec(
     'gpg',
-    [
-      '--batch',
-      '--import-options',
-      'import-show',
-      '--import',
-      PRIVATE_KEY_FILE
-    ],
+    ['--batch', '--import-options', 'import-show', '--import', privateKeyPath],
     options
   );
-
-  await io.rmRF(PRIVATE_KEY_FILE);
 
   const match = output.match(PRIVATE_KEY_FINGERPRINT_REGEX);
   return match && match[0];
