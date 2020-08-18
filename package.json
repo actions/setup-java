@@ -5,11 +5,11 @@
   "description": "setup java action",
   "main": "dist/index.js",
   "scripts": {
-    "build": "ncc build src/setup-java.ts",
+    "build": "ncc build -o dist/setup src/setup-java.ts && ncc build -o dist/cleanup src/cleanup-java.ts",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
     "prerelease": "npm run-script build",
-    "release": "git add -f dist/index.js",
+    "release": "git add -f dist/setup/index.js dist/cleanup/index.js",
     "test": "jest"
   },
   "repository": {
@@ -26,10 +26,11 @@
   "dependencies": {
     "@actions/core": "^1.0.0",
     "@actions/exec": "^1.0.0",
-    "@actions/http-client": "^1.0.6",
+    "@actions/http-client": "^1.0.8",
     "@actions/io": "^1.0.0",
     "@actions/tool-cache": "^1.3.1",
-    "semver": "^6.1.1"
+    "semver": "^6.1.1",
+    "xmlbuilder2": "^2.1.2"
   },
   "devDependencies": {
     "@types/jest": "^24.0.13",

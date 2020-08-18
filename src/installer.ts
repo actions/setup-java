@@ -1,5 +1,3 @@
-let tempDirectory = process.env['RUNNER_TEMP'] || '';
-
 import * as core from '@actions/core';
 import * as io from '@actions/io';
 import * as exec from '@actions/exec';
@@ -8,23 +6,10 @@ import * as tc from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as semver from 'semver';
+import * as util from './util';
 
-const IS_WINDOWS = process.platform === 'win32';
-
-if (!tempDirectory) {
-  let baseLocation;
-  if (IS_WINDOWS) {
-    // On windows use the USERPROFILE env variable
-    baseLocation = process.env['USERPROFILE'] || 'C:\\';
-  } else {
-    if (process.platform === 'darwin') {
-      baseLocation = '/Users';
-    } else {
-      baseLocation = '/home';
-    }
-  }
-  tempDirectory = path.join(baseLocation, 'actions', 'temp');
-}
+const tempDirectory = util.getTempDir();
+const IS_WINDOWS = util.isWindows();
 
 export async function getJava(
   version: string,
@@ -87,9 +72,17 @@ export async function getJava(
   }
 
   let extendedJavaHome = 'JAVA_HOME_' + version + '_' + arch;
+  core.exportVariable(extendedJavaHome, toolPath); //TODO: remove for v2
+  // For portability reasons environment variables should only consist of
+  // uppercase letters, digits, and the underscore. Therefore we convert
+  // the extendedJavaHome variable to upper case and replace '.' symbols and
+  // any other non-alphanumeric characters with an underscore.
+  extendedJavaHome = extendedJavaHome.toUpperCase().replace(/[^0-9A-Z_]/g, '_');
   core.exportVariable('JAVA_HOME', toolPath);
   core.exportVariable(extendedJavaHome, toolPath);
   core.addPath(path.join(toolPath, 'bin'));
+  core.setOutput('path', toolPath);
+  core.setOutput('version', version);
 }
 
 function getCacheVersionString(version: string) {

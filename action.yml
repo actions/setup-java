@@ -25,17 +25,33 @@ inputs:
     description: 'ID of the distributionManagement repository in the pom.xml
        file. Default is `github`'
     required: false
+    default: 'github'
   server-username:
     description: 'Environment variable name for the username for authentication
        to the Apache Maven repository. Default is $GITHUB_ACTOR'
     required: false
+    default: 'GITHUB_ACTOR'
   server-password:
     description: 'Environment variable name for password or token for
        authentication to the Apache Maven repository. Default is $GITHUB_TOKEN'
     required: false
+    default: 'GITHUB_TOKEN'
   settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false
+  gpg-private-key:
+    description: 'GPG private key to import. Default is empty string.'
+    required: false
+  gpg-passphrase:
+    description: 'Environment variable name for the GPG private key passphrase. Default is
+       $GPG_PASSPHRASE.'
+    required: false
+outputs:
+  path:
+    description: 'Path to where the java environment has been installed (same as $JAVA_HOME)'
+  version:
+    description: 'Actual version of the java environment that has been installed'
 runs:
   using: 'node12'
-  main: 'dist/index.js'
+  main: 'dist/setup/index.js'
+  post: 'dist/cleanup/index.js'

@@ -29,27 +29,27 @@ Examples of version specifications that the java-version parameter will accept:
 - A major Java version
 
   e.g. ```6, 7, 8, 9, 10, 11, 12, 13, ...```
- 
+
 - A semver Java version specification
 
   e.g. ```8.0.232, 7.0.181, 11.0.4```
-  
+
   e.g. ```8.0.x, >11.0.3, >=13.0.1, <8.0.212```
-  
+
 - An early access (EA) Java version
 
   e.g. ```14-ea, 15-ea```
-  
+
   e.g. ```14.0.0-ea, 15.0.0-ea```
-   
+
   e.g. ```14.0.0-ea.28, 15.0.0-ea.2``` (syntax for specifying an EA build number)
-  
+
   Note that, per semver rules, EA builds will be matched by explicit EA version specifications.
-  
+
 - 1.x syntax
 
     e.g. ```1.8``` (same as ```8```)
-    
+
     e.g. ```1.8.0.212``` (same as ```8.0.212```)
 
 
@@ -113,39 +113,60 @@ jobs:
         server-id: maven # Value of the distributionManagement/repository/id field of the pom.xml
         server-username: MAVEN_USERNAME # env variable for username in deploy
         server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
+        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
 
     - name: Publish to Apache Maven Central
-      run: mvn deploy 
+      run: mvn deploy
       env:
         MAVEN_USERNAME: maven_username123
         MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 ```
 
 The two `settings.xml` files created from the above example look like the following.
 
 `settings.xml` file created for the first deploy to GitHub Packages
 ```xml
-<servers>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
     <server>
       <id>github</id>
       <username>${env.GITHUB_ACTOR}</username>
       <password>${env.GITHUB_TOKEN}</password>
     </server>
-</servers>
+    <server>
+      <id>gpg.passphrase</id>
+      <passphrase>${env.GPG_PASSPHRASE}</passphrase>
+    </server>
+  </servers>
+</settings>
 ```
 
 `settings.xml` file created for the second deploy to Apache Maven Central
 ```xml
-<servers>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
     <server>
       <id>maven</id>
       <username>${env.MAVEN_USERNAME}</username>
       <password>${env.MAVEN_CENTRAL_TOKEN}</password>
     </server>
-</servers>
+    <server>
+      <id>gpg.passphrase</id>
+      <passphrase>${env.MAVEN_GPG_PASSPHRASE}</passphrase>
+    </server>
+  </servers>
+</settings>
 ```
 
-***NOTE: The `settings.xml` file is created in the Actions $HOME directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See below for using the `settings-path` to change your `settings.xml` file location.***	
+***NOTE: The `settings.xml` file is created in the Actions $HOME directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See below for using the `settings-path` to change your `settings.xml` file location.***
+
+If `gpg-private-key` input is provided, the private key will be written to a file in the runner's temp directory, the private key file will be imported into the GPG keychain, and then the file will be promptly removed before proceeding with the rest of the setup process. A cleanup step will remove the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances).
 
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
@@ -172,7 +193,7 @@ jobs:
         PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-***NOTE: The `USERNAME` and `PASSWORD` need to correspond to the credentials environment variables used in the publishing section of your `build.gradle`.***	
+***NOTE: The `USERNAME` and `PASSWORD` need to correspond to the credentials environment variables used in the publishing section of your `build.gradle`.***
 
 See the help docs on [Publishing a Package with Gradle](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-gradle-for-use-with-github-packages#example-using-gradle-groovy-for-a-single-package-in-a-repository) for more information on the `build.gradle` configuration file.
 
