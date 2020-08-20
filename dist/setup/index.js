@@ -28685,6 +28685,9 @@ function run() {
                 version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
             }
             const arch = core.getInput(constants.INPUT_ARCHITECTURE, { required: true });
+            if (!['x86', 'x64'].includes(arch)) {
+                throw new Error(`architecture "${arch}" is not in [x86 | x64]`);
+            }
             const javaPackage = core.getInput(constants.INPUT_JAVA_PACKAGE, {
                 required: true
             });
@@ -33541,16 +33544,7 @@ function unzipJavaDownload(repoRoot, fileEnding, destinationFolder, extension) {
 }
 function getDownloadInfo(refs, version, arch, javaPackage) {
     version = normalizeVersion(version);
-    let archExtension = '';
-    if (arch === 'x86') {
-        archExtension = 'i686';
-    }
-    else if (arch === 'x64') {
-        archExtension = 'x64';
-    }
-    else {
-        throw new Error(`architecture "${arch}" is not int [x86 | x64]`);
-    }
+    const archExtension = arch === 'x86' ? 'i686' : 'x64';
     let extension = '';
     if (IS_WINDOWS) {
         extension = `-win_${archExtension}.zip`;

@@ -186,14 +186,7 @@ function getDownloadInfo(
 ): {version: string; url: string} {
   version = normalizeVersion(version);
 
-  let archExtension = '';
-  if (arch === 'x86') {
-    archExtension = 'i686';
-  } else if (arch === 'x64') {
-    archExtension = 'x64';
-  } else {
-    throw new Error(`architecture "${arch}" is not int [x86 | x64]`);
-  }
+  const archExtension = arch === 'x86' ? 'i686' : 'x64';
 
   let extension = '';
   if (IS_WINDOWS) {
