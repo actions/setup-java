@@ -28685,6 +28685,9 @@ function run() {
                 version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
             }
             const arch = core.getInput(constants.INPUT_ARCHITECTURE, { required: true });
+            if (!['x86', 'x64'].includes(arch)) {
+                throw new Error(`architecture "${arch}" is not in [x86 | x64]`);
+            }
             const javaPackage = core.getInput(constants.INPUT_JAVA_PACKAGE, {
                 required: true
             });
@@ -33423,7 +33426,7 @@ function getJava(version, arch, jdkFile, javaPackage) {
                 }
                 const contents = yield response.readBody();
                 const refs = contents.match(/<a href.*\">/gi) || [];
-                const downloadInfo = getDownloadInfo(refs, version, javaPackage);
+                const downloadInfo = getDownloadInfo(refs, version, arch, javaPackage);
                 jdkFile = yield tc.downloadTool(downloadInfo.url);
                 version = downloadInfo.version;
                 compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
@@ -33539,20 +33542,22 @@ function unzipJavaDownload(repoRoot, fileEnding, destinationFolder, extension) {
         }
     });
 }
-function getDownloadInfo(refs, version, javaPackage) {
+function getDownloadInfo(refs, version, arch, javaPackage) {
     version = normalizeVersion(version);
+    const archExtension = arch === 'x86' ? 'i686' : 'x64';
     let extension = '';
     if (IS_WINDOWS) {
-        extension = `-win_x64.zip`;
+        extension = `-win_${archExtension}.zip`;
     }
     else {
         if (process.platform === 'darwin') {
-            extension = `-macosx_x64.tar.gz`;
+            extension = `-macosx_${archExtension}.tar.gz`;
         }
         else {
-            extension = `-linux_x64.tar.gz`;
+            extension = `-linux_${archExtension}.tar.gz`;
         }
     }
+    core.debug(`Searching for files with extension: ${extension}`);
     let pkgRegexp = new RegExp('');
     let pkgTypeLength = 0;
     if (javaPackage === 'jdk') {

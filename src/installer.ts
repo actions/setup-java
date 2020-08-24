@@ -45,7 +45,7 @@ export async function getJava(
 
       const contents = await response.readBody();
       const refs = contents.match(/<a href.*\">/gi) || [];
-      const downloadInfo = getDownloadInfo(refs, version, javaPackage);
+      const downloadInfo = getDownloadInfo(refs, version, arch, javaPackage);
       jdkFile = await tc.downloadTool(downloadInfo.url);
       version = downloadInfo.version;
       compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
@@ -181,19 +181,25 @@ async function unzipJavaDownload(
 function getDownloadInfo(
   refs: string[],
   version: string,
+  arch: string,
   javaPackage: string
 ): {version: string; url: string} {
   version = normalizeVersion(version);
+
+  const archExtension = arch === 'x86' ? 'i686' : 'x64';
+
   let extension = '';
   if (IS_WINDOWS) {
-    extension = `-win_x64.zip`;
+    extension = `-win_${archExtension}.zip`;
   } else {
     if (process.platform === 'darwin') {
-      extension = `-macosx_x64.tar.gz`;
+      extension = `-macosx_${archExtension}.tar.gz`;
     } else {
-      extension = `-linux_x64.tar.gz`;
+      extension = `-linux_${archExtension}.tar.gz`;
     }
   }
+
+  core.debug(`Searching for files with extension: ${extension}`);
 
   let pkgRegexp = new RegExp('');
   let pkgTypeLength = 0;
