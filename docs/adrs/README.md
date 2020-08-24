@@ -2,7 +2,7 @@
 
 ADR, short for "Architecture Decision Record" is a way of capturing important architectural decisions, along with their context and consequences.
 
-This folder includes ADRs for the Ecosystem Events team. ADRs are proposed in the form of a pull request, and they commonly follow this format:
+This folder includes ADRs for the setup-java action. ADRs are proposed in the form of a pull request, and they commonly follow this format:
 
 * **Title**: short present tense imperative phrase, less than 50 characters, like a git commit message.
 

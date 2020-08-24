@@ -10,7 +10,7 @@ Status: Proposed
 
 - Zulu and AdoptOpenJDK aren't the only distributions of Java though. Other providers include Oracle OpenJDK or Amazon Corretto and ideally it would be nice to support downloading Java from all providers.
 
-- GitHub Actions virtual environments install and default to AdoptOpenJDK builds of OpenJDK. `setup-java` should align to to the same behavior.
+- GitHub Actions virtual environments install and default to AdoptOpenJDK builds of OpenJDK. `setup-java` should align to the same behavior.
 
 # Decision
 
