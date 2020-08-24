@@ -8,21 +8,21 @@
 
 ### NCC
 
-In order to avoid uploading `node_modules` to the repository, we use [zeit/ncc](https://github.com/zeit/ncc) to create a single `index.js` file that gets saved in `dist/`.
+In order to avoid uploading `node_modules` to the repository, we use [zeit/ncc](https://github.com/zeit/ncc) to create multiple `index.js` files that gets saved under `dist/`.
+There are two main files that get created
+- `dist/setup/index.js`
+   - Core `setup-java` logic that downloads and installs an appropriate version of Java 
+   - Handling creating a `settings.xml` file to make it easier to publish packages
+- `dist/cleanup/index/js`
+   -  Extra cleanup script that is used to remove GPG keys (needed for certain self-hosted runner scenarios)
 
-If you're developing locally you can run
-```
-npm install
-tsc
-ncc build
-```
-You can also do
-```
-npm run-script build # runs tsc
-npm run-script format # runs prettier --write
-npm run-script format-check # runs prettier --check
-npm run-script test # runs jest
-npm run-script release # runs ncc build
+If you're developing locally, after doing `npm install`, you can use the following commands
+```yaml
+npm run build # runs tsc along with ncc
+npm run format # runs prettier --write
+npm run format-check # runs prettier --check
+npm run test # runs jest
+npm run release # add all the necessary ncc files under dist/* to the git staging area
 ```
 
 Any files generated using `tsc` will be added to `lib/*`, however those files also are not uploaded to the repository and are excluded using `.gitignore`.

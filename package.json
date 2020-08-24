@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "setup java action",
-  "main": "dist/index.js",
+  "main": "dist/setup/index.js",
   "scripts": {
     "build": "ncc build -o dist/setup src/setup-java.ts && ncc build -o dist/cleanup src/cleanup-java.ts",
     "format": "prettier --write **/*.ts",
