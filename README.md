@@ -28,7 +28,7 @@ Examples of version specifications that the java-version parameter will accept:
 
 - A major Java version
 
-  e.g. ```6, 7, 8, 9, 10, 11, 12, 13, ...```
+  e.g. ```6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, ...```
 
 - A semver Java version specification
 
@@ -38,11 +38,11 @@ Examples of version specifications that the java-version parameter will accept:
 
 - An early access (EA) Java version
 
-  e.g. ```14-ea, 15-ea```
+  e.g. ```17-ea```
 
-  e.g. ```14.0.0-ea, 15.0.0-ea```
+  e.g. ```17.0.0-ea```
 
-  e.g. ```14.0.0-ea.28, 15.0.0-ea.2``` (syntax for specifying an EA build number)
+  e.g. ```17.0.0-ea.2``` (syntax for specifying an EA build number)
 
   Note that, per semver rules, EA builds will be matched by explicit EA version specifications.
 
