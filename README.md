@@ -69,7 +69,7 @@ steps:
 ```yaml
 jobs:
   build:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         # test against latest update of each major Java version, as well as specific updates of LTS versions:
