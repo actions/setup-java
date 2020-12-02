@@ -10,13 +10,13 @@ Status: Proposed
 
 - Zulu and AdoptOpenJDK aren't the only distributions of Java though. Other providers include Oracle OpenJDK or Amazon Corretto and ideally it would be nice to support downloading Java from all providers.
 
-- GitHub Actions virtual environments install and default to AdoptOpenJDK builds of OpenJDK. `setup-java` should align to the same behavior.
+- GitHub Actions virtual environments install and default to AdoptOpenJDK builds of OpenJDK. `setup-java` should give users an option to donwload and use other distributions that may not be be installed
 
 # Decision
 
 ## New input
 
-A new input parameter (titled `distribution`) will be added to `setup-java` that will allow users to specify the distribution that they would like to download
+A new required input parameter (titled `distribution`) will be added to `setup-java` that will allow users to specify the distribution that they would like to download
 
 ```yaml
   with:
@@ -26,7 +26,9 @@ A new input parameter (titled `distribution`) will be added to `setup-java` that
 
 ## Default Behavior
 
-If no `distribution` parameter is provided, the default value will be `adoptopenjdk`. The action will first attempt to use pre-installed versions of AdoptOpenJDK builds of OpenJDK on GitHub hosted runners. If a specific version is not found, the action will then download and install the correct version.
+There will be no default distribution that we pick for the user. Users will have to specify a distribution in their YAML or else the action will fail.
+
+Requiring a default version will break users that are pinned to `@master` or `@main` as they will have no `distribution` specified in their YAML. Users pinned to `v1` will be uneffected. This change is meant to not be backward compatible and it is acceptable to change the default behavior because a new major version will be released alongside these changes.
 
 ## Extensibility & Documentation
 
@@ -70,5 +72,5 @@ The `setup-java` action has some logic that creates a `settings.xml` file so tha
 
 - Users will have more flexibility and the freedom to choose a specific distribution that they would like (AdoptOpenJDK builds of OpenJDK in addition or Zulu builds of OpenJDK)
 - `setup-java` will be structured in such a way that will allow for more distributions to be easily added in the future
-- A large subset of users pin to `@main` or `@master` instead of to a specific version (`v1`). By introducing a breaking change by switching from `Zulu` to `AdoptOpenJDK` as the default, certain existing workflows for users might break
+- A large subset of users pin to `@main` or `@master` instead of to a specific version (`v1`). By introducing a breaking change that now requires a distribution to be specified, many users will have their workflows fail until they go and update their yaml
 - Higher maintenance and support burden moving forward
