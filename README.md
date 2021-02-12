@@ -85,6 +85,23 @@ jobs:
 ```
 
 ## Publishing using Apache Maven
+
+### Extra setup for pom.xml:
+
+According to possible issues with `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`, Maven GPG Plugin configuration in pom.xml should contain the following:
+
+```
+<configuration>
+  <!-- Prevent gpg from using pinentry programs -->
+  <gpgArguments>
+    <arg>--pinentry-mode</arg>
+    <arg>loopback</arg>
+  </gpgArguments>
+</configuration>
+```
+GPG 2.1 requires `--pinentry-mode` to be set to `loopback` in order to pick up `gpg.passphrase` value defined in Maven `settings.xml`
+
+### Yaml example:
 ```yaml
 jobs:
   build:
@@ -164,9 +181,13 @@ The two `settings.xml` files created from the above example look like the follow
 </settings>
 ```
 
-***NOTE: The `settings.xml` file is created in the Actions $HOME directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See below for using the `settings-path` to change your `settings.xml` file location.***
+***NOTE: The `settings.xml` file is created in the Actions $HOME/.m2 directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See below for using the `settings-path` to change your `settings.xml` file location.***
+
+### GPG
 
 If `gpg-private-key` input is provided, the private key will be written to a file in the runner's temp directory, the private key file will be imported into the GPG keychain, and then the file will be promptly removed before proceeding with the rest of the setup process. A cleanup step will remove the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances).
+
+**GPG key should be imported through: `gpg --armor --export-secret-keys YOUR_ID`**
 
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
