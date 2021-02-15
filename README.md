@@ -88,9 +88,9 @@ jobs:
 
 ### Extra setup for pom.xml:
 
-Maven GPG Plugin configuration in pom.xml file should contain the following structure to avoid possible issues like `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`:
+The Maven GPG Plugin configuration in the pom.xml file should contain the following structure to avoid possible issues like `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`:
 
-```
+```xml
 <configuration>
   <!-- Prevent gpg from using pinentry programs -->
   <gpgArguments>
@@ -99,7 +99,7 @@ Maven GPG Plugin configuration in pom.xml file should contain the following stru
   </gpgArguments>
 </configuration>
 ```
-GPG 2.1 requires `--pinentry-mode` to be set to `loopback` in order to pick up `gpg.passphrase` value defined in Maven `settings.xml`
+GPG 2.1 requires `--pinentry-mode` to be set to `loopback` in order to pick up the `gpg.passphrase` value defined in Maven `settings.xml`.
 
 ### Yaml example:
 ```yaml
