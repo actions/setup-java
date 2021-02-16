@@ -187,7 +187,7 @@ The two `settings.xml` files created from the above example look like the follow
 
 If `gpg-private-key` input is provided, the private key will be written to a file in the runner's temp directory, the private key file will be imported into the GPG keychain, and then the file will be promptly removed before proceeding with the rest of the setup process. A cleanup step will remove the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances).
 
-**GPG key should be imported by: `gpg --armor --export-secret-keys YOUR_ID`**
+**GPG key should be exported by: `gpg --armor --export-secret-keys YOUR_ID`**
 
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
