@@ -5,6 +5,7 @@ import * as core from '@actions/core';
 import * as io from '@actions/io';
 import {create as xmlCreate} from 'xmlbuilder2';
 import * as constants from './constants';
+import {setupMaven, MavenOpts} from './maven';
 
 export const M2_DIR = '.m2';
 export const SETTINGS_FILE = 'settings.xml';
@@ -13,7 +14,8 @@ export async function configAuthentication(
   id: string,
   username: string,
   password: string,
-  gpgPassphrase: string | undefined = undefined
+  gpgPassphrase: string | undefined = undefined,
+  mvnOpts: MavenOpts | undefined = undefined
 ) {
   console.log(
     `creating ${SETTINGS_FILE} with server-id: ${id};`,
@@ -34,6 +36,10 @@ export async function configAuthentication(
     settingsDirectory,
     generate(id, username, password, gpgPassphrase)
   );
+
+  if (mvnOpts) {
+    await setupMaven(mvnOpts);
+  }
 }
 
 // only exported for testing purposes
