@@ -12,6 +12,8 @@ async function run() {
       version = core.getInput(constants.INPUT_JAVA_VERSION, {required: true});
     }
 
+    const mavenCredsBlob = core.getInput(constants.INPUT_MAVEN_CREDS);
+
     const arch = core.getInput(constants.INPUT_ARCHITECTURE, {required: true});
     if (!['x86', 'x64'].includes(arch)) {
       throw new Error(`architecture "${arch}" is not in [x86 | x64]`);
@@ -45,7 +47,13 @@ async function run() {
       core.setSecret(gpgPrivateKey);
     }
 
-    await auth.configAuthentication(id, username, password, gpgPassphrase);
+    await auth.configAuthentication(
+      id,
+      username,
+      password,
+      gpgPassphrase,
+      mavenCredsBlob
+    );
 
     if (gpgPrivateKey) {
       core.info('importing private key');
