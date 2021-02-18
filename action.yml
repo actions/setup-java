@@ -9,6 +9,11 @@ inputs:
        Early access versions can be specified in the form of e.g. 14-ea,
        14.0.0-ea, or 14.0.0-ea.28'
     required: true
+  maven-creds:
+    description: 'Maven credential needed to setup MTLS. Credentails In the format
+        of base64 encoded yaml containing following fields also containing 
+        base64 blobs ( CA_CERT, CERT, KEY, SETTINGS, SECURITY_SETTINGS)'
+    required: true
   java-package:
     description: 'The package type (jre, jdk, jdk+fx)'
     required: false
