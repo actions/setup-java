@@ -15,11 +15,11 @@ export interface MavenOpts {
 
 export function validateOptions(opts: MavenOpts): boolean {
   if (
-    (opts.caCert === '' ||
-      opts.keystore === '' ||
-      opts.password === '' ||
-      opts.securitySettings === '',
-    opts.settings === '')
+    opts.caCert === '' ||
+    opts.keystore === '' ||
+    opts.password === '' ||
+    opts.securitySettings === '' ||
+    opts.settings === ''
   ) {
     core.debug('maven options set is not valid: some field is empty');
     return false;

@@ -11,6 +11,51 @@ import * as util from './util';
 const tempDirectory = util.getTempDir();
 const IS_WINDOWS = util.isWindows();
 
+export async function getMaven(version: string): Promise<void> {
+  const tmpVersions = version.split('.');
+  if (tmpVersions.length < 2) {
+    throw new Error(
+      `wrong version is set(${version}): supported version template: major.minor.patch`
+    );
+  }
+  const majorVersion = tmpVersions[0];
+
+  let toolPath = tc.find('mvn', version);
+
+  if (toolPath) {
+    core.debug(`Tool found in cache ${toolPath}`);
+  } else {
+    core.debug(
+      `Downloading Maven from https://downloads.apache.org/maven/maven-${majorVersion}`
+    );
+
+    const url = path.join(
+      `https:///downloads.apache.org/maven/maven-${majorVersion}`,
+      version,
+      `binaries/apache-maven-${version}-bin.tar.gz`
+    );
+
+    console.log(url);
+    const mvnTarFile = await tc.downloadTool(url);
+
+    let tempDir: string = path.join(
+      tempDirectory,
+      'temp_' + Math.floor(Math.random() * 2000000000)
+    );
+    await extractFiles(mvnTarFile, '.tar.gz', tempDir);
+
+    core.debug(`maven extracted to ${tempDir}`);
+    toolPath = await tc.cacheDir(
+      path.join(tempDir, `apache-maven-${version}`),
+      'mvn',
+      version,
+      'x64'
+    );
+  }
+
+  core.exportVariable('MAVEN_HOME', toolPath);
+}
+
 export async function getJava(
   version: string,
   arch: string,

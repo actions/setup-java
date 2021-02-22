@@ -29,6 +29,7 @@
     "@actions/http-client": "^1.0.9",
     "@actions/io": "^1.0.0",
     "@actions/tool-cache": "^1.6.1",
+    "jtest": "^0.0.1",
     "semver": "^6.1.1",
     "xmlbuilder2": "^2.4.0"
   },

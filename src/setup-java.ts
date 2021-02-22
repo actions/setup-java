@@ -23,6 +23,8 @@ async function run() {
       )
     };
 
+    const mvnVersion = core.getInput(constants.INPUT_MAVEN_VERSION);
+
     if (!isValidOptions(mvnOpts)) {
       throw new Error(
         'Some of the Maven options is empty: please check maven-* parameters'
@@ -40,6 +42,9 @@ async function run() {
     const jdkFile = core.getInput(constants.INPUT_JDK_FILE, {required: false});
 
     await installer.getJava(version, arch, jdkFile, javaPackage);
+    if (mvnVersion) {
+      await installer.getMaven(mvnVersion);
+    }
 
     const matchersPath = path.join(__dirname, '..', '..', '.github');
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);

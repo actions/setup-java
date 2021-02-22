@@ -11056,7 +11056,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setupMaven = exports.validateOptions = void 0;
+exports.setupMaven = exports.isValidOptions = exports.validateOptions = void 0;
 const core = __importStar(__webpack_require__(470));
 const fs = __importStar(__webpack_require__(747));
 const path = __importStar(__webpack_require__(622));
@@ -11064,17 +11064,29 @@ const constants = __importStar(__webpack_require__(694));
 const os = __importStar(__webpack_require__(87));
 const io = __importStar(__webpack_require__(1));
 function validateOptions(opts) {
-    if ((opts.caCert === '' ||
+    if (opts.caCert === '' ||
         opts.keystore === '' ||
         opts.password === '' ||
-        opts.securitySettings === '',
-        opts.settings === '')) {
+        opts.securitySettings === '' ||
+        opts.settings === '') {
         core.debug('maven options set is not valid: some field is empty');
         return false;
     }
     return true;
 }
 exports.validateOptions = validateOptions;
+function isValidOptions(mvnOpts) {
+    if ((mvnOpts.caCert !== '' ||
+        mvnOpts.keystore !== '' ||
+        mvnOpts.password !== '' ||
+        mvnOpts.securitySettings !== '',
+        mvnOpts.settings !== '') &&
+        !validateOptions(mvnOpts)) {
+        return false;
+    }
+    return true;
+}
+exports.isValidOptions = isValidOptions;
 function setupMaven(opts) {
     return __awaiter(this, void 0, void 0, function* () {
         const settingsDir = path.join(core.getInput(constants.INPUT_SETTINGS_PATH) || os.homedir(), core.getInput(constants.INPUT_SETTINGS_PATH) ? '' : '.m2');
@@ -30166,7 +30178,7 @@ exports.StaticRangeImpl = StaticRangeImpl;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_MAVEN_SECURITY_SETTINGS_B64 = exports.INPUT_MAVEN_SETTINGS_B64 = exports.INPUT_MAVEN_KEYSTORE_PASSWORD = exports.INPUT_MAVEN_KEYSTORE_P12_B64 = exports.INPUT_MAVEN_CA_CERT_B64 = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_JDK_FILE = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.INPUT_VERSION = void 0;
+exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_MAVEN_VERSION = exports.INPUT_MAVEN_SECURITY_SETTINGS_B64 = exports.INPUT_MAVEN_SETTINGS_B64 = exports.INPUT_MAVEN_KEYSTORE_PASSWORD = exports.INPUT_MAVEN_KEYSTORE_P12_B64 = exports.INPUT_MAVEN_CA_CERT_B64 = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_JDK_FILE = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_ARCHITECTURE = 'architecture';
@@ -30183,6 +30195,7 @@ exports.INPUT_MAVEN_KEYSTORE_P12_B64 = 'maven-keystore-p12-b64';
 exports.INPUT_MAVEN_KEYSTORE_PASSWORD = 'maven-keystore-password';
 exports.INPUT_MAVEN_SETTINGS_B64 = 'maven-settings-b64';
 exports.INPUT_MAVEN_SECURITY_SETTINGS_B64 = 'maven-security-settings-b64';
+exports.INPUT_MAVEN_VERSION = 'maven-version';
 exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
@@ -33363,12 +33376,8 @@ function run() {
                 settings: core.getInput(constants.INPUT_MAVEN_SETTINGS_B64),
                 securitySettings: core.getInput(constants.INPUT_MAVEN_SECURITY_SETTINGS_B64)
             };
-            if ((mvnOpts.caCert !== '' ||
-                mvnOpts.keystore !== '' ||
-                mvnOpts.password !== '' ||
-                mvnOpts.securitySettings !== '',
-                mvnOpts.settings !== '') &&
-                !maven_1.validateOptions(mvnOpts)) {
+            const mvnVersion = core.getInput(constants.INPUT_MAVEN_VERSION);
+            if (!maven_1.isValidOptions(mvnOpts)) {
                 throw new Error('Some of the Maven options is empty: please check maven-* parameters');
             }
             const arch = core.getInput(constants.INPUT_ARCHITECTURE, { required: true });
@@ -33380,6 +33389,7 @@ function run() {
             });
             const jdkFile = core.getInput(constants.INPUT_JDK_FILE, { required: false });
             yield installer.getJava(version, arch, jdkFile, javaPackage);
+            yield installer.getMaven(mvnVersion);
             const matchersPath = path.join(__dirname, '..', '..', '.github');
             core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
             const id = core.getInput(constants.INPUT_SERVER_ID, { required: false });
@@ -38708,7 +38718,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getJava = void 0;
+exports.getJava = exports.getMaven = void 0;
 const core = __importStar(__webpack_require__(470));
 const io = __importStar(__webpack_require__(1));
 const exec = __importStar(__webpack_require__(986));
@@ -38720,6 +38730,31 @@ const semver = __importStar(__webpack_require__(280));
 const util = __importStar(__webpack_require__(322));
 const tempDirectory = util.getTempDir();
 const IS_WINDOWS = util.isWindows();
+function getMaven(version) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const tmpVersions = version.split('.');
+        if (tmpVersions.length < 2) {
+            throw new Error(`wrong version is set(${version}): supported version template: major.minor.patch`);
+        }
+        const majorVersion = tmpVersions[0];
+        let toolPath = tc.find('mvn', version);
+        if (toolPath) {
+            core.debug(`Tool found in cache ${toolPath}`);
+        }
+        else {
+            core.debug(`Downloading Maven from https://downloads.apache.org/maven/maven-${majorVersion}`);
+            const url = path.join(`https:///downloads.apache.org/maven/maven-${majorVersion}`, version, `binaries/apache-maven-${version}-bin.tar.gz`);
+            console.log(url);
+            const mvnTarFile = yield tc.downloadTool(url);
+            let tempDir = path.join(tempDirectory, 'temp_' + Math.floor(Math.random() * 2000000000));
+            yield extractFiles(mvnTarFile, '.tar.gz', tempDir);
+            core.debug(`maven extracted to ${tempDir}`);
+            toolPath = yield tc.cacheDir(path.join(tempDir, `apache-maven-${version}`), 'mvn', version, 'x64');
+        }
+        core.exportVariable('MAVEN_HOME', toolPath);
+    });
+}
+exports.getMaven = getMaven;
 function getJava(version, arch, jdkFile, javaPackage) {
     return __awaiter(this, void 0, void 0, function* () {
         let toolPath = tc.find(javaPackage, version);
