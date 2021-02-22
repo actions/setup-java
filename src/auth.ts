@@ -5,7 +5,7 @@ import * as core from '@actions/core';
 import * as io from '@actions/io';
 import {create as xmlCreate} from 'xmlbuilder2';
 import * as constants from './constants';
-import * as yamlCreds from '@tradeshift/actions-credentials-yaml';
+import {setupMaven, MavenOpts} from './maven';
 
 export const M2_DIR = '.m2';
 export const SETTINGS_FILE = 'settings.xml';
@@ -15,7 +15,7 @@ export async function configAuthentication(
   username: string,
   password: string,
   gpgPassphrase: string | undefined = undefined,
-  mvnCredsBlob: string | undefined = undefined
+  mvnOpts: MavenOpts | undefined = undefined
 ) {
   console.log(
     `creating ${SETTINGS_FILE} with server-id: ${id};`,
@@ -37,8 +37,8 @@ export async function configAuthentication(
     generate(id, username, password, gpgPassphrase)
   );
 
-  if (mvnCredsBlob) {
-    await setupMvnMTLSCfg(mvnCredsBlob, settingsDirectory);
+  if (mvnOpts) {
+    await setupMaven(mvnOpts);
   }
 }
 
@@ -90,57 +90,4 @@ async function write(directory: string, settings: string) {
     encoding: 'utf-8',
     flag: 'w'
   });
-}
-
-async function setupMvnMTLSCfg(credBlob: string, settingsDir: string) {
-  // this is what we need to set
-  //  ~/.m2/settings.xml
-  // ~/.m2/settings-security.xml
-  // mkdir -p ~/certs
-  // ~/certs/certificate.p12
-  // ~/rootca.crt
-  // export MAVEN_OPTS="-Djavax.net.ssl.keyStore=~/certs/certificate.p12 -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.keyStorePassword=${MAVEN_P12_PASSWORD}"
-
-  const creds = await yamlCreds.parseCredsToObject<yamlCreds.CredsMvn>(
-    credBlob
-  );
-  const certDir = path.join(os.homedir(), 'certs');
-
-  fs.writeFileSync(
-    path.join(settingsDir, 'settings.xml'),
-    btoa(creds.MVN_SETTINGS),
-    {
-      encoding: 'utf-8',
-      flag: 'w'
-    }
-  );
-
-  fs.writeFileSync(
-    path.join(settingsDir, 'settings-security.xml'),
-    btoa(creds.MVN_SECURITY_SETTINGS),
-    {
-      encoding: 'utf-8',
-      flag: 'w'
-    }
-  );
-
-  await io.mkdirP(certDir);
-  fs.writeFileSync(path.join(certDir, 'rootca.crt'), btoa(creds.MTLS_CA_CERT), {
-    encoding: 'utf-8',
-    flag: 'w'
-  });
-
-  const p12Path = path.join(certDir, 'certificate.p12');
-  fs.writeFileSync(p12Path, btoa(creds.MVN_P12), {
-    encoding: 'utf-8',
-    flag: 'w'
-  });
-
-  const password = btoa(creds.MVN_P12_PASSWORD);
-  core.exportVariable(
-    'MAVEN_OPTS',
-    `-Djavax.net.ssl.keyStore=${p12Path} -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.keyStorePassword=${password}`
-  );
-
-  core.debug(`added maven opts for MTLS access`);
 }

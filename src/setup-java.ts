@@ -4,6 +4,7 @@ import * as auth from './auth';
 import * as gpg from './gpg';
 import * as constants from './constants';
 import * as path from 'path';
+import {MavenOpts, validateOptions} from './maven';
 
 async function run() {
   try {
@@ -12,7 +13,28 @@ async function run() {
       version = core.getInput(constants.INPUT_JAVA_VERSION, {required: true});
     }
 
-    const mavenCredsBlob = core.getInput(constants.INPUT_MAVEN_CREDS);
+    const mvnOpts: MavenOpts = {
+      caCert: core.getInput(constants.INPUT_MAVEN_CA_CERT_B64),
+      keystore: core.getInput(constants.INPUT_MAVEN_KEYSTORE_P12_B64),
+      password: core.getInput(constants.INPUT_MAVEN_KEYSTORE_PASSWORD),
+      settings: core.getInput(constants.INPUT_MAVEN_SETTINGS_B64),
+      securitySettings: core.getInput(
+        constants.INPUT_MAVEN_SECURITY_SETTINGS_B64
+      )
+    };
+
+    if (
+      (mvnOpts.caCert !== '' ||
+        mvnOpts.keystore !== '' ||
+        mvnOpts.password !== '' ||
+        mvnOpts.securitySettings !== '',
+      mvnOpts.settings !== '') &&
+      !validateOptions(mvnOpts)
+    ) {
+      throw new Error(
+        'Some of the Maven options is empty: please check maven-* parameters'
+      );
+    }
 
     const arch = core.getInput(constants.INPUT_ARCHITECTURE, {required: true});
     if (!['x86', 'x64'].includes(arch)) {
@@ -52,7 +74,7 @@ async function run() {
       username,
       password,
       gpgPassphrase,
-      mavenCredsBlob
+      mvnOpts
     );
 
     if (gpgPrivateKey) {
