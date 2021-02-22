@@ -1,3 +1,2 @@
-dist/index.js    -diff -merge
-dist/index.js    linguist-generated=true
 .licenses/** -diff linguist-generated=true
+dist/** -diff linguist-generated=true

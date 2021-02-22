@@ -13,6 +13,25 @@ This action sets up a java environment for use in actions by:
 
 See [action.yml](action.yml)
 
+## MTLS Basic 
+```yaml
+steps:
+- uses: tradeshift/actions-setup-java@master
+  with:
+    # standard github actions parameters
+    # possible values explained in sections below 
+    java-version: 11
+    # mvn and MTLS related parameters
+    maven-version: "3.6.3" 
+    maven-ca-cert-b64: ${{ secrets.MTLS_CACERT }}
+    maven-keystore-p12-b64: ${{ secrets.MAVEN_P12 }}
+    maven-keystore-password: ${{ secrets.MAVEN_P12_PASSWORD }}
+    maven-settings-b64: ${{ secrets.MAVEN_SETTINGS }}
+    maven-security-settings-b64: ${{ secrets.MAVEN_SECURITY }} 
+- run: |
+    mvn -B compile
+```
+
 ## Basic
 ```yaml
 steps:

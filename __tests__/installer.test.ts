@@ -156,4 +156,24 @@ describe('installer tests', () => {
     expect(thrown).toBe(true);
     return;
   });
+
+  it('throws error when given invalid maven version', async () => {
+    expect(installer.getMaven('2-3-4')).rejects.toThrow();
+  });
+
+  it('Installs version of Maven and stores it to cache', async () => {
+    await installer.getMaven('3.6.3');
+    const mvnDir = path.join(toolDir, 'mvn', '3.6.3', 'x64');
+
+    expect(fs.existsSync(`${mvnDir}.complete`)).toBe(true);
+    expect(fs.existsSync(path.join(mvnDir))).toBe(true);
+  }, 100000);
+
+  it('Uses version of Maven installed in cache', async () => {
+    const mvnDir: string = path.join(toolDir, 'mvn', '3.6.3', 'x64');
+    await io.mkdirP(mvnDir);
+    fs.writeFileSync(`${mvnDir}.complete`, 'hello');
+    // This will throw if it doesn't find it in the cache (because no such version exists)
+    await installer.getMaven('3.6.3');
+  });
 });

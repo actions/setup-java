@@ -1029,7 +1029,7 @@ module.exports = require("child_process");
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_MAVEN_SECURITY_SETTINGS_B64 = exports.INPUT_MAVEN_SETTINGS_B64 = exports.INPUT_MAVEN_KEYSTORE_PASSWORD = exports.INPUT_MAVEN_KEYSTORE_P12_B64 = exports.INPUT_MAVEN_CA_CERT_B64 = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_JDK_FILE = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.INPUT_VERSION = void 0;
+exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_MAVEN_VERSION = exports.INPUT_MAVEN_SECURITY_SETTINGS_B64 = exports.INPUT_MAVEN_SETTINGS_B64 = exports.INPUT_MAVEN_KEYSTORE_PASSWORD = exports.INPUT_MAVEN_KEYSTORE_P12_B64 = exports.INPUT_MAVEN_CA_CERT_B64 = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_JDK_FILE = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.INPUT_VERSION = void 0;
 exports.INPUT_VERSION = 'version';
 exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_ARCHITECTURE = 'architecture';
@@ -1046,6 +1046,7 @@ exports.INPUT_MAVEN_KEYSTORE_P12_B64 = 'maven-keystore-p12-b64';
 exports.INPUT_MAVEN_KEYSTORE_PASSWORD = 'maven-keystore-password';
 exports.INPUT_MAVEN_SETTINGS_B64 = 'maven-settings-b64';
 exports.INPUT_MAVEN_SECURITY_SETTINGS_B64 = 'maven-security-settings-b64';
+exports.INPUT_MAVEN_VERSION = 'maven-version';
 exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
