@@ -9,6 +9,21 @@ inputs:
        Early access versions can be specified in the form of e.g. 14-ea,
        14.0.0-ea, or 14.0.0-ea.28'
     required: true
+  maven-ca-cert-b64:
+    description: 'CA cert in the format of a base64 blob used to connect to private
+        maven repo protected by MTLS'
+  maven-keystore-p12-b64:
+    description: 'Keystore p12 in the format of a base64 blob used to connect to private
+        maven repo protected by MTLS'
+  maven-keystore-password:
+    description: 'Password to perform extractions from the keystore used to connect to private
+        maven repo protected by MTLS'
+  maven-settings-b64:
+    description: 'Settings xml in the format of base64 blob used to connect to private
+        maven repo protected by MTLS'
+  maven-security-settings-b64:
+    description: 'Security ettings xml in the format of base64 blob used to connect to private
+        maven repo protected by MTLS'
   java-package:
     description: 'The package type (jre, jdk, jdk+fx)'
     required: false
