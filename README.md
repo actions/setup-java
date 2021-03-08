@@ -26,7 +26,7 @@ steps:
 - uses: actions/setup-java@v2-preview
   with:
     distribution: 'adoptium' # See 'Supported distributions' for available options
-    java-version: '11.x'
+    java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
 

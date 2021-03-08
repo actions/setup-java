@@ -22,7 +22,7 @@ steps:
 - uses: actions/setup-java@v2-preview
   with:
     distribution: 'adoptium'
-    java-version: '11.x'
+    java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
 
@@ -33,7 +33,7 @@ steps:
 - uses: actions/setup-java@v2-preview
   with:
     distribution: 'zulu'
-    java-version: '11.x'
+    java-version: '11'
     java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
 - run: java -cp java HelloWorldApp
 ```
@@ -45,7 +45,7 @@ steps:
 - uses: actions/setup-java@v2-preview
   with:
     distribution: '<distribution>'
-    java-version: '11.x'
+    java-version: '11'
     java-package: jdk # optional (jdk or jre) - defaults to jdk
 - run: java -cp java HelloWorldApp
 ```
@@ -59,7 +59,7 @@ steps:
 - uses: actions/setup-java@v2-preview
   with:
     distribution: '<distribution>'
-    java-version: '11.x'
+    java-version: '11'
     architecture: x86 # optional - defaults to x64
 - run: java -cp java HelloWorldApp
 ```
@@ -149,11 +149,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 8.x
+    - name: Set up JDK 8
       uses: actions/setup-java@v2-preview
       with:
         distribution: '<distribution>'
-        java-version: 8.x
+        java-version: '8'
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
@@ -244,7 +244,7 @@ jobs:
       uses: actions/setup-java@v2-preview
       with:
         distribution: '<distribution>'
-        java-version: 8.x
+        java-version: '8'
 
     - name: Build with Gradle
       run: gradle build
@@ -276,7 +276,7 @@ jobs:
       uses: actions/setup-java@v2-preview
       with:
         distribution: '<distribution>'
-        java-version: 8.x
+        java-version: '8'
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 

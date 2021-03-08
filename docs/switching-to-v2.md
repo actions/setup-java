@@ -8,7 +8,7 @@ steps:
 - uses: actions/setup-java@v2-preview
   with:
     distribution: 'zulu'
-    java-version: '11.x'
+    java-version: '11'
     java-package: jdk # optional (jdk or jre) - defaults to jdk
 - run: java -cp java HelloWorldApp
 ```
