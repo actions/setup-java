@@ -9368,8 +9368,8 @@ class LocalDistribution extends base_installer_1.JavaBase {
                 const javaVersion = this.version.raw;
                 let javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaVersion), this.architecture);
                 if (process.platform === 'darwin' &&
-                    fs_1.default.existsSync(path_1.default.join(javaPath, constants_1.macOSJavaContentDir))) {
-                    javaPath = path_1.default.join(javaPath, constants_1.macOSJavaContentDir);
+                    fs_1.default.existsSync(path_1.default.join(javaPath, constants_1.MACOS_JAVA_CONTENT_POSTFIX))) {
+                    javaPath = path_1.default.join(javaPath, constants_1.MACOS_JAVA_CONTENT_POSTFIX);
                 }
                 foundJava = {
                     version: javaVersion,
@@ -11291,8 +11291,8 @@ exports.HTMLCollectionImpl = HTMLCollectionImpl;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.macOSJavaContentDir = void 0;
-exports.macOSJavaContentDir = 'Contents/Home';
+exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
+exports.MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
 exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_ARCHITECTURE = 'architecture';
 exports.INPUT_JAVA_PACKAGE = 'java-package';
@@ -13793,7 +13793,7 @@ class AdoptiumDistribution extends base_installer_1.JavaBase {
             const version = this.getToolcacheVersionName(javaRelease.version);
             javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
             if (process.platform === 'darwin') {
-                javaPath = path_1.default.join(javaPath, constants_1.macOSJavaContentDir);
+                javaPath = path_1.default.join(javaPath, constants_1.MACOS_JAVA_CONTENT_POSTFIX);
             }
             return { version: javaRelease.version, path: javaPath };
         });

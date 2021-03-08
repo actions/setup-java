@@ -8,7 +8,7 @@ import semver from 'semver';
 import { JavaBase } from '../base-installer';
 import { JavaInstallerOptions, JavaDownloadRelease, JavaInstallerResults } from '../base-models';
 import { extractJdkFile } from '../../util';
-import { macOSJavaContentDir } from '../../constants';
+import { MACOS_JAVA_CONTENT_POSTFIX } from '../../constants';
 
 export class LocalDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions, private jdkFile?: string) {
@@ -48,11 +48,12 @@ export class LocalDistribution extends JavaBase {
         this.architecture
       );
 
+      // for different Java distributions, postfix can exist or not so need to check both cases
       if (
         process.platform === 'darwin' &&
-        fs.existsSync(path.join(javaPath, macOSJavaContentDir))
+        fs.existsSync(path.join(javaPath, MACOS_JAVA_CONTENT_POSTFIX))
       ) {
-        javaPath = path.join(javaPath, macOSJavaContentDir);
+        javaPath = path.join(javaPath, MACOS_JAVA_CONTENT_POSTFIX);
       }
 
       foundJava = {

@@ -10,7 +10,7 @@ inputs:
     description: 'Java distribution. See the list of supported distributions in README file'
     required: false
   java-package:
-    description: 'The package type (jdk, jre)'
+    description: 'The package type (jdk, jre, jdk+fx, jre+fx)'
     required: false
     default: 'jdk'
   architecture:

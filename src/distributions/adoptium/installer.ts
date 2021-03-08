@@ -8,7 +8,7 @@ import semver from 'semver';
 import { JavaBase } from '../base-installer';
 import { IAdoptiumAvailableVersions } from './models';
 import { JavaInstallerOptions, JavaDownloadRelease, JavaInstallerResults } from '../base-models';
-import { macOSJavaContentDir } from '../../constants';
+import { MACOS_JAVA_CONTENT_POSTFIX } from '../../constants';
 import { extractJdkFile, getDownloadArchiveExtension } from '../../util';
 
 export class AdoptiumDistribution extends JavaBase {
@@ -68,7 +68,7 @@ export class AdoptiumDistribution extends JavaBase {
     javaPath = await tc.cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
 
     if (process.platform === 'darwin') {
-      javaPath = path.join(javaPath, macOSJavaContentDir);
+      javaPath = path.join(javaPath, MACOS_JAVA_CONTENT_POSTFIX);
     }
 
     return { version: javaRelease.version, path: javaPath };
