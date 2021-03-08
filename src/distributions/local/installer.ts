@@ -69,10 +69,10 @@ export class LocalDistribution extends JavaBase {
   }
 
   protected async findPackageForDownload(version: semver.Range): Promise<JavaDownloadRelease> {
-    throw new Error('Should not be implemented');
+    throw new Error('This method should not be implemented in local file provider');
   }
 
   protected async downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults> {
-    throw new Error('Should not be implemented');
+    throw new Error('This method should not be implemented in local file provider');
   }
 }

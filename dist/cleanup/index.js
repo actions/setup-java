@@ -1549,7 +1549,9 @@ exports.getVersionFromToolcachePath = getVersionFromToolcachePath;
 function extractJdkFile(toolPath, extension) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!extension) {
-            extension = toolPath.endsWith('.tar.gz') ? 'tar.gz' : path_1.default.extname(toolPath);
+            extension = toolPath.endsWith('.tar.gz')
+                ? 'tar.gz'
+                : path_1.default.extname(toolPath);
             if (extension.startsWith('.')) {
                 extension = extension.substring(1);
             }
@@ -5089,7 +5091,13 @@ function importKey(privateKey) {
                 }
             }
         };
-        yield exec.exec('gpg', ['--batch', '--import-options', 'import-show', '--import', exports.PRIVATE_KEY_FILE], options);
+        yield exec.exec('gpg', [
+            '--batch',
+            '--import-options',
+            'import-show',
+            '--import',
+            exports.PRIVATE_KEY_FILE
+        ], options);
         yield io.rmRF(exports.PRIVATE_KEY_FILE);
         const match = output.match(PRIVATE_KEY_FINGERPRINT_REGEX);
         return match && match[0];

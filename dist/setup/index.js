@@ -3988,7 +3988,7 @@ class JavaBase {
         return version;
     }
     findInToolcache() {
-        // we can't use tc.find directly because firstly, we need to filter versions by stability
+        // we can't use tc.find directly because firstly, we need to filter versions by stability flag
         // if *-ea is provided, take only ea versions from toolcache, otherwise - only stable versions
         const availableVersions = tc
             .findAllVersions(this.toolcacheFolderName, this.architecture)
@@ -4019,7 +4019,7 @@ class JavaBase {
     normalizeVersion(version) {
         let stable = true;
         if (version.endsWith('-ea')) {
-            version = version.replace('-ea', '');
+            version = version.replace(/-ea$/, '');
             stable = false;
         }
         if (!semver_1.default.validRange(version)) {
@@ -9367,6 +9367,7 @@ class LocalDistribution extends base_installer_1.JavaBase {
                 const archivePath = path_1.default.join(extractedJavaPath, archiveName);
                 const javaVersion = this.version.raw;
                 let javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaVersion), this.architecture);
+                // for different Java distributions, postfix can exist or not so need to check both cases
                 if (process.platform === 'darwin' &&
                     fs_1.default.existsSync(path_1.default.join(javaPath, constants_1.MACOS_JAVA_CONTENT_POSTFIX))) {
                     javaPath = path_1.default.join(javaPath, constants_1.MACOS_JAVA_CONTENT_POSTFIX);
@@ -9383,12 +9384,12 @@ class LocalDistribution extends base_installer_1.JavaBase {
     }
     findPackageForDownload(version) {
         return __awaiter(this, void 0, void 0, function* () {
-            throw new Error('Should not be implemented');
+            throw new Error('This method should not be implemented in local file provider');
         });
     }
     downloadTool(javaRelease) {
         return __awaiter(this, void 0, void 0, function* () {
-            throw new Error('Should not be implemented');
+            throw new Error('This method should not be implemented in local file provider');
         });
     }
 }
@@ -12943,7 +12944,9 @@ exports.getVersionFromToolcachePath = getVersionFromToolcachePath;
 function extractJdkFile(toolPath, extension) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!extension) {
-            extension = toolPath.endsWith('.tar.gz') ? 'tar.gz' : path_1.default.extname(toolPath);
+            extension = toolPath.endsWith('.tar.gz')
+                ? 'tar.gz'
+                : path_1.default.extname(toolPath);
             if (extension.startsWith('.')) {
                 extension = extension.substring(1);
             }
@@ -13227,7 +13230,8 @@ function configureAuthentication() {
         const id = core.getInput(constants.INPUT_SERVER_ID);
         const username = core.getInput(constants.INPUT_SERVER_USERNAME);
         const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
-        const gpgPrivateKey = core.getInput(constants.INPUT_GPG_PRIVATE_KEY) || constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
+        const gpgPrivateKey = core.getInput(constants.INPUT_GPG_PRIVATE_KEY) ||
+            constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
         const gpgPassphrase = core.getInput(constants.INPUT_GPG_PASSPHRASE) ||
             (gpgPrivateKey ? constants.INPUT_DEFAULT_GPG_PASSPHRASE : undefined);
         if (gpgPrivateKey) {
@@ -13770,7 +13774,9 @@ class AdoptiumDistribution extends base_installer_1.JavaBase {
             });
             const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
             if (!resolvedFullVersion) {
-                const availableOptions = availableVersionsWithBinaries.map(item => item.version).join(', ');
+                const availableOptions = availableVersionsWithBinaries
+                    .map(item => item.version)
+                    .join(', ');
                 const availableOptionsMessage = availableOptions
                     ? `\nAvailable versions: ${availableOptions}`
                     : '';
@@ -14097,7 +14103,9 @@ class ZuluDistribution extends base_installer_1.JavaBase {
             });
             const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
             if (!resolvedFullVersion) {
-                const availableOptions = availableVersions.map(item => item.version).join(', ');
+                const availableOptions = availableVersions
+                    .map(item => item.version)
+                    .join(', ');
                 const availableOptionsMessage = availableOptions
                     ? `\nAvailable versions: ${availableOptions}`
                     : '';
@@ -14147,7 +14155,8 @@ class ZuluDistribution extends base_installer_1.JavaBase {
             if (core.isDebug()) {
                 core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
             }
-            const availableVersions = (_b = (yield this.http.getJson(availableVersionsUrl)).result) !== null && _b !== void 0 ? _b : [];
+            const availableVersions = (_b = (yield this.http.getJson(availableVersionsUrl))
+                .result) !== null && _b !== void 0 ? _b : [];
             if (core.isDebug()) {
                 core.startGroup('Print information about available versions');
                 console.timeEnd('azul-retrieve-available-versions');
@@ -41109,7 +41118,13 @@ function importKey(privateKey) {
                 }
             }
         };
-        yield exec.exec('gpg', ['--batch', '--import-options', 'import-show', '--import', exports.PRIVATE_KEY_FILE], options);
+        yield exec.exec('gpg', [
+            '--batch',
+            '--import-options',
+            'import-show',
+            '--import',
+            exports.PRIVATE_KEY_FILE
+        ], options);
         yield io.rmRF(exports.PRIVATE_KEY_FILE);
         const match = output.match(PRIVATE_KEY_FINGERPRINT_REGEX);
         return match && match[0];
