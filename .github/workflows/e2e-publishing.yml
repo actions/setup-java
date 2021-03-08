@@ -1,0 +1,76 @@
+name: Validate publishing functionality
+on:
+  push:
+    branches:
+      - main
+      - releases/*
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  setup-java-publishing:
+    name: Validate settings.xml
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          server-id: maven
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_CENTRAL_TOKEN
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - run: |
+          $homePath = $env:USERPROFILE
+          if (-not $homePath) {
+            $homePath = $env:HOME
+          }
+          $xmlPath = Join-Path $homePath ".m2" "settings.xml"
+
+          Get-Content $xmlPath | ForEach-Object { Write-Host $_ }
+
+          [xml]$xml = Get-Content $xmlPath
+          $servers = $xml.settings.servers.server
+          if (($servers[0].id -ne 'maven') -or ($servers[0].username -ne '${env.MAVEN_USERNAME}') -or ($servers[0].password -ne '${env.MAVEN_CENTRAL_TOKEN}')) {
+            throw "Generated XML file is incorrect"
+          }
+
+          if (($servers[1].id -ne 'gpg.passphrase') -or ($servers[1].passphrase -ne '${env.MAVEN_GPG_PASSPHRASE}')) {
+            throw "Generated XML file is incorrect"
+          }
+        shell: pwsh
+
+  test-publishing-custom-location:
+    name: Validate settings.xml in custom location
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          server-id: maven
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_CENTRAL_TOKEN
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          settings-path: ${{ runner.temp }}
+      - run: |
+          $path = Join-Path $env:RUNNER_TEMP "settings.xml"
+          if (-not (Test-Path $path)) {
+            throw "settings.xml file is not found in expected location"
+          }
+        shell: pwsh
