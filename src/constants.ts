@@ -1,7 +1,8 @@
-export const INPUT_VERSION = 'version';
+export const macOSJavaContentDir = 'Contents/Home';
 export const INPUT_JAVA_VERSION = 'java-version';
 export const INPUT_ARCHITECTURE = 'architecture';
 export const INPUT_JAVA_PACKAGE = 'java-package';
+export const INPUT_DISTRIBUTION = 'distribution';
 export const INPUT_JDK_FILE = 'jdkFile';
 export const INPUT_SERVER_ID = 'server-id';
 export const INPUT_SERVER_USERNAME = 'server-username';

@@ -1,60 +1,51 @@
 import * as core from '@actions/core';
-import * as installer from './installer';
 import * as auth from './auth';
-import * as gpg from './gpg';
+
 import * as constants from './constants';
 import * as path from 'path';
+import { getJavaDistribution } from './distributions/distribution-factory';
+import { JavaInstallerOptions } from './distributions/base-models';
 
 async function run() {
   try {
-    let version = core.getInput(constants.INPUT_VERSION);
-    if (!version) {
-      version = core.getInput(constants.INPUT_JAVA_VERSION, {required: true});
+    const version = core.getInput(constants.INPUT_JAVA_VERSION);
+    const arch = core.getInput(constants.INPUT_ARCHITECTURE);
+    const distributionName = core.getInput(constants.INPUT_DISTRIBUTION);
+    const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
+    const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
+
+    if (version || distributionName) {
+      if (!version || !distributionName) {
+        throw new Error(
+          `Both ‘${constants.INPUT_JAVA_VERSION}’ and ‘${constants.INPUT_DISTRIBUTION}’ inputs are required if one of them is specified`
+        );
+      }
+
+      const installerOptions: JavaInstallerOptions = {
+        arch,
+        packageType,
+        version
+      };
+
+      const distribution = getJavaDistribution(distributionName, installerOptions, jdkFile);
+      if (!distribution) {
+        throw new Error(`No supported distribution was found for input ${distributionName}`);
+      }
+
+      const result = await distribution.setupJava();
+
+      core.info('');
+      core.info('Java configuration:');
+      core.info(`  Distribution: ${distributionName}`);
+      core.info(`  Version: ${result.version}`);
+      core.info(`  Path: ${result.path}`);
+      core.info('');
     }
-
-    const arch = core.getInput(constants.INPUT_ARCHITECTURE, {required: true});
-    if (!['x86', 'x64'].includes(arch)) {
-      throw new Error(`architecture "${arch}" is not in [x86 | x64]`);
-    }
-
-    const javaPackage = core.getInput(constants.INPUT_JAVA_PACKAGE, {
-      required: true
-    });
-    const jdkFile = core.getInput(constants.INPUT_JDK_FILE, {required: false});
-
-    await installer.getJava(version, arch, jdkFile, javaPackage);
 
     const matchersPath = path.join(__dirname, '..', '..', '.github');
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
-    const id = core.getInput(constants.INPUT_SERVER_ID, {required: false});
-    const username = core.getInput(constants.INPUT_SERVER_USERNAME, {
-      required: false
-    });
-    const password = core.getInput(constants.INPUT_SERVER_PASSWORD, {
-      required: false
-    });
-    const gpgPrivateKey =
-      core.getInput(constants.INPUT_GPG_PRIVATE_KEY, {required: false}) ||
-      constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
-    const gpgPassphrase =
-      core.getInput(constants.INPUT_GPG_PASSPHRASE, {required: false}) ||
-      (gpgPrivateKey ? constants.INPUT_DEFAULT_GPG_PASSPHRASE : undefined);
-
-    if (gpgPrivateKey) {
-      core.setSecret(gpgPrivateKey);
-    }
-
-    await auth.configAuthentication(id, username, password, gpgPassphrase);
-
-    if (gpgPrivateKey) {
-      core.info('importing private key');
-      const keyFingerprint = (await gpg.importKey(gpgPrivateKey)) || '';
-      core.saveState(
-        constants.STATE_GPG_PRIVATE_KEY_FINGERPRINT,
-        keyFingerprint
-      );
-    }
+    await auth.configureAuthentication();
   } catch (error) {
     core.setFailed(error.message);
   }
