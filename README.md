@@ -13,7 +13,7 @@ This action provides the following functionality for GitHub Actions runners:
 - Registering problem matchers for error output
 
 ## V2 vs V1
-- V2 has support of custom distributions and provides support of Zulu OpenJDK and Adoptium (formerly known as AdoptOpenJDK) out of the box. V1 supports only Zulu OpenJDK
+- V2 supports custom distributions and provides support for Zulu OpenJDK and Adoptium (formerly known as AdoptOpenJDK) out of the box. V1 supports only Zulu OpenJDK
 - V2 requires you to specify distribution along with the version. V1 defaults to Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2
 
 ## Usage
@@ -65,7 +65,7 @@ jobs:
 ```
 
 ### Advanced
-- [Selecting Java distribution](docs/advanced-usage.md#Selecting-Java-distribution)
+- [Selecting a Java distribution](docs/advanced-usage.md#Selecting-a-Java-distribution)
   - [Adoptium](docs/advanced-usage.md#Adoptium)
   - [Zulu](docs/advanced-usage.md#Zulu)
 - [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)

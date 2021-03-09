@@ -1,7 +1,7 @@
 # Switching to V2
 ## Java distribution
 The major breaking change in V2 is the new mandatory `distribution` input. This field should be specified with one of supported distributions. See [Supported distributions](../README.md#Supported-distributions) for a list of available options.  
-Use the `zulu` keyword if you would like to continue using the same distribution as in the V1.
+Use the `zulu` keyword if you would like to continue using the same distribution as in V1.
 ```yaml
 steps:
 - uses: actions/checkout@v2

@@ -1,5 +1,5 @@
 # Usage
-- [Selecting Java distribution](#Selecting-Java-distribution)
+- [Selecting a Java distribution](#Selecting-a-Java-distribution)
   - [Adoptium](#Adoptium)
   - [Zulu](#Zulu)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
@@ -12,8 +12,8 @@
 
 See [action.yml](../action.yml) for more details on task inputs.
 
-## Selecting Java distribution
-Input `distribution` is mandatory and needs to be provided to use action. See [Supported distributions](../README.md#Supported-distributions) for a list of available options.
+## Selecting a Java distribution
+Input `distribution` is mandatory and needs to be provided. See [Supported distributions](../README.md#Supported-distributions) for a list of available options.
 
 ### Adoptium
 ```yaml
