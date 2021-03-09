@@ -240,7 +240,7 @@ describe('normalizeVersion', () => {
   it('normalizeVersion should throw an error for non semver', () => {
     const version = '11g';
     expect(DummyJavaBase.prototype.normalizeVersion.bind(null, version)).toThrowError(
-      `The string '${version}' is not valid SemVer notation for Java version. Please check README file for code snippets and more detailed information`
+      `The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`
     );
   });
 });

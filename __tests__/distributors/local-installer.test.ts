@@ -103,7 +103,7 @@ describe('setupJava', () => {
     expect(spyTcFind).toHaveBeenCalled();
     expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved Java ${actualJavaVersion} from tool-cache`);
     expect(spyCoreInfo).not.toHaveBeenCalledWith(
-      `Java ${inputs.version} is not found in tool-cache. Trying to unpack JDK file...`
+      `Java ${inputs.version} was not found in tool-cache. Trying to unpack JDK file...`
     );
   });
 
@@ -120,7 +120,7 @@ describe('setupJava', () => {
     expect(spyTcFind).toHaveBeenCalled();
     expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved Java ${actualJavaVersion} from tool-cache`);
     expect(spyCoreInfo).not.toHaveBeenCalledWith(
-      `Java ${inputs.version} is not found in tool-cache. Trying to unpack JDK file...`
+      `Java ${inputs.version} was not found in tool-cache. Trying to unpack JDK file...`
     );
   });
 
@@ -140,7 +140,7 @@ describe('setupJava', () => {
     );
     expect(spyCoreInfo).toHaveBeenCalledWith(`Extracting Java from '${jdkFile}'`);
     expect(spyCoreInfo).toHaveBeenCalledWith(
-      `Java ${inputs.version} is not found in tool-cache. Trying to unpack JDK file...`
+      `Java ${inputs.version} was not found in tool-cache. Trying to unpack JDK file...`
     );
   });
 
@@ -155,7 +155,7 @@ describe('setupJava', () => {
     mockJavaBase = new LocalDistribution(inputs, jdkFile);
     expected.javaPath = path.join('Java_jdkfile_jdk', inputs.version, inputs.arch);
     await expect(mockJavaBase.setupJava()).rejects.toThrowError(
-      "JDK file is not found in path 'not_existing_one'"
+      "JDK file was not found in path 'not_existing_one'"
     );
     expect(spyTcFindAllVersions).toHaveBeenCalled();
     expect(spyCoreInfo).not.toHaveBeenCalledWith(
@@ -163,7 +163,7 @@ describe('setupJava', () => {
     );
     expect(spyCoreInfo).not.toHaveBeenCalledWith(`Extracting Java from '${jdkFile}'`);
     expect(spyCoreInfo).toHaveBeenCalledWith(
-      `Java ${inputs.version} is not found in tool-cache. Trying to unpack JDK file...`
+      `Java ${inputs.version} was not found in tool-cache. Trying to unpack JDK file...`
     );
   });
 
@@ -177,7 +177,7 @@ describe('setupJava', () => {
     async (inputs, jdkFile) => {
       mockJavaBase = new LocalDistribution(inputs, jdkFile);
       await expect(mockJavaBase.setupJava()).rejects.toThrowError(
-        /JDK file is not found in path */
+        /JDK file was not found in path */
       );
       expect(spyTcFindAllVersions).toHaveBeenCalled();
     }
