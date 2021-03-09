@@ -41,7 +41,7 @@ Currently, the following distributions are supported:
 | Keyword | Distribution | Official site | License |
 |-|-|-|-|
 | `zulu` | Zulu (Zulu OpenJDK) | [Link](https://www.azul.com/downloads/zulu-community/?package=jdk) | [Link](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
-| `adoptium` | Adoptium (former Adopt OpenJDK) | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html)
+| `adoptium` | Adoptium (formerly AdoptOpenJDK) | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html)
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 
