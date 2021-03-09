@@ -1,3 +1,5 @@
+// Models from https://api.adoptopenjdk.net/swagger-ui/#/Assets/get_v3_assets_version__version
+
 export interface IAdoptiumAvailableVersions {
   binaries: [
     {

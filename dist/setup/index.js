@@ -3951,7 +3951,7 @@ const util_1 = __webpack_require__(322);
 class JavaBase {
     constructor(distribution, installerOptions) {
         this.distribution = distribution;
-        this.http = new httpm.HttpClient('setup-java', undefined, {
+        this.http = new httpm.HttpClient('actions/setup-java', undefined, {
             allowRetries: true,
             maxRetries: 3
         });
@@ -3966,12 +3966,12 @@ class JavaBase {
                 core.info(`Resolved Java ${foundJava.version} from tool-cache`);
             }
             else {
-                core.info(`Java ${this.version.raw} is not found in tool-cache. Trying to download...`);
+                core.info(`Java ${this.version.raw} was not found in tool-cache. Trying to download...`);
                 const javaRelease = yield this.findPackageForDownload(this.version);
                 foundJava = yield this.downloadTool(javaRelease);
                 core.info(`Java ${foundJava.version} was downloaded`);
             }
-            core.info(`Setting Java ${foundJava.version} as default`);
+            core.info(`Setting Java ${foundJava.version} as the default`);
             this.setJavaDefault(foundJava.version, foundJava.path);
             return foundJava;
         });
@@ -4023,7 +4023,7 @@ class JavaBase {
             stable = false;
         }
         if (!semver_1.default.validRange(version)) {
-            throw new Error(`The string '${version}' is not valid SemVer notation for Java version. Please check README file for code snippets and more detailed information`);
+            throw new Error(`The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`);
         }
         return {
             version: new semver_1.default.Range(version),
@@ -9352,14 +9352,14 @@ class LocalDistribution extends base_installer_1.JavaBase {
                 core.info(`Resolved Java ${foundJava.version} from tool-cache`);
             }
             else {
-                core.info(`Java ${this.version.raw} is not found in tool-cache. Trying to unpack JDK file...`);
+                core.info(`Java ${this.version.raw} was not found in tool-cache. Trying to unpack JDK file...`);
                 if (!this.jdkFile) {
                     throw new Error("'jdkFile' is not specified");
                 }
                 const jdkFilePath = path_1.default.resolve(this.jdkFile);
                 const stats = fs_1.default.statSync(jdkFilePath);
                 if (!stats.isFile()) {
-                    throw new Error(`JDK file is not found in path '${jdkFilePath}'`);
+                    throw new Error(`JDK file was not found in path '${jdkFilePath}'`);
                 }
                 core.info(`Extracting Java from '${jdkFilePath}'`);
                 const extractedJavaPath = yield util_1.extractJdkFile(jdkFilePath);

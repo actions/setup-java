@@ -22,7 +22,7 @@ export class LocalDistribution extends JavaBase {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
       core.info(
-        `Java ${this.version.raw} is not found in tool-cache. Trying to unpack JDK file...`
+        `Java ${this.version.raw} was not found in tool-cache. Trying to unpack JDK file...`
       );
       if (!this.jdkFile) {
         throw new Error("'jdkFile' is not specified");
@@ -31,7 +31,7 @@ export class LocalDistribution extends JavaBase {
       const stats = fs.statSync(jdkFilePath);
 
       if (!stats.isFile()) {
-        throw new Error(`JDK file is not found in path '${jdkFilePath}'`);
+        throw new Error(`JDK file was not found in path '${jdkFilePath}'`);
       }
 
       core.info(`Extracting Java from '${jdkFilePath}'`);
