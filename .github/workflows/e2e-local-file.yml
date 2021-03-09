@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - releases/*
+      - v2-preview
     paths-ignore:
       - '**.md'
   pull_request:
@@ -21,7 +22,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - run: |
+      - name: Download Adopt OpenJDK file
+        run: |
           if ($IsLinux) {
             $downloadUrl = "https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz"
             $localFilename = "java_package.tar.gz"
@@ -57,7 +59,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - run: |
+      - name: Download Zulu OpenJDK file
+        run: |
           if ($IsLinux) {
             $downloadUrl = "https://cdn.azul.com/zulu/bin/zulu11.2.3-jdk11.0.1-linux_x64.tar.gz"
             $localFilename = "java_package.tar.gz"

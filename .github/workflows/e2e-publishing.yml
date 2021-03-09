@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - releases/*
+      - v2-preview
     paths-ignore:
       - '**.md'
   pull_request:
@@ -29,7 +30,8 @@ jobs:
           server-username: MAVEN_USERNAME
           server-password: MAVEN_CENTRAL_TOKEN
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
-      - run: |
+      - name: Validate settings.xml
+        run: |
           $homePath = $env:USERPROFILE
           if (-not $homePath) {
             $homePath = $env:HOME
@@ -68,7 +70,8 @@ jobs:
           server-password: MAVEN_CENTRAL_TOKEN
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
           settings-path: ${{ runner.temp }}
-      - run: |
+      - name: Validate settings.xml location
+        run: |
           $path = Join-Path $env:RUNNER_TEMP "settings.xml"
           if (-not (Test-Path $path)) {
             throw "settings.xml file is not found in expected location"

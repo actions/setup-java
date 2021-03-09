@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - releases/*
+      - v2-preview
     paths-ignore:
       - '**.md'
   pull_request:
