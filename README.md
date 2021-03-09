@@ -5,15 +5,15 @@
 </p>
 
 This action provides the following functionality for GitHub Actions runners:
-- Downloading and setting up a requested version of Java. See [Usage](#Usage) section for the list of supported distributions
-- Extracting and caching custom version of Java from local file
+- Downloading and setting up a requested version of Java. See [Usage](#Usage) for a list of supported distributions
+- Extracting and caching custom version of Java from a local file
 - Configuring runner for publishing using Apache Maven
 - Configuring runner for publishing using Gradle
 - Configuring runner for using GPG private key
 - Registering problem matchers for error output
 
 ## V2 vs V1
-- V2 has support of custom distributions and provides support of Zulu OpenJDK and Adoptium (former AdoptOpenJDK) out of the box. V1 supports only Zulu OpenJDK
+- V2 has support of custom distributions and provides support of Zulu OpenJDK and Adoptium (formerly known as AdoptOpenJDK) out of the box. V1 supports only Zulu OpenJDK
 - V2 requires you to specify distribution along with the version. V1 defaults to Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2
 
 ## Usage
@@ -31,10 +31,10 @@ steps:
 ```
 
 #### Supported version syntax
-Input `java-version` supports version range or exact version in [SemVer](https://semver.org/) format:
+The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
 - major versions: `8`, `11`, `15`, `11.x`
 - more specific versions: `8.0.232`, `11.0.4`, `11.0`, `11.0.x`
-- an early access (EA) versions: `15-ea`, `15.0.0-ea`, `15.0.0-ea.2`
+- early access (EA) versions: `15-ea`, `15.0.0-ea`, `15.0.0-ea.2`
 
 #### Supported distributions
 Currently, the following distributions are supported:

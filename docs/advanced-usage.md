@@ -13,7 +13,7 @@
 See [action.yml](../action.yml) for more details on task inputs.
 
 ## Selecting Java distribution
-Input `distribution` is mandatory and should be provided to use action. See [Supported distributions](../README.md#Supported-distributions) for the list of available options.
+Input `distribution` is mandatory and needs to be provided to use action. See [Supported distributions](../README.md#Supported-distributions) for a list of available options.
 
 ### Adoptium
 ```yaml
@@ -65,7 +65,7 @@ steps:
 ```
 
 ## Installing Java from local file
-If your use-case requires custom distribution or version that is not provided by action, you can download it manually and then action will take care about installation and caching of this version on VM:
+If your use-case requires a custom distribution or a version that is not provided by setup-java, you can download it manually and setup-java will take care of the installation and caching on the VM:
 
 ```yaml
 steps:
@@ -124,22 +124,6 @@ jobs:
 ```
 
 ## Publishing using Apache Maven
-
-### Extra setup for pom.xml:
-
-The Maven GPG Plugin configuration in the pom.xml file should contain the following structure to avoid possible issues like `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`:
-
-```xml
-<configuration>
-  <!-- Prevent gpg from using pinentry programs -->
-  <gpgArguments>
-    <arg>--pinentry-mode</arg>
-    <arg>loopback</arg>
-  </gpgArguments>
-</configuration>
-```
-GPG 2.1 requires `--pinentry-mode` to be set to `loopback` in order to pick up the `gpg.passphrase` value defined in Maven `settings.xml`.
-
 ### Yaml example:
 ```yaml
 jobs:
@@ -221,6 +205,21 @@ The two `settings.xml` files created from the above example look like the follow
 ```
 
 ***NOTE: The `settings.xml` file is created in the Actions $HOME/.m2 directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See below for using the `settings-path` to change your `settings.xml` file location.***
+
+### Extra setup for pom.xml:
+
+The Maven GPG Plugin configuration in the pom.xml file should contain the following structure to avoid possible issues like `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`:
+
+```xml
+<configuration>
+  <!-- Prevent gpg from using pinentry programs -->
+  <gpgArguments>
+    <arg>--pinentry-mode</arg>
+    <arg>loopback</arg>
+  </gpgArguments>
+</configuration>
+```
+GPG 2.1 requires `--pinentry-mode` to be set to `loopback` in order to pick up the `gpg.passphrase` value defined in Maven `settings.xml`.
 
 ### GPG
 
