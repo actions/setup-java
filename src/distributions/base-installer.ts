@@ -14,7 +14,7 @@ export abstract class JavaBase {
   protected stable: boolean;
 
   constructor(protected distribution: string, installerOptions: JavaInstallerOptions) {
-    this.http = new httpm.HttpClient('setup-java', undefined, {
+    this.http = new httpm.HttpClient('actions/setup-java', undefined, {
       allowRetries: true,
       maxRetries: 3
     });
@@ -34,13 +34,13 @@ export abstract class JavaBase {
     if (foundJava) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
-      core.info(`Java ${this.version.raw} is not found in tool-cache. Trying to download...`);
+      core.info(`Java ${this.version.raw} was not found in tool-cache. Trying to download...`);
       const javaRelease = await this.findPackageForDownload(this.version);
       foundJava = await this.downloadTool(javaRelease);
       core.info(`Java ${foundJava.version} was downloaded`);
     }
 
-    core.info(`Setting Java ${foundJava.version} as default`);
+    core.info(`Setting Java ${foundJava.version} as the default`);
     this.setJavaDefault(foundJava.version, foundJava.path);
 
     return foundJava;
@@ -103,7 +103,7 @@ export abstract class JavaBase {
 
     if (!semver.validRange(version)) {
       throw new Error(
-        `The string '${version}' is not valid SemVer notation for Java version. Please check README file for code snippets and more detailed information`
+        `The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`
       );
     }
 

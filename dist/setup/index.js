@@ -3951,7 +3951,7 @@ const util_1 = __webpack_require__(322);
 class JavaBase {
     constructor(distribution, installerOptions) {
         this.distribution = distribution;
-        this.http = new httpm.HttpClient('setup-java', undefined, {
+        this.http = new httpm.HttpClient('actions/setup-java', undefined, {
             allowRetries: true,
             maxRetries: 3
         });
@@ -3966,12 +3966,12 @@ class JavaBase {
                 core.info(`Resolved Java ${foundJava.version} from tool-cache`);
             }
             else {
-                core.info(`Java ${this.version.raw} is not found in tool-cache. Trying to download...`);
+                core.info(`Java ${this.version.raw} was not found in tool-cache. Trying to download...`);
                 const javaRelease = yield this.findPackageForDownload(this.version);
                 foundJava = yield this.downloadTool(javaRelease);
                 core.info(`Java ${foundJava.version} was downloaded`);
             }
-            core.info(`Setting Java ${foundJava.version} as default`);
+            core.info(`Setting Java ${foundJava.version} as the default`);
             this.setJavaDefault(foundJava.version, foundJava.path);
             return foundJava;
         });
@@ -4023,7 +4023,7 @@ class JavaBase {
             stable = false;
         }
         if (!semver_1.default.validRange(version)) {
-            throw new Error(`The string '${version}' is not valid SemVer notation for Java version. Please check README file for code snippets and more detailed information`);
+            throw new Error(`The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`);
         }
         return {
             version: new semver_1.default.Range(version),
@@ -9352,14 +9352,14 @@ class LocalDistribution extends base_installer_1.JavaBase {
                 core.info(`Resolved Java ${foundJava.version} from tool-cache`);
             }
             else {
-                core.info(`Java ${this.version.raw} is not found in tool-cache. Trying to unpack JDK file...`);
+                core.info(`Java ${this.version.raw} was not found in tool-cache. Trying to unpack JDK file...`);
                 if (!this.jdkFile) {
                     throw new Error("'jdkFile' is not specified");
                 }
                 const jdkFilePath = path_1.default.resolve(this.jdkFile);
                 const stats = fs_1.default.statSync(jdkFilePath);
                 if (!stats.isFile()) {
-                    throw new Error(`JDK file is not found in path '${jdkFilePath}'`);
+                    throw new Error(`JDK file was not found in path '${jdkFilePath}'`);
                 }
                 core.info(`Extracting Java from '${jdkFilePath}'`);
                 const extractedJavaPath = yield util_1.extractJdkFile(jdkFilePath);
@@ -12944,9 +12944,7 @@ exports.getVersionFromToolcachePath = getVersionFromToolcachePath;
 function extractJdkFile(toolPath, extension) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!extension) {
-            extension = toolPath.endsWith('.tar.gz')
-                ? 'tar.gz'
-                : path_1.default.extname(toolPath);
+            extension = toolPath.endsWith('.tar.gz') ? 'tar.gz' : path_1.default.extname(toolPath);
             if (extension.startsWith('.')) {
                 extension = extension.substring(1);
             }
@@ -13230,8 +13228,7 @@ function configureAuthentication() {
         const id = core.getInput(constants.INPUT_SERVER_ID);
         const username = core.getInput(constants.INPUT_SERVER_USERNAME);
         const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
-        const gpgPrivateKey = core.getInput(constants.INPUT_GPG_PRIVATE_KEY) ||
-            constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
+        const gpgPrivateKey = core.getInput(constants.INPUT_GPG_PRIVATE_KEY) || constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
         const gpgPassphrase = core.getInput(constants.INPUT_GPG_PASSPHRASE) ||
             (gpgPrivateKey ? constants.INPUT_DEFAULT_GPG_PASSPHRASE : undefined);
         if (gpgPrivateKey) {
@@ -13774,9 +13771,7 @@ class AdoptiumDistribution extends base_installer_1.JavaBase {
             });
             const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
             if (!resolvedFullVersion) {
-                const availableOptions = availableVersionsWithBinaries
-                    .map(item => item.version)
-                    .join(', ');
+                const availableOptions = availableVersionsWithBinaries.map(item => item.version).join(', ');
                 const availableOptionsMessage = availableOptions
                     ? `\nAvailable versions: ${availableOptions}`
                     : '';
@@ -14103,9 +14098,7 @@ class ZuluDistribution extends base_installer_1.JavaBase {
             });
             const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
             if (!resolvedFullVersion) {
-                const availableOptions = availableVersions
-                    .map(item => item.version)
-                    .join(', ');
+                const availableOptions = availableVersions.map(item => item.version).join(', ');
                 const availableOptionsMessage = availableOptions
                     ? `\nAvailable versions: ${availableOptions}`
                     : '';
@@ -14155,8 +14148,7 @@ class ZuluDistribution extends base_installer_1.JavaBase {
             if (core.isDebug()) {
                 core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
             }
-            const availableVersions = (_b = (yield this.http.getJson(availableVersionsUrl))
-                .result) !== null && _b !== void 0 ? _b : [];
+            const availableVersions = (_b = (yield this.http.getJson(availableVersionsUrl)).result) !== null && _b !== void 0 ? _b : [];
             if (core.isDebug()) {
                 core.startGroup('Print information about available versions');
                 console.timeEnd('azul-retrieve-available-versions');
@@ -41118,13 +41110,7 @@ function importKey(privateKey) {
                 }
             }
         };
-        yield exec.exec('gpg', [
-            '--batch',
-            '--import-options',
-            'import-show',
-            '--import',
-            exports.PRIVATE_KEY_FILE
-        ], options);
+        yield exec.exec('gpg', ['--batch', '--import-options', 'import-show', '--import', exports.PRIVATE_KEY_FILE], options);
         yield io.rmRF(exports.PRIVATE_KEY_FILE);
         const match = output.match(PRIVATE_KEY_FINGERPRINT_REGEX);
         return match && match[0];
