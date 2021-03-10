@@ -4,9 +4,7 @@ import path from 'path';
 import * as tc from '@actions/tool-cache';
 
 export function getTempDir() {
-  let tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
-
-  return tempDirectory;
+  return process.env['RUNNER_TEMP'] || os.tmpdir();
 }
 
 export function getVersionFromToolcachePath(toolPath: string) {

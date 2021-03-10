@@ -12930,8 +12930,7 @@ const os_1 = __importDefault(__webpack_require__(87));
 const path_1 = __importDefault(__webpack_require__(622));
 const tc = __importStar(__webpack_require__(139));
 function getTempDir() {
-    let tempDirectory = process.env['RUNNER_TEMP'] || os_1.default.tmpdir();
-    return tempDirectory;
+    return process.env['RUNNER_TEMP'] || os_1.default.tmpdir();
 }
 exports.getTempDir = getTempDir;
 function getVersionFromToolcachePath(toolPath) {
@@ -13294,7 +13293,7 @@ function write(directory, settings) {
     return __awaiter(this, void 0, void 0, function* () {
         const location = path.join(directory, exports.SETTINGS_FILE);
         if (fs.existsSync(location)) {
-            core.warning(`Overwriting existing file ${location}`);
+            core.info(`Overwriting existing file ${location}`);
         }
         else {
             core.info(`Writing ${location}`);

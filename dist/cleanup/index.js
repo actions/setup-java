@@ -1535,8 +1535,7 @@ const os_1 = __importDefault(__webpack_require__(87));
 const path_1 = __importDefault(__webpack_require__(622));
 const tc = __importStar(__webpack_require__(533));
 function getTempDir() {
-    let tempDirectory = process.env['RUNNER_TEMP'] || os_1.default.tmpdir();
-    return tempDirectory;
+    return process.env['RUNNER_TEMP'] || os_1.default.tmpdir();
 }
 exports.getTempDir = getTempDir;
 function getVersionFromToolcachePath(toolPath) {

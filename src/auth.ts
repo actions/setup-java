@@ -101,7 +101,7 @@ export function generate(
 async function write(directory: string, settings: string) {
   const location = path.join(directory, SETTINGS_FILE);
   if (fs.existsSync(location)) {
-    core.warning(`Overwriting existing file ${location}`);
+    core.info(`Overwriting existing file ${location}`);
   } else {
     core.info(`Writing ${location}`);
   }
