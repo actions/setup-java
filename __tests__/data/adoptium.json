@@ -532,6 +532,47 @@
         "binaries": [
             {
                 "architecture": "x64",
+                "download_count": 24493,
+                "heap_size": "normal",
+                "image_type": "jdk",
+                "jvm_impl": "hotspot",
+                "os": "mac",
+                "package": {
+                    "checksum": "9919eee037554d40c7d2f219bbd654f2bf119e16a2f4d284d8dedaf525ee59e6",
+                    "checksum_link": "https://github.com/AdoptOpenJDK/openjdk12-binaries/releases/download/jdk-12.0.2%2B10/OpenJDK12U-jdk_x64_mac_hotspot_12.0.2_10.tar.gz.sha256.txt",
+                    "download_count": 22907,
+                    "link": "https://github.com/AdoptOpenJDK/openjdk12-binaries/releases/download/jdk-12.0.2%2B10/OpenJDK12U-jdk_x64_mac_hotspot_12.0.2_10.tar.gz",
+                    "metadata_link": "https://github.com/AdoptOpenJDK/openjdk12-binaries/releases/download/jdk-12.0.2%2B10/OpenJDK12U-jdk_x64_mac_hotspot_12.0.2_10.tar.gz.json",
+                    "name": "OpenJDK12U-jdk_x64_mac_hotspot_12.0.2_10.tar.gz",
+                    "size": 198392994
+                },
+                "project": "jdk",
+                "scm_ref": "jdk-12.0.2+9_adopt",
+                "updated_at": "2019-07-18T20:27:24Z"
+            }
+        ],
+        "download_count": 396318,
+        "id": "MDc6UmVsZWFzZTE4NzE2Mzk5.S/VUFSgnrVIv8A==",
+        "release_link": "https://github.com/AdoptOpenJDK/openjdk12-binaries/releases/tag/jdk-12.0.2%2B10",
+        "release_name": "jdk-12.0.2+9",
+        "release_type": "ga",
+        "timestamp": "2019-07-18T20:26:29Z",
+        "updated_at": "2019-07-18T20:26:29Z",
+        "vendor": "adoptopenjdk",
+        "version_data": {
+            "adopt_build_number": 1,
+            "build": 10,
+            "major": 12,
+            "minor": 0,
+            "openjdk_version": "12.0.2+9",
+            "security": 2,
+            "semver": "12.0.2+9.1"
+        }
+    },
+    {
+        "binaries": [
+            {
+                "architecture": "x64",
                 "download_count": 39519,
                 "heap_size": "normal",
                 "image_type": "jdk",

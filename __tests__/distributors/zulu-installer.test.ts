@@ -96,7 +96,10 @@ describe('findPackageForDownload', () => {
     ['15', '15.0.2+7'],
     ['9.0.0', '9.0.0+0'],
     ['9.0', '9.0.1+0'],
-    ['8.0.262', '8.0.262+19'] // validate correct choise between [8.0.262.17, 8.0.262.19, 8.0.262.18]
+    ['8.0.262', '8.0.262+19'], // validate correct choise between [8.0.262.17, 8.0.262.19, 8.0.262.18]
+    ['8.0.262+17', '8.0.262+17'],
+    ['15.0.1+8', '15.0.1+8'],
+    ['15.0.1+9', '15.0.1+9']
   ])('version is %s -> %s', async (input, expected) => {
     const distribution = new ZuluDistribution({
       version: input,
@@ -111,7 +114,7 @@ describe('findPackageForDownload', () => {
   it('select correct bundle if there are multiple items with the same jdk version but different zulu versions', async () => {
     const distribution = new ZuluDistribution({ version: '', arch: 'x86', packageType: 'jdk' });
     distribution['getAvailableVersions'] = async () => manifestData;
-    const result = await distribution['findPackageForDownload'](new semver.Range('11.0.5'));
+    const result = await distribution['findPackageForDownload']('11.0.5');
     expect(result.url).toBe(
       'https://cdn.azul.com/zulu/bin/zulu11.35.15-ca-jdk11.0.5-macosx_x64.tar.gz'
     );

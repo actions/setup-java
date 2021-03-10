@@ -96,7 +96,10 @@ describe('findPackageForDownload', () => {
     ['15.0.1', '15.0.1+9.1'],
     ['11.x', '11.0.10+9'],
     ['x', '15.0.2+7'],
-    ['12', '12.0.2+10.3'] // make sure that '12.0.2+10.1', '12.0.2+10.3', '12.0.2+10.2' are sorted correctly
+    ['12', '12.0.2+10.3'], // make sure that '12.0.2+10.1', '12.0.2+10.3', '12.0.2+10.2' are sorted correctly
+    ['12.0.2+10.1', '12.0.2+10.1'],
+    ['15.0.1+9', '15.0.1+9'],
+    ['15.0.1+9.1', '15.0.1+9.1']
   ])('version is resolved correctly %s -> %s', async (input, expected) => {
     const distribution = new AdoptiumDistribution({
       version: '11',
@@ -104,7 +107,7 @@ describe('findPackageForDownload', () => {
       packageType: 'jdk'
     });
     distribution['getAvailableVersions'] = async () => manifestData;
-    const resolvedVersion = await distribution['findPackageForDownload'](new semver.Range(input));
+    const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
   });
 
@@ -115,9 +118,9 @@ describe('findPackageForDownload', () => {
       packageType: 'jdk'
     });
     distribution['getAvailableVersions'] = async () => manifestData;
-    await expect(
-      distribution['findPackageForDownload'](new semver.Range('9.0.8'))
-    ).rejects.toThrowError(/Could not find satisfied version for SemVer */);
+    await expect(distribution['findPackageForDownload']('9.0.8')).rejects.toThrowError(
+      /Could not find satisfied version for SemVer */
+    );
   });
 
   it('version is not found', async () => {
@@ -127,9 +130,9 @@ describe('findPackageForDownload', () => {
       packageType: 'jdk'
     });
     distribution['getAvailableVersions'] = async () => manifestData;
-    await expect(
-      distribution['findPackageForDownload'](new semver.Range('7.x'))
-    ).rejects.toThrowError(/Could not find satisfied version for SemVer */);
+    await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrowError(
+      /Could not find satisfied version for SemVer */
+    );
   });
 
   it('version list is empty', async () => {
@@ -139,8 +142,8 @@ describe('findPackageForDownload', () => {
       packageType: 'jdk'
     });
     distribution['getAvailableVersions'] = async () => [];
-    await expect(
-      distribution['findPackageForDownload'](new semver.Range('11'))
-    ).rejects.toThrowError(/Could not find satisfied version for SemVer */);
+    await expect(distribution['findPackageForDownload']('11')).rejects.toThrowError(
+      /Could not find satisfied version for SemVer */
+    );
   });
 });

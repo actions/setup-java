@@ -10,11 +10,15 @@ if [ -z "$2" ]; then
   exit 1
 fi
 
-EXPECTED_JAVA_VERSION=${1/-ea/}
+EXPECTED_JAVA_VERSION=$1
 EXPECTED_PATH=$2
 
+EXPECTED_JAVA_VERSION=$(echo $EXPECTED_JAVA_VERSION | cut -d'+' -f1)
 if [[ $EXPECTED_JAVA_VERSION == 8 ]] || [[ $EXPECTED_JAVA_VERSION == 8.* ]]; then
   EXPECTED_JAVA_VERSION="1.${EXPECTED_JAVA_VERSION}"
+fi
+if [[ $EXPECTED_JAVA_VERSION == *-ea* ]]; then
+  EXPECTED_JAVA_VERSION=$(echo $EXPECTED_JAVA_VERSION | cut -d'-' -f1 | cut -d'.' -f1)
 fi
 
 ACTUAL_JAVA_VERSION="$(java -version 2>&1)"

@@ -29,7 +29,6 @@ jobs:
         id: setup-java
         with:
           java-version: ${{ matrix.version }}
-          java-package: 'jdk'
           distribution: ${{ matrix.distribution }}
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
@@ -45,17 +44,19 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['adoptium', 'zulu']
         version:
-        - '8.0.282'
         - '11.0'
-        - '11.0.10'
-        - '15.0'
-        exclude:
-          - os: windows-latest
-            distribution: 'zulu'
-            version: '8.0.282'
-          - os: windows-latest
-            distribution: 'zulu'
-            version: '11.0.10'
+        - '8.0.282'
+        - '11.0.2+7'
+        include:
+          - distribution: 'adoptium'
+            version: '12.0.2+10.1'
+            os: macos-latest
+          - distribution: 'adoptium'
+            version: '12.0.2+10.1'
+            os: windows-latest
+          - distribution: 'adoptium'
+            version: '12.0.2+10.1'
+            os: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -64,22 +65,20 @@ jobs:
         id: setup-java
         with:
           java-version: ${{ matrix.version }}
-          java-package: jdk
           distribution: ${{ matrix.distribution }}
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
-
-  setup-java-ea-versions:
-    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+  
+  setup-java-ea-versions-zulu:
+    name: zulu ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        distribution: ['adoptium', 'zulu']
-        version: ['14-ea', '15-ea']
+        version: ['17-ea', '15.0.0-ea.14']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -88,11 +87,26 @@ jobs:
         id: setup-java
         with:
           java-version: ${{ matrix.version }}
-          java-package: jdk
-          distribution: ${{ matrix.distribution }}
-      - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
-        shell: bash
+          distribution: zulu
+
+  setup-java-ea-versions-adoptium:
+    name: adoptium ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    needs: setup-java-major-minor-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        version: ['17-ea', '15.0.0-ea.14.1.202003160455']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          java-version: ${{ matrix.version }}
+          distribution: adoptium
 
   setup-java-custom-package-type:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (${{ matrix.java-package }}-x64) - ${{ matrix.os }}
@@ -105,18 +119,7 @@ jobs:
         distribution: ['adoptium', 'zulu']
         java-package: ['jre']
         version:
-        - '8.0.282'
-        - '11.0.10'
         - '15.0'
-        exclude:
-          - os: windows-latest
-            distribution: 'zulu'
-            java-package: 'jre'
-            version: '8.0.282'
-          - os: windows-latest
-            java-package: 'jre'
-            distribution: 'zulu'
-            version: '11.0.10'
         include:
           - distribution: 'zulu'
             java-package: jre+fx
@@ -150,7 +153,7 @@ jobs:
         # Only Zulu provides x86 arch for now and only for windows / ubuntu
         os: [windows-latest, ubuntu-latest]
         distribution: ['zulu']
-        version: ['8', '11']
+        version: ['11']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -161,6 +164,3 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.version }}
           architecture: x86
-      - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
-        shell: bash

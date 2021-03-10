@@ -1,5 +1,6 @@
 import * as tc from '@actions/tool-cache';
 import * as core from '@actions/core';
+import * as util from '../../src/util';
 
 import path from 'path';
 import * as semver from 'semver';
@@ -23,7 +24,7 @@ class EmptyJavaBase extends JavaBase {
     };
   }
 
-  protected async findPackageForDownload(range: semver.Range): Promise<JavaDownloadRelease> {
+  protected async findPackageForDownload(range: string): Promise<JavaDownloadRelease> {
     const availableVersion = '11.0.8';
     if (!semver.satisfies(availableVersion, range)) {
       throw new Error('Available version not found');
@@ -41,11 +42,11 @@ describe('findInToolcache', () => {
   const javaPath = path.join('Java_Empty_jdk', actualJavaVersion, 'x64');
 
   let mockJavaBase: EmptyJavaBase;
-  let spyTcFind: jest.SpyInstance;
+  let spyGetToolcachePath: jest.SpyInstance;
   let spyTcFindAllVersions: jest.SpyInstance;
 
   beforeEach(() => {
-    spyTcFind = jest.spyOn(tc, 'find');
+    spyGetToolcachePath = jest.spyOn(util, 'getToolcachePath');
     spyTcFindAllVersions = jest.spyOn(tc, 'findAllVersions');
   });
 
@@ -74,15 +75,17 @@ describe('findInToolcache', () => {
     [{ version: '11', arch: 'x86', packageType: 'jre' }, null]
   ])(`should find java for path %s -> %s`, (input, expected) => {
     spyTcFindAllVersions.mockReturnValue([actualJavaVersion]);
-    spyTcFind.mockImplementation((toolname: string, javaVersion: string, architecture: string) => {
-      const semverVersion = new semver.Range(javaVersion);
+    spyGetToolcachePath.mockImplementation(
+      (toolname: string, javaVersion: string, architecture: string) => {
+        const semverVersion = new semver.Range(javaVersion);
 
-      if (path.basename(javaPath) !== architecture || !javaPath.includes(toolname)) {
-        return '';
+        if (path.basename(javaPath) !== architecture || !javaPath.includes(toolname)) {
+          return '';
+        }
+
+        return semver.satisfies(actualJavaVersion, semverVersion) ? javaPath : '';
       }
-
-      return semver.satisfies(actualJavaVersion, semverVersion) ? javaPath : '';
-    });
+    );
     mockJavaBase = new EmptyJavaBase(input);
     expect(mockJavaBase['findInToolcache']()).toEqual(expected);
   });
@@ -108,7 +111,7 @@ describe('findInToolcache', () => {
       '11.3.2-ea',
       '11.0.1'
     ]);
-    spyTcFind.mockImplementation(
+    spyGetToolcachePath.mockImplementation(
       (toolname: string, javaVersion: string, architecture: string) =>
         `/hostedtoolcache/${toolname}/${javaVersion}/${architecture}`
     );
@@ -124,7 +127,7 @@ describe('setupJava', () => {
 
   let mockJavaBase: EmptyJavaBase;
 
-  let spyTcFind: jest.SpyInstance;
+  let spyGetToolcachePath: jest.SpyInstance;
   let spyTcFindAllVersions: jest.SpyInstance;
   let spyCoreDebug: jest.SpyInstance;
   let spyCoreInfo: jest.SpyInstance;
@@ -133,16 +136,18 @@ describe('setupJava', () => {
   let spyCoreSetOutput: jest.SpyInstance;
 
   beforeEach(() => {
-    spyTcFind = jest.spyOn(tc, 'find');
-    spyTcFind.mockImplementation((toolname: string, javaVersion: string, architecture: string) => {
-      const semverVersion = new semver.Range(javaVersion);
+    spyGetToolcachePath = jest.spyOn(util, 'getToolcachePath');
+    spyGetToolcachePath.mockImplementation(
+      (toolname: string, javaVersion: string, architecture: string) => {
+        const semverVersion = new semver.Range(javaVersion);
 
-      if (path.basename(javaPath) !== architecture || !javaPath.includes(toolname)) {
-        return '';
+        if (path.basename(javaPath) !== architecture || !javaPath.includes(toolname)) {
+          return '';
+        }
+
+        return semver.satisfies(actualJavaVersion, semverVersion) ? javaPath : '';
       }
-
-      return semver.satisfies(actualJavaVersion, semverVersion) ? javaPath : '';
-    });
+    );
 
     spyTcFindAllVersions = jest.spyOn(tc, 'findAllVersions');
     spyTcFindAllVersions.mockReturnValue([actualJavaVersion]);
@@ -186,7 +191,7 @@ describe('setupJava', () => {
   ])('should find java locally for %s', (input, expected) => {
     mockJavaBase = new EmptyJavaBase(input);
     expect(mockJavaBase.setupJava()).resolves.toEqual(expected);
-    expect(spyTcFind).toHaveBeenCalled();
+    expect(spyGetToolcachePath).toHaveBeenCalled();
   });
 
   it.each([
@@ -205,7 +210,7 @@ describe('setupJava', () => {
   ])('download java with configuration %s', async (input, expected) => {
     mockJavaBase = new EmptyJavaBase(input);
     await expect(mockJavaBase.setupJava()).resolves.toEqual(expected);
-    expect(spyTcFind).toHaveBeenCalled();
+    expect(spyGetToolcachePath).toHaveBeenCalled();
     expect(spyCoreAddPath).toHaveBeenCalled();
     expect(spyCoreExportVariable).toHaveBeenCalled();
     expect(spyCoreSetOutput).toHaveBeenCalled();
@@ -228,11 +233,11 @@ describe('normalizeVersion', () => {
   const DummyJavaBase = JavaBase as any;
 
   it.each([
-    ['11', { version: new semver.Range('11'), stable: true }],
-    ['11.0', { version: new semver.Range('11.0'), stable: true }],
-    ['11.0.10', { version: new semver.Range('11.0.10'), stable: true }],
-    ['11-ea', { version: new semver.Range('11'), stable: false }],
-    ['11.0.2-ea', { version: new semver.Range('11.0.2'), stable: false }]
+    ['11', { version: '11', stable: true }],
+    ['11.0', { version: '11.0', stable: true }],
+    ['11.0.10', { version: '11.0.10', stable: true }],
+    ['11-ea', { version: '11', stable: false }],
+    ['11.0.2-ea', { version: '11.0.2', stable: false }]
   ])('normalizeVersion from %s to %s', (input, expected) => {
     expect(DummyJavaBase.prototype.normalizeVersion.call(null, input)).toEqual(expected);
   });
