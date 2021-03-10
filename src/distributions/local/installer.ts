@@ -21,9 +21,7 @@ export class LocalDistribution extends JavaBase {
     if (foundJava) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
-      core.info(
-        `Java ${this.version.raw} is not found in tool-cache. Trying to unpack JDK file...`
-      );
+      core.info(`Java ${this.version} was not found in tool-cache. Trying to unpack JDK file...`);
       if (!this.jdkFile) {
         throw new Error("'jdkFile' is not specified");
       }
@@ -31,7 +29,7 @@ export class LocalDistribution extends JavaBase {
       const stats = fs.statSync(jdkFilePath);
 
       if (!stats.isFile()) {
-        throw new Error(`JDK file is not found in path '${jdkFilePath}'`);
+        throw new Error(`JDK file was not found in path '${jdkFilePath}'`);
       }
 
       core.info(`Extracting Java from '${jdkFilePath}'`);
@@ -39,7 +37,7 @@ export class LocalDistribution extends JavaBase {
       const extractedJavaPath = await extractJdkFile(jdkFilePath);
       const archiveName = fs.readdirSync(extractedJavaPath)[0];
       const archivePath = path.join(extractedJavaPath, archiveName);
-      const javaVersion = this.version.raw;
+      const javaVersion = this.version;
 
       let javaPath = await tc.cacheDir(
         archivePath,
@@ -68,7 +66,7 @@ export class LocalDistribution extends JavaBase {
     return foundJava;
   }
 
-  protected async findPackageForDownload(version: semver.Range): Promise<JavaDownloadRelease> {
+  protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
     throw new Error('This method should not be implemented in local file provider');
   }
 

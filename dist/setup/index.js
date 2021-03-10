@@ -519,9 +519,16 @@ module.exports = maxSatisfying
 /***/ }),
 /* 15 */,
 /* 16 */
-/***/ (function(module) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
-module.exports = require("tls");
+const SemVer = __webpack_require__(65)
+const compareBuild = (a, b, loose) => {
+  const versionA = new SemVer(a, loose)
+  const versionB = new SemVer(b, loose)
+  return versionA.compare(versionB) || versionA.compareBuild(versionB)
+}
+module.exports = compareBuild
+
 
 /***/ }),
 /* 17 */,
@@ -3951,7 +3958,7 @@ const util_1 = __webpack_require__(322);
 class JavaBase {
     constructor(distribution, installerOptions) {
         this.distribution = distribution;
-        this.http = new httpm.HttpClient('setup-java', undefined, {
+        this.http = new httpm.HttpClient('actions/setup-java', undefined, {
             allowRetries: true,
             maxRetries: 3
         });
@@ -3966,12 +3973,12 @@ class JavaBase {
                 core.info(`Resolved Java ${foundJava.version} from tool-cache`);
             }
             else {
-                core.info(`Java ${this.version.raw} is not found in tool-cache. Trying to download...`);
+                core.info(`Java ${this.version} was not found in tool-cache. Trying to download...`);
                 const javaRelease = yield this.findPackageForDownload(this.version);
                 foundJava = yield this.downloadTool(javaRelease);
                 core.info(`Java ${foundJava.version} was downloaded`);
             }
-            core.info(`Setting Java ${foundJava.version} as default`);
+            core.info(`Setting Java ${foundJava.version} as the default`);
             this.setJavaDefault(foundJava.version, foundJava.path);
             return foundJava;
         });
@@ -3979,8 +3986,7 @@ class JavaBase {
     get toolcacheFolderName() {
         return `Java_${this.distribution}_${this.packageType}`;
     }
-    getToolcacheVersionName(resolvedVersion) {
-        let version = resolvedVersion;
+    getToolcacheVersionName(version) {
         if (!this.stable) {
             const cleanVersion = semver_1.default.clean(version);
             return `${cleanVersion}-ea`;
@@ -3994,12 +4000,12 @@ class JavaBase {
             .findAllVersions(this.toolcacheFolderName, this.architecture)
             .filter(item => item.endsWith('-ea') === !this.stable);
         const satisfiedVersions = availableVersions
-            .filter(item => semver_1.default.satisfies(item.replace(/-ea$/, ''), this.version))
+            .filter(item => util_1.isVersionSatisfies(this.version, item.replace(/-ea$/, '')))
             .sort(semver_1.default.rcompare);
         if (!satisfiedVersions || satisfiedVersions.length === 0) {
             return null;
         }
-        const javaPath = tc.find(this.toolcacheFolderName, satisfiedVersions[0], this.architecture);
+        const javaPath = util_1.getToolcachePath(this.toolcacheFolderName, satisfiedVersions[0], this.architecture);
         if (!javaPath) {
             return null;
         }
@@ -4008,27 +4014,31 @@ class JavaBase {
             path: javaPath
         };
     }
-    setJavaDefault(version, toolPath) {
-        core.exportVariable('JAVA_HOME', toolPath);
-        core.addPath(path_1.default.join(toolPath, 'bin'));
-        core.setOutput('distribution', this.distribution);
-        core.setOutput('path', toolPath);
-        core.setOutput('version', version);
-    }
-    // this function validates and parse java version to its normal semver notation
     normalizeVersion(version) {
         let stable = true;
         if (version.endsWith('-ea')) {
             version = version.replace(/-ea$/, '');
             stable = false;
         }
+        else if (version.includes('-ea.')) {
+            // transform '11.0.3-ea.2' -> '11.0.3+2'
+            version = version.replace('-ea.', '+');
+            stable = false;
+        }
         if (!semver_1.default.validRange(version)) {
-            throw new Error(`The string '${version}' is not valid SemVer notation for Java version. Please check README file for code snippets and more detailed information`);
+            throw new Error(`The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`);
         }
         return {
-            version: new semver_1.default.Range(version),
+            version,
             stable
         };
+    }
+    setJavaDefault(version, toolPath) {
+        core.exportVariable('JAVA_HOME', toolPath);
+        core.addPath(path_1.default.join(toolPath, 'bin'));
+        core.setOutput('distribution', this.distribution);
+        core.setOutput('path', toolPath);
+        core.setOutput('version', version);
     }
 }
 exports.JavaBase = JavaBase;
@@ -7822,7 +7832,7 @@ util_1.applyMixin(ElementImpl_1.ElementImpl, SlotableImpl_1.SlotableImpl);
 /* 120 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-const compareBuild = __webpack_require__(465)
+const compareBuild = __webpack_require__(16)
 const sort = (list, loose) => list.sort((a, b) => compareBuild(a, b, loose))
 module.exports = sort
 
@@ -9013,7 +9023,7 @@ function _unique(values) {
 
 
 var net = __webpack_require__(631);
-var tls = __webpack_require__(16);
+var tls = __webpack_require__(818);
 var http = __webpack_require__(605);
 var https = __webpack_require__(34);
 var events = __webpack_require__(614);
@@ -9352,20 +9362,20 @@ class LocalDistribution extends base_installer_1.JavaBase {
                 core.info(`Resolved Java ${foundJava.version} from tool-cache`);
             }
             else {
-                core.info(`Java ${this.version.raw} is not found in tool-cache. Trying to unpack JDK file...`);
+                core.info(`Java ${this.version} was not found in tool-cache. Trying to unpack JDK file...`);
                 if (!this.jdkFile) {
                     throw new Error("'jdkFile' is not specified");
                 }
                 const jdkFilePath = path_1.default.resolve(this.jdkFile);
                 const stats = fs_1.default.statSync(jdkFilePath);
                 if (!stats.isFile()) {
-                    throw new Error(`JDK file is not found in path '${jdkFilePath}'`);
+                    throw new Error(`JDK file was not found in path '${jdkFilePath}'`);
                 }
                 core.info(`Extracting Java from '${jdkFilePath}'`);
                 const extractedJavaPath = yield util_1.extractJdkFile(jdkFilePath);
                 const archiveName = fs_1.default.readdirSync(extractedJavaPath)[0];
                 const archivePath = path_1.default.join(extractedJavaPath, archiveName);
-                const javaVersion = this.version.raw;
+                const javaVersion = this.version;
                 let javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaVersion), this.architecture);
                 // for different Java distributions, postfix can exist or not so need to check both cases
                 if (process.platform === 'darwin' &&
@@ -12925,9 +12935,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getTempDir = void 0;
+exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getTempDir = void 0;
 const os_1 = __importDefault(__webpack_require__(87));
 const path_1 = __importDefault(__webpack_require__(622));
+const fs = __importStar(__webpack_require__(747));
+const semver = __importStar(__webpack_require__(876));
 const tc = __importStar(__webpack_require__(139));
 function getTempDir() {
     let tempDirectory = process.env['RUNNER_TEMP'] || os_1.default.tmpdir();
@@ -12944,9 +12956,7 @@ exports.getVersionFromToolcachePath = getVersionFromToolcachePath;
 function extractJdkFile(toolPath, extension) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!extension) {
-            extension = toolPath.endsWith('.tar.gz')
-                ? 'tar.gz'
-                : path_1.default.extname(toolPath);
+            extension = toolPath.endsWith('.tar.gz') ? 'tar.gz' : path_1.default.extname(toolPath);
             if (extension.startsWith('.')) {
                 extension = extension.substring(1);
             }
@@ -12967,6 +12977,30 @@ function getDownloadArchiveExtension() {
     return process.platform === 'win32' ? 'zip' : 'tar.gz';
 }
 exports.getDownloadArchiveExtension = getDownloadArchiveExtension;
+function isVersionSatisfies(range, version) {
+    var _a;
+    if (semver.valid(range)) {
+        // if full version with build digit is provided as a range (such as '1.2.3+4')
+        // we should check for exact equal via compareBuild
+        // since semver.satisfies doesn't handle 4th digit
+        const semRange = semver.parse(range);
+        if (semRange && ((_a = semRange.build) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+            return semver.compareBuild(range, version) === 0;
+        }
+    }
+    return semver.satisfies(version, range);
+}
+exports.isVersionSatisfies = isVersionSatisfies;
+function getToolcachePath(toolName, version, architecture) {
+    var _a;
+    const toolcacheRoot = (_a = process.env['RUNNER_TOOL_CACHE']) !== null && _a !== void 0 ? _a : '';
+    const fullPath = path_1.default.join(toolcacheRoot, toolName, version, architecture);
+    if (fs.existsSync(fullPath)) {
+        return fullPath;
+    }
+    return null;
+}
+exports.getToolcachePath = getToolcachePath;
 
 
 /***/ }),
@@ -13230,8 +13264,7 @@ function configureAuthentication() {
         const id = core.getInput(constants.INPUT_SERVER_ID);
         const username = core.getInput(constants.INPUT_SERVER_USERNAME);
         const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
-        const gpgPrivateKey = core.getInput(constants.INPUT_GPG_PRIVATE_KEY) ||
-            constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
+        const gpgPrivateKey = core.getInput(constants.INPUT_GPG_PRIVATE_KEY) || constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
         const gpgPassphrase = core.getInput(constants.INPUT_GPG_PASSPHRASE) ||
             (gpgPrivateKey ? constants.INPUT_DEFAULT_GPG_PASSPHRASE : undefined);
         if (gpgPrivateKey) {
@@ -13297,7 +13330,7 @@ function write(directory, settings) {
     return __awaiter(this, void 0, void 0, function* () {
         const location = path.join(directory, exports.SETTINGS_FILE);
         if (fs.existsSync(location)) {
-            core.warning(`Overwriting existing file ${location}`);
+            core.info(`Overwriting existing file ${location}`);
         }
         else {
             core.info(`Writing ${location}`);
@@ -13768,19 +13801,17 @@ class AdoptiumDistribution extends base_installer_1.JavaBase {
                 };
             });
             const satisfiedVersions = availableVersionsWithBinaries
-                .filter(item => semver_1.default.satisfies(item.version, version))
+                .filter(item => util_1.isVersionSatisfies(version, item.version))
                 .sort((a, b) => {
                 return -semver_1.default.compareBuild(a.version, b.version);
             });
             const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
             if (!resolvedFullVersion) {
-                const availableOptions = availableVersionsWithBinaries
-                    .map(item => item.version)
-                    .join(', ');
+                const availableOptions = availableVersionsWithBinaries.map(item => item.version).join(', ');
                 const availableOptionsMessage = availableOptions
                     ? `\nAvailable versions: ${availableOptions}`
                     : '';
-                throw new Error(`Could not find satisfied version for SemVer '${version.raw}'. ${availableOptionsMessage}`);
+                throw new Error(`Could not find satisfied version for SemVer '${version}'. ${availableOptionsMessage}`);
             }
             return resolvedFullVersion;
         });
@@ -13809,8 +13840,7 @@ class AdoptiumDistribution extends base_installer_1.JavaBase {
             const platform = this.getPlatformOption();
             const arch = this.architecture;
             const imageType = this.packageType;
-            const versionRange = '[1.0,100.0]'; // retrieve all available versions
-            const encodedVersionRange = encodeURI(versionRange);
+            const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
             const releaseType = this.stable ? 'ga' : 'ea';
             console.time('adopt-retrieve-available-versions');
             const baseRequestArguments = [
@@ -13831,7 +13861,7 @@ class AdoptiumDistribution extends base_installer_1.JavaBase {
             const availableVersions = [];
             while (true) {
                 const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
-                const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${encodedVersionRange}?${requestArguments}`;
+                const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
                 if (core.isDebug() && page_index === 0) {
                     // url is identical except page_index so print it once for debug
                     core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
@@ -14088,7 +14118,7 @@ class ZuluDistribution extends base_installer_1.JavaBase {
                 };
             });
             const satisfiedVersions = availableVersions
-                .filter(item => semver_1.default.satisfies(item.version, version))
+                .filter(item => util_1.isVersionSatisfies(version, item.version))
                 .sort((a, b) => {
                 // Azul provides two versions: jdk_version and azul_version
                 // we should sort by both fields by descending
@@ -14103,13 +14133,11 @@ class ZuluDistribution extends base_installer_1.JavaBase {
             });
             const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
             if (!resolvedFullVersion) {
-                const availableOptions = availableVersions
-                    .map(item => item.version)
-                    .join(', ');
+                const availableOptions = availableVersions.map(item => item.version).join(', ');
                 const availableOptionsMessage = availableOptions
                     ? `\nAvailable versions: ${availableOptions}`
                     : '';
-                throw new Error(`Could not find satisfied version for semver ${version.raw}. ${availableOptionsMessage}`);
+                throw new Error(`Could not find satisfied version for semver ${version}. ${availableOptionsMessage}`);
             }
             return resolvedFullVersion;
         });
@@ -14155,8 +14183,7 @@ class ZuluDistribution extends base_installer_1.JavaBase {
             if (core.isDebug()) {
                 core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
             }
-            const availableVersions = (_b = (yield this.http.getJson(availableVersionsUrl))
-                .result) !== null && _b !== void 0 ? _b : [];
+            const availableVersions = (_b = (yield this.http.getJson(availableVersionsUrl)).result) !== null && _b !== void 0 ? _b : [];
             if (core.isDebug()) {
                 core.startGroup('Print information about available versions');
                 console.timeEnd('azul-retrieve-available-versions');
@@ -19288,19 +19315,7 @@ exports.traversal_filter = traversal_filter;
 //# sourceMappingURL=TraversalAlgorithm.js.map
 
 /***/ }),
-/* 465 */
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-const SemVer = __webpack_require__(65)
-const compareBuild = (a, b, loose) => {
-  const versionA = new SemVer(a, loose)
-  const versionB = new SemVer(b, loose)
-  return versionA.compare(versionB) || versionA.compareBuild(versionB)
-}
-module.exports = compareBuild
-
-
-/***/ }),
+/* 465 */,
 /* 466 */,
 /* 467 */,
 /* 468 */
@@ -27417,7 +27432,7 @@ exports.utf8Decode = utf8Decode;
 /* 593 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-const compareBuild = __webpack_require__(465)
+const compareBuild = __webpack_require__(16)
 const rsort = (list, loose) => list.sort((a, b) => compareBuild(b, a, loose))
 module.exports = rsort
 
@@ -38433,7 +38448,12 @@ exports.asciiSerializationOfAnOrigin = asciiSerializationOfAnOrigin;
 /* 815 */,
 /* 816 */,
 /* 817 */,
-/* 818 */,
+/* 818 */
+/***/ (function(module) {
+
+module.exports = require("tls");
+
+/***/ }),
 /* 819 */,
 /* 820 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
@@ -40891,7 +40911,7 @@ module.exports = {
   compare: __webpack_require__(874),
   rcompare: __webpack_require__(630),
   compareLoose: __webpack_require__(283),
-  compareBuild: __webpack_require__(465),
+  compareBuild: __webpack_require__(16),
   sort: __webpack_require__(120),
   rsort: __webpack_require__(593),
   gt: __webpack_require__(486),
@@ -41118,13 +41138,7 @@ function importKey(privateKey) {
                 }
             }
         };
-        yield exec.exec('gpg', [
-            '--batch',
-            '--import-options',
-            'import-show',
-            '--import',
-            exports.PRIVATE_KEY_FILE
-        ], options);
+        yield exec.exec('gpg', ['--batch', '--import-options', 'import-show', '--import', exports.PRIVATE_KEY_FILE], options);
         yield io.rmRF(exports.PRIVATE_KEY_FILE);
         const match = output.match(PRIVATE_KEY_FINGERPRINT_REGEX);
         return match && match[0];
