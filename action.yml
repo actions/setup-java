@@ -21,6 +21,10 @@ inputs:
     description: 'Path to where the compressed JDK is located. The path could
        be in your source repository or a local path on the agent.'
     required: false
+  distro:
+    description: 'The distribution (aoj, aoj_openj9, corretto, dragonwell,
+       liberica, ojdk_build, oracle_open_jdk, sap_machine, zulu).'
+    required: false
   server-id:
     description: 'ID of the distributionManagement repository in the pom.xml
        file. Default is `github`'
