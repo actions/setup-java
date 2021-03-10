@@ -9,14 +9,14 @@ import { JavaBase } from '../base-installer';
 import { IAdoptiumAvailableVersions } from './models';
 import { JavaInstallerOptions, JavaDownloadRelease, JavaInstallerResults } from '../base-models';
 import { MACOS_JAVA_CONTENT_POSTFIX } from '../../constants';
-import { extractJdkFile, getDownloadArchiveExtension } from '../../util';
+import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
 
 export class AdoptiumDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('Adoptium', installerOptions);
   }
 
-  protected async findPackageForDownload(version: semver.Range): Promise<JavaDownloadRelease> {
+  protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
     const availableVersionsRaw = await this.getAvailableVersions();
     const availableVersionsWithBinaries = availableVersionsRaw
       .filter(item => item.binaries.length > 0)
@@ -28,7 +28,7 @@ export class AdoptiumDistribution extends JavaBase {
       });
 
     const satisfiedVersions = availableVersionsWithBinaries
-      .filter(item => semver.satisfies(item.version, version))
+      .filter(item => isVersionSatisfies(version, item.version))
       .sort((a, b) => {
         return -semver.compareBuild(a.version, b.version);
       });
@@ -40,7 +40,7 @@ export class AdoptiumDistribution extends JavaBase {
         ? `\nAvailable versions: ${availableOptions}`
         : '';
       throw new Error(
-        `Could not find satisfied version for SemVer '${version.raw}'. ${availableOptionsMessage}`
+        `Could not find satisfied version for SemVer '${version}'. ${availableOptionsMessage}`
       );
     }
 
@@ -78,8 +78,7 @@ export class AdoptiumDistribution extends JavaBase {
     const platform = this.getPlatformOption();
     const arch = this.architecture;
     const imageType = this.packageType;
-    const versionRange = '[1.0,100.0]'; // retrieve all available versions
-    const encodedVersionRange = encodeURI(versionRange);
+    const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
     const releaseType = this.stable ? 'ga' : 'ea';
 
     console.time('adopt-retrieve-available-versions');
@@ -103,7 +102,7 @@ export class AdoptiumDistribution extends JavaBase {
     const availableVersions: IAdoptiumAvailableVersions[] = [];
     while (true) {
       const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
-      const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${encodedVersionRange}?${requestArguments}`;
+      const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
       if (core.isDebug() && page_index === 0) {
         // url is identical except page_index so print it once for debug
         core.debug(`Gathering available versions from '${availableVersionsUrl}'`);

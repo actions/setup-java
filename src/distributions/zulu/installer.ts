@@ -7,7 +7,7 @@ import semver from 'semver';
 
 import { JavaBase } from '../base-installer';
 import { IZuluVersions } from './models';
-import { extractJdkFile, getDownloadArchiveExtension } from '../../util';
+import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
 import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
 
 export class ZuluDistribution extends JavaBase {
@@ -15,7 +15,7 @@ export class ZuluDistribution extends JavaBase {
     super('Zulu', installerOptions);
   }
 
-  protected async findPackageForDownload(version: semver.Range): Promise<JavaDownloadRelease> {
+  protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
     const availableVersionsRaw = await this.getAvailableVersions();
     const availableVersions = availableVersionsRaw.map(item => {
       return {
@@ -26,7 +26,7 @@ export class ZuluDistribution extends JavaBase {
     });
 
     const satisfiedVersions = availableVersions
-      .filter(item => semver.satisfies(item.version, version))
+      .filter(item => isVersionSatisfies(version, item.version))
       .sort((a, b) => {
         // Azul provides two versions: jdk_version and azul_version
         // we should sort by both fields by descending
@@ -49,7 +49,7 @@ export class ZuluDistribution extends JavaBase {
         ? `\nAvailable versions: ${availableOptions}`
         : '';
       throw new Error(
-        `Could not find satisfied version for semver ${version.raw}. ${availableOptionsMessage}`
+        `Could not find satisfied version for semver ${version}. ${availableOptionsMessage}`
       );
     }
 
