@@ -22,7 +22,9 @@ async function run() {
     });
     const jdkFile = core.getInput(constants.INPUT_JDK_FILE, {required: false});
 
-    await installer.getJava(version, arch, jdkFile, javaPackage);
+    const distro = core.getInput(constants.INPUT_DISTRO, {required: false});
+
+    await installer.getJava(version, arch, jdkFile, javaPackage, distro);
 
     const matchersPath = path.join(__dirname, '..', '..', '.github');
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);

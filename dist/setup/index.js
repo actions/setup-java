@@ -25758,6 +25758,7 @@ exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_ARCHITECTURE = 'architecture';
 exports.INPUT_JAVA_PACKAGE = 'java-package';
 exports.INPUT_JDK_FILE = 'jdkFile';
+exports.INPUT_DISTRO = 'distro';
 exports.INPUT_SERVER_ID = 'server-id';
 exports.INPUT_SERVER_USERNAME = 'server-username';
 exports.INPUT_SERVER_PASSWORD = 'server-password';
@@ -25767,6 +25768,20 @@ exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
+exports.DISCO_URL = 'https://api.foojay.io';
+exports.PACKAGES_PATH = '/disco/v1.0/packages';
+exports.EPHEMERAL_IDS_PATH = '/disco/v1.0/ephemeral_ids';
+exports.DISTROS = [
+    'aoj',
+    'aoj_openj9',
+    'corretto',
+    'dragonwell',
+    'liberica',
+    'ojdk_build',
+    'oracle_open_jdk',
+    'sap_machine',
+    'zulu'
+];
 
 
 /***/ }),
@@ -28791,7 +28806,8 @@ function run() {
                 required: true
             });
             const jdkFile = core.getInput(constants.INPUT_JDK_FILE, { required: false });
-            yield installer.getJava(version, arch, jdkFile, javaPackage);
+            const distro = core.getInput(constants.INPUT_DISTRO, { required: false });
+            yield installer.getJava(version, arch, jdkFile, javaPackage, distro);
             const matchersPath = path.join(__dirname, '..', '..', '.github');
             core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
             const id = core.getInput(constants.INPUT_SERVER_ID, { required: false });
@@ -33491,11 +33507,12 @@ const httpm = __importStar(__webpack_require__(539));
 const tc = __importStar(__webpack_require__(533));
 const fs = __importStar(__webpack_require__(747));
 const path = __importStar(__webpack_require__(622));
-const semver = __importStar(__webpack_require__(280));
 const util = __importStar(__webpack_require__(322));
+const constants = __importStar(__webpack_require__(694));
+const constants_1 = __webpack_require__(694);
 const tempDirectory = util.getTempDir();
 const IS_WINDOWS = util.isWindows();
-function getJava(version, arch, jdkFile, javaPackage) {
+function getJava(version, arch, jdkFile, javaPackage, distro = 'zulu') {
     return __awaiter(this, void 0, void 0, function* () {
         let toolPath = tc.find(javaPackage, version);
         if (toolPath) {
@@ -33525,7 +33542,7 @@ function getJava(version, arch, jdkFile, javaPackage) {
                 }
                 const contents = yield response.readBody();
                 const refs = contents.match(/<a href.*\">/gi) || [];
-                const downloadInfo = getDownloadInfo(refs, version, arch, javaPackage);
+                const downloadInfo = yield getDownloadInfo(refs, version, arch, javaPackage, distro);
                 jdkFile = yield tc.downloadTool(downloadInfo.url);
                 version = downloadInfo.version;
                 compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
@@ -33641,101 +33658,149 @@ function unzipJavaDownload(repoRoot, fileEnding, destinationFolder, extension) {
         }
     });
 }
-function getDownloadInfo(refs, version, arch, javaPackage) {
-    version = normalizeVersion(version);
-    const archExtension = arch === 'x86' ? 'i686' : 'x64';
-    let extension = '';
-    if (IS_WINDOWS) {
-        extension = `-win_${archExtension}.zip`;
-    }
-    else {
-        if (process.platform === 'darwin') {
-            extension = `-macosx_${archExtension}.tar.gz`;
+function getDownloadInfo(refs, version, arch, javaPackage, distro) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const architecture = arch === 'x86' ? 'i686' : 'x64';
+        let operatingSystem = '';
+        let packageType = '';
+        if (javaPackage === 'jdk') {
+            packageType = 'jdk';
+        }
+        else if (javaPackage === 'jre') {
+            packageType = 'jre';
+        }
+        else if (javaPackage === 'jdk+fx') {
+            packageType = 'jdk+fx';
         }
         else {
-            extension = `-linux_${archExtension}.tar.gz`;
+            throw new Error(`package argument ${javaPackage} is not in [jdk | jre | jdk+fx]`);
         }
-    }
-    core.debug(`Searching for files with extension: ${extension}`);
-    let pkgRegexp = new RegExp('');
-    let pkgTypeLength = 0;
-    if (javaPackage === 'jdk') {
-        pkgRegexp = /jdk.*-/gi;
-        pkgTypeLength = 'jdk'.length;
-    }
-    else if (javaPackage == 'jre') {
-        pkgRegexp = /jre.*-/gi;
-        pkgTypeLength = 'jre'.length;
-    }
-    else if (javaPackage == 'jdk+fx') {
-        pkgRegexp = /fx-jdk.*-/gi;
-        pkgTypeLength = 'fx-jdk'.length;
-    }
-    else {
-        throw new Error(`package argument ${javaPackage} is not in [jdk | jre | jdk+fx]`);
-    }
-    // Maps version to url
-    let versionMap = new Map();
-    // Filter by platform
-    refs.forEach(ref => {
-        if (!ref.endsWith(extension + '">')) {
-            return;
+        let distribution = '';
+        if (distro) {
+            if (distro === '') {
+                distribution = 'zulu';
+            }
+            else if (constants_1.DISTROS.indexOf(distro.toLowerCase()) > -1) {
+                distribution = distro.toLowerCase();
+            }
+            else {
+                throw new Error(`distro argument '${distro}' is not in [aoj | aoj_openj9 | corretto | dragonwell | liberica | ojdk_build | oracle_open_jdk | sap_machine | zulu]`);
+            }
         }
-        // If we haven't returned, means we're looking at the correct platform
-        let versions = ref.match(pkgRegexp) || [];
-        if (versions.length > 1) {
-            throw new Error(`Invalid ref received from https://static.azul.com/zulu/bin/: ${ref}`);
+        else {
+            distribution = 'zulu';
         }
-        if (versions.length == 0) {
-            return;
+        let archiveType;
+        if (IS_WINDOWS) {
+            operatingSystem = 'windows';
+            archiveType = 'zip';
         }
-        const refVersion = versions[0].slice(pkgTypeLength, versions[0].length - 1);
-        if (semver.satisfies(refVersion, version)) {
-            versionMap.set(refVersion, 'https://static.azul.com/zulu/bin/' +
-                ref.slice('<a href="'.length, ref.length - '">'.length));
+        else {
+            if (process.platform === 'darwin') {
+                operatingSystem = 'macos';
+                archiveType = distribution === 'liberica' ? 'zip' : 'tar.gz';
+            }
+            else {
+                operatingSystem = 'linux';
+                archiveType = distribution === 'ojdk_build' ? 'zip' : 'tar.gz';
+            }
         }
+        let latest = 'explicit';
+        if (version.endsWith('x')) {
+            if (version.endsWith('.x')) {
+                version = version.slice(0, -2);
+                latest = 'per_version';
+            }
+            else {
+                version = version.slice(0, -1);
+                latest = 'overall';
+            }
+        }
+        if (version.endsWith('0') ||
+            version.length === 1 ||
+            version.length === 2 ||
+            version.includes('ea')) {
+            latest = 'overall';
+        }
+        let url = constants_1.DISCO_URL + constants_1.PACKAGES_PATH;
+        url += '?distro=' + distribution;
+        if (version.length != 0) {
+            url += '&version=' + version;
+        }
+        if (javaPackage === 'jdk+fx') {
+            url += '&package_type=jdk';
+            url += '&javafx_bundled=true';
+        }
+        else {
+            url += '&package_type=' + packageType;
+        }
+        url += '&release_status=ea';
+        url += '&release_status=ga';
+        url += '&architecture=' + architecture;
+        url += '&operating_system=' + operatingSystem;
+        url += '&archive_type=' + archiveType;
+        url += '&latest=' + latest;
+        const http = new httpm.HttpClient('bundles', undefined, {
+            allowRetries: true,
+            maxRetries: 3
+        });
+        let json = '';
+        const response = yield http.get(url);
+        const statusCode = response.message.statusCode || 0;
+        if (statusCode == 200) {
+            let body = '';
+            try {
+                body = yield response.readBody();
+                json = JSON.parse(body);
+            }
+            catch (err) {
+                core.debug(`Unable to read body: ${err.message}`);
+            }
+        }
+        else {
+            const message = 'Unexpected HTTP status code ' +
+                response.message.statusCode +
+                ' when retrieving versions from ' +
+                url;
+            throw new Error(message);
+        }
+        // Choose the most recent satisfying version
+        let curVersion = '0.0.0';
+        let curUrl = '';
+        if (json.length > 0) {
+            curVersion = json[0].java_version;
+            curUrl = yield getPackageFileUrl(json[0].ephemeral_id);
+        }
+        if (curUrl == '') {
+            throw new Error(`No valid download found for ${distribution} with version ${version} and package ${packageType}. Please download your own jdk file and add the jdkFile argument`);
+        }
+        return { version: curVersion, url: curUrl };
     });
-    // Choose the most recent satisfying version
-    let curVersion = '0.0.0';
-    let curUrl = '';
-    for (const entry of versionMap.entries()) {
-        const entryVersion = entry[0];
-        const entryUrl = entry[1];
-        if (semver.gt(entryVersion, curVersion)) {
-            curUrl = entryUrl;
-            curVersion = entryVersion;
-        }
-    }
-    if (curUrl == '') {
-        throw new Error(`No valid download found for version ${version} and package ${javaPackage}. Check https://static.azul.com/zulu/bin/ for a list of valid versions or download your own jdk file and add the jdkFile argument`);
-    }
-    return { version: curVersion, url: curUrl };
 }
-function normalizeVersion(version) {
-    if (version.slice(0, 2) === '1.') {
-        // Trim leading 1. for versions like 1.8
-        version = version.slice(2);
-        if (!version) {
-            throw new Error('1. is not a valid version');
+function getPackageFileUrl(ephemeralId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let url = constants.DISCO_URL + constants.EPHEMERAL_IDS_PATH + '/' + ephemeralId;
+        const http = new httpm.HttpClient('bundle-info', undefined, {
+            allowRetries: true,
+            maxRetries: 3
+        });
+        const response = yield http.get(url);
+        const statusCode = response.message.statusCode || 0;
+        if (statusCode == 200) {
+            let body = '';
+            try {
+                body = yield response.readBody();
+                let json = JSON.parse(body);
+                return json.direct_download_uri;
+            }
+            catch (err) {
+                core.debug(`Unable to read body: ${err.message}`);
+            }
+            const message = `Unexpected HTTP status code '${response.message.statusCode}' when retrieving versions from '${url}'. ${body}`.trim();
+            throw new Error(message);
         }
-    }
-    if (version.endsWith('-ea')) {
-        // convert e.g. 14-ea to 14.0.0-ea
-        if (version.indexOf('.') == -1) {
-            version = version.slice(0, version.length - 3) + '.0.0-ea';
-        }
-        // match anything in -ea.X (semver won't do .x matching on pre-release versions)
-        if (version[0] >= '0' && version[0] <= '9') {
-            version = '>=' + version;
-        }
-    }
-    else if (version.split('.').length < 3) {
-        // For non-ea versions, add trailing .x if it is missing
-        if (version[version.length - 1] != 'x') {
-            version = version + '.x';
-        }
-    }
-    return version;
+        return '';
+    });
 }
 
 
