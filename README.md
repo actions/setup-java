@@ -17,7 +17,7 @@ This action provides the following functionality for GitHub Actions runners:
 - V2 requires you to specify distribution along with the version. V1 defaults to Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2
 
 ## Usage
-Input `distribution` is mandatory. See [Supported distributions](../README.md#Supported-distributions) section for the list of available options.
+Input `distribution` is mandatory. See [Supported distributions](../README.md#Supported-distributions) section for a list of available options.
 
 ### Basic
 ```yaml
@@ -33,8 +33,10 @@ steps:
 #### Supported version syntax
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
 - major versions: `8`, `11`, `15`, `11.x`
-- more specific versions: `8.0.232`, `11.0.4`, `11.0`, `11.0.x`
+- more specific versions: `11.0`, `11.0.4`, `8.0.232`, `8.0.282+8`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`, `15.0.0-ea.2`
+
+**Note:** Java is always downloaded in runtime when version is specified with build number (such as `8.0.282+8` or `15.0.0-ea.2`). This notation doesn't use pre-cached versions.
 
 #### Supported distributions
 Currently, the following distributions are supported:
