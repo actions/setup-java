@@ -6,14 +6,14 @@ import path from 'path';
 import semver from 'semver';
 
 import { JavaBase } from '../base-installer';
-import { IAdoptiumAvailableVersions } from './models';
+import { IAdoptAvailableVersions } from './models';
 import { JavaInstallerOptions, JavaDownloadRelease, JavaInstallerResults } from '../base-models';
 import { MACOS_JAVA_CONTENT_POSTFIX } from '../../constants';
 import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
 
-export class AdoptiumDistribution extends JavaBase {
+export class AdoptDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
-    super('Adoptium', installerOptions);
+    super('Adopt', installerOptions);
   }
 
   protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
@@ -74,7 +74,7 @@ export class AdoptiumDistribution extends JavaBase {
     return { version: javaRelease.version, path: javaPath };
   }
 
-  private async getAvailableVersions(): Promise<IAdoptiumAvailableVersions[]> {
+  private async getAvailableVersions(): Promise<IAdoptAvailableVersions[]> {
     const platform = this.getPlatformOption();
     const arch = this.architecture;
     const imageType = this.packageType;
@@ -99,7 +99,7 @@ export class AdoptiumDistribution extends JavaBase {
     // need to iterate through all pages to retrieve the list of all versions
     // Adopt API doesn't provide way to retrieve the count of pages to iterate so infinity loop
     let page_index = 0;
-    const availableVersions: IAdoptiumAvailableVersions[] = [];
+    const availableVersions: IAdoptAvailableVersions[] = [];
     while (true) {
       const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
       const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
@@ -109,7 +109,7 @@ export class AdoptiumDistribution extends JavaBase {
       }
 
       const paginationPage = (
-        await this.http.getJson<IAdoptiumAvailableVersions[]>(availableVersionsUrl)
+        await this.http.getJson<IAdoptAvailableVersions[]>(availableVersionsUrl)
       ).result;
       if (paginationPage === null || paginationPage.length === 0) {
         // break infinity loop because we have reached end of pagination

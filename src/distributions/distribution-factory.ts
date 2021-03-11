@@ -1,11 +1,11 @@
-import { AdoptiumDistribution } from './adoptium/installer';
+import { AdoptDistribution } from './adopt/installer';
 import { JavaBase } from './base-installer';
 import { JavaInstallerOptions } from './base-models';
 import { LocalDistribution } from './local/installer';
 import { ZuluDistribution } from './zulu/installer';
 
 enum JavaDistribution {
-  Adoptium = 'adoptium',
+  Adopt = 'adopt',
   Zulu = 'zulu',
   JdkFile = 'jdkfile'
 }
@@ -18,8 +18,8 @@ export function getJavaDistribution(
   switch (distributionName) {
     case JavaDistribution.JdkFile:
       return new LocalDistribution(installerOptions, jdkFile);
-    case JavaDistribution.Adoptium:
-      return new AdoptiumDistribution(installerOptions);
+    case JavaDistribution.Adopt:
+      return new AdoptDistribution(installerOptions);
     case JavaDistribution.Zulu:
       return new ZuluDistribution(installerOptions);
     default:
