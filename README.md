@@ -32,11 +32,11 @@ steps:
 
 #### Supported version syntax
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
-- major versions: `8`, `11`, `15`, `11.x`
+- major versions: `8`, `11`, `15`
 - more specific versions: `11.0`, `11.0.4`, `8.0.232`, `8.0.282+8`
-- early access (EA) versions: `15-ea`, `15.0.0-ea`, `15.0.0-ea.2`
+- early access (EA) versions: `15-ea`, `15.0.0-ea`, `15.0.0-ea.2`, `15.0.0+2-ea`
 
-**Note:** Java is always downloaded in runtime when version is specified with build number (such as `8.0.282+8` or `15.0.0-ea.2`). This notation doesn't use pre-cached versions.
+**Note:** 4-digit notation will always force action to skip checking pre-cached versions and download version in runtime.
 
 #### Supported distributions
 Currently, the following distributions are supported:
