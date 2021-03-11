@@ -1476,12 +1476,12 @@ exports.string = string;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getJavaDistribution = void 0;
-const installer_1 = __webpack_require__(390);
+const installer_1 = __webpack_require__(584);
 const installer_2 = __webpack_require__(144);
 const installer_3 = __webpack_require__(393);
 var JavaDistribution;
 (function (JavaDistribution) {
-    JavaDistribution["Adoptium"] = "adoptium";
+    JavaDistribution["Adopt"] = "adopt";
     JavaDistribution["Zulu"] = "zulu";
     JavaDistribution["JdkFile"] = "jdkfile";
 })(JavaDistribution || (JavaDistribution = {}));
@@ -1489,8 +1489,8 @@ function getJavaDistribution(distributionName, installerOptions, jdkFile) {
     switch (distributionName) {
         case JavaDistribution.JdkFile:
             return new installer_2.LocalDistribution(installerOptions, jdkFile);
-        case JavaDistribution.Adoptium:
-            return new installer_1.AdoptiumDistribution(installerOptions);
+        case JavaDistribution.Adopt:
+            return new installer_1.AdoptDistribution(installerOptions);
         case JavaDistribution.Zulu:
             return new installer_3.ZuluDistribution(installerOptions);
         default:
@@ -13739,167 +13739,7 @@ module.exports = new Type('tag:yaml.org,2002:js/undefined', {
 /* 387 */,
 /* 388 */,
 /* 389 */,
-/* 390 */
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.AdoptiumDistribution = void 0;
-const core = __importStar(__webpack_require__(470));
-const tc = __importStar(__webpack_require__(139));
-const fs_1 = __importDefault(__webpack_require__(747));
-const path_1 = __importDefault(__webpack_require__(622));
-const semver_1 = __importDefault(__webpack_require__(876));
-const base_installer_1 = __webpack_require__(83);
-const constants_1 = __webpack_require__(211);
-const util_1 = __webpack_require__(322);
-class AdoptiumDistribution extends base_installer_1.JavaBase {
-    constructor(installerOptions) {
-        super('Adoptium', installerOptions);
-    }
-    findPackageForDownload(version) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const availableVersionsRaw = yield this.getAvailableVersions();
-            const availableVersionsWithBinaries = availableVersionsRaw
-                .filter(item => item.binaries.length > 0)
-                .map(item => {
-                return {
-                    version: item.version_data.semver,
-                    url: item.binaries[0].package.link
-                };
-            });
-            const satisfiedVersions = availableVersionsWithBinaries
-                .filter(item => util_1.isVersionSatisfies(version, item.version))
-                .sort((a, b) => {
-                return -semver_1.default.compareBuild(a.version, b.version);
-            });
-            const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
-            if (!resolvedFullVersion) {
-                const availableOptions = availableVersionsWithBinaries.map(item => item.version).join(', ');
-                const availableOptionsMessage = availableOptions
-                    ? `\nAvailable versions: ${availableOptions}`
-                    : '';
-                throw new Error(`Could not find satisfied version for SemVer '${version}'. ${availableOptionsMessage}`);
-            }
-            return resolvedFullVersion;
-        });
-    }
-    downloadTool(javaRelease) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let javaPath;
-            let extractedJavaPath;
-            core.info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-            const javaArchivePath = yield tc.downloadTool(javaRelease.url);
-            core.info(`Extracting Java archive...`);
-            let extension = util_1.getDownloadArchiveExtension();
-            extractedJavaPath = yield util_1.extractJdkFile(javaArchivePath, extension);
-            const archiveName = fs_1.default.readdirSync(extractedJavaPath)[0];
-            const archivePath = path_1.default.join(extractedJavaPath, archiveName);
-            const version = this.getToolcacheVersionName(javaRelease.version);
-            javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
-            if (process.platform === 'darwin') {
-                javaPath = path_1.default.join(javaPath, constants_1.MACOS_JAVA_CONTENT_POSTFIX);
-            }
-            return { version: javaRelease.version, path: javaPath };
-        });
-    }
-    getAvailableVersions() {
-        return __awaiter(this, void 0, void 0, function* () {
-            const platform = this.getPlatformOption();
-            const arch = this.architecture;
-            const imageType = this.packageType;
-            const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
-            const releaseType = this.stable ? 'ga' : 'ea';
-            console.time('adopt-retrieve-available-versions');
-            const baseRequestArguments = [
-                `project=jdk`,
-                'vendor=adoptopenjdk',
-                `heap_size=normal`,
-                `jvm_impl=hotspot`,
-                'sort_method=DEFAULT',
-                'sort_order=DESC',
-                `os=${platform}`,
-                `architecture=${arch}`,
-                `image_type=${imageType}`,
-                `release_type=${releaseType}`
-            ].join('&');
-            // need to iterate through all pages to retrieve the list of all versions
-            // Adopt API doesn't provide way to retrieve the count of pages to iterate so infinity loop
-            let page_index = 0;
-            const availableVersions = [];
-            while (true) {
-                const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
-                const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
-                if (core.isDebug() && page_index === 0) {
-                    // url is identical except page_index so print it once for debug
-                    core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
-                }
-                const paginationPage = (yield this.http.getJson(availableVersionsUrl)).result;
-                if (paginationPage === null || paginationPage.length === 0) {
-                    // break infinity loop because we have reached end of pagination
-                    break;
-                }
-                availableVersions.push(...paginationPage);
-                page_index++;
-            }
-            if (core.isDebug()) {
-                core.startGroup('Print information about available versions');
-                console.timeEnd('adopt-retrieve-available-versions');
-                console.log(`Available versions: [${availableVersions.length}]`);
-                console.log(availableVersions.map(item => item.version_data.semver).join(', '));
-                core.endGroup();
-            }
-            return availableVersions;
-        });
-    }
-    getPlatformOption() {
-        // Adopt has own platform names so need to map them
-        switch (process.platform) {
-            case 'darwin':
-                return 'mac';
-            case 'win32':
-                return 'windows';
-            default:
-                return process.platform;
-        }
-    }
-}
-exports.AdoptiumDistribution = AdoptiumDistribution;
-
-
-/***/ }),
+/* 390 */,
 /* 391 */,
 /* 392 */
 /***/ (function(__unusedmodule, exports) {
@@ -26968,7 +26808,167 @@ exports.ShadowRootImpl = ShadowRootImpl;
 /***/ }),
 /* 582 */,
 /* 583 */,
-/* 584 */,
+/* 584 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AdoptDistribution = void 0;
+const core = __importStar(__webpack_require__(470));
+const tc = __importStar(__webpack_require__(139));
+const fs_1 = __importDefault(__webpack_require__(747));
+const path_1 = __importDefault(__webpack_require__(622));
+const semver_1 = __importDefault(__webpack_require__(876));
+const base_installer_1 = __webpack_require__(83);
+const constants_1 = __webpack_require__(211);
+const util_1 = __webpack_require__(322);
+class AdoptDistribution extends base_installer_1.JavaBase {
+    constructor(installerOptions) {
+        super('Adopt', installerOptions);
+    }
+    findPackageForDownload(version) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const availableVersionsRaw = yield this.getAvailableVersions();
+            const availableVersionsWithBinaries = availableVersionsRaw
+                .filter(item => item.binaries.length > 0)
+                .map(item => {
+                return {
+                    version: item.version_data.semver,
+                    url: item.binaries[0].package.link
+                };
+            });
+            const satisfiedVersions = availableVersionsWithBinaries
+                .filter(item => util_1.isVersionSatisfies(version, item.version))
+                .sort((a, b) => {
+                return -semver_1.default.compareBuild(a.version, b.version);
+            });
+            const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
+            if (!resolvedFullVersion) {
+                const availableOptions = availableVersionsWithBinaries.map(item => item.version).join(', ');
+                const availableOptionsMessage = availableOptions
+                    ? `\nAvailable versions: ${availableOptions}`
+                    : '';
+                throw new Error(`Could not find satisfied version for SemVer '${version}'. ${availableOptionsMessage}`);
+            }
+            return resolvedFullVersion;
+        });
+    }
+    downloadTool(javaRelease) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let javaPath;
+            let extractedJavaPath;
+            core.info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
+            const javaArchivePath = yield tc.downloadTool(javaRelease.url);
+            core.info(`Extracting Java archive...`);
+            let extension = util_1.getDownloadArchiveExtension();
+            extractedJavaPath = yield util_1.extractJdkFile(javaArchivePath, extension);
+            const archiveName = fs_1.default.readdirSync(extractedJavaPath)[0];
+            const archivePath = path_1.default.join(extractedJavaPath, archiveName);
+            const version = this.getToolcacheVersionName(javaRelease.version);
+            javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
+            if (process.platform === 'darwin') {
+                javaPath = path_1.default.join(javaPath, constants_1.MACOS_JAVA_CONTENT_POSTFIX);
+            }
+            return { version: javaRelease.version, path: javaPath };
+        });
+    }
+    getAvailableVersions() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const platform = this.getPlatformOption();
+            const arch = this.architecture;
+            const imageType = this.packageType;
+            const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
+            const releaseType = this.stable ? 'ga' : 'ea';
+            console.time('adopt-retrieve-available-versions');
+            const baseRequestArguments = [
+                `project=jdk`,
+                'vendor=adoptopenjdk',
+                `heap_size=normal`,
+                `jvm_impl=hotspot`,
+                'sort_method=DEFAULT',
+                'sort_order=DESC',
+                `os=${platform}`,
+                `architecture=${arch}`,
+                `image_type=${imageType}`,
+                `release_type=${releaseType}`
+            ].join('&');
+            // need to iterate through all pages to retrieve the list of all versions
+            // Adopt API doesn't provide way to retrieve the count of pages to iterate so infinity loop
+            let page_index = 0;
+            const availableVersions = [];
+            while (true) {
+                const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
+                const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
+                if (core.isDebug() && page_index === 0) {
+                    // url is identical except page_index so print it once for debug
+                    core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+                }
+                const paginationPage = (yield this.http.getJson(availableVersionsUrl)).result;
+                if (paginationPage === null || paginationPage.length === 0) {
+                    // break infinity loop because we have reached end of pagination
+                    break;
+                }
+                availableVersions.push(...paginationPage);
+                page_index++;
+            }
+            if (core.isDebug()) {
+                core.startGroup('Print information about available versions');
+                console.timeEnd('adopt-retrieve-available-versions');
+                console.log(`Available versions: [${availableVersions.length}]`);
+                console.log(availableVersions.map(item => item.version_data.semver).join(', '));
+                core.endGroup();
+            }
+            return availableVersions;
+        });
+    }
+    getPlatformOption() {
+        // Adopt has own platform names so need to map them
+        switch (process.platform) {
+            case 'darwin':
+                return 'mac';
+            case 'win32':
+                return 'windows';
+            default:
+                return process.platform;
+        }
+    }
+}
+exports.AdoptDistribution = AdoptDistribution;
+
+
+/***/ }),
 /* 585 */,
 /* 586 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
