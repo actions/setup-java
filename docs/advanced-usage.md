@@ -1,6 +1,6 @@
 # Usage
 - [Selecting a Java distribution](#Selecting-a-Java-distribution)
-  - [Adoptium](#Adoptium)
+  - [Adopt](#Adopt)
   - [Zulu](#Zulu)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
@@ -15,13 +15,13 @@ See [action.yml](../action.yml) for more details on task inputs.
 ## Selecting a Java distribution
 Input `distribution` is mandatory and needs to be provided. See [Supported distributions](../README.md#Supported-distributions) for a list of available options.
 
-### Adoptium
+### Adopt
 ```yaml
 steps:
 - uses: actions/checkout@v2
 - uses: actions/setup-java@v2-preview
   with:
-    distribution: 'adoptium'
+    distribution: 'adopt'
     java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        distribution: [ 'zulu', 'adoptium' ]
+        distribution: [ 'zulu', 'adopt' ]
         java: [ '8', '11', '13', '15' ]
     name: Java ${{ matrix.Java }} (${{ matrix.distribution }}) sample
     steps:
@@ -118,7 +118,7 @@ jobs:
       - name: Setup java
         uses: actions/setup-java@v2-preview
         with:
-          distribution: 'adoptium'
+          distribution: 'adopt'
           java-version: ${{ matrix.java }}
       - run: java -cp java HelloWorldApp
 ```
