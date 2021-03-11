@@ -2,10 +2,10 @@ import { HttpClient } from '@actions/http-client';
 
 import * as semver from 'semver';
 
-import { AdoptiumDistribution } from '../../src/distributions/adoptium/installer';
+import { AdoptDistribution } from '../../src/distributions/adopt/installer';
 import { JavaInstallerOptions } from '../../src/distributions/base-models';
 
-let manifestData = require('../data/adoptium.json') as [];
+let manifestData = require('../data/adopt.json') as [];
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
@@ -45,7 +45,7 @@ describe('getAvailableVersions', () => {
   ])(
     'build correct url for %s',
     async (installerOptions: JavaInstallerOptions, expectedParameters) => {
-      const distribution = new AdoptiumDistribution(installerOptions);
+      const distribution = new AdoptDistribution(installerOptions);
       const baseUrl = 'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D';
       const expectedUrl = `${baseUrl}?project=jdk&vendor=adoptopenjdk&heap_size=normal&jvm_impl=hotspot&sort_method=DEFAULT&sort_order=DESC&${expectedParameters}`;
       distribution['getPlatformOption'] = () => 'mac';
@@ -76,7 +76,7 @@ describe('getAvailableVersions', () => {
         result: []
       });
 
-    const distribution = new AdoptiumDistribution({
+    const distribution = new AdoptDistribution({
       version: '11',
       arch: 'x64',
       packageType: 'jdk'
@@ -101,7 +101,7 @@ describe('findPackageForDownload', () => {
     ['15.0.1+9', '15.0.1+9'],
     ['15.0.1+9.1', '15.0.1+9.1']
   ])('version is resolved correctly %s -> %s', async (input, expected) => {
-    const distribution = new AdoptiumDistribution({
+    const distribution = new AdoptDistribution({
       version: '11',
       arch: 'x64',
       packageType: 'jdk'
@@ -112,7 +112,7 @@ describe('findPackageForDownload', () => {
   });
 
   it('version is found but binaries list is empty', async () => {
-    const distribution = new AdoptiumDistribution({
+    const distribution = new AdoptDistribution({
       version: '11',
       arch: 'x64',
       packageType: 'jdk'
@@ -124,7 +124,7 @@ describe('findPackageForDownload', () => {
   });
 
   it('version is not found', async () => {
-    const distribution = new AdoptiumDistribution({
+    const distribution = new AdoptDistribution({
       version: '11',
       arch: 'x64',
       packageType: 'jdk'
@@ -136,7 +136,7 @@ describe('findPackageForDownload', () => {
   });
 
   it('version list is empty', async () => {
-    const distribution = new AdoptiumDistribution({
+    const distribution = new AdoptDistribution({
       version: '11',
       arch: 'x64',
       packageType: 'jdk'

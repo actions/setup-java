@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        distribution: ['adoptium', 'zulu']
+        distribution: ['adopt', 'zulu']
         version: ['8', '11', '15']
     steps:
       - name: Checkout
@@ -42,19 +42,19 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        distribution: ['adoptium', 'zulu']
+        distribution: ['adopt', 'zulu']
         version:
         - '11.0'
         - '8.0.282'
         - '11.0.2+7'
         include:
-          - distribution: 'adoptium'
+          - distribution: 'adopt'
             version: '12.0.2+10.1'
             os: macos-latest
-          - distribution: 'adoptium'
+          - distribution: 'adopt'
             version: '12.0.2+10.1'
             os: windows-latest
-          - distribution: 'adoptium'
+          - distribution: 'adopt'
             version: '12.0.2+10.1'
             os: ubuntu-latest
     steps:
@@ -89,8 +89,8 @@ jobs:
           java-version: ${{ matrix.version }}
           distribution: zulu
 
-  setup-java-ea-versions-adoptium:
-    name: adoptium ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+  setup-java-ea-versions-adopt:
+    name: adopt ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
@@ -106,7 +106,7 @@ jobs:
         id: setup-java
         with:
           java-version: ${{ matrix.version }}
-          distribution: adoptium
+          distribution: adopt
 
   setup-java-custom-package-type:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (${{ matrix.java-package }}-x64) - ${{ matrix.os }}
@@ -116,7 +116,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        distribution: ['adoptium', 'zulu']
+        distribution: ['adopt', 'zulu']
         java-package: ['jre']
         version:
         - '15.0'
