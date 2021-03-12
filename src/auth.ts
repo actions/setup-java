@@ -41,13 +41,7 @@ export async function createAuthenticationSettings(
   password: string,
   gpgPassphrase: string | undefined = undefined
 ) {
-  core.info(
-    `Creating ${SETTINGS_FILE} with server-id: ${id};
-     environment variables:
-     username=\$${username},
-     password=\$${password},
-     and gpg-passphrase=${gpgPassphrase ? '$' + gpgPassphrase : null}`
-  );
+  core.info(`Creating ${SETTINGS_FILE} with server-id: ${id}`);
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
   const settingsDirectory: string = path.join(

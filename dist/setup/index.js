@@ -3963,7 +3963,7 @@ class JavaBase {
             maxRetries: 3
         });
         ({ version: this.version, stable: this.stable } = this.normalizeVersion(installerOptions.version));
-        this.architecture = installerOptions.arch;
+        this.architecture = installerOptions.architecture;
         this.packageType = installerOptions.packageType;
     }
     setupJava() {
@@ -13281,11 +13281,7 @@ function configureAuthentication() {
 exports.configureAuthentication = configureAuthentication;
 function createAuthenticationSettings(id, username, password, gpgPassphrase = undefined) {
     return __awaiter(this, void 0, void 0, function* () {
-        core.info(`Creating ${exports.SETTINGS_FILE} with server-id: ${id};
-     environment variables:
-     username=\$${username},
-     password=\$${password},
-     and gpg-passphrase=${gpgPassphrase ? '$' + gpgPassphrase : null}`);
+        core.info(`Creating ${exports.SETTINGS_FILE} with server-id: ${id}`);
         // when an alternate m2 location is specified use only that location (no .m2 directory)
         // otherwise use the home/.m2/ path
         const settingsDirectory = path.join(core.getInput(constants.INPUT_SETTINGS_PATH) || os.homedir(), core.getInput(constants.INPUT_SETTINGS_PATH) ? '' : exports.M2_DIR);
@@ -35640,32 +35636,27 @@ const distribution_factory_1 = __webpack_require__(24);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const version = core.getInput(constants.INPUT_JAVA_VERSION);
-            const arch = core.getInput(constants.INPUT_ARCHITECTURE);
-            const distributionName = core.getInput(constants.INPUT_DISTRIBUTION);
+            const version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
+            const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, { required: true });
+            const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
             const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
             const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
-            if (version || distributionName) {
-                if (!version || !distributionName) {
-                    throw new Error(`Both ‘${constants.INPUT_JAVA_VERSION}’ and ‘${constants.INPUT_DISTRIBUTION}’ inputs are required if one of them is specified`);
-                }
-                const installerOptions = {
-                    arch,
-                    packageType,
-                    version
-                };
-                const distribution = distribution_factory_1.getJavaDistribution(distributionName, installerOptions, jdkFile);
-                if (!distribution) {
-                    throw new Error(`No supported distribution was found for input ${distributionName}`);
-                }
-                const result = yield distribution.setupJava();
-                core.info('');
-                core.info('Java configuration:');
-                core.info(`  Distribution: ${distributionName}`);
-                core.info(`  Version: ${result.version}`);
-                core.info(`  Path: ${result.path}`);
-                core.info('');
+            const installerOptions = {
+                architecture,
+                packageType,
+                version
+            };
+            const distribution = distribution_factory_1.getJavaDistribution(distributionName, installerOptions, jdkFile);
+            if (!distribution) {
+                throw new Error(`No supported distribution was found for input ${distributionName}`);
             }
+            const result = yield distribution.setupJava();
+            core.info('');
+            core.info('Java configuration:');
+            core.info(`  Distribution: ${distributionName}`);
+            core.info(`  Version: ${result.version}`);
+            core.info(`  Path: ${result.path}`);
+            core.info('');
             const matchersPath = path.join(__dirname, '..', '..', '.github');
             core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
             yield auth.configureAuthentication();

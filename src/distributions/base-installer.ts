@@ -22,7 +22,7 @@ export abstract class JavaBase {
     ({ version: this.version, stable: this.stable } = this.normalizeVersion(
       installerOptions.version
     ));
-    this.architecture = installerOptions.arch;
+    this.architecture = installerOptions.architecture;
     this.packageType = installerOptions.packageType;
   }
 

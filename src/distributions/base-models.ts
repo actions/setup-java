@@ -1,6 +1,6 @@
 export interface JavaInstallerOptions {
   version: string;
-  arch: string;
+  architecture: string;
   packageType: string;
 }
 
