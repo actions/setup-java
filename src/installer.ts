@@ -192,7 +192,7 @@ async function getDownloadInfo(
   version: string,
   arch: string,
   javaPackage: string,
-  distro: string
+  distro: string = 'zulu'
 ): Promise<{version: string; url: string}> {
   const architecture = arch === 'x86' ? 'i686' : 'x64';
   let operatingSystem = '';

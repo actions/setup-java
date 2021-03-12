@@ -33658,7 +33658,7 @@ function unzipJavaDownload(repoRoot, fileEnding, destinationFolder, extension) {
         }
     });
 }
-function getDownloadInfo(refs, version, arch, javaPackage, distro) {
+function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
     return __awaiter(this, void 0, void 0, function* () {
         const architecture = arch === 'x86' ? 'i686' : 'x64';
         let operatingSystem = '';
