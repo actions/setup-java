@@ -33734,8 +33734,12 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro) {
         else {
             url += '&package_type=' + packageType;
         }
-        url += '&release_status=ea';
-        url += '&release_status=ga';
+        if (version.includes('ea')) {
+            url += '&release_status=ea';
+        }
+        else {
+            url += '&release_status=ga';
+        }
         url += '&architecture=' + architecture;
         url += '&operating_system=' + operatingSystem;
         url += '&archive_type=' + archiveType;
