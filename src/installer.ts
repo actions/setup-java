@@ -268,9 +268,8 @@ async function getDownloadInfo(
   }
   if (version.includes('ea')) {
     url += '&release_status=ea';
-  } else {
-    url += '&release_status=ga';
   }
+  url += '&release_status=ga';
   url += '&architecture=' + architecture;
   url += '&operating_system=' + operatingSystem;
   url += '&archive_type=' + archiveType;
