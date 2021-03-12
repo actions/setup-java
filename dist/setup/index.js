@@ -33749,7 +33749,6 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
             maxRetries: 3
         });
         let json = '';
-        core.debug(`url: ${url}`);
         const response = yield http.get(url);
         const statusCode = response.message.statusCode || 0;
         if (statusCode == 200) {

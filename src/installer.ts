@@ -282,8 +282,6 @@ async function getDownloadInfo(
   });
   let json: any = '';
 
-  core.debug(`url: ${url}`);
-
   const response = await http.get(url);
   const statusCode = response.message.statusCode || 0;
   if (statusCode == 200) {
