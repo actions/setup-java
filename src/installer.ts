@@ -216,7 +216,7 @@ async function getDownloadInfo(
       distribution = distro.toLowerCase();
     } else {
       throw new Error(
-        `distro argument '${distro}' is not in [aoj | aoj_openj9 | corretto | dragonwell | liberica | ojdk_build | oracle_open_jdk | sap_machine | zulu]`
+        `distro argument '${distro}' is not in [aoj | aoj_openj9 | corretto | dragonwell | liberica | ojdk_build | oracle_openjdk | sap_machine | zulu]`
       );
     }
   } else {

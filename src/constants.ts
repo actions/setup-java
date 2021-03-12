@@ -26,7 +26,7 @@ export const DISTROS: string[] = [
   'dragonwell',
   'liberica',
   'ojdk_build',
-  'oracle_open_jdk',
+  'oracle_openjdk',
   'sap_machine',
   'zulu'
 ];
