@@ -266,7 +266,9 @@ async function getDownloadInfo(
   } else {
     url += '&package_type=' + packageType;
   }
-  url += '&release_status=ea';
+  if (version.includes('ea') { 
+    url += '&release_status=ea'; 
+  }
   url += '&release_status=ga';
   url += '&architecture=' + architecture;
   url += '&operating_system=' + operatingSystem;
