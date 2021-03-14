@@ -33705,20 +33705,6 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
                 archiveType = distribution === 'ojdk_build' ? 'zip' : 'tar.gz';
             }
         }
-        let latest = '';
-        if (version.endsWith('x')) {
-            if (version.endsWith('.x')) {
-                version = version.slice(0, -2);
-                latest = 'per_version';
-            }
-            else {
-                version = version.slice(0, -1);
-                latest = 'overall';
-            }
-        }
-        if (version.includes('ea')) {
-            latest = 'overall';
-        }
         let url = constants_1.DISCO_URL + constants_1.PACKAGES_PATH;
         url += '?distro=' + distribution;
         if (version.length != 0) {
@@ -33738,7 +33724,9 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
         url += '&architecture=' + architecture;
         url += '&operating_system=' + operatingSystem;
         url += '&archive_type=' + archiveType;
-        url += '&latest=' + latest;
+        if (version.endsWith('x') || version.includes('ea')) {
+            url += '&latest=overall';
+        }
         const http = new httpm.HttpClient('bundles', undefined, {
             allowRetries: true,
             maxRetries: 3
