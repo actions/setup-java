@@ -236,7 +236,7 @@ async function getDownloadInfo(
     }
   }
 
-  let latest = 'explicit';
+  let latest = '';
   if (version.endsWith('x')) {
     if (version.endsWith('.x')) {
       version = version.slice(0, -2);
@@ -246,12 +246,7 @@ async function getDownloadInfo(
       latest = 'overall';
     }
   }
-  if (
-    version.endsWith('0') ||
-    version.length === 1 ||
-    version.length === 2 ||
-    version.includes('ea')
-  ) {
+  if (version.includes('ea')) {
     latest = 'overall';
   }
 

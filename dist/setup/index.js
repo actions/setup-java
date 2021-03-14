@@ -33705,7 +33705,7 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
                 archiveType = distribution === 'ojdk_build' ? 'zip' : 'tar.gz';
             }
         }
-        let latest = 'explicit';
+        let latest = '';
         if (version.endsWith('x')) {
             if (version.endsWith('.x')) {
                 version = version.slice(0, -2);
@@ -33716,10 +33716,7 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
                 latest = 'overall';
             }
         }
-        if (version.endsWith('0') ||
-            version.length === 1 ||
-            version.length === 2 ||
-            version.includes('ea')) {
+        if (version.includes('ea')) {
             latest = 'overall';
         }
         let url = constants_1.DISCO_URL + constants_1.PACKAGES_PATH;
