@@ -25780,6 +25780,7 @@ exports.DISTROS = [
     'ojdk_build',
     'oracle_openjdk',
     'sap_machine',
+    'trava',
     'zulu'
 ];
 
@@ -33684,7 +33685,7 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
                 distribution = distro.toLowerCase();
             }
             else {
-                throw new Error(`distro argument '${distro}' is not in [aoj | aoj_openj9 | corretto | dragonwell | liberica | ojdk_build | oracle_openjdk | sap_machine | zulu]`);
+                throw new Error(`distro argument '${distro}' is not in [aoj | aoj_openj9 | corretto | dragonwell | liberica | ojdk_build | oracle_openjdk | sap_machine | trava | zulu]`);
             }
         }
         else {

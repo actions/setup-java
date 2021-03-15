@@ -28,5 +28,6 @@ export const DISTROS: string[] = [
   'ojdk_build',
   'oracle_openjdk',
   'sap_machine',
+  'trava',
   'zulu'
 ];
