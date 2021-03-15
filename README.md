@@ -4,252 +4,85 @@
   <a href="https://github.com/actions/setup-java"><img alt="GitHub Actions status" src="https://github.com/actions/setup-java/workflows/Main%20workflow/badge.svg"></a>
 </p>
 
-This action sets up a java environment for use in actions by:
+This action provides the following functionality for GitHub Actions runners:
+- Downloading and setting up a requested version of Java. See [Usage](#Usage) for a list of supported distributions
+- Extracting and caching custom version of Java from a local file
+- Configuring runner for publishing using Apache Maven
+- Configuring runner for publishing using Gradle
+- Configuring runner for using GPG private key
+- Registering problem matchers for error output
 
-- optionally downloading and caching a requested version of java by version and adding to PATH. Default downloads are populated from the [Zulu Community distribution of OpenJDK](http://static.azul.com/zulu/bin/)
-- registering problem matchers for error output
+## V2 vs V1
+- V2 supports custom distributions and provides support for Zulu OpenJDK and Adopt OpenJDK out of the box. V1 supports only Zulu OpenJDK
+- V2 requires you to specify distribution along with the version. V1 defaults to Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2
 
-# Usage
+## Usage
+Inputs `java-version` and `distribution` are mandatory. See [Supported distributions](../README.md#Supported-distributions) section for a list of available options.
 
-See [action.yml](action.yml)
-
-## Basic
+### Basic
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: actions/setup-java@v1
+- uses: actions/setup-java@v2-preview
   with:
-    java-version: '9.0.4' # The JDK version to make available on the path.
-    java-package: jdk # (jre, jdk, or jdk+fx) - defaults to jdk
-    architecture: x64 # (x64 or x86) - defaults to x64
-- run: java -cp java HelloWorldApp
-```
-Examples of version specifications that the java-version parameter will accept:
-
-- A major Java version
-
-  e.g. ```6, 7, 8, 9, 10, 11, 12, 13, ...```
-
-- A semver Java version specification
-
-  e.g. ```8.0.232, 7.0.181, 11.0.4```
-
-  e.g. ```8.0.x, >11.0.3, >=13.0.1, <8.0.212```
-
-- An early access (EA) Java version
-
-  e.g. ```14-ea, 15-ea```
-
-  e.g. ```14.0.0-ea, 15.0.0-ea```
-
-  e.g. ```14.0.0-ea.28, 15.0.0-ea.2``` (syntax for specifying an EA build number)
-
-  Note that, per semver rules, EA builds will be matched by explicit EA version specifications.
-
-- 1.x syntax
-
-    e.g. ```1.8``` (same as ```8```)
-
-    e.g. ```1.8.0.212``` (same as ```8.0.212```)
-
-
-## Local file
-```yaml
-steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v1
-  with:
-    java-version: '4.0.0'
-    architecture: x64
-    jdkFile: <path to jdkFile> # Optional - jdkFile to install java from. Useful for versions not found on Zulu Community CDN
+    distribution: 'adopt' # See 'Supported distributions' for available options
+    java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
 
-## Matrix Testing
+#### Supported version syntax
+The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
+- major versions: `8`, `11`, `15`
+- more specific versions: `11.0`, `11.0.4`, `8.0.232`, `8.0.282+8`
+- early access (EA) versions: `15-ea`, `15.0.0-ea`, `15.0.0-ea.2`, `15.0.0+2-ea`
+
+**Note:** 4-digit notation will always force action to skip checking pre-cached versions and download version in runtime.
+
+#### Supported distributions
+Currently, the following distributions are supported:
+| Keyword | Distribution | Official site | License |
+|-|-|-|-|
+| `zulu` | Zulu OpenJDK | [Link](https://www.azul.com/downloads/zulu-community/?package=jdk) | [Link](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
+| `adopt` | Adopt OpenJDK | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html)
+
+**NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
+
+#### Testing against different Java versions
 ```yaml
 jobs:
   build:
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
-        # test against latest update of each major Java version, as well as specific updates of LTS versions:
-        java: [ 1.6, 6.0.83, 7, 7.0.181, 8, 8.0.192, 9.0.x, 10, 11.0.x, 11.0.3, 12, 13 ]
-    name: Java ${{ matrix.java }} sample
+        java: [ '8', '11', '13', '15' ]
+    name: Java ${{ matrix.Java }} sample
     steps:
       - uses: actions/checkout@v2
       - name: Setup java
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2-preview
         with:
+          distribution: '<distribution>'
           java-version: ${{ matrix.java }}
       - run: java -cp java HelloWorldApp
 ```
 
-## Publishing using Apache Maven
+### Advanced
+- [Selecting a Java distribution](docs/advanced-usage.md#Selecting-a-Java-distribution)
+  - [Adopt](docs/advanced-usage.md#Adopt)
+  - [Zulu](docs/advanced-usage.md#Zulu)
+- [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)
+- [Installing custom Java architecture](docs/advanced-usage.md#Installing-custom-Java-architecture)
+- [Installing custom Java distribution from local file](docs/advanced-usage.md#Installing-Java-from-local-file)
+- [Testing against different Java distributions](docs/advanced-usage.md#Testing-against-different-Java-distributions)
+- [Testing against different platforms](docs/advanced-usage.md#Testing-against-different-platforms)
+- [Publishing using Apache Maven](docs/advanced-usage.md#Publishing-using-Apache-Maven)
+- [Publishing using Gradle](docs/advanced-usage.md#Publishing-using-Gradle)
 
-### Extra setup for pom.xml:
 
-The Maven GPG Plugin configuration in the pom.xml file should contain the following structure to avoid possible issues like `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`:
-
-```xml
-<configuration>
-  <!-- Prevent gpg from using pinentry programs -->
-  <gpgArguments>
-    <arg>--pinentry-mode</arg>
-    <arg>loopback</arg>
-  </gpgArguments>
-</configuration>
-```
-GPG 2.1 requires `--pinentry-mode` to be set to `loopback` in order to pick up the `gpg.passphrase` value defined in Maven `settings.xml`.
-
-### Yaml example:
-```yaml
-jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 1.8
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-
-    - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy
-      env:
-        GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
-
-    - name: Set up Apache Maven Central
-      uses: actions/setup-java@v1
-      with: # running setup-java again overwrites the settings.xml
-        java-version: 1.8
-        server-id: maven # Value of the distributionManagement/repository/id field of the pom.xml
-        server-username: MAVEN_USERNAME # env variable for username in deploy
-        server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
-        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
-        gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
-
-    - name: Publish to Apache Maven Central
-      run: mvn deploy
-      env:
-        MAVEN_USERNAME: maven_username123
-        MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
-        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-```
-
-The two `settings.xml` files created from the above example look like the following.
-
-`settings.xml` file created for the first deploy to GitHub Packages
-```xml
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
-  <servers>
-    <server>
-      <id>github</id>
-      <username>${env.GITHUB_ACTOR}</username>
-      <password>${env.GITHUB_TOKEN}</password>
-    </server>
-    <server>
-      <id>gpg.passphrase</id>
-      <passphrase>${env.GPG_PASSPHRASE}</passphrase>
-    </server>
-  </servers>
-</settings>
-```
-
-`settings.xml` file created for the second deploy to Apache Maven Central
-```xml
-<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
-  <servers>
-    <server>
-      <id>maven</id>
-      <username>${env.MAVEN_USERNAME}</username>
-      <password>${env.MAVEN_CENTRAL_TOKEN}</password>
-    </server>
-    <server>
-      <id>gpg.passphrase</id>
-      <passphrase>${env.MAVEN_GPG_PASSPHRASE}</passphrase>
-    </server>
-  </servers>
-</settings>
-```
-
-***NOTE: The `settings.xml` file is created in the Actions $HOME/.m2 directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See below for using the `settings-path` to change your `settings.xml` file location.***
-
-### GPG
-
-If `gpg-private-key` input is provided, the private key will be written to a file in the runner's temp directory, the private key file will be imported into the GPG keychain, and then the file will be promptly removed before proceeding with the rest of the setup process. A cleanup step will remove the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances).
-
-**GPG key should be exported by: `gpg --armor --export-secret-keys YOUR_ID`**
-
-See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
-
-## Publishing using Gradle
-```yaml
-jobs:
-
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up JDK 1.8
-      uses: actions/setup-java@v1
-
-    - name: Build with Gradle
-      run: gradle build
-
-    - name: Publish to GitHub Packages
-      run: gradle publish
-      env:
-        USERNAME: ${{ github.actor }}
-        PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-```
-
-***NOTE: The `USERNAME` and `PASSWORD` need to correspond to the credentials environment variables used in the publishing section of your `build.gradle`.***
-
-See the help docs on [Publishing a Package with Gradle](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-gradle-for-use-with-github-packages#example-using-gradle-groovy-for-a-single-package-in-a-repository) for more information on the `build.gradle` configuration file.
-
-## Apache Maven with a settings path
-
-When using an Actions self-hosted runner with multiple shared runners the default `$HOME` directory can be shared by a number runners at the same time which could overwrite existing settings file. Setting the `settings-path` variable allows you to choose a unique location for your settings file.
-
-```yaml
-jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 1.8 for Shared Runner
-      uses: actions/setup-java@v1
-      with:
-        java-version: 1.8
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
-
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-
-    - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-```
-
-# License
+## License
 
 The scripts and documentation in this project are released under the [MIT License](LICENSE)
 
-# Contributions
+## Contributions
 
 Contributions are welcome!  See [Contributor's Guide](docs/contributors.md)

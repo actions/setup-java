@@ -1,61 +1,22 @@
-import path = require('path');
+import { isVersionSatisfies } from '../src/util';
 
-const env = process.env;
-
-describe('util tests', () => {
-  beforeEach(() => {
-    const tempEnv = Object.assign({}, env);
-    delete tempEnv.RUNNER_TEMP;
-    delete tempEnv.USERPROFILE;
-    process.env = tempEnv;
-    Object.defineProperty(process, 'platform', {value: 'linux'});
-  });
-
-  describe('getTempDir', () => {
-    it('gets temp dir using env', () => {
-      process.env['RUNNER_TEMP'] = 'defaulttmp';
-      const util = require('../src/util');
-
-      const tempDir = util.getTempDir();
-
-      expect(tempDir).toEqual(process.env['RUNNER_TEMP']);
-    });
-
-    it('gets temp dir for windows using userprofile', () => {
-      Object.defineProperty(process, 'platform', {value: 'win32'});
-      process.env['USERPROFILE'] = 'winusertmp';
-      const util = require('../src/util');
-
-      const tempDir = util.getTempDir();
-
-      expect(tempDir).toEqual(
-        path.join(process.env['USERPROFILE'], 'actions', 'temp')
-      );
-    });
-
-    it('gets temp dir for windows using c drive', () => {
-      Object.defineProperty(process, 'platform', {value: 'win32'});
-      const util = require('../src/util');
-
-      const tempDir = util.getTempDir();
-
-      expect(tempDir).toEqual(path.join('C:\\', 'actions', 'temp'));
-    });
-
-    it('gets temp dir for mac', () => {
-      Object.defineProperty(process, 'platform', {value: 'darwin'});
-      const util = require('../src/util');
-
-      const tempDir = util.getTempDir();
-
-      expect(tempDir).toEqual(path.join('/Users', 'actions', 'temp'));
-    });
-
-    it('gets temp dir for linux', () => {
-      const util = require('../src/util');
-      const tempDir = util.getTempDir();
-
-      expect(tempDir).toEqual(path.join('/home', 'actions', 'temp'));
-    });
+describe('isVersionSatisfies', () => {
+  it.each([
+    ['x', '11.0.0', true],
+    ['3', '3.7.1', true],
+    ['3', '3.7.2', true],
+    ['3', '3.7.2+4', true],
+    ['2.5', '2.5.0', true],
+    ['2.5', '2.5.0+1', true],
+    ['2.5', '2.6.1', false],
+    ['2.5.1', '2.5.0', false],
+    ['2.5.1+3', '2.5.0', false],
+    ['2.5.1+3', '2.5.1+3', true],
+    ['2.5.1+3', '2.5.1+2', false],
+    ['15.0.0+14', '15.0.0+14.1.202003190635', false],
+    ['15.0.0+14.1.202003190635', '15.0.0+14.1.202003190635', true]
+  ])('%s, %s -> %s', (inputRange: string, inputVersion: string, expected: boolean) => {
+    const actual = isVersionSatisfies(inputRange, inputVersion);
+    expect(actual).toBe(expected);
   });
 });

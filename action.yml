@@ -4,22 +4,21 @@ description: 'Set up a specific version of the Java JDK and add the
 author: 'GitHub'
 inputs:
   java-version:
-    description: 'The Java version to make available on the path. Takes a whole
-       or semver Java version, or 1.x syntax (e.g. 1.8 => Java 8.x).
-       Early access versions can be specified in the form of e.g. 14-ea,
-       14.0.0-ea, or 14.0.0-ea.28'
+    description: 'The Java version to set up. Takes a whole or semver Java version. See examples of supported syntax in README file'
+    required: true
+  distribution:
+    description: 'Java distribution. See the list of supported distributions in README file'
     required: true
   java-package:
-    description: 'The package type (jre, jdk, jdk+fx)'
+    description: 'The package type (jdk, jre, jdk+fx, jre+fx)'
     required: false
     default: 'jdk'
   architecture:
-    description: 'The architecture (x86, x64) of the package.'
+    description: 'The architecture of the package'
     required: false
     default: 'x64'
   jdkFile:
-    description: 'Path to where the compressed JDK is located. The path could
-       be in your source repository or a local path on the agent.'
+    description: 'Path to where the compressed JDK is located'
     required: false
   server-id:
     description: 'ID of the distributionManagement repository in the pom.xml
@@ -47,10 +46,12 @@ inputs:
        $GPG_PASSPHRASE.'
     required: false
 outputs:
-  path:
-    description: 'Path to where the java environment has been installed (same as $JAVA_HOME)'
+  distribution:
+    description: 'Distribution of Java that has been installed'
   version:
     description: 'Actual version of the java environment that has been installed'
+  path:
+    description: 'Path to where the java environment has been installed (same as $JAVA_HOME)'
 runs:
   using: 'node12'
   main: 'dist/setup/index.js'
