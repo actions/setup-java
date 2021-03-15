@@ -13,7 +13,7 @@
 See [action.yml](../action.yml) for more details on task inputs.
 
 ## Selecting a Java distribution
-Input `distribution` is mandatory and needs to be provided. See [Supported distributions](../README.md#Supported-distributions) for a list of available options.
+Inputs `java-version` and `distribution` are mandatory and needs to be provided. See [Supported distributions](../README.md#Supported-distributions) for a list of available options.
 
 ### Adopt
 ```yaml
@@ -133,11 +133,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 8
+    - name: Set up JDK 11
       uses: actions/setup-java@v2-preview
       with:
         distribution: '<distribution>'
-        java-version: '8'
+        java-version: '11'
 
     - name: Build with Maven
       run: mvn -B package --file pom.xml
@@ -150,6 +150,8 @@ jobs:
     - name: Set up Apache Maven Central
       uses: actions/setup-java@v2-preview
       with: # running setup-java again overwrites the settings.xml
+        distribution: 'adopt'
+        java-version: '11'
         server-id: maven # Value of the distributionManagement/repository/id field of the pom.xml
         server-username: MAVEN_USERNAME # env variable for username in deploy
         server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
@@ -239,11 +241,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up JDK 8
+    - name: Set up JDK 11
       uses: actions/setup-java@v2-preview
       with:
         distribution: '<distribution>'
-        java-version: '8'
+        java-version: '11'
 
     - name: Build with Gradle
       run: gradle build
@@ -271,11 +273,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up JDK 8 for Shared Runner
+    - name: Set up JDK 11 for Shared Runner
       uses: actions/setup-java@v2-preview
       with:
         distribution: '<distribution>'
-        java-version: '8'
+        java-version: '11'
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
