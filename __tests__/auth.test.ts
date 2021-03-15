@@ -1,14 +1,7 @@
 import io = require('@actions/io');
 import fs = require('fs');
-import os = require('os');
 import path = require('path');
-
-// make the os.homedir() call be local to the tests
-jest.doMock('os', () => {
-  return {
-    homedir: jest.fn(() => __dirname)
-  };
-});
+import os from 'os';
 
 import * as auth from '../src/auth';
 
@@ -16,8 +9,12 @@ const m2Dir = path.join(__dirname, auth.M2_DIR);
 const settingsFile = path.join(m2Dir, auth.SETTINGS_FILE);
 
 describe('auth tests', () => {
+  let spyOSHomedir: jest.SpyInstance;
+
   beforeEach(async () => {
     await io.rmRF(m2Dir);
+    spyOSHomedir = jest.spyOn(os, 'homedir');
+    spyOSHomedir.mockReturnValue(__dirname);
   }, 300000);
 
   afterAll(async () => {
@@ -26,6 +23,9 @@ describe('auth tests', () => {
     } catch {
       console.log('Failed to remove test directories');
     }
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
   }, 100000);
 
   it('creates settings.xml in alternate locations', async () => {
@@ -38,7 +38,7 @@ describe('auth tests', () => {
     process.env[`INPUT_SETTINGS-PATH`] = altHome;
     await io.rmRF(altHome); // ensure it doesn't already exist
 
-    await auth.configAuthentication(id, username, password);
+    await auth.createAuthenticationSettings(id, username, password);
 
     expect(fs.existsSync(m2Dir)).toBe(false);
     expect(fs.existsSync(settingsFile)).toBe(false);
@@ -58,13 +58,11 @@ describe('auth tests', () => {
     const username = 'UNAME';
     const password = 'TOKEN';
 
-    await auth.configAuthentication(id, username, password);
+    await auth.createAuthenticationSettings(id, username, password);
 
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
-    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(id, username, password)
-    );
+    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(auth.generate(id, username, password));
   }, 100000);
 
   it('creates settings.xml with additional configuration', async () => {
@@ -73,7 +71,7 @@ describe('auth tests', () => {
     const password = 'TOKEN';
     const gpgPassphrase = 'GPG';
 
-    await auth.configAuthentication(id, username, password, gpgPassphrase);
+    await auth.createAuthenticationSettings(id, username, password, gpgPassphrase);
 
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
@@ -87,18 +85,16 @@ describe('auth tests', () => {
     const username = 'USERNAME';
     const password = 'PASSWORD';
 
-    fs.mkdirSync(m2Dir, {recursive: true});
+    fs.mkdirSync(m2Dir, { recursive: true });
     fs.writeFileSync(settingsFile, 'FAKE FILE');
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
 
-    await auth.configAuthentication(id, username, password);
+    await auth.createAuthenticationSettings(id, username, password);
 
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
-    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(id, username, password)
-    );
+    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(auth.generate(id, username, password));
   }, 100000);
 
   it('generates valid settings.xml with minimal configuration', () => {
@@ -143,8 +139,6 @@ describe('auth tests', () => {
   </servers>
 </settings>`;
 
-    expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(
-      expectedSettings
-    );
+    expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(expectedSettings);
   });
 });
