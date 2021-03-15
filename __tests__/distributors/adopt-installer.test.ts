@@ -27,19 +27,19 @@ describe('getAvailableVersions', () => {
 
   it.each([
     [
-      { version: '11', arch: 'x64', packageType: 'jdk' },
+      { version: '11', architecture: 'x64', packageType: 'jdk' },
       'os=mac&architecture=x64&image_type=jdk&release_type=ga&page_size=20&page=0'
     ],
     [
-      { version: '11', arch: 'x86', packageType: 'jdk' },
+      { version: '11', architecture: 'x86', packageType: 'jdk' },
       'os=mac&architecture=x86&image_type=jdk&release_type=ga&page_size=20&page=0'
     ],
     [
-      { version: '11', arch: 'x64', packageType: 'jre' },
+      { version: '11', architecture: 'x64', packageType: 'jre' },
       'os=mac&architecture=x64&image_type=jre&release_type=ga&page_size=20&page=0'
     ],
     [
-      { version: '11-ea', arch: 'x64', packageType: 'jdk' },
+      { version: '11-ea', architecture: 'x64', packageType: 'jdk' },
       'os=mac&architecture=x64&image_type=jdk&release_type=ea&page_size=20&page=0'
     ]
   ])(
@@ -78,7 +78,7 @@ describe('getAvailableVersions', () => {
 
     const distribution = new AdoptDistribution({
       version: '11',
-      arch: 'x64',
+      architecture: 'x64',
       packageType: 'jdk'
     });
     const availableVersions = await distribution['getAvailableVersions']();
@@ -103,7 +103,7 @@ describe('findPackageForDownload', () => {
   ])('version is resolved correctly %s -> %s', async (input, expected) => {
     const distribution = new AdoptDistribution({
       version: '11',
-      arch: 'x64',
+      architecture: 'x64',
       packageType: 'jdk'
     });
     distribution['getAvailableVersions'] = async () => manifestData;
@@ -114,7 +114,7 @@ describe('findPackageForDownload', () => {
   it('version is found but binaries list is empty', async () => {
     const distribution = new AdoptDistribution({
       version: '11',
-      arch: 'x64',
+      architecture: 'x64',
       packageType: 'jdk'
     });
     distribution['getAvailableVersions'] = async () => manifestData;
@@ -126,7 +126,7 @@ describe('findPackageForDownload', () => {
   it('version is not found', async () => {
     const distribution = new AdoptDistribution({
       version: '11',
-      arch: 'x64',
+      architecture: 'x64',
       packageType: 'jdk'
     });
     distribution['getAvailableVersions'] = async () => manifestData;
@@ -138,7 +138,7 @@ describe('findPackageForDownload', () => {
   it('version list is empty', async () => {
     const distribution = new AdoptDistribution({
       version: '11',
-      arch: 'x64',
+      architecture: 'x64',
       packageType: 'jdk'
     });
     distribution['getAvailableVersions'] = async () => [];

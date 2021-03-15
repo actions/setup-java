@@ -30,27 +30,27 @@ describe('getAvailableVersions', () => {
 
   it.each([
     [
-      { version: '11', arch: 'x86', packageType: 'jdk' },
+      { version: '11', architecture: 'x86', packageType: 'jdk' },
       '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=x86&hw_bitness=32&release_status=ga'
     ],
     [
-      { version: '11-ea', arch: 'x86', packageType: 'jdk' },
+      { version: '11-ea', architecture: 'x86', packageType: 'jdk' },
       '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=x86&hw_bitness=32&release_status=ea'
     ],
     [
-      { version: '8', arch: 'x64', packageType: 'jdk' },
+      { version: '8', architecture: 'x64', packageType: 'jdk' },
       '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=x86&hw_bitness=64&release_status=ga'
     ],
     [
-      { version: '8', arch: 'x64', packageType: 'jre' },
+      { version: '8', architecture: 'x64', packageType: 'jre' },
       '?os=macos&ext=tar.gz&bundle_type=jre&javafx=false&arch=x86&hw_bitness=64&release_status=ga'
     ],
     [
-      { version: '8', arch: 'x64', packageType: 'jdk+fx' },
+      { version: '8', architecture: 'x64', packageType: 'jdk+fx' },
       '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=true&arch=x86&hw_bitness=64&release_status=ga&features=fx'
     ],
     [
-      { version: '8', arch: 'x64', packageType: 'jre+fx' },
+      { version: '8', architecture: 'x64', packageType: 'jre+fx' },
       '?os=macos&ext=tar.gz&bundle_type=jre&javafx=true&arch=x86&hw_bitness=64&release_status=ga&features=fx'
     ]
   ])('build correct url for %s -> %s', async (input, parsedUrl) => {
@@ -65,7 +65,11 @@ describe('getAvailableVersions', () => {
   });
 
   it('load available versions', async () => {
-    const distribution = new ZuluDistribution({ version: '11', arch: 'x86', packageType: 'jdk' });
+    const distribution = new ZuluDistribution({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk'
+    });
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).toHaveLength(manifestData.length);
   });
@@ -80,7 +84,7 @@ describe('getArchitectureOptions', () => {
   ])('%s -> %s', (input, expected) => {
     const distribution = new ZuluDistribution({
       version: '11',
-      arch: input.architecture,
+      architecture: input.architecture,
       packageType: 'jdk'
     });
     expect(distribution['getArchitectureOptions']()).toEqual(expected);
@@ -103,7 +107,7 @@ describe('findPackageForDownload', () => {
   ])('version is %s -> %s', async (input, expected) => {
     const distribution = new ZuluDistribution({
       version: input,
-      arch: 'x86',
+      architecture: 'x86',
       packageType: 'jdk'
     });
     distribution['getAvailableVersions'] = async () => manifestData;
@@ -112,7 +116,11 @@ describe('findPackageForDownload', () => {
   });
 
   it('select correct bundle if there are multiple items with the same jdk version but different zulu versions', async () => {
-    const distribution = new ZuluDistribution({ version: '', arch: 'x86', packageType: 'jdk' });
+    const distribution = new ZuluDistribution({
+      version: '',
+      architecture: 'x86',
+      packageType: 'jdk'
+    });
     distribution['getAvailableVersions'] = async () => manifestData;
     const result = await distribution['findPackageForDownload']('11.0.5');
     expect(result.url).toBe(
@@ -121,7 +129,11 @@ describe('findPackageForDownload', () => {
   });
 
   it('should throw an error', async () => {
-    const distribution = new ZuluDistribution({ version: '18', arch: 'x86', packageType: 'jdk' });
+    const distribution = new ZuluDistribution({
+      version: '18',
+      architecture: 'x86',
+      packageType: 'jdk'
+    });
     await expect(
       distribution['findPackageForDownload'](distribution['version'])
     ).rejects.toThrowError(/Could not find satisfied version for semver */);
@@ -136,7 +148,11 @@ describe('convertVersionToSemver', () => {
     [[12, 0, 2, 1], '12.0.2+1'],
     [[12, 0, 2, 1, 3], '12.0.2+1']
   ])('%s -> %s', (input: number[], expected: string) => {
-    const distribution = new ZuluDistribution({ version: '18', arch: 'x86', packageType: 'jdk' });
+    const distribution = new ZuluDistribution({
+      version: '18',
+      architecture: 'x86',
+      packageType: 'jdk'
+    });
     const actual = distribution['convertVersionToSemver'](input);
     expect(actual).toBe(expected);
   });

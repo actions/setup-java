@@ -26,6 +26,8 @@ jobs:
         uses: ./
         id: setup-java
         with:
+          java-version: 'adopt'
+          distribution: '11'
           server-id: maven
           server-username: MAVEN_USERNAME
           server-password: MAVEN_CENTRAL_TOKEN
@@ -65,6 +67,8 @@ jobs:
         uses: ./
         id: setup-java
         with:
+          java-version: 'adopt'
+          distribution: '11'
           server-id: maven
           server-username: MAVEN_USERNAME
           server-password: MAVEN_CENTRAL_TOKEN

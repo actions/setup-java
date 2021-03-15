@@ -93,11 +93,11 @@ describe('setupJava', () => {
   });
 
   it('java is resolved from toolcache, jdkfile is untouched', async () => {
-    const inputs = { version: actualJavaVersion, arch: 'x86', packageType: 'jdk' };
+    const inputs = { version: actualJavaVersion, architecture: 'x86', packageType: 'jdk' };
     const jdkFile = 'not_existing_one';
     const expected = {
       version: actualJavaVersion,
-      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.arch)
+      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture)
     };
 
     mockJavaBase = new LocalDistribution(inputs, jdkFile);
@@ -110,11 +110,11 @@ describe('setupJava', () => {
   });
 
   it("java is resolved from toolcache, jdkfile doesn't exist", async () => {
-    const inputs = { version: actualJavaVersion, arch: 'x86', packageType: 'jdk' };
+    const inputs = { version: actualJavaVersion, architecture: 'x86', packageType: 'jdk' };
     const jdkFile = undefined;
     const expected = {
       version: actualJavaVersion,
-      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.arch)
+      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture)
     };
 
     mockJavaBase = new LocalDistribution(inputs, jdkFile);
@@ -127,11 +127,11 @@ describe('setupJava', () => {
   });
 
   it('java is unpacked from jdkfile', async () => {
-    const inputs = { version: '11.0.289', arch: 'x86', packageType: 'jdk' };
+    const inputs = { version: '11.0.289', architecture: 'x86', packageType: 'jdk' };
     const jdkFile = expectedJdkFile;
     const expected = {
       version: '11.0.289',
-      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.arch)
+      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture)
     };
 
     mockJavaBase = new LocalDistribution(inputs, jdkFile);
@@ -147,15 +147,15 @@ describe('setupJava', () => {
   });
 
   it('jdk file is not found', async () => {
-    const inputs = { version: '11.0.289', arch: 'x86', packageType: 'jdk' };
+    const inputs = { version: '11.0.289', architecture: 'x86', packageType: 'jdk' };
     const jdkFile = 'not_existing_one';
     const expected = {
       javaVersion: '11.0.289',
-      javaPath: path.join('Java_jdkfile_jdk', inputs.version, inputs.arch)
+      javaPath: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture)
     };
 
     mockJavaBase = new LocalDistribution(inputs, jdkFile);
-    expected.javaPath = path.join('Java_jdkfile_jdk', inputs.version, inputs.arch);
+    expected.javaPath = path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture);
     await expect(mockJavaBase.setupJava()).rejects.toThrowError(
       "JDK file was not found in path 'not_existing_one'"
     );
@@ -170,10 +170,10 @@ describe('setupJava', () => {
   });
 
   it.each([
-    [{ version: '8.0.289', arch: 'x64', packageType: 'jdk' }, 'otherJdkFile'],
-    [{ version: '11.0.289', arch: 'x64', packageType: 'jdk' }, 'otherJdkFile'],
-    [{ version: '12.0.289', arch: 'x64', packageType: 'jdk' }, 'otherJdkFile'],
-    [{ version: '11.1.11', arch: 'x64', packageType: 'jdk' }, 'not_existing_one']
+    [{ version: '8.0.289', architecture: 'x64', packageType: 'jdk' }, 'otherJdkFile'],
+    [{ version: '11.0.289', architecture: 'x64', packageType: 'jdk' }, 'otherJdkFile'],
+    [{ version: '12.0.289', architecture: 'x64', packageType: 'jdk' }, 'otherJdkFile'],
+    [{ version: '11.1.11', architecture: 'x64', packageType: 'jdk' }, 'not_existing_one']
   ])(
     `Throw an error if jdkfile has wrong path, inputs %s, jdkfile %s, real name ${expectedJdkFile}`,
     async (inputs, jdkFile) => {
@@ -186,9 +186,9 @@ describe('setupJava', () => {
   );
 
   it.each([
-    [{ version: '8.0.289', arch: 'x64', packageType: 'jdk' }, ''],
-    [{ version: '7.0.289', arch: 'x64', packageType: 'jdk' }, undefined],
-    [{ version: '11.0.289', arch: 'x64', packageType: 'jdk' }, undefined]
+    [{ version: '8.0.289', architecture: 'x64', packageType: 'jdk' }, ''],
+    [{ version: '7.0.289', architecture: 'x64', packageType: 'jdk' }, undefined],
+    [{ version: '11.0.289', architecture: 'x64', packageType: 'jdk' }, undefined]
   ])('Throw an error if jdkfile is not specified, inputs %s', async (inputs, jdkFile) => {
     mockJavaBase = new LocalDistribution(inputs, jdkFile);
     await expect(mockJavaBase.setupJava()).rejects.toThrowError("'jdkFile' is not specified");
