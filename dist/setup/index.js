@@ -11302,7 +11302,7 @@ exports.HTMLCollectionImpl = HTMLCollectionImpl;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
+exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
 exports.MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
 exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_ARCHITECTURE = 'architecture';
@@ -11313,6 +11313,7 @@ exports.INPUT_SERVER_ID = 'server-id';
 exports.INPUT_SERVER_USERNAME = 'server-username';
 exports.INPUT_SERVER_PASSWORD = 'server-password';
 exports.INPUT_SETTINGS_PATH = 'settings-path';
+exports.INPUT_OVERWRITE_SETTINGS = 'overwrite-settings';
 exports.INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
@@ -12935,17 +12936,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getTempDir = void 0;
+exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
 const os_1 = __importDefault(__webpack_require__(87));
 const path_1 = __importDefault(__webpack_require__(622));
 const fs = __importStar(__webpack_require__(747));
 const semver = __importStar(__webpack_require__(876));
+const core = __importStar(__webpack_require__(470));
 const tc = __importStar(__webpack_require__(139));
 function getTempDir() {
     let tempDirectory = process.env['RUNNER_TEMP'] || os_1.default.tmpdir();
     return tempDirectory;
 }
 exports.getTempDir = getTempDir;
+function getBooleanInput(inputName, defaultValue = false) {
+    return (core.getInput(inputName) || String(defaultValue)).toUpperCase() === 'TRUE';
+}
+exports.getBooleanInput = getBooleanInput;
 function getVersionFromToolcachePath(toolPath) {
     if (toolPath) {
         return path_1.default.basename(path_1.default.dirname(toolPath));
@@ -13257,6 +13263,7 @@ const os = __importStar(__webpack_require__(87));
 const xmlbuilder2_1 = __webpack_require__(255);
 const constants = __importStar(__webpack_require__(211));
 const gpg = __importStar(__webpack_require__(884));
+const util_1 = __webpack_require__(322);
 exports.M2_DIR = '.m2';
 exports.SETTINGS_FILE = 'settings.xml';
 function configureAuthentication() {
@@ -13264,13 +13271,15 @@ function configureAuthentication() {
         const id = core.getInput(constants.INPUT_SERVER_ID);
         const username = core.getInput(constants.INPUT_SERVER_USERNAME);
         const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
+        const settingsDirectory = core.getInput(constants.INPUT_SETTINGS_PATH) || path.join(os.homedir(), exports.M2_DIR);
+        const overwriteSettings = util_1.getBooleanInput(constants.INPUT_OVERWRITE_SETTINGS, true);
         const gpgPrivateKey = core.getInput(constants.INPUT_GPG_PRIVATE_KEY) || constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
         const gpgPassphrase = core.getInput(constants.INPUT_GPG_PASSPHRASE) ||
             (gpgPrivateKey ? constants.INPUT_DEFAULT_GPG_PASSPHRASE : undefined);
         if (gpgPrivateKey) {
             core.setSecret(gpgPrivateKey);
         }
-        yield createAuthenticationSettings(id, username, password, gpgPassphrase);
+        yield createAuthenticationSettings(id, username, password, settingsDirectory, overwriteSettings, gpgPassphrase);
         if (gpgPrivateKey) {
             core.info('Importing private gpg key');
             const keyFingerprint = (yield gpg.importKey(gpgPrivateKey)) || '';
@@ -13279,14 +13288,13 @@ function configureAuthentication() {
     });
 }
 exports.configureAuthentication = configureAuthentication;
-function createAuthenticationSettings(id, username, password, gpgPassphrase = undefined) {
+function createAuthenticationSettings(id, username, password, settingsDirectory, overwriteSettings, gpgPassphrase = undefined) {
     return __awaiter(this, void 0, void 0, function* () {
         core.info(`Creating ${exports.SETTINGS_FILE} with server-id: ${id}`);
         // when an alternate m2 location is specified use only that location (no .m2 directory)
         // otherwise use the home/.m2/ path
-        const settingsDirectory = path.join(core.getInput(constants.INPUT_SETTINGS_PATH) || os.homedir(), core.getInput(constants.INPUT_SETTINGS_PATH) ? '' : exports.M2_DIR);
         yield io.mkdirP(settingsDirectory);
-        yield write(settingsDirectory, generate(id, username, password, gpgPassphrase));
+        yield write(settingsDirectory, generate(id, username, password, gpgPassphrase), overwriteSettings);
     });
 }
 exports.createAuthenticationSettings = createAuthenticationSettings;
@@ -13322,14 +13330,19 @@ function generate(id, username, password, gpgPassphrase) {
     });
 }
 exports.generate = generate;
-function write(directory, settings) {
+function write(directory, settings, overwriteSettings) {
     return __awaiter(this, void 0, void 0, function* () {
         const location = path.join(directory, exports.SETTINGS_FILE);
-        if (fs.existsSync(location)) {
+        const settingsExists = fs.existsSync(location);
+        if (settingsExists && overwriteSettings) {
             core.info(`Overwriting existing file ${location}`);
         }
+        else if (!settingsExists) {
+            core.info(`Writing to ${location}`);
+        }
         else {
-            core.info(`Writing ${location}`);
+            core.info(`Skipping generation '${location}' - it already exists and overwriting is not required`);
+            return;
         }
         return fs.writeFileSync(location, settings, {
             encoding: 'utf-8',

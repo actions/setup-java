@@ -8,6 +8,7 @@ import * as os from 'os';
 import { create as xmlCreate } from 'xmlbuilder2';
 import * as constants from './constants';
 import * as gpg from './gpg';
+import { getBooleanInput } from './util';
 
 export const M2_DIR = '.m2';
 export const SETTINGS_FILE = 'settings.xml';
@@ -16,6 +17,9 @@ export async function configureAuthentication() {
   const id = core.getInput(constants.INPUT_SERVER_ID);
   const username = core.getInput(constants.INPUT_SERVER_USERNAME);
   const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
+  const settingsDirectory =
+    core.getInput(constants.INPUT_SETTINGS_PATH) || path.join(os.homedir(), M2_DIR);
+  const overwriteSettings = getBooleanInput(constants.INPUT_OVERWRITE_SETTINGS, true);
   const gpgPrivateKey =
     core.getInput(constants.INPUT_GPG_PRIVATE_KEY) || constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
   const gpgPassphrase =
@@ -26,7 +30,14 @@ export async function configureAuthentication() {
     core.setSecret(gpgPrivateKey);
   }
 
-  await createAuthenticationSettings(id, username, password, gpgPassphrase);
+  await createAuthenticationSettings(
+    id,
+    username,
+    password,
+    settingsDirectory,
+    overwriteSettings,
+    gpgPassphrase
+  );
 
   if (gpgPrivateKey) {
     core.info('Importing private gpg key');
@@ -39,17 +50,19 @@ export async function createAuthenticationSettings(
   id: string,
   username: string,
   password: string,
+  settingsDirectory: string,
+  overwriteSettings: boolean,
   gpgPassphrase: string | undefined = undefined
 ) {
   core.info(`Creating ${SETTINGS_FILE} with server-id: ${id}`);
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
-  const settingsDirectory: string = path.join(
-    core.getInput(constants.INPUT_SETTINGS_PATH) || os.homedir(),
-    core.getInput(constants.INPUT_SETTINGS_PATH) ? '' : M2_DIR
-  );
   await io.mkdirP(settingsDirectory);
-  await write(settingsDirectory, generate(id, username, password, gpgPassphrase));
+  await write(
+    settingsDirectory,
+    generate(id, username, password, gpgPassphrase),
+    overwriteSettings
+  );
 }
 
 // only exported for testing purposes
@@ -92,12 +105,18 @@ export function generate(
   });
 }
 
-async function write(directory: string, settings: string) {
+async function write(directory: string, settings: string, overwriteSettings: boolean) {
   const location = path.join(directory, SETTINGS_FILE);
-  if (fs.existsSync(location)) {
+  const settingsExists = fs.existsSync(location);
+  if (settingsExists && overwriteSettings) {
     core.info(`Overwriting existing file ${location}`);
+  } else if (!settingsExists) {
+    core.info(`Writing to ${location}`);
   } else {
-    core.info(`Writing ${location}`);
+    core.info(
+      `Skipping generation '${location}' - it already exists and overwriting is not required`
+    );
+    return;
   }
 
   return fs.writeFileSync(location, settings, {

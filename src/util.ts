@@ -2,12 +2,17 @@ import os from 'os';
 import path from 'path';
 import * as fs from 'fs';
 import * as semver from 'semver';
+import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
 export function getTempDir() {
   let tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
 
   return tempDirectory;
+}
+
+export function getBooleanInput(inputName: string, defaultValue: boolean = false) {
+  return (core.getInput(inputName) || String(defaultValue)).toUpperCase() === 'TRUE';
 }
 
 export function getVersionFromToolcachePath(toolPath: string) {

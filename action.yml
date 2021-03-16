@@ -38,6 +38,10 @@ inputs:
   settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false
+  overwrite-settings:
+    description: 'Overwrite the settings.xml file if it exists. Default is "true".'
+    required: false
+    default: true
   gpg-private-key:
     description: 'GPG private key to import. Default is empty string.'
     required: false

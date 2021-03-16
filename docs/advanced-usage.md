@@ -206,7 +206,9 @@ The two `settings.xml` files created from the above example look like the follow
 </settings>
 ```
 
-***NOTE: The `settings.xml` file is created in the Actions $HOME/.m2 directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See below for using the `settings-path` to change your `settings.xml` file location.***
+***NOTE***: The `settings.xml` file is created in the Actions $HOME/.m2 directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See below for using the `settings-path` to change your `settings.xml` file location.
+
+If you don't want to overwrite the `settings.xml` file, you can set `overwrite-settings: false`
 
 ### Extra setup for pom.xml:
 
