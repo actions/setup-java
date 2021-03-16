@@ -9,6 +9,9 @@ inputs:
        Early access versions can be specified in the form of e.g. 14-ea,
        14.0.0-ea, or 14.0.0-ea.28'
     required: true
+  maven-version:
+    description: 'Version of maven. You have to provide version in order to setup maven.
+        Check available versions here https://downloads.apache.org/maven/'
   maven-ca-cert-b64:
     description: 'CA cert in the format of a base64 blob used to connect to private
         maven repo protected by MTLS'

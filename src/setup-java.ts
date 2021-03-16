@@ -13,21 +13,18 @@ async function run() {
       version = core.getInput(constants.INPUT_JAVA_VERSION, {required: true});
     }
 
-    const mvnOpts: MavenOpts = {
+    let mvnOpts: MavenOpts | undefined = {
       caCert: core.getInput(constants.INPUT_MAVEN_CA_CERT_B64),
       keystore: core.getInput(constants.INPUT_MAVEN_KEYSTORE_P12_B64),
       password: core.getInput(constants.INPUT_MAVEN_KEYSTORE_PASSWORD),
       settings: core.getInput(constants.INPUT_MAVEN_SETTINGS_B64),
       securitySettings: core.getInput(
         constants.INPUT_MAVEN_SECURITY_SETTINGS_B64
-      )
+      ),
+      javaPath: ''
     };
 
-    if (!isValidOptions(mvnOpts)) {
-      throw new Error(
-        'Some of the Maven options is empty: please check maven-* parameters'
-      );
-    }
+    const mvnVersion = core.getInput(constants.INPUT_MAVEN_VERSION);
 
     const arch = core.getInput(constants.INPUT_ARCHITECTURE, {required: true});
     if (!['x86', 'x64'].includes(arch)) {
@@ -39,7 +36,24 @@ async function run() {
     });
     const jdkFile = core.getInput(constants.INPUT_JDK_FILE, {required: false});
 
-    await installer.getJava(version, arch, jdkFile, javaPackage);
+    const javaPath = await installer.getJava(
+      version,
+      arch,
+      jdkFile,
+      javaPackage
+    );
+    if (mvnVersion !== '') {
+      if (!isValidOptions(mvnOpts)) {
+        throw new Error(
+          'Some of the Maven options is empty: please check maven-* parameters'
+        );
+      }
+      mvnOpts.javaPath = javaPath;
+
+      await installer.getMaven(mvnVersion);
+    } else {
+      mvnOpts = undefined;
+    }
 
     const matchersPath = path.join(__dirname, '..', '..', '.github');
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
