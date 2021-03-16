@@ -254,7 +254,11 @@ async function getDownloadInfo(
   url += '&architecture=' + architecture;
   url += '&operating_system=' + operatingSystem;
   url += '&archive_type=' + archiveType;
-  if (version.includes('x') || version.includes('ea')) {
+  if (
+    version.includes('x') ||
+    version.includes('ea') ||
+    version.startsWith('1.')
+  ) {
     url += '&latest=overall';
   }
 

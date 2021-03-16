@@ -33725,7 +33725,7 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
         url += '&architecture=' + architecture;
         url += '&operating_system=' + operatingSystem;
         url += '&archive_type=' + archiveType;
-        if (version.includes('x') || version.includes('ea')) {
+        if (version.includes('x') || version.includes('ea') || version.startsWith('1.')) {
             url += '&latest=overall';
         }
         const http = new httpm.HttpClient('bundles', undefined, {
