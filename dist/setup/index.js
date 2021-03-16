@@ -13272,6 +13272,7 @@ function configureAuthentication() {
         const username = core.getInput(constants.INPUT_SERVER_USERNAME);
         const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
         const settingsDirectory = core.getInput(constants.INPUT_SETTINGS_PATH) || path.join(os.homedir(), exports.M2_DIR);
+        // Consider setting overwriteSettings = false by default in next major release
         const overwriteSettings = util_1.getBooleanInput(constants.INPUT_OVERWRITE_SETTINGS, true);
         const gpgPrivateKey = core.getInput(constants.INPUT_GPG_PRIVATE_KEY) || constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
         const gpgPassphrase = core.getInput(constants.INPUT_GPG_PASSPHRASE) ||

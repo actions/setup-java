@@ -19,6 +19,7 @@ export async function configureAuthentication() {
   const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
   const settingsDirectory =
     core.getInput(constants.INPUT_SETTINGS_PATH) || path.join(os.homedir(), M2_DIR);
+  // Consider setting overwriteSettings = false by default in next major release
   const overwriteSettings = getBooleanInput(constants.INPUT_OVERWRITE_SETTINGS, true);
   const gpgPrivateKey =
     core.getInput(constants.INPUT_GPG_PRIVATE_KEY) || constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
