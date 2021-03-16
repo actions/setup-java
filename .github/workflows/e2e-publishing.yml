@@ -82,8 +82,8 @@ jobs:
           $xmlPath = Join-Path $HOME ".m2" "settings.xml"
           Get-Content $xmlPath | ForEach-Object { Write-Host $_ }
 
-          $xml = Get-Content $xmlPath -Raw
-          if ($raw -notlike '*maven*') {
+          $content = Get-Content $xmlPath -Raw
+          if ($content -notlike '*maven*') {
             throw "settings.xml file is not overwritten"
           }
   
@@ -120,7 +120,7 @@ jobs:
           $content = Get-Content -Path $xmlPath -Raw
           Write-Host $content
 
-          if ($content -ne "Fake_XML") {
+          if ($content -notlike "*Fake_XML*") {
             throw "settings.xml file was overwritten but it should not be"
           }
 
