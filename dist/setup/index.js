@@ -13341,7 +13341,7 @@ function write(directory, settings, overwriteSettings) {
             core.info(`Writing to ${location}`);
         }
         else {
-            core.info(`Skipping generation '${location}' - it already exists and overwriting is not required`);
+            core.info(`Skipping generation ${location} because file already exists and overwriting is not required`);
             return;
         }
         return fs.writeFileSync(location, settings, {

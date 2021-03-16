@@ -114,7 +114,7 @@ async function write(directory: string, settings: string, overwriteSettings: boo
     core.info(`Writing to ${location}`);
   } else {
     core.info(
-      `Skipping generation '${location}' - it already exists and overwriting is not required`
+      `Skipping generation ${location} because file already exists and overwriting is not required`
     );
     return;
   }
