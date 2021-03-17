@@ -6,7 +6,7 @@
 
 This action sets up a java environment for use in actions by:
 
-- optionally downloading and caching a requested version of java by version and adding to PATH. Default downloads are populated from the [Zulu Community distribution of OpenJDK](http://static.azul.com/zulu/bin/)
+- Seeting up a requested version of java, adding it to PATH, and setting up JAVA_HOME. By default, requested JDKs are populated from the community [Zulu builds of OpenJDK](http://static.azul.com/zulu/bin/), but multiple distributions are supported. Requested JDK distributions (when specified) are located via the [Foojay Disco API](https://github.com/foojay2020/discoapi).
 - registering problem matchers for error output
 
 # Usage
@@ -74,7 +74,7 @@ jobs:
     strategy:
       matrix:
         # test against latest update of each major Java version, as well as specific updates of LTS versions:
-        java: [ 1.6, 6.0.83, 7, 7.0.181, 8, 8.0.192, 9.0.x, 10, 11.0.x, 11.0.3, 12, 13 ]
+        java: [ 1.6, 6.0.83, 7, 7.0.181, 8, 8.0.192, 9.0.x, 10, 11.0.x, 11.0.3, 12, 13, 14, 15, 16 ]
     name: Java ${{ matrix.java }} sample
     steps:
       - uses: actions/checkout@v2
