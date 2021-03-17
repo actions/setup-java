@@ -20,12 +20,24 @@ This action provides the following functionality for GitHub Actions runners:
 Inputs `java-version` and `distribution` are mandatory. See [Supported distributions](../README.md#Supported-distributions) section for a list of available options.
 
 ### Basic
+**Adopt OpenJDK**
 ```yaml
 steps:
 - uses: actions/checkout@v2
 - uses: actions/setup-java@v2-preview
   with:
     distribution: 'adopt' # See 'Supported distributions' for available options
+    java-version: '11'
+- run: java -cp java HelloWorldApp
+```
+
+**Zulu OpenJDK**
+```yaml
+steps:
+- uses: actions/checkout@v2
+- uses: actions/setup-java@v2-preview
+  with:
+    distribution: 'zulu' # See 'Supported distributions' for available options
     java-version: '11'
 - run: java -cp java HelloWorldApp
 ```

@@ -8,6 +8,7 @@ export const INPUT_SERVER_ID = 'server-id';
 export const INPUT_SERVER_USERNAME = 'server-username';
 export const INPUT_SERVER_PASSWORD = 'server-password';
 export const INPUT_SETTINGS_PATH = 'settings-path';
+export const INPUT_OVERWRITE_SETTINGS = 'overwrite-settings';
 export const INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 export const INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 
