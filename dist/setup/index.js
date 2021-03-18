@@ -3957,6 +3957,7 @@ const httpm = __importStar(__webpack_require__(539));
 const util_1 = __webpack_require__(322);
 class JavaBase {
     constructor(distribution, installerOptions) {
+        var _a;
         this.distribution = distribution;
         this.http = new httpm.HttpClient('actions/setup-java', undefined, {
             allowRetries: true,
@@ -3965,7 +3966,7 @@ class JavaBase {
         ({ version: this.version, stable: this.stable } = this.normalizeVersion(installerOptions.version));
         this.architecture = installerOptions.architecture;
         this.packageType = installerOptions.packageType;
-        this.checkLatest = !!installerOptions.checkLatest;
+        this.checkLatest = (_a = installerOptions.checkLatest) !== null && _a !== void 0 ? _a : false;
     }
     setupJava() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -3974,11 +3975,15 @@ class JavaBase {
                 core.info(`Resolved Java ${foundJava.version} from tool-cache`);
             }
             else {
-                core.info(`Java ${this.version} was not found in tool-cache. Trying to download...`);
+                core.info('Trying to resolve latest version remotely');
                 const javaRelease = yield this.findPackageForDownload(this.version);
+                core.info('Trying to download...');
                 if ((foundJava === null || foundJava === void 0 ? void 0 : foundJava.version) != javaRelease.version) {
                     foundJava = yield this.downloadTool(javaRelease);
                     core.info(`Java ${foundJava.version} was downloaded`);
+                }
+                else {
+                    core.info('latest version was resolved locally');
                 }
                 core.info(`Java ${foundJava.version} was resolved`);
             }
@@ -35648,6 +35653,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const auth = __importStar(__webpack_require__(331));
+const util_1 = __webpack_require__(322);
 const constants = __importStar(__webpack_require__(211));
 const path = __importStar(__webpack_require__(622));
 const distribution_factory_1 = __webpack_require__(24);
@@ -35659,12 +35665,12 @@ function run() {
             const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
             const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
             const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
-            const checkLatest = core.getInput(constants.INPUT_CHECK_LATEST);
+            const checkLatest = util_1.getBooleanInput(constants.INPUT_CHECK_LATEST, false);
             const installerOptions = {
                 architecture,
                 packageType,
                 version,
-                checkLatest: checkLatest ? false : checkLatest.toLowerCase() === 'true'
+                checkLatest
             };
             const distribution = distribution_factory_1.getJavaDistribution(distributionName, installerOptions, jdkFile);
             if (!distribution) {

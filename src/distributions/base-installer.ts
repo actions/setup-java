@@ -25,7 +25,7 @@ export abstract class JavaBase {
     ));
     this.architecture = installerOptions.architecture;
     this.packageType = installerOptions.packageType;
-    this.checkLatest = !!installerOptions.checkLatest;
+    this.checkLatest = installerOptions.checkLatest ?? false;
   }
 
   protected abstract downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults>;
@@ -36,11 +36,14 @@ export abstract class JavaBase {
     if (foundJava && !this.checkLatest) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
-      core.info(`Java ${this.version} was not found in tool-cache. Trying to download...`);
+      core.info('Trying to resolve latest version remotely');
       const javaRelease = await this.findPackageForDownload(this.version);
+      core.info('Trying to download...');
       if (foundJava?.version != javaRelease.version) {
         foundJava = await this.downloadTool(javaRelease);
         core.info(`Java ${foundJava.version} was downloaded`);
+      } else {
+        core.info('latest version was resolved locally');
       }
 
       core.info(`Java ${foundJava.version} was resolved`);
