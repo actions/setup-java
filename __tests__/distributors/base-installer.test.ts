@@ -20,7 +20,7 @@ class EmptyJavaBase extends JavaBase {
   protected async downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults> {
     return {
       version: '11.0.9',
-      path: `toolcache/${this.toolcacheFolderName}/11.0.9/${this.architecture}`
+      path: path.join('toolcache', this.toolcacheFolderName, '11.0.9', this.architecture);
     };
   }
 
