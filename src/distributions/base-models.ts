@@ -2,6 +2,7 @@ export interface JavaInstallerOptions {
   version: string;
   architecture: string;
   packageType: string;
+  checkLatest?: boolean;
 }
 
 export interface JavaInstallerResults {

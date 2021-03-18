@@ -13,11 +13,13 @@ async function run() {
     const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
     const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
     const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
+    const checkLatest = core.getInput(constants.INPUT_CHECK_LATEST);
 
     const installerOptions: JavaInstallerOptions = {
       architecture,
       packageType,
-      version
+      version,
+      checkLatest: checkLatest ? false : checkLatest.toLowerCase() === 'true'
     };
 
     const distribution = getJavaDistribution(distributionName, installerOptions, jdkFile);
