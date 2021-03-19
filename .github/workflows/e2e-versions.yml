@@ -42,6 +42,10 @@ jobs:
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java2.outputs.path }}"
         shell: bash
+      - name: Verify Java
+        run: ls -la "${{ steps.setup-java2.outputs.path }}"
+        shell: bash
+          
 
   setup-java-major-minor-versions:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
