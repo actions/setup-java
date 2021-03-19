@@ -36,17 +36,18 @@ export abstract class JavaBase {
     if (foundJava && !this.checkLatest) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
-      core.info('Trying to resolve latest version remotely');
+      core.info('Trying to resolve the latest version from remote');
       const javaRelease = await this.findPackageForDownload(this.version);
-      core.info('Trying to download...');
-      if (foundJava?.version != javaRelease.version) {
+      core.info(`Resolved latest version as ${javaRelease.version}`);
+      core.info(foundJava?.version ?? '');
+      core.info(javaRelease.version ?? '');
+      if (foundJava?.version === javaRelease.version) {
+        core.info(`Resolved Java ${foundJava.version} from tool-cache`);
+      } else {
+        core.info('Trying to download...');
         foundJava = await this.downloadTool(javaRelease);
         core.info(`Java ${foundJava.version} was downloaded`);
-      } else {
-        core.info('latest version was resolved locally');
       }
-
-      core.info(`Java ${foundJava.version} was resolved`);
     }
 
     core.info(`Setting Java ${foundJava.version} as the default`);
