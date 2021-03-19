@@ -207,8 +207,10 @@ describe('setupJava', () => {
     expect(mockJavaBase.setupJava()).resolves.toEqual(expected);
     expect(spyGetToolcachePath).toHaveBeenCalled();
     expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved Java ${expected.version} from tool-cache`);
-    expect(spyCoreInfo).toHaveBeenCalledWith(`Setting Java ${expected.version} as the default`)
-    expect(spyCoreInfo).not.toHaveBeenCalledWith('Trying to resolve the latest version from remote');
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Setting Java ${expected.version} as the default`);
+    expect(spyCoreInfo).not.toHaveBeenCalledWith(
+      'Trying to resolve the latest version from remote'
+    );
     expect(spyCoreInfo).not.toHaveBeenCalledWith('Trying to download...');
   });
 
@@ -236,14 +238,14 @@ describe('setupJava', () => {
     expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved latest version as ${expected.version}`);
     expect(spyCoreInfo).toHaveBeenCalledWith('Trying to download...');
     expect(spyCoreInfo).toHaveBeenCalledWith(`Java ${expected.version} was downloaded`);
-    expect(spyCoreInfo).toHaveBeenCalledWith(`Setting Java ${expected.version} as the default`)
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Setting Java ${expected.version} as the default`);
   });
 
   it.each([
     [
       { version: '11.0.9', architecture: 'x86', packageType: 'jdk', checkLatest: true },
       { version: '11.0.9', path: javaPathInstalled }
-    ],
+    ]
   ])('should check the latest java version for %s and resolve locally', async (input, expected) => {
     mockJavaBase = new EmptyJavaBase(input);
     mockJavaBase['findInToolcache'] = () => ({ version: '11.0.9', path: expected.path });
@@ -251,7 +253,7 @@ describe('setupJava', () => {
     expect(spyCoreInfo).toHaveBeenCalledWith('Trying to resolve the latest version from remote');
     expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved latest version as ${expected.version}`);
     expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved Java ${expected.version} from tool-cache`);
-    expect(spyCoreInfo).toHaveBeenCalledWith(`Setting Java ${expected.version} as the default`)
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Setting Java ${expected.version} as the default`);
   });
 
   it.each([
@@ -275,7 +277,7 @@ describe('setupJava', () => {
     expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved latest version as ${actualJavaVersion}`);
     expect(spyCoreInfo).toHaveBeenCalledWith('Trying to download...');
     expect(spyCoreInfo).toHaveBeenCalledWith(`Java ${actualJavaVersion} was downloaded`);
-    expect(spyCoreInfo).toHaveBeenCalledWith(`Setting Java ${expected.version} as the default`)
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Setting Java ${expected.version} as the default`);
   });
 
   it.each([
