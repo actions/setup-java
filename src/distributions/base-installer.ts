@@ -1,10 +1,12 @@
 import * as tc from '@actions/tool-cache';
 import * as core from '@actions/core';
+import * as fs from 'fs';
 import semver from 'semver';
 import path from 'path';
 import * as httpm from '@actions/http-client';
 import { getToolcachePath, getVersionFromToolcachePath, isVersionSatisfies } from '../util';
 import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from './base-models';
+import { MACOS_JAVA_CONTENT_POSTFIX } from '../constants';
 
 export abstract class JavaBase {
   protected http: httpm.HttpClient;
@@ -38,6 +40,12 @@ export abstract class JavaBase {
       const javaRelease = await this.findPackageForDownload(this.version);
       foundJava = await this.downloadTool(javaRelease);
       core.info(`Java ${foundJava.version} was downloaded`);
+    }
+
+    // JDK folder may contain postfix "Contents/Home" on macOS
+    const macOSPostfixPath = path.join(foundJava.path, MACOS_JAVA_CONTENT_POSTFIX);
+    if (process.platform === 'darwin' && fs.existsSync(macOSPostfixPath)) {
+      foundJava.path = macOSPostfixPath;
     }
 
     core.info(`Setting Java ${foundJava.version} as the default`);

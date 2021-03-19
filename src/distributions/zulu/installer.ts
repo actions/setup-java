@@ -72,8 +72,10 @@ export class ZuluDistribution extends JavaBase {
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
 
+    const jdkPath = this.findJDKInstallationSubfolder(archivePath);
+
     const javaPath = await tc.cacheDir(
-      archivePath,
+      jdkPath,
       this.toolcacheFolderName,
       this.getToolcacheVersionName(javaRelease.version),
       this.architecture
@@ -159,5 +161,18 @@ export class ZuluDistribution extends JavaBase {
     }
 
     return mainVersion;
+  }
+
+  private findJDKInstallationSubfolder(archiveFolder: string) {
+    // Zulu archive contains a bunch of symlinks and zulu-<major_version>.jdk subfolder
+    const jdkFolders = fs
+      .readdirSync(archiveFolder, { withFileTypes: true })
+      .filter(item => !item.isSymbolicLink())
+      .filter(item => item.name.startsWith('zulu-') && item.name.endsWith('.jdk'));
+    if (jdkFolders.length === 0) {
+      return archiveFolder;
+    }
+
+    return path.join(archiveFolder, jdkFolders[0].name);
   }
 }
