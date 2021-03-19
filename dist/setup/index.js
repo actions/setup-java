@@ -3969,23 +3969,26 @@ class JavaBase {
         this.checkLatest = (_a = installerOptions.checkLatest) !== null && _a !== void 0 ? _a : false;
     }
     setupJava() {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             let foundJava = this.findInToolcache();
             if (foundJava && !this.checkLatest) {
                 core.info(`Resolved Java ${foundJava.version} from tool-cache`);
             }
             else {
-                core.info('Trying to resolve latest version remotely');
+                core.info('Trying to resolve the latest version from remote');
                 const javaRelease = yield this.findPackageForDownload(this.version);
-                core.info('Trying to download...');
-                if ((foundJava === null || foundJava === void 0 ? void 0 : foundJava.version) != javaRelease.version) {
+                core.info(`Resolved latest version as ${javaRelease.version}`);
+                core.info((_a = foundJava === null || foundJava === void 0 ? void 0 : foundJava.version) !== null && _a !== void 0 ? _a : '');
+                core.info((_b = javaRelease.version) !== null && _b !== void 0 ? _b : '');
+                if ((foundJava === null || foundJava === void 0 ? void 0 : foundJava.version) === javaRelease.version) {
+                    core.info(`Resolved Java ${foundJava.version} from tool-cache`);
+                }
+                else {
+                    core.info('Trying to download...');
                     foundJava = yield this.downloadTool(javaRelease);
                     core.info(`Java ${foundJava.version} was downloaded`);
                 }
-                else {
-                    core.info('latest version was resolved locally');
-                }
-                core.info(`Java ${foundJava.version} was resolved`);
             }
             core.info(`Setting Java ${foundJava.version} as the default`);
             this.setJavaDefault(foundJava.version, foundJava.path);
