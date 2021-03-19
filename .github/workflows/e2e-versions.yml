@@ -90,7 +90,7 @@ jobs:
           java-version: 11
           check-latest: true
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
         shell: bash
   
   setup-java-ea-versions-zulu:
