@@ -11092,7 +11092,10 @@ function setupMaven(opts) {
         });
         const p12Path = path.join(certDir, 'certificate.p12');
         fs.writeFileSync(p12Path, Buffer.from(opts.keystore, 'base64'));
-        core.exportVariable('MAVEN_OPTS', `-Djavax.net.ssl.keyStore=${p12Path} -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.keyStorePassword=${opts.password}`);
+        // core.exportVariable(
+        //   'MAVEN_OPTS',
+        //   `-Djavax.net.ssl.keyStore=${p12Path} -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.keyStorePassword=${opts.password}`
+        // );
         yield exec.exec(path.join(opts.javaPath, 'bin/keytool'), [
             '-importcert',
             '-cacerts',
