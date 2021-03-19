@@ -164,11 +164,15 @@ export class ZuluDistribution extends JavaBase {
   }
 
   private findJDKInstallationSubfolder(archiveFolder: string) {
-    // Zulu archive contains a bunch of symlinks and zulu-<major_version>.jdk subfolder
+    if (process.platform != 'darwin') {
+      return archiveFolder;
+    }
+
+    // Zulu archive on macOS contains a set of symlinks and zulu-<major_version>.jdk subfolder
     const jdkFolders = fs
       .readdirSync(archiveFolder, { withFileTypes: true })
-      .filter(item => !item.isSymbolicLink())
-      .filter(item => item.name.startsWith('zulu-') && item.name.endsWith('.jdk'));
+      .filter(item => item.isDirectory() && !item.isSymbolicLink() )
+      .filter(item => /^zulu-\d+\.\w+$/.test(item.name));
     if (jdkFolders.length === 0) {
       return archiveFolder;
     }
