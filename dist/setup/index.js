@@ -33650,7 +33650,7 @@ function unzipJavaDownload(repoRoot, fileEnding, destinationFolder, extension) {
         const stats = fs.statSync(jdkFile);
         if (stats.isFile()) {
             yield extractFiles(jdkFile, fileEnding, destinationFolder);
-            const jdkDirectory = path.join(destinationFolder, fs.readdirSync(destinationFolder)[0]);
+            const jdkDirectory = getJdkDirectory(destinationFolder);
             yield unpackJars(jdkDirectory, path.join(jdkDirectory, 'bin'));
             return jdkDirectory;
         }
@@ -33725,7 +33725,9 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
         url += '&architecture=' + architecture;
         url += '&operating_system=' + operatingSystem;
         url += '&archive_type=' + archiveType;
-        if (version.includes('x') || version.includes('ea') || version.startsWith('1.')) {
+        if (version.includes('x') ||
+            version.includes('ea') ||
+            version.startsWith('1.')) {
             url += '&latest=overall';
         }
         const http = new httpm.HttpClient('bundles', undefined, {
@@ -33789,6 +33791,21 @@ function getPackageFileUrl(ephemeralId) {
         }
         return '';
     });
+}
+function getJdkDirectory(destinationFolder) {
+    const jdkRoot = path.join(destinationFolder, fs.readdirSync(destinationFolder)[0]);
+    if (process.platform === 'darwin') {
+        const binDirectory = path.join(jdkRoot, 'bin');
+        if (fs.existsSync(binDirectory)) {
+            return jdkRoot;
+        }
+        else {
+            return path.join(jdkRoot, 'Contents', 'Home');
+        }
+    }
+    else {
+        return jdkRoot;
+    }
 }
 
 

@@ -176,10 +176,7 @@ async function unzipJavaDownload(
   const stats = fs.statSync(jdkFile);
   if (stats.isFile()) {
     await extractFiles(jdkFile, fileEnding, destinationFolder);
-    const jdkDirectory = path.join(
-      destinationFolder,
-      fs.readdirSync(destinationFolder)[0]
-    );
+    const jdkDirectory = getJdkDirectory(destinationFolder);
     await unpackJars(jdkDirectory, path.join(jdkDirectory, 'bin'));
     return jdkDirectory;
   } else {
@@ -327,4 +324,21 @@ async function getPackageFileUrl(ephemeralId: string) {
     throw new Error(message);
   }
   return '';
+}
+
+function getJdkDirectory(destinationFolder: string): string {
+  const jdkRoot: string = path.join(
+    destinationFolder,
+    fs.readdirSync(destinationFolder)[0]
+  );
+  if (process.platform === 'darwin') {
+    const binDirectory: string = path.join(jdkRoot, 'bin');
+    if (fs.existsSync(binDirectory)) {
+      return jdkRoot;
+    } else {
+      return path.join(jdkRoot, 'Contents', 'Home');
+    }
+  } else {
+    return jdkRoot;
+  }
 }
