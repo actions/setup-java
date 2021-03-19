@@ -171,7 +171,7 @@ export class ZuluDistribution extends JavaBase {
     // Zulu archive on macOS contains a set of symlinks and zulu-<major_version>.jdk subfolder
     const jdkFolders = fs
       .readdirSync(archiveFolder, { withFileTypes: true })
-      .filter(item => item.isDirectory() && !item.isSymbolicLink() )
+      .filter(item => item.isDirectory() && !item.isSymbolicLink())
       .filter(item => /^zulu-\d+\.\w+$/.test(item.name));
     if (jdkFolders.length === 0) {
       return archiveFolder;
