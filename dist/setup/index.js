@@ -3959,7 +3959,6 @@ const util_1 = __webpack_require__(322);
 const constants_1 = __webpack_require__(211);
 class JavaBase {
     constructor(distribution, installerOptions) {
-        var _a;
         this.distribution = distribution;
         this.http = new httpm.HttpClient('actions/setup-java', undefined, {
             allowRetries: true,
@@ -3968,7 +3967,7 @@ class JavaBase {
         ({ version: this.version, stable: this.stable } = this.normalizeVersion(installerOptions.version));
         this.architecture = installerOptions.architecture;
         this.packageType = installerOptions.packageType;
-        this.checkLatest = (_a = installerOptions.checkLatest) !== null && _a !== void 0 ? _a : false;
+        this.checkLatest = installerOptions.checkLatest;
     }
     setupJava() {
         var _a, _b;

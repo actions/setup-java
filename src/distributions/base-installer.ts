@@ -27,7 +27,7 @@ export abstract class JavaBase {
     ));
     this.architecture = installerOptions.architecture;
     this.packageType = installerOptions.packageType;
-    this.checkLatest = installerOptions.checkLatest ?? false;
+    this.checkLatest = installerOptions.checkLatest;
   }
 
   protected abstract downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults>;
