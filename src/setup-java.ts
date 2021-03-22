@@ -55,6 +55,10 @@ async function run() {
         keyFingerprint
       );
     }
+
+    core.warning(
+      `All setup-java actions pinned to the 'main' branch will fail on April 5th 2021. Please explicitly reference your action with the 'v1' tag ('actions/setup-java@v1') to avoid build failures. Find more details at https://github.com/actions/setup-java/issues/137`
+    );
   } catch (error) {
     core.setFailed(error.message);
   }
