@@ -3951,10 +3951,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.JavaBase = void 0;
 const tc = __importStar(__webpack_require__(139));
 const core = __importStar(__webpack_require__(470));
+const fs = __importStar(__webpack_require__(747));
 const semver_1 = __importDefault(__webpack_require__(876));
 const path_1 = __importDefault(__webpack_require__(622));
 const httpm = __importStar(__webpack_require__(539));
 const util_1 = __webpack_require__(322);
+const constants_1 = __webpack_require__(211);
 class JavaBase {
     constructor(distribution, installerOptions) {
         this.distribution = distribution;
@@ -3977,6 +3979,11 @@ class JavaBase {
                 const javaRelease = yield this.findPackageForDownload(this.version);
                 foundJava = yield this.downloadTool(javaRelease);
                 core.info(`Java ${foundJava.version} was downloaded`);
+            }
+            // JDK folder may contain postfix "Contents/Home" on macOS
+            const macOSPostfixPath = path_1.default.join(foundJava.path, constants_1.MACOS_JAVA_CONTENT_POSTFIX);
+            if (process.platform === 'darwin' && fs.existsSync(macOSPostfixPath)) {
+                foundJava.path = macOSPostfixPath;
             }
             core.info(`Setting Java ${foundJava.version} as the default`);
             this.setJavaDefault(foundJava.version, foundJava.path);
@@ -26861,7 +26868,6 @@ const fs_1 = __importDefault(__webpack_require__(747));
 const path_1 = __importDefault(__webpack_require__(622));
 const semver_1 = __importDefault(__webpack_require__(876));
 const base_installer_1 = __webpack_require__(83);
-const constants_1 = __webpack_require__(211);
 const util_1 = __webpack_require__(322);
 class AdoptDistribution extends base_installer_1.JavaBase {
     constructor(installerOptions) {
@@ -26907,9 +26913,6 @@ class AdoptDistribution extends base_installer_1.JavaBase {
             const archivePath = path_1.default.join(extractedJavaPath, archiveName);
             const version = this.getToolcacheVersionName(javaRelease.version);
             javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
-            if (process.platform === 'darwin') {
-                javaPath = path_1.default.join(javaPath, constants_1.MACOS_JAVA_CONTENT_POSTFIX);
-            }
             return { version: javaRelease.version, path: javaPath };
         });
     }
