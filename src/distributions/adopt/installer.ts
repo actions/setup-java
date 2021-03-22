@@ -67,10 +67,6 @@ export class AdoptDistribution extends JavaBase {
 
     javaPath = await tc.cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
 
-    if (process.platform === 'darwin') {
-      javaPath = path.join(javaPath, MACOS_JAVA_CONTENT_POSTFIX);
-    }
-
     return { version: javaRelease.version, path: javaPath };
   }
 

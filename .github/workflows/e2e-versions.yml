@@ -111,6 +111,9 @@ jobs:
         with:
           java-version: ${{ matrix.version }}
           distribution: zulu
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
 
   setup-java-ea-versions-adopt:
     name: adopt ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
@@ -130,6 +133,9 @@ jobs:
         with:
           java-version: ${{ matrix.version }}
           distribution: adopt
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
 
   setup-java-custom-package-type:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (${{ matrix.java-package }}-x64) - ${{ matrix.os }}
