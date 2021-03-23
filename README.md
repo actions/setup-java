@@ -59,7 +59,24 @@ Currently, the following distributions are supported:
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 
-#### Testing against different Java versions
+### Check latest
+In the basic examples above, the `check-latest` flag defaults to `false`. When set to `false`, the action tries to first resolve a version of Java from the local cache. If unable to find a specific version in the cache, the action will download a version of Java. Use the default or set `check-latest` to `false` if you prefer stability and if you want to ensure a specific version of Java is always used.
+The local version of Java in cache gets updated on weekly basis. For information regarding locally cached versions of Java on GitHub hosted runners, check out [GitHub Actions Virtual Environments](https://github.com/actions/virtual-environments).  
+
+If `check-latest` is set to `true`, the action first checks if the cached version is the latest one. If the locally cached version is not the most up-to-date, the latest version of Java will be downloaded. Set `check-latest` to `true` if you want the most up-to-date version of Java to always be used. Setting `check-latest` to `true` has performance implications as downloading versions of Java is slower than using cached versions.
+
+```yaml
+steps:
+- uses: actions/checkout@v2
+- uses: actions/setup-java@v2-preview
+  with:
+    distribution: 'adopt'
+    java-version: '11'
+    check-latest: true
+- run: java -cp java HelloWorldApp
+```
+
+### Testing against different Java versions
 ```yaml
 jobs:
   build:
@@ -89,7 +106,6 @@ jobs:
 - [Testing against different platforms](docs/advanced-usage.md#Testing-against-different-platforms)
 - [Publishing using Apache Maven](docs/advanced-usage.md#Publishing-using-Apache-Maven)
 - [Publishing using Gradle](docs/advanced-usage.md#Publishing-using-Gradle)
-
 
 ## License
 
