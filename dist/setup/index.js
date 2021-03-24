@@ -3954,7 +3954,7 @@ class JavaBase {
                     .replace(/-ea$/, '')
                     .replace('-', '+'),
                 path: util_1.getToolcachePath(this.toolcacheFolderName, item, this.architecture),
-                stable: item.includes('-ea')
+                stable: !item.includes('-ea')
             };
         })
             .filter(item => item.stable === this.stable);

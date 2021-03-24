@@ -82,7 +82,7 @@ export abstract class JavaBase {
             .replace(/-ea$/, '')
             .replace('-', '+'),
           path: getToolcachePath(this.toolcacheFolderName, item, this.architecture),
-          stable: item.includes('-ea')
+          stable: !item.includes('-ea')
         };
       })
       .filter(item => item.stable === this.stable);
