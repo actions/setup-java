@@ -3944,12 +3944,14 @@ class JavaBase {
         const availableVersions = tc
             .findAllVersions(this.toolcacheFolderName, this.architecture)
             .filter(item => item.endsWith('-ea') === !this.stable);
+        console.log(`availableVersions = ${JSON.stringify(availableVersions)}`);
         const satisfiedVersions = availableVersions
             .filter(item => util_1.isVersionSatisfies(this.version, item.replace(/-ea$/, '').replace('_', '+')))
             .sort(semver_1.default.rcompare);
         if (!satisfiedVersions || satisfiedVersions.length === 0) {
             return null;
         }
+        console.log(`satisfiedVersions = ${JSON.stringify(satisfiedVersions)}`);
         const javaPath = util_1.getToolcachePath(this.toolcacheFolderName, satisfiedVersions[0], this.architecture);
         if (!javaPath) {
             return null;

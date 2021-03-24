@@ -73,12 +73,17 @@ export abstract class JavaBase {
       .findAllVersions(this.toolcacheFolderName, this.architecture)
       .filter(item => item.endsWith('-ea') === !this.stable);
 
+    console.log(`availableVersions = ${JSON.stringify(availableVersions)}`);
+
     const satisfiedVersions = availableVersions
       .filter(item => isVersionSatisfies(this.version, item.replace(/-ea$/, '').replace('_', '+')))
       .sort(semver.rcompare);
     if (!satisfiedVersions || satisfiedVersions.length === 0) {
       return null;
     }
+
+
+    console.log(`satisfiedVersions = ${JSON.stringify(satisfiedVersions)}`);
 
     const javaPath = getToolcachePath(
       this.toolcacheFolderName,
