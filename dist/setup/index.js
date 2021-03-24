@@ -13269,33 +13269,38 @@ const xmlbuilder2_1 = __webpack_require__(255);
 const constants = __importStar(__webpack_require__(694));
 exports.M2_DIR = '.m2';
 exports.SETTINGS_FILE = 'settings.xml';
-function configAuthentication(id, username, password, gpgPassphrase = undefined) {
+function configAuthentication(idArray, username, password, gpgPassphrase = undefined) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(`creating ${exports.SETTINGS_FILE} with server-id: ${id};`, 'environment variables:', `username=\$${username},`, `password=\$${password},`, `and gpg-passphrase=${gpgPassphrase ? '$' + gpgPassphrase : null}`);
+        console.log(`creating ${exports.SETTINGS_FILE} with server-id: ${idArray.join(', ')};`, 'environment variables:', `username=\$${username},`, `password=\$${password},`, `and gpg-passphrase=${gpgPassphrase ? '$' + gpgPassphrase : null}`);
         // when an alternate m2 location is specified use only that location (no .m2 directory)
         // otherwise use the home/.m2/ path
         const settingsDirectory = path.join(core.getInput(constants.INPUT_SETTINGS_PATH) || os.homedir(), core.getInput(constants.INPUT_SETTINGS_PATH) ? '' : exports.M2_DIR);
         yield io.mkdirP(settingsDirectory);
         core.debug(`created directory ${settingsDirectory}`);
-        yield write(settingsDirectory, generate(id, username, password, gpgPassphrase));
+        yield write(settingsDirectory, generate(idArray, username, password, gpgPassphrase));
     });
 }
 exports.configAuthentication = configAuthentication;
 // only exported for testing purposes
-function generate(id, username, password, gpgPassphrase = undefined) {
+function generate(idArray, username, password, gpgPassphrase = undefined) {
+    const idArrayUnique = idArray
+        .sort()
+        .reduce((idArray, id, index, idArrayInput) => {
+        return idArray[idArray.length - 1] === id ? idArray : idArray.concat(id);
+    }, new Array());
     const xmlObj = {
         settings: {
             '@xmlns': 'http://maven.apache.org/SETTINGS/1.0.0',
             '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
             '@xsi:schemaLocation': 'http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd',
             servers: {
-                server: [
-                    {
+                server: idArrayUnique.map((id, index, idArray) => {
+                    return {
                         id: id,
                         username: `\${env.${username}}`,
                         password: `\${env.${password}}`
-                    }
-                ]
+                    };
+                })
             }
         }
     };
@@ -25759,6 +25764,7 @@ exports.INPUT_ARCHITECTURE = 'architecture';
 exports.INPUT_JAVA_PACKAGE = 'java-package';
 exports.INPUT_JDK_FILE = 'jdkFile';
 exports.INPUT_SERVER_ID = 'server-id';
+exports.INPUT_SERVER_ID_LIST = 'server-id-list';
 exports.INPUT_SERVER_USERNAME = 'server-username';
 exports.INPUT_SERVER_PASSWORD = 'server-password';
 exports.INPUT_SETTINGS_PATH = 'settings-path';
@@ -28795,6 +28801,10 @@ function run() {
             const matchersPath = path.join(__dirname, '..', '..', '.github');
             core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
             const id = core.getInput(constants.INPUT_SERVER_ID, { required: false });
+            const idList = core
+                .getInput(constants.INPUT_SERVER_ID_LIST, { required: false })
+                .split(',')
+                .map(id => id.trim());
             const username = core.getInput(constants.INPUT_SERVER_USERNAME, {
                 required: false
             });
@@ -28808,7 +28818,7 @@ function run() {
             if (gpgPrivateKey) {
                 core.setSecret(gpgPrivateKey);
             }
-            yield auth.configAuthentication(id, username, password, gpgPassphrase);
+            yield auth.configAuthentication(idList.concat(id), username, password, gpgPassphrase);
             if (gpgPrivateKey) {
                 core.info('importing private key');
                 const keyFingerprint = (yield gpg.importKey(gpgPrivateKey)) || '';

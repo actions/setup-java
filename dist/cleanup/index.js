@@ -1022,6 +1022,7 @@ exports.INPUT_ARCHITECTURE = 'architecture';
 exports.INPUT_JAVA_PACKAGE = 'java-package';
 exports.INPUT_JDK_FILE = 'jdkFile';
 exports.INPUT_SERVER_ID = 'server-id';
+exports.INPUT_SERVER_ID_LIST = 'server-id-list';
 exports.INPUT_SERVER_USERNAME = 'server-username';
 exports.INPUT_SERVER_PASSWORD = 'server-password';
 exports.INPUT_SETTINGS_PATH = 'settings-path';

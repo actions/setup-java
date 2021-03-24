@@ -28,6 +28,10 @@ async function run() {
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
     const id = core.getInput(constants.INPUT_SERVER_ID, {required: false});
+    const idList = core
+      .getInput(constants.INPUT_SERVER_ID_LIST, {required: false})
+      .split(',')
+      .map(id => id.trim());
     const username = core.getInput(constants.INPUT_SERVER_USERNAME, {
       required: false
     });
@@ -45,7 +49,12 @@ async function run() {
       core.setSecret(gpgPrivateKey);
     }
 
-    await auth.configAuthentication(id, username, password, gpgPassphrase);
+    await auth.configAuthentication(
+      idList.concat(id),
+      username,
+      password,
+      gpgPassphrase
+    );
 
     if (gpgPrivateKey) {
       core.info('importing private key');

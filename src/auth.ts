@@ -10,13 +10,13 @@ export const M2_DIR = '.m2';
 export const SETTINGS_FILE = 'settings.xml';
 
 export async function configAuthentication(
-  id: string,
+  idArray: string[],
   username: string,
   password: string,
   gpgPassphrase: string | undefined = undefined
 ) {
   console.log(
-    `creating ${SETTINGS_FILE} with server-id: ${id};`,
+    `creating ${SETTINGS_FILE} with server-id: ${idArray.join(', ')};`,
     'environment variables:',
     `username=\$${username},`,
     `password=\$${password},`,
@@ -32,17 +32,23 @@ export async function configAuthentication(
   core.debug(`created directory ${settingsDirectory}`);
   await write(
     settingsDirectory,
-    generate(id, username, password, gpgPassphrase)
+    generate(idArray, username, password, gpgPassphrase)
   );
 }
 
 // only exported for testing purposes
 export function generate(
-  id: string,
+  idArray: string[],
   username: string,
   password: string,
   gpgPassphrase: string | undefined = undefined
 ) {
+  const idArrayUnique = idArray
+    .sort()
+    .reduce((idArray, id, index, idArrayInput) => {
+      return idArray[idArray.length - 1] === id ? idArray : idArray.concat(id);
+    }, new Array<string>());
+
   const xmlObj: {[key: string]: any} = {
     settings: {
       '@xmlns': 'http://maven.apache.org/SETTINGS/1.0.0',
@@ -50,13 +56,13 @@ export function generate(
       '@xsi:schemaLocation':
         'http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd',
       servers: {
-        server: [
-          {
+        server: idArrayUnique.map((id, index, idArray) => {
+          return {
             id: id,
             username: `\${env.${username}}`,
             password: `\${env.${password}}`
-          }
-        ]
+          };
+        })
       }
     }
   };

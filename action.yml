@@ -26,6 +26,10 @@ inputs:
        file. Default is `github`'
     required: false
     default: 'github'
+  server-id-list:
+    description: 'IDs of the repositories in the pom.xml file. Default is `github`'
+    required: false
+    default: 'github'
   server-username:
     description: 'Environment variable name for the username for authentication
        to the Apache Maven repository. Default is $GITHUB_ACTOR'
