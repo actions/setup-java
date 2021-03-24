@@ -3936,7 +3936,7 @@ class JavaBase {
             const cleanVersion = semver_1.default.clean(version);
             return `${cleanVersion}-ea`;
         }
-        return version.replace('+', '_');
+        return version.replace('+', '-');
     }
     findInToolcache() {
         // we can't use tc.find directly because firstly, we need to filter versions by stability flag
@@ -3946,7 +3946,7 @@ class JavaBase {
             .filter(item => item.endsWith('-ea') === !this.stable);
         console.log(`availableVersions = ${JSON.stringify(availableVersions)}`);
         const satisfiedVersions = availableVersions
-            .filter(item => util_1.isVersionSatisfies(this.version, item.replace(/-ea$/, '').replace('_', '+')))
+            .filter(item => util_1.isVersionSatisfies(this.version, item.replace(/-ea$/, '').replace('-', '+')))
             .sort(semver_1.default.rcompare);
         if (!satisfiedVersions || satisfiedVersions.length === 0) {
             return null;
