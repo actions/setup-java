@@ -71,33 +71,29 @@ export abstract class JavaBase {
     // if *-ea is provided, take only ea versions from toolcache, otherwise - only stable versions
     const availableVersions = tc
       .findAllVersions(this.toolcacheFolderName, this.architecture)
-      .filter(item => item.endsWith('-ea') === !this.stable);
+      .filter(item => item.endsWith('-ea') === !this.stable)
+      .map(item => {
+        return {
+          version: item.replace(/-ea$/, '').replace('-', '+'),
+          path: getToolcachePath(this.toolcacheFolderName, item, this.architecture)
+        } as JavaInstallerResults;
+      });
 
     console.log(`availableVersions = ${JSON.stringify(availableVersions)}`);
 
     const satisfiedVersions = availableVersions
-      .filter(item => isVersionSatisfies(this.version, item.replace(/-ea$/, '').replace('-', '+')))
-      .sort(semver.rcompare);
+      .filter(item => isVersionSatisfies(this.version, item.version))
+      .filter(item => item.path !== null)
+      .sort((a, b) => {
+        return -semver.compareBuild(a.version, b.version);
+      });
     if (!satisfiedVersions || satisfiedVersions.length === 0) {
       return null;
     }
 
-
     console.log(`satisfiedVersions = ${JSON.stringify(satisfiedVersions)}`);
 
-    const javaPath = getToolcachePath(
-      this.toolcacheFolderName,
-      satisfiedVersions[0],
-      this.architecture
-    );
-    if (!javaPath) {
-      return null;
-    }
-
-    return {
-      version: getVersionFromToolcachePath(javaPath),
-      path: javaPath
-    };
+    return satisfiedVersions[0];
   }
 
   protected normalizeVersion(version: string) {
