@@ -19,13 +19,13 @@ class EmptyJavaBase extends JavaBase {
 
   protected async downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults> {
     return {
-      version: '11.0.8',
-      path: `/toolcache/${this.toolcacheFolderName}/11.0.8/${this.architecture}`
+      version: '11.0.9',
+      path: path.join('toolcache', this.toolcacheFolderName, '11.0.9', this.architecture)
     };
   }
 
   protected async findPackageForDownload(range: string): Promise<JavaDownloadRelease> {
-    const availableVersion = '11.0.8';
+    const availableVersion = '11.0.9';
     if (!semver.satisfies(availableVersion, range)) {
       throw new Error('Available version not found');
     }
@@ -38,7 +38,7 @@ class EmptyJavaBase extends JavaBase {
 }
 
 describe('findInToolcache', () => {
-  const actualJavaVersion = '11.1.10';
+  const actualJavaVersion = '11.0.8';
   const javaPath = path.join('Java_Empty_jdk', actualJavaVersion, 'x64');
 
   let mockJavaBase: EmptyJavaBase;
@@ -58,21 +58,33 @@ describe('findInToolcache', () => {
 
   it.each([
     [
-      { version: '11', architecture: 'x64', packageType: 'jdk' },
+      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
       { version: actualJavaVersion, path: javaPath }
     ],
     [
-      { version: '11.1', architecture: 'x64', packageType: 'jdk' },
+      { version: '11.0', architecture: 'x64', packageType: 'jdk', checkLatest: false },
       { version: actualJavaVersion, path: javaPath }
     ],
     [
-      { version: '11.1.10', architecture: 'x64', packageType: 'jdk' },
+      { version: '11.0.8', architecture: 'x64', packageType: 'jdk', checkLatest: false },
       { version: actualJavaVersion, path: javaPath }
     ],
-    [{ version: '11', architecture: 'x64', packageType: 'jre' }, null],
-    [{ version: '8', architecture: 'x64', packageType: 'jdk' }, null],
-    [{ version: '11', architecture: 'x86', packageType: 'jdk' }, null],
-    [{ version: '11', architecture: 'x86', packageType: 'jre' }, null]
+    [
+      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: true },
+      { version: actualJavaVersion, path: javaPath }
+    ],
+    [
+      { version: '11.0', architecture: 'x64', packageType: 'jdk', checkLatest: true },
+      { version: actualJavaVersion, path: javaPath }
+    ],
+    [
+      { version: '11.0.8', architecture: 'x64', packageType: 'jdk', checkLatest: true },
+      { version: actualJavaVersion, path: javaPath }
+    ],
+    [{ version: '11', architecture: 'x64', packageType: 'jre', checkLatest: false }, null],
+    [{ version: '8', architecture: 'x64', packageType: 'jdk', checkLatest: false }, null],
+    [{ version: '11', architecture: 'x86', packageType: 'jdk', checkLatest: false }, null],
+    [{ version: '11', architecture: 'x86', packageType: 'jre', checkLatest: false }, null]
   ])(`should find java for path %s -> %s`, (input, expected) => {
     spyTcFindAllVersions.mockReturnValue([actualJavaVersion]);
     spyGetToolcachePath.mockImplementation(
@@ -115,15 +127,22 @@ describe('findInToolcache', () => {
       (toolname: string, javaVersion: string, architecture: string) =>
         `/hostedtoolcache/${toolname}/${javaVersion}/${architecture}`
     );
-    mockJavaBase = new EmptyJavaBase({ version: input, architecture: 'x64', packageType: 'jdk' });
+    mockJavaBase = new EmptyJavaBase({
+      version: input,
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
     const foundVersion = mockJavaBase['findInToolcache']();
     expect(foundVersion?.version).toEqual(expected);
   });
 });
 
 describe('setupJava', () => {
-  const actualJavaVersion = '11.1.10';
-  const javaPath = path.join('Java_Empty_jdk', actualJavaVersion, 'x86');
+  const actualJavaVersion = '11.0.9';
+  const installedJavaVersion = '11.0.8';
+  const javaPath = path.join('Java_Empty_jdk', installedJavaVersion, 'x86');
+  const javaPathInstalled = path.join('toolcache', 'Java_Empty_jdk', actualJavaVersion, 'x86');
 
   let mockJavaBase: EmptyJavaBase;
 
@@ -145,12 +164,12 @@ describe('setupJava', () => {
           return '';
         }
 
-        return semver.satisfies(actualJavaVersion, semverVersion) ? javaPath : '';
+        return semver.satisfies(installedJavaVersion, semverVersion) ? javaPath : '';
       }
     );
 
     spyTcFindAllVersions = jest.spyOn(tc, 'findAllVersions');
-    spyTcFindAllVersions.mockReturnValue([actualJavaVersion]);
+    spyTcFindAllVersions.mockReturnValue([installedJavaVersion]);
 
     // Spy on core methods
     spyCoreDebug = jest.spyOn(core, 'debug');
@@ -177,35 +196,41 @@ describe('setupJava', () => {
 
   it.each([
     [
-      { version: '11', architecture: 'x86', packageType: 'jdk' },
-      { version: actualJavaVersion, path: javaPath }
+      { version: '11', architecture: 'x86', packageType: 'jdk', checkLatest: false },
+      { version: installedJavaVersion, path: javaPath }
     ],
     [
-      { version: '11.1', architecture: 'x86', packageType: 'jdk' },
-      { version: actualJavaVersion, path: javaPath }
+      { version: '11.0', architecture: 'x86', packageType: 'jdk', checkLatest: false },
+      { version: installedJavaVersion, path: javaPath }
     ],
     [
-      { version: '11.1.10', architecture: 'x86', packageType: 'jdk' },
-      { version: actualJavaVersion, path: javaPath }
+      { version: '11.0.8', architecture: 'x86', packageType: 'jdk', checkLatest: false },
+      { version: installedJavaVersion, path: javaPath }
     ]
   ])('should find java locally for %s', (input, expected) => {
     mockJavaBase = new EmptyJavaBase(input);
     expect(mockJavaBase.setupJava()).resolves.toEqual(expected);
     expect(spyGetToolcachePath).toHaveBeenCalled();
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved Java ${expected.version} from tool-cache`);
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Setting Java ${expected.version} as the default`);
+    expect(spyCoreInfo).not.toHaveBeenCalledWith(
+      'Trying to resolve the latest version from remote'
+    );
+    expect(spyCoreInfo).not.toHaveBeenCalledWith('Trying to download...');
   });
 
   it.each([
     [
-      { version: '11', architecture: 'x86', packageType: 'jre' },
-      { path: `/toolcache/Java_Empty_jre/11.0.8/x86`, version: '11.0.8' }
+      { version: '11', architecture: 'x86', packageType: 'jre', checkLatest: false },
+      { path: path.join('toolcache', 'Java_Empty_jre', '11.0.9', 'x86'), version: '11.0.9' }
     ],
     [
-      { version: '11', architecture: 'x64', packageType: 'jdk' },
-      { path: `/toolcache/Java_Empty_jdk/11.0.8/x64`, version: '11.0.8' }
+      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      { path: path.join('toolcache', 'Java_Empty_jdk', '11.0.9', 'x64'), version: '11.0.9' }
     ],
     [
-      { version: '11', architecture: 'x64', packageType: 'jre' },
-      { path: `/toolcache/Java_Empty_jre/11.0.8/x64`, version: '11.0.8' }
+      { version: '11', architecture: 'x64', packageType: 'jre', checkLatest: false },
+      { path: path.join('toolcache', 'Java_Empty_jre', '11.0.9', 'x64'), version: '11.0.9' }
     ]
   ])('download java with configuration %s', async (input, expected) => {
     mockJavaBase = new EmptyJavaBase(input);
@@ -214,11 +239,55 @@ describe('setupJava', () => {
     expect(spyCoreAddPath).toHaveBeenCalled();
     expect(spyCoreExportVariable).toHaveBeenCalled();
     expect(spyCoreSetOutput).toHaveBeenCalled();
+    expect(spyCoreInfo).toHaveBeenCalledWith('Trying to resolve the latest version from remote');
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved latest version as ${expected.version}`);
+    expect(spyCoreInfo).toHaveBeenCalledWith('Trying to download...');
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Java ${expected.version} was downloaded`);
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Setting Java ${expected.version} as the default`);
   });
 
   it.each([
-    [{ version: '15', architecture: 'x86', packageType: 'jre' }],
-    [{ version: '11.0.7', architecture: 'x64', packageType: 'jre' }]
+    [
+      { version: '11.0.9', architecture: 'x86', packageType: 'jdk', checkLatest: true },
+      { version: '11.0.9', path: javaPathInstalled }
+    ]
+  ])('should check the latest java version for %s and resolve locally', async (input, expected) => {
+    mockJavaBase = new EmptyJavaBase(input);
+    mockJavaBase['findInToolcache'] = () => ({ version: '11.0.9', path: expected.path });
+    await expect(mockJavaBase.setupJava()).resolves.toEqual(expected);
+    expect(spyCoreInfo).toHaveBeenCalledWith('Trying to resolve the latest version from remote');
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved latest version as ${expected.version}`);
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved Java ${expected.version} from tool-cache`);
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Setting Java ${expected.version} as the default`);
+  });
+
+  it.each([
+    [
+      { version: '11', architecture: 'x86', packageType: 'jdk', checkLatest: true },
+      { version: actualJavaVersion, path: javaPathInstalled }
+    ],
+    [
+      { version: '11.0', architecture: 'x86', packageType: 'jdk', checkLatest: true },
+      { version: actualJavaVersion, path: javaPathInstalled }
+    ],
+    [
+      { version: '11.0.x', architecture: 'x86', packageType: 'jdk', checkLatest: true },
+      { version: actualJavaVersion, path: javaPathInstalled }
+    ]
+  ])('should check the latest java version for %s and download', async (input, expected) => {
+    mockJavaBase = new EmptyJavaBase(input);
+    await expect(mockJavaBase.setupJava()).resolves.toEqual(expected);
+    expect(spyGetToolcachePath).toHaveBeenCalled();
+    expect(spyCoreInfo).toHaveBeenCalledWith('Trying to resolve the latest version from remote');
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved latest version as ${actualJavaVersion}`);
+    expect(spyCoreInfo).toHaveBeenCalledWith('Trying to download...');
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Java ${actualJavaVersion} was downloaded`);
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Setting Java ${expected.version} as the default`);
+  });
+
+  it.each([
+    [{ version: '15', architecture: 'x86', packageType: 'jre', checkLatest: false }],
+    [{ version: '11.0.7', architecture: 'x64', packageType: 'jre', checkLatest: false }]
   ])('should throw an error for Available version not found for %s', async input => {
     mockJavaBase = new EmptyJavaBase(input);
     await expect(mockJavaBase.setupJava()).rejects.toThrowError('Available version not found');

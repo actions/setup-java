@@ -14,6 +14,7 @@ export abstract class JavaBase {
   protected architecture: string;
   protected packageType: string;
   protected stable: boolean;
+  protected checkLatest: boolean;
 
   constructor(protected distribution: string, installerOptions: JavaInstallerOptions) {
     this.http = new httpm.HttpClient('actions/setup-java', undefined, {
@@ -26,6 +27,7 @@ export abstract class JavaBase {
     ));
     this.architecture = installerOptions.architecture;
     this.packageType = installerOptions.packageType;
+    this.checkLatest = installerOptions.checkLatest;
   }
 
   protected abstract downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults>;
@@ -33,13 +35,21 @@ export abstract class JavaBase {
 
   public async setupJava(): Promise<JavaInstallerResults> {
     let foundJava = this.findInToolcache();
-    if (foundJava) {
+    if (foundJava && !this.checkLatest) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
-      core.info(`Java ${this.version} was not found in tool-cache. Trying to download...`);
+      core.info('Trying to resolve the latest version from remote');
       const javaRelease = await this.findPackageForDownload(this.version);
-      foundJava = await this.downloadTool(javaRelease);
-      core.info(`Java ${foundJava.version} was downloaded`);
+      core.info(`Resolved latest version as ${javaRelease.version}`);
+      core.info(foundJava?.version ?? '');
+      core.info(javaRelease.version ?? '');
+      if (foundJava?.version === javaRelease.version) {
+        core.info(`Resolved Java ${foundJava.version} from tool-cache`);
+      } else {
+        core.info('Trying to download...');
+        foundJava = await this.downloadTool(javaRelease);
+        core.info(`Java ${foundJava.version} was downloaded`);
+      }
     }
 
     // JDK folder may contain postfix "Contents/Home" on macOS

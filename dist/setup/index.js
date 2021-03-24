@@ -3967,18 +3967,29 @@ class JavaBase {
         ({ version: this.version, stable: this.stable } = this.normalizeVersion(installerOptions.version));
         this.architecture = installerOptions.architecture;
         this.packageType = installerOptions.packageType;
+        this.checkLatest = installerOptions.checkLatest;
     }
     setupJava() {
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             let foundJava = this.findInToolcache();
-            if (foundJava) {
+            if (foundJava && !this.checkLatest) {
                 core.info(`Resolved Java ${foundJava.version} from tool-cache`);
             }
             else {
-                core.info(`Java ${this.version} was not found in tool-cache. Trying to download...`);
+                core.info('Trying to resolve the latest version from remote');
                 const javaRelease = yield this.findPackageForDownload(this.version);
-                foundJava = yield this.downloadTool(javaRelease);
-                core.info(`Java ${foundJava.version} was downloaded`);
+                core.info(`Resolved latest version as ${javaRelease.version}`);
+                core.info((_a = foundJava === null || foundJava === void 0 ? void 0 : foundJava.version) !== null && _a !== void 0 ? _a : '');
+                core.info((_b = javaRelease.version) !== null && _b !== void 0 ? _b : '');
+                if ((foundJava === null || foundJava === void 0 ? void 0 : foundJava.version) === javaRelease.version) {
+                    core.info(`Resolved Java ${foundJava.version} from tool-cache`);
+                }
+                else {
+                    core.info('Trying to download...');
+                    foundJava = yield this.downloadTool(javaRelease);
+                    core.info(`Java ${foundJava.version} was downloaded`);
+                }
             }
             // JDK folder may contain postfix "Contents/Home" on macOS
             const macOSPostfixPath = path_1.default.join(foundJava.path, constants_1.MACOS_JAVA_CONTENT_POSTFIX);
@@ -11309,13 +11320,14 @@ exports.HTMLCollectionImpl = HTMLCollectionImpl;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
+exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
 exports.MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
 exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_ARCHITECTURE = 'architecture';
 exports.INPUT_JAVA_PACKAGE = 'java-package';
 exports.INPUT_DISTRIBUTION = 'distribution';
 exports.INPUT_JDK_FILE = 'jdkFile';
+exports.INPUT_CHECK_LATEST = 'check-latest';
 exports.INPUT_SERVER_ID = 'server-id';
 exports.INPUT_SERVER_USERNAME = 'server-username';
 exports.INPUT_SERVER_PASSWORD = 'server-password';
@@ -35646,6 +35658,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const auth = __importStar(__webpack_require__(331));
+const util_1 = __webpack_require__(322);
 const constants = __importStar(__webpack_require__(211));
 const path = __importStar(__webpack_require__(622));
 const distribution_factory_1 = __webpack_require__(24);
@@ -35657,10 +35670,12 @@ function run() {
             const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
             const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
             const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
+            const checkLatest = util_1.getBooleanInput(constants.INPUT_CHECK_LATEST, false);
             const installerOptions = {
                 architecture,
                 packageType,
-                version
+                version,
+                checkLatest
             };
             const distribution = distribution_factory_1.getJavaDistribution(distributionName, installerOptions, jdkFile);
             if (!distribution) {

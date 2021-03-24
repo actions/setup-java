@@ -59,7 +59,26 @@ Currently, the following distributions are supported:
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 
-#### Testing against different Java versions
+### Check latest
+In the basic examples above, the `check-latest` flag defaults to `false`. When set to `false`, the action tries to first resolve a version of Java from the local tool cache on the runner. If unable to find a specific version in the cache, the action will download a version of Java. Use the default or set `check-latest` to `false` if you prefer a faster more consistent setup experience that prioritizes trying to use the cached versions at the expense of newer versions sometimes being available for download.
+
+If `check-latest` is set to `true`, the action first checks if the cached version is the latest one. If the locally cached version is not the most up-to-date, the latest version of Java will be downloaded. Set `check-latest` to `true` if you want the most up-to-date version of Java to always be used. Setting `check-latest` to `true` has performance implications as downloading versions of Java is slower than using cached versions.
+
+For Java distributions that are not cached on Hosted images, `check-latest` always behaves as `true` and downloads Java on-flight. Check out [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache) for more details about pre-cached Java versions.  
+
+
+```yaml
+steps:
+- uses: actions/checkout@v2
+- uses: actions/setup-java@v2-preview
+  with:
+    distribution: 'adopt'
+    java-version: '11'
+    check-latest: true
+- run: java -cp java HelloWorldApp
+```
+
+### Testing against different Java versions
 ```yaml
 jobs:
   build:
@@ -89,7 +108,7 @@ jobs:
 - [Testing against different platforms](docs/advanced-usage.md#Testing-against-different-platforms)
 - [Publishing using Apache Maven](docs/advanced-usage.md#Publishing-using-Apache-Maven)
 - [Publishing using Gradle](docs/advanced-usage.md#Publishing-using-Gradle)
-
+- [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache)
 
 ## License
 
