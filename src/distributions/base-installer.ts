@@ -63,7 +63,7 @@ export abstract class JavaBase {
       const cleanVersion = semver.clean(version);
       return `${cleanVersion}-ea`;
     }
-    return version;
+    return version.replace('+', '_');
   }
 
   protected findInToolcache(): JavaInstallerResults | null {
@@ -74,7 +74,7 @@ export abstract class JavaBase {
       .filter(item => item.endsWith('-ea') === !this.stable);
 
     const satisfiedVersions = availableVersions
-      .filter(item => isVersionSatisfies(this.version, item.replace(/-ea$/, '')))
+      .filter(item => isVersionSatisfies(this.version, item.replace(/-ea$/, '').replace('_', '+')))
       .sort(semver.rcompare);
     if (!satisfiedVersions || satisfiedVersions.length === 0) {
       return null;
