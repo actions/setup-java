@@ -60,9 +60,13 @@ export abstract class JavaBase {
 
   protected getToolcacheVersionName(version: string): string {
     if (!this.stable) {
-      const cleanVersion = semver.clean(version);
-      return `${cleanVersion}-ea`;
+      if (version.includes('+')) {
+        return version.replace('+', '-ea.');
+      } else {
+        return `${version}-ea`;
+      }
     }
+
     return version.replace('+', '-');
   }
 
@@ -71,13 +75,17 @@ export abstract class JavaBase {
     // if *-ea is provided, take only ea versions from toolcache, otherwise - only stable versions
     const availableVersions = tc
       .findAllVersions(this.toolcacheFolderName, this.architecture)
-      .filter(item => item.endsWith('-ea') === !this.stable)
       .map(item => {
         return {
-          version: item.replace(/-ea$/, '').replace('-', '+'),
-          path: getToolcachePath(this.toolcacheFolderName, item, this.architecture)
-        } as JavaInstallerResults;
-      });
+          version: item
+            .replace('-ea.', '+')
+            .replace(/-ea$/, '')
+            .replace('-', '+'),
+          path: getToolcachePath(this.toolcacheFolderName, item, this.architecture),
+          stable: item.includes('-ea')
+        };
+      })
+      .filter(item => item.stable === this.stable);
 
     console.log(`availableVersions = ${JSON.stringify(availableVersions)}`);
 
@@ -93,7 +101,7 @@ export abstract class JavaBase {
 
     console.log(`satisfiedVersions = ${JSON.stringify(satisfiedVersions)}`);
 
-    return satisfiedVersions[0];
+    return satisfiedVersions[0] as JavaInstallerResults;
   }
 
   protected normalizeVersion(version: string) {

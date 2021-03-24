@@ -3933,8 +3933,12 @@ class JavaBase {
     }
     getToolcacheVersionName(version) {
         if (!this.stable) {
-            const cleanVersion = semver_1.default.clean(version);
-            return `${cleanVersion}-ea`;
+            if (version.includes('+')) {
+                return version.replace('+', '-ea.');
+            }
+            else {
+                return `${version}-ea`;
+            }
         }
         return version.replace('+', '-');
     }
@@ -3943,13 +3947,17 @@ class JavaBase {
         // if *-ea is provided, take only ea versions from toolcache, otherwise - only stable versions
         const availableVersions = tc
             .findAllVersions(this.toolcacheFolderName, this.architecture)
-            .filter(item => item.endsWith('-ea') === !this.stable)
             .map(item => {
             return {
-                version: item.replace(/-ea$/, '').replace('-', '+'),
-                path: util_1.getToolcachePath(this.toolcacheFolderName, item, this.architecture)
+                version: item
+                    .replace('-ea.', '+')
+                    .replace(/-ea$/, '')
+                    .replace('-', '+'),
+                path: util_1.getToolcachePath(this.toolcacheFolderName, item, this.architecture),
+                stable: item.includes('-ea')
             };
-        });
+        })
+            .filter(item => item.stable === this.stable);
         console.log(`availableVersions = ${JSON.stringify(availableVersions)}`);
         const satisfiedVersions = availableVersions
             .filter(item => util_1.isVersionSatisfies(this.version, item.version))
