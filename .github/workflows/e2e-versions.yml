@@ -78,6 +78,15 @@ jobs:
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
+      - name: setup-java
+        uses: ./
+        id: setup-java2
+        with:
+          java-version: ${{ matrix.version }}
+          distribution: ${{ matrix.distribution }}
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java2.outputs.path }}"
+        shell: bash
 
   setup-java-check-latest:
     name: ${{ matrix.distribution }} ${{ matrix.version }} - check-latest flag - ${{ matrix.os }}
@@ -218,3 +227,6 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.version }}
           architecture: x86
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        shell: bash

@@ -77,6 +77,9 @@ export abstract class JavaBase {
       }
     }
 
+    // Kotlin and some Java dependencies don't work properly when Java path contains "+" sign
+    // so replace "/hostedtoolcache/Java/11.0.3+4/x64" to "/hostedtoolcache/Java/11.0.3-4/x64" when saves to cache
+    // related issue: https://github.com/actions/virtual-environments/issues/3014
     return version.replace('+', '-');
   }
 
@@ -90,18 +93,19 @@ export abstract class JavaBase {
           version: item
             .replace('-ea.', '+')
             .replace(/-ea$/, '')
+            // Kotlin and some Java dependencies don't work properly when Java path contains "+" sign
+            // so replace "/hostedtoolcache/Java/11.0.3-4/x64" to "/hostedtoolcache/Java/11.0.3+4/x64" when retrieves  to cache
+            // related issue: https://github.com/actions/virtual-environments/issues/3014
             .replace('-', '+'),
-          path: getToolcachePath(this.toolcacheFolderName, item, this.architecture),
+          path: getToolcachePath(this.toolcacheFolderName, item, this.architecture) || '',
           stable: !item.includes('-ea')
         };
       })
       .filter(item => item.stable === this.stable);
 
-    console.log(`availableVersions = ${JSON.stringify(availableVersions)}`);
-
     const satisfiedVersions = availableVersions
       .filter(item => isVersionSatisfies(this.version, item.version))
-      .filter(item => item.path !== null)
+      .filter(item => item.path)
       .sort((a, b) => {
         return -semver.compareBuild(a.version, b.version);
       });
@@ -109,9 +113,10 @@ export abstract class JavaBase {
       return null;
     }
 
-    console.log(`satisfiedVersions = ${JSON.stringify(satisfiedVersions)}`);
-
-    return satisfiedVersions[0] as JavaInstallerResults;
+    return {
+      version: satisfiedVersions[0].version,
+      path: satisfiedVersions[0].path
+    };
   }
 
   protected normalizeVersion(version: string) {
