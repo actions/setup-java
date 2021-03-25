@@ -41,8 +41,6 @@ export abstract class JavaBase {
       core.info('Trying to resolve the latest version from remote');
       const javaRelease = await this.findPackageForDownload(this.version);
       core.info(`Resolved latest version as ${javaRelease.version}`);
-      core.info(foundJava?.version ?? '');
-      core.info(javaRelease.version ?? '');
       if (foundJava?.version === javaRelease.version) {
         core.info(`Resolved Java ${foundJava.version} from tool-cache`);
       } else {

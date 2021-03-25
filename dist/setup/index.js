@@ -3970,7 +3970,6 @@ class JavaBase {
         this.checkLatest = installerOptions.checkLatest;
     }
     setupJava() {
-        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             let foundJava = this.findInToolcache();
             if (foundJava && !this.checkLatest) {
@@ -3980,8 +3979,6 @@ class JavaBase {
                 core.info('Trying to resolve the latest version from remote');
                 const javaRelease = yield this.findPackageForDownload(this.version);
                 core.info(`Resolved latest version as ${javaRelease.version}`);
-                core.info((_a = foundJava === null || foundJava === void 0 ? void 0 : foundJava.version) !== null && _a !== void 0 ? _a : '');
-                core.info((_b = javaRelease.version) !== null && _b !== void 0 ? _b : '');
                 if ((foundJava === null || foundJava === void 0 ? void 0 : foundJava.version) === javaRelease.version) {
                     core.info(`Resolved Java ${foundJava.version} from tool-cache`);
                 }
