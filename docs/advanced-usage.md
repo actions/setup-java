@@ -9,6 +9,7 @@
 - [Testing against different platforms](#Testing-against-different-platforms)
 - [Publishing using Apache Maven](#Publishing-using-Apache-Maven)
 - [Publishing using Gradle](#Publishing-using-Gradle)
+- [Hosted Tool Cache](#Hosted-Tool-Cache)
 
 See [action.yml](../action.yml) for more details on task inputs.
 
@@ -291,3 +292,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
 ```
+
+## Hosted Tool Cache
+GitHub Hosted Runners have a tool cache that comes with some Java versions pre-installed. This tool cache helps speed up runs and tool setup by not requiring any new downloads. There is an environment variable called `RUNNER_TOOL_CACHE` on each runner that describes the location of this tools cache and this is where you can find the pre-installed versions of Java. `setup-java` works by taking a specific version of Java in this tool cache and adding it to PATH if the version, architecture and distribution match. 
+
+Currently, LTS versions of Adopt OpenJDK (`adopt`) are cached on the GitHub Hosted Runners.
+
+The tools cache gets updated on a weekly basis. For information regarding locally cached versions of Java on GitHub hosted runners, check out [GitHub Actions Virtual Environments](https://github.com/actions/virtual-environments).  

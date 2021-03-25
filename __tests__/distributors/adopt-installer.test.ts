@@ -27,19 +27,19 @@ describe('getAvailableVersions', () => {
 
   it.each([
     [
-      { version: '11', architecture: 'x64', packageType: 'jdk' },
+      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
       'os=mac&architecture=x64&image_type=jdk&release_type=ga&page_size=20&page=0'
     ],
     [
-      { version: '11', architecture: 'x86', packageType: 'jdk' },
+      { version: '11', architecture: 'x86', packageType: 'jdk', checkLatest: false },
       'os=mac&architecture=x86&image_type=jdk&release_type=ga&page_size=20&page=0'
     ],
     [
-      { version: '11', architecture: 'x64', packageType: 'jre' },
+      { version: '11', architecture: 'x64', packageType: 'jre', checkLatest: false },
       'os=mac&architecture=x64&image_type=jre&release_type=ga&page_size=20&page=0'
     ],
     [
-      { version: '11-ea', architecture: 'x64', packageType: 'jdk' },
+      { version: '11-ea', architecture: 'x64', packageType: 'jdk', checkLatest: false },
       'os=mac&architecture=x64&image_type=jdk&release_type=ea&page_size=20&page=0'
     ]
   ])(
@@ -79,7 +79,8 @@ describe('getAvailableVersions', () => {
     const distribution = new AdoptDistribution({
       version: '11',
       architecture: 'x64',
-      packageType: 'jdk'
+      packageType: 'jdk',
+      checkLatest: false
     });
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).not.toBeNull();
@@ -104,7 +105,8 @@ describe('findPackageForDownload', () => {
     const distribution = new AdoptDistribution({
       version: '11',
       architecture: 'x64',
-      packageType: 'jdk'
+      packageType: 'jdk',
+      checkLatest: false
     });
     distribution['getAvailableVersions'] = async () => manifestData;
     const resolvedVersion = await distribution['findPackageForDownload'](input);
@@ -115,7 +117,8 @@ describe('findPackageForDownload', () => {
     const distribution = new AdoptDistribution({
       version: '11',
       architecture: 'x64',
-      packageType: 'jdk'
+      packageType: 'jdk',
+      checkLatest: false
     });
     distribution['getAvailableVersions'] = async () => manifestData;
     await expect(distribution['findPackageForDownload']('9.0.8')).rejects.toThrowError(
@@ -127,7 +130,8 @@ describe('findPackageForDownload', () => {
     const distribution = new AdoptDistribution({
       version: '11',
       architecture: 'x64',
-      packageType: 'jdk'
+      packageType: 'jdk',
+      checkLatest: false
     });
     distribution['getAvailableVersions'] = async () => manifestData;
     await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrowError(
@@ -139,7 +143,8 @@ describe('findPackageForDownload', () => {
     const distribution = new AdoptDistribution({
       version: '11',
       architecture: 'x64',
-      packageType: 'jdk'
+      packageType: 'jdk',
+      checkLatest: false
     });
     distribution['getAvailableVersions'] = async () => [];
     await expect(distribution['findPackageForDownload']('11')).rejects.toThrowError(

@@ -20,6 +20,10 @@ inputs:
   jdkFile:
     description: 'Path to where the compressed JDK is located'
     required: false
+  check-latest:
+    description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec'
+    required: false
+    default: false
   server-id:
     description: 'ID of the distributionManagement repository in the pom.xml
        file. Default is `github`'
