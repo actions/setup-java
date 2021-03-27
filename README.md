@@ -48,8 +48,6 @@ The `java-version` input supports an exact version or a version range using [Sem
 - more specific versions: `11.0`, `11.0.4`, `8.0.232`, `8.0.282+8`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`, `15.0.0-ea.2`, `15.0.0+2-ea`
 
-**Note:** 4-digit notation will always force action to skip checking pre-cached versions and download version in runtime.
-
 #### Supported distributions
 Currently, the following distributions are supported:
 | Keyword | Distribution | Official site | License |

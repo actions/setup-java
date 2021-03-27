@@ -41,8 +41,6 @@ export abstract class JavaBase {
       core.info('Trying to resolve the latest version from remote');
       const javaRelease = await this.findPackageForDownload(this.version);
       core.info(`Resolved latest version as ${javaRelease.version}`);
-      core.info(foundJava?.version ?? '');
-      core.info(javaRelease.version ?? '');
       if (foundJava?.version === javaRelease.version) {
         core.info(`Resolved Java ${foundJava.version} from tool-cache`);
       } else {
@@ -70,10 +68,17 @@ export abstract class JavaBase {
 
   protected getToolcacheVersionName(version: string): string {
     if (!this.stable) {
-      const cleanVersion = semver.clean(version);
-      return `${cleanVersion}-ea`;
+      if (version.includes('+')) {
+        return version.replace('+', '-ea.');
+      } else {
+        return `${version}-ea`;
+      }
     }
-    return version;
+
+    // Kotlin and some Java dependencies don't work properly when Java path contains "+" sign
+    // so replace "/hostedtoolcache/Java/11.0.3+4/x64" to "/hostedtoolcache/Java/11.0.3-4/x64" when saves to cache
+    // related issue: https://github.com/actions/virtual-environments/issues/3014
+    return version.replace('+', '-');
   }
 
   protected findInToolcache(): JavaInstallerResults | null {
@@ -81,27 +86,34 @@ export abstract class JavaBase {
     // if *-ea is provided, take only ea versions from toolcache, otherwise - only stable versions
     const availableVersions = tc
       .findAllVersions(this.toolcacheFolderName, this.architecture)
-      .filter(item => item.endsWith('-ea') === !this.stable);
+      .map(item => {
+        return {
+          version: item
+            .replace('-ea.', '+')
+            .replace(/-ea$/, '')
+            // Kotlin and some Java dependencies don't work properly when Java path contains "+" sign
+            // so replace "/hostedtoolcache/Java/11.0.3-4/x64" to "/hostedtoolcache/Java/11.0.3+4/x64" when retrieves  to cache
+            // related issue: https://github.com/actions/virtual-environments/issues/3014
+            .replace('-', '+'),
+          path: getToolcachePath(this.toolcacheFolderName, item, this.architecture) || '',
+          stable: !item.includes('-ea')
+        };
+      })
+      .filter(item => item.stable === this.stable);
 
     const satisfiedVersions = availableVersions
-      .filter(item => isVersionSatisfies(this.version, item.replace(/-ea$/, '')))
-      .sort(semver.rcompare);
+      .filter(item => isVersionSatisfies(this.version, item.version))
+      .filter(item => item.path)
+      .sort((a, b) => {
+        return -semver.compareBuild(a.version, b.version);
+      });
     if (!satisfiedVersions || satisfiedVersions.length === 0) {
       return null;
     }
 
-    const javaPath = getToolcachePath(
-      this.toolcacheFolderName,
-      satisfiedVersions[0],
-      this.architecture
-    );
-    if (!javaPath) {
-      return null;
-    }
-
     return {
-      version: getVersionFromToolcachePath(javaPath),
-      path: javaPath
+      version: satisfiedVersions[0].version,
+      path: satisfiedVersions[0].path
     };
   }
 

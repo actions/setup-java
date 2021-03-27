@@ -103,24 +103,27 @@ describe('findInToolcache', () => {
   });
 
   it.each([
-    ['11', '11.0.3'],
-    ['11.0', '11.0.3'],
-    ['11.0.1', '11.0.1'],
-    ['11.0.3', '11.0.3'],
-    ['15', '15.0.2'],
-    ['x', '15.0.2'],
-    ['x-ea', '17.4.4-ea'],
-    ['11-ea', '11.3.2-ea'],
-    ['11.2-ea', '11.2.1-ea'],
-    ['11.2.1-ea', '11.2.1-ea']
+    ['11', { version: '11.0.3+2', versionInPath: '11.0.3-2' }],
+    ['11.0', { version: '11.0.3+2', versionInPath: '11.0.3-2' }],
+    ['11.0.1', { version: '11.0.1', versionInPath: '11.0.1' }],
+    ['11.0.3', { version: '11.0.3+2', versionInPath: '11.0.3-2' }],
+    ['15', { version: '15.0.2+4', versionInPath: '15.0.2-4' }],
+    ['x', { version: '15.0.2+4', versionInPath: '15.0.2-4' }],
+    ['x-ea', { version: '17.4.4', versionInPath: '17.4.4-ea' }],
+    ['11-ea', { version: '11.3.3+5.2.1231421', versionInPath: '11.3.3-ea.5.2.1231421' }],
+    ['11.2-ea', { version: '11.2.1', versionInPath: '11.2.1-ea' }],
+    ['11.2.1-ea', { version: '11.2.1', versionInPath: '11.2.1-ea' }]
   ])('should choose correct java from tool-cache for input %s', (input, expected) => {
     spyTcFindAllVersions.mockReturnValue([
       '17.4.4-ea',
       '11.0.2',
-      '15.0.2',
-      '11.0.3',
+      '15.0.2-4',
+      '11.0.3-2',
       '11.2.1-ea',
       '11.3.2-ea',
+      '11.3.2-ea.5',
+      '11.3.3-ea.5.2.1231421',
+      '12.3.2-0',
       '11.0.1'
     ]);
     spyGetToolcachePath.mockImplementation(
@@ -134,7 +137,10 @@ describe('findInToolcache', () => {
       checkLatest: false
     });
     const foundVersion = mockJavaBase['findInToolcache']();
-    expect(foundVersion?.version).toEqual(expected);
+    expect(foundVersion).toEqual({
+      version: expected.version,
+      path: `/hostedtoolcache/Java_Empty_jdk/${expected.versionInPath}/x64`
+    });
   });
 });
 
@@ -316,5 +322,30 @@ describe('normalizeVersion', () => {
     expect(DummyJavaBase.prototype.normalizeVersion.bind(null, version)).toThrowError(
       `The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`
     );
+  });
+});
+
+describe('getToolcacheVersionName', () => {
+  const DummyJavaBase = JavaBase as any;
+
+  it.each([
+    [{ version: '11', stable: true }, '11'],
+    [{ version: '11.0.2', stable: true }, '11.0.2'],
+    [{ version: '11.0.2+4', stable: true }, '11.0.2-4'],
+    [{ version: '11.0.2+4.1.2563234', stable: true }, '11.0.2-4.1.2563234'],
+    [{ version: '11.0', stable: false }, '11.0-ea'],
+    [{ version: '11.0.3', stable: false }, '11.0.3-ea'],
+    [{ version: '11.0.3+4', stable: false }, '11.0.3-ea.4'],
+    [{ version: '11.0.3+4.2.256', stable: false }, '11.0.3-ea.4.2.256']
+  ])('returns correct version name for %s', (input, expected) => {
+    const inputVersion = input.stable ? '11' : '11-ea';
+    const mockJavaBase = new EmptyJavaBase({
+      version: inputVersion,
+      packageType: 'jdk',
+      architecture: 'x64',
+      checkLatest: false
+    });
+    const actual = mockJavaBase['getToolcacheVersionName'](input.version);
+    expect(actual).toBe(expected);
   });
 });
