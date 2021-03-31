@@ -6,7 +6,7 @@
 
 This action sets up a java environment for use in actions by:
 
-- Seeting up a requested version of java, adding it to PATH, and setting up JAVA_HOME. By default, requested JDKs are populated from the community [Zulu builds of OpenJDK](http://static.azul.com/zulu/bin/), but multiple distributions are supported. Requested JDK distributions (when specified) are located via the [Foojay Disco API](https://github.com/foojay2020/discoapi).
+- Setting up a requested version of java, adding it to PATH, and setting up JAVA_HOME. By default, requested JDKs are populated from the community [Zulu builds of OpenJDK](http://static.azul.com/zulu/bin/), but multiple distributions are supported. Requested JDK distributions (when specified) are located via the [Foojay Disco API](https://github.com/foojay2020/discoapi).
 - registering problem matchers for error output
 
 # Usage
