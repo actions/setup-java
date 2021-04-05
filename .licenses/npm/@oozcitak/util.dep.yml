@@ -1,9 +1,9 @@
 ---
-name: "@oozcitak/url"
-version: 1.0.4
+name: "@oozcitak/util"
+version: 8.3.8
 type: npm
-summary: An implementation of the URL Living Standard
-homepage: http://github.com/oozcitak/url
+summary: Utility functions
+homepage: http://github.com/oozcitak/util
 license: mit
 licenses:
 - sources: LICENSE
