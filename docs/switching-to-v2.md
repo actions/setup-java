@@ -5,7 +5,7 @@ Use the `zulu` keyword if you would like to continue using the same distribution
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: actions/setup-java@v2-preview
+- uses: actions/setup-java@v2
   with:
     distribution: 'zulu'
     java-version: '11'
@@ -22,7 +22,7 @@ steps:
 - run: |
     download_url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz"
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v2-preview
+- uses: actions/setup-java@v2
   with:
     distribution: 'jdkFile'
     jdkFile: ${{ runner.temp }}/java_package.tar.gz

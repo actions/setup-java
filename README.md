@@ -24,7 +24,7 @@ Inputs `java-version` and `distribution` are mandatory. See [Supported distribut
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: actions/setup-java@v2-preview
+- uses: actions/setup-java@v2
   with:
     distribution: 'adopt' # See 'Supported distributions' for available options
     java-version: '11'
@@ -35,7 +35,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: actions/setup-java@v2-preview
+- uses: actions/setup-java@v2
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
     java-version: '11'
@@ -68,7 +68,7 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: actions/setup-java@v2-preview
+- uses: actions/setup-java@v2
   with:
     distribution: 'adopt'
     java-version: '11'
@@ -88,7 +88,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup java
-        uses: actions/setup-java@v2-preview
+        uses: actions/setup-java@v2
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
