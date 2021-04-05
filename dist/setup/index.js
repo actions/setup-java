@@ -1476,23 +1476,28 @@ exports.string = string;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getJavaDistribution = void 0;
-const installer_1 = __webpack_require__(584);
-const installer_2 = __webpack_require__(144);
-const installer_3 = __webpack_require__(393);
+const installer_1 = __webpack_require__(144);
+const installer_2 = __webpack_require__(393);
+const installer_3 = __webpack_require__(584);
 var JavaDistribution;
 (function (JavaDistribution) {
     JavaDistribution["Adopt"] = "adopt";
+    JavaDistribution["AdoptHotspot"] = "adopt-hotspot";
+    JavaDistribution["AdoptOpenJ9"] = "adopt-openj9";
     JavaDistribution["Zulu"] = "zulu";
     JavaDistribution["JdkFile"] = "jdkfile";
 })(JavaDistribution || (JavaDistribution = {}));
 function getJavaDistribution(distributionName, installerOptions, jdkFile) {
     switch (distributionName) {
         case JavaDistribution.JdkFile:
-            return new installer_2.LocalDistribution(installerOptions, jdkFile);
+            return new installer_1.LocalDistribution(installerOptions, jdkFile);
         case JavaDistribution.Adopt:
-            return new installer_1.AdoptDistribution(installerOptions);
+        case JavaDistribution.AdoptHotspot:
+            return new installer_3.AdoptDistribution(installerOptions, installer_3.AdoptImplementation.Hotspot);
+        case JavaDistribution.AdoptOpenJ9:
+            return new installer_3.AdoptDistribution(installerOptions, installer_3.AdoptImplementation.OpenJ9);
         case JavaDistribution.Zulu:
-            return new installer_3.ZuluDistribution(installerOptions);
+            return new installer_2.ZuluDistribution(installerOptions);
         default:
             return null;
     }
@@ -26889,7 +26894,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AdoptDistribution = void 0;
+exports.AdoptDistribution = exports.AdoptImplementation = void 0;
 const core = __importStar(__webpack_require__(470));
 const tc = __importStar(__webpack_require__(139));
 const fs_1 = __importDefault(__webpack_require__(747));
@@ -26897,9 +26902,15 @@ const path_1 = __importDefault(__webpack_require__(622));
 const semver_1 = __importDefault(__webpack_require__(876));
 const base_installer_1 = __webpack_require__(83);
 const util_1 = __webpack_require__(322);
+var AdoptImplementation;
+(function (AdoptImplementation) {
+    AdoptImplementation["Hotspot"] = "Hotspot";
+    AdoptImplementation["OpenJ9"] = "OpenJ9";
+})(AdoptImplementation = exports.AdoptImplementation || (exports.AdoptImplementation = {}));
 class AdoptDistribution extends base_installer_1.JavaBase {
-    constructor(installerOptions) {
-        super('Adopt', installerOptions);
+    constructor(installerOptions, jvmImpl) {
+        super(`Adopt-${jvmImpl}`, installerOptions);
+        this.jvmImpl = jvmImpl.toLowerCase();
     }
     findPackageForDownload(version) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -26944,6 +26955,14 @@ class AdoptDistribution extends base_installer_1.JavaBase {
             return { version: javaRelease.version, path: javaPath };
         });
     }
+    get toolcacheFolderName() {
+        if (this.jvmImpl === AdoptImplementation.Hotspot) {
+            // exclude Hotspot postfix from distribution name because Hosted runners have pre-cached Adopt OpenJDK under "Java_Adopt_jdk"
+            // for more information see: https://github.com/actions/setup-java/pull/155#discussion_r610451063
+            return `Java_Adopt_${this.packageType}`;
+        }
+        return super.toolcacheFolderName;
+    }
     getAvailableVersions() {
         return __awaiter(this, void 0, void 0, function* () {
             const platform = this.getPlatformOption();
@@ -26956,13 +26975,13 @@ class AdoptDistribution extends base_installer_1.JavaBase {
                 `project=jdk`,
                 'vendor=adoptopenjdk',
                 `heap_size=normal`,
-                `jvm_impl=hotspot`,
                 'sort_method=DEFAULT',
                 'sort_order=DESC',
                 `os=${platform}`,
                 `architecture=${arch}`,
                 `image_type=${imageType}`,
-                `release_type=${releaseType}`
+                `release_type=${releaseType}`,
+                `jvm_impl=${this.jvmImpl}`
             ].join('&');
             // need to iterate through all pages to retrieve the list of all versions
             // Adopt API doesn't provide way to retrieve the count of pages to iterate so infinity loop

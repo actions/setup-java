@@ -22,7 +22,7 @@ steps:
 - uses: actions/checkout@v2
 - uses: actions/setup-java@v2
   with:
-    distribution: 'adopt'
+    distribution: 'adopt-hotspot' # See 'Supported distributions' for available options @ README.md
     java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
