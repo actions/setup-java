@@ -33,11 +33,7 @@ describe('gpg tests', () => {
 
       expect(keyId).toBeNull();
 
-      expect(exec.exec).toHaveBeenCalledWith(
-        'gpg',
-        expect.anything(),
-        expect.anything()
-      );
+      expect(exec.exec).toHaveBeenCalledWith('gpg', expect.anything(), expect.anything());
     });
   });
 
@@ -46,11 +42,7 @@ describe('gpg tests', () => {
       const keyId = 'asdfhjkl';
       await gpg.deleteKey(keyId);
 
-      expect(exec.exec).toHaveBeenCalledWith(
-        'gpg',
-        expect.anything(),
-        expect.anything()
-      );
+      expect(exec.exec).toHaveBeenCalledWith('gpg', expect.anything(), expect.anything());
     });
   });
 });

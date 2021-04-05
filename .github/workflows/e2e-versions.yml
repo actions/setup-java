@@ -1,0 +1,198 @@
+name: Validate Java e2e
+on:
+  push:
+    branches:
+      - main
+      - releases/*
+      - v2-preview
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  setup-java-major-versions:
+    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['adopt', 'zulu']
+        version: ['8', '11', '15']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          java-version: ${{ matrix.version }}
+          distribution: ${{ matrix.distribution }}
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
+  setup-java-major-minor-versions:
+    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    needs: setup-java-major-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['adopt', 'zulu']
+        version:
+        - '11.0'
+        - '8.0.282'
+        - '11.0.2+7'
+        include:
+          - distribution: 'adopt'
+            version: '12.0.2+10.1'
+            os: macos-latest
+          - distribution: 'adopt'
+            version: '12.0.2+10.1'
+            os: windows-latest
+          - distribution: 'adopt'
+            version: '12.0.2+10.1'
+            os: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          java-version: ${{ matrix.version }}
+          distribution: ${{ matrix.distribution }}
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
+  setup-java-check-latest:
+    name: ${{ matrix.distribution }} ${{ matrix.version }} - check-latest flag - ${{ matrix.os }}
+    needs: setup-java-major-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['adopt', 'zulu']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version: 11
+          check-latest: true
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+  
+  setup-java-ea-versions-zulu:
+    name: zulu ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    needs: setup-java-major-minor-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        version: ['17-ea', '15.0.0-ea.14']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          java-version: ${{ matrix.version }}
+          distribution: zulu
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
+  setup-java-ea-versions-adopt:
+    name: adopt ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    needs: setup-java-major-minor-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        version: ['17-ea', '15.0.0-ea.14.1.202003160455']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          java-version: ${{ matrix.version }}
+          distribution: adopt
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
+  setup-java-custom-package-type:
+    name: ${{ matrix.distribution }} ${{ matrix.version }} (${{ matrix.java-package }}-x64) - ${{ matrix.os }}
+    needs: setup-java-major-minor-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['adopt', 'zulu']
+        java-package: ['jre']
+        version:
+        - '15.0'
+        include:
+          - distribution: 'zulu'
+            java-package: jre+fx
+            version: '8'
+            os: ubuntu-latest
+          - distribution: 'zulu'
+            java-package: jdk+fx
+            version: '8.0.242'
+            os: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          java-version: ${{ matrix.version }}
+          java-package: ${{ matrix.java-package }}
+          distribution: ${{ matrix.distribution }}
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
+  setup-java-custom-architecture:
+    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x86) - ${{ matrix.os }}
+    needs: setup-java-major-minor-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Only Zulu provides x86 arch for now and only for windows / ubuntu
+        os: [windows-latest, ubuntu-latest]
+        distribution: ['zulu']
+        version: ['11']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version: ${{ matrix.version }}
+          architecture: x86
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
