@@ -20,7 +20,7 @@ Inputs `java-version` and `distribution` are mandatory and needs to be provided.
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: actions/setup-java@v2-preview
+- uses: actions/setup-java@v2
   with:
     distribution: 'adopt'
     java-version: '11'
@@ -31,7 +31,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: actions/setup-java@v2-preview
+- uses: actions/setup-java@v2
   with:
     distribution: 'zulu'
     java-version: '11'
@@ -43,7 +43,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: actions/setup-java@v2-preview
+- uses: actions/setup-java@v2
   with:
     distribution: '<distribution>'
     java-version: '11'
@@ -57,7 +57,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v2
-- uses: actions/setup-java@v2-preview
+- uses: actions/setup-java@v2
   with:
     distribution: '<distribution>'
     java-version: '11'
@@ -73,7 +73,7 @@ steps:
 - run: |
     download_url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz"
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v2-preview
+- uses: actions/setup-java@v2
   with:
     distribution: 'jdkFile'
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
@@ -97,7 +97,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup java
-        uses: actions/setup-java@v2-preview
+        uses: actions/setup-java@v2
         with:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
@@ -117,7 +117,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Setup java
-        uses: actions/setup-java@v2-preview
+        uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
           java-version: ${{ matrix.java }}
@@ -135,7 +135,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 11
-      uses: actions/setup-java@v2-preview
+      uses: actions/setup-java@v2
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -149,7 +149,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
 
     - name: Set up Apache Maven Central
-      uses: actions/setup-java@v2-preview
+      uses: actions/setup-java@v2
       with: # running setup-java again overwrites the settings.xml
         distribution: 'adopt'
         java-version: '11'
@@ -245,7 +245,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Set up JDK 11
-      uses: actions/setup-java@v2-preview
+      uses: actions/setup-java@v2
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -277,7 +277,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 11 for Shared Runner
-      uses: actions/setup-java@v2-preview
+      uses: actions/setup-java@v2
       with:
         distribution: '<distribution>'
         java-version: '11'
