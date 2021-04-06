@@ -17,7 +17,7 @@ This action provides the following functionality for GitHub Actions runners:
 - V2 requires you to specify distribution along with the version. V1 defaults to Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2
 
 ## Usage
-Inputs `java-version` and `distribution` are mandatory. See [Supported distributions](README.md#Supported-distributions) section for a list of available options.
+Inputs `java-version` and `distribution` are mandatory. See [Supported distributions](#supported-distributions) section for a list of available options.
 
 ### Basic
 **Adopt OpenJDK**
