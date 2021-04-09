@@ -110,6 +110,24 @@ describe('getAvailableVersions', () => {
     expect(availableVersions).not.toBeNull();
     expect(availableVersions.length).toBe(manifestData.length * 2);
   });
+
+  it.each([
+    [AdoptImplementation.Hotspot, 'jdk', 'Java_Adopt_jdk'],
+    [AdoptImplementation.Hotspot, 'jre', 'Java_Adopt_jre'],
+    [AdoptImplementation.OpenJ9, 'jdk', 'Java_Adopt-OpenJ9_jdk'],
+    [AdoptImplementation.OpenJ9, 'jre', 'Java_Adopt-OpenJ9_jre']
+  ])(
+    'find right toolchain folder',
+    (impl: AdoptImplementation, packageType: string, expected: string) => {
+      const distribution = new AdoptDistribution(
+        { version: '11', architecture: 'x64', packageType: packageType, checkLatest: false },
+        impl
+      );
+
+      // @ts-ignore - because it is protected
+      expect(distribution.toolcacheFolderName).toBe(expected);
+    }
+  );
 });
 
 describe('findPackageForDownload', () => {

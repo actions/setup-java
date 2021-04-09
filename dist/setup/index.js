@@ -26910,7 +26910,7 @@ var AdoptImplementation;
 class AdoptDistribution extends base_installer_1.JavaBase {
     constructor(installerOptions, jvmImpl) {
         super(`Adopt-${jvmImpl}`, installerOptions);
-        this.jvmImpl = jvmImpl.toLowerCase();
+        this.jvmImpl = jvmImpl;
     }
     findPackageForDownload(version) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -26981,7 +26981,7 @@ class AdoptDistribution extends base_installer_1.JavaBase {
                 `architecture=${arch}`,
                 `image_type=${imageType}`,
                 `release_type=${releaseType}`,
-                `jvm_impl=${this.jvmImpl}`
+                `jvm_impl=${this.jvmImpl.toLowerCase()}`
             ].join('&');
             // need to iterate through all pages to retrieve the list of all versions
             // Adopt API doesn't provide way to retrieve the count of pages to iterate so infinity loop

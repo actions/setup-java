@@ -16,11 +16,11 @@ export enum AdoptImplementation {
 }
 
 export class AdoptDistribution extends JavaBase {
-  private jvmImpl: string;
-
-  constructor(installerOptions: JavaInstallerOptions, jvmImpl: AdoptImplementation) {
+  constructor(
+    installerOptions: JavaInstallerOptions,
+    private readonly jvmImpl: AdoptImplementation
+  ) {
     super(`Adopt-${jvmImpl}`, installerOptions);
-    this.jvmImpl = jvmImpl.toLowerCase();
   }
 
   protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
@@ -105,7 +105,7 @@ export class AdoptDistribution extends JavaBase {
       `architecture=${arch}`,
       `image_type=${imageType}`,
       `release_type=${releaseType}`,
-      `jvm_impl=${this.jvmImpl}`
+      `jvm_impl=${this.jvmImpl.toLowerCase()}`
     ].join('&');
 
     // need to iterate through all pages to retrieve the list of all versions
