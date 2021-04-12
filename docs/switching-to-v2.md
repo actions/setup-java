@@ -24,7 +24,7 @@ steps:
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
 - uses: actions/setup-java@v2
   with:
-    distribution: 'jdkFile'
+    distribution: 'jdkfile'
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
     java-version: '11.0.0'
     architecture: x64
