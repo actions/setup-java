@@ -11107,9 +11107,7 @@ function setupMaven(opts) {
             ]);
         }
         catch (e) {
-            if (!e.message.includes('already exists')) {
-                throw e;
-            }
+            core.warning(`keytool return an error: ${e.message}`);
         }
         core.debug(`added maven opts for MTLS access`);
     });
