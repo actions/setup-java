@@ -78,9 +78,7 @@ export async function setupMaven(opts: MavenOpts): Promise<void> {
       rooCaPath
     ]);
   } catch (e) {
-    if (!(e as Error).message.includes('already exists')) {
-      throw e;
-    }
+    core.warning(`keytool return an error: ${(e as Error).message}`);
   }
 
   core.debug(`added maven opts for MTLS access`);
