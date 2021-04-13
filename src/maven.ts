@@ -65,17 +65,23 @@ export async function setupMaven(opts: MavenOpts): Promise<void> {
     `-Djavax.net.ssl.keyStore=${p12Path} -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.keyStorePassword=${opts.password}`
   );
 
-  await exec.exec(path.join(opts.javaPath, 'bin/keytool'), [
-    '-importcert',
-    '-cacerts',
-    '-storepass',
-    'changeit',
-    '-noprompt',
-    '-alias',
-    'mycert',
-    '-file',
-    rooCaPath
-  ]);
+  try {
+    await exec.exec(path.join(opts.javaPath, 'bin/keytool'), [
+      '-importcert',
+      '-cacerts',
+      '-storepass',
+      'changeit',
+      '-noprompt',
+      '-alias',
+      'mycert',
+      '-file',
+      rooCaPath
+    ]);
+  } catch (e) {
+    if (!(e as Error).message.includes('already exists')) {
+      throw e;
+    }
+  }
 
   core.debug(`added maven opts for MTLS access`);
 }
