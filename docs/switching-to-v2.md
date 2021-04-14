@@ -16,7 +16,7 @@ steps:
 **General recommendation** — configure CI with the same distribution that is used on your local dev machine.
 
 ## Installing custom Java distribution from local file
-Since the `distribution` input is required in V2, you should specify it using `jdkFile` to continue installing Java from a local file on the runner
+Since the `distribution` input is required in V2, you should specify it using `jdkfile` to continue installing Java from a local file on the runner
 ```yaml
 steps:
 - run: |
