@@ -26,8 +26,8 @@ steps:
 - uses: actions/checkout@v2
 - uses: actions/setup-java@v2
   with:
-    distribution: 'adopt' # See 'Supported distributions' for available options
-    java-version: '11'
+   distribution: 'adopt' # See 'Supported distributions' for available options
+   java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
 
@@ -37,8 +37,8 @@ steps:
 - uses: actions/checkout@v2
 - uses: actions/setup-java@v2
   with:
-    distribution: 'zulu' # See 'Supported distributions' for available options
-    java-version: '11'
+   distribution: 'zulu' # See 'Supported distributions' for available options
+   java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
 
@@ -70,9 +70,9 @@ steps:
 - uses: actions/checkout@v2
 - uses: actions/setup-java@v2
   with:
-    distribution: 'adopt'
-    java-version: '11'
-    check-latest: true
+   distribution: 'adopt'
+   java-version: '11'
+   check-latest: true
 - run: java -cp java HelloWorldApp
 ```
 
@@ -90,8 +90,8 @@ jobs:
       - name: Setup java
         uses: actions/setup-java@v2
         with:
-          distribution: '<distribution>'
-          java-version: ${{ matrix.java }}
+         distribution: '<distribution>'
+         java-version: ${{ matrix.java }}
       - run: java -cp java HelloWorldApp
 ```
 
