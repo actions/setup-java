@@ -25,8 +25,10 @@ export const DISTROS: string[] = [
   'corretto',
   'dragonwell',
   'liberica',
+  'microsoft',
   'ojdk_build',
   'oracle_openjdk',
+  'open_logic',
   'sap_machine',
   'trava',
   'zulu'
