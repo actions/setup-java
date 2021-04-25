@@ -25768,7 +25768,7 @@ exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
-exports.DISCO_URL = 'https://api.foojay.io';
+exports.DISCO_URL = 'https://stage.api.foojay.io';
 exports.PACKAGES_PATH = '/disco/v1.0/packages';
 exports.EPHEMERAL_IDS_PATH = '/disco/v1.0/ephemeral_ids';
 exports.DISTROS = [
@@ -25777,8 +25777,10 @@ exports.DISTROS = [
     'corretto',
     'dragonwell',
     'liberica',
+    'microsoft',
     'ojdk_build',
     'oracle_openjdk',
+    'open_logic',
     'sap_machine',
     'trava',
     'zulu'
@@ -33685,7 +33687,7 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
                 distribution = distro.toLowerCase();
             }
             else {
-                throw new Error(`distro argument '${distro}' is not in [aoj | aoj_openj9 | corretto | dragonwell | liberica | ojdk_build | oracle_openjdk | sap_machine | trava | zulu]`);
+                throw new Error(`distro argument '${distro}' is not in [aoj | aoj_openj9 | corretto | dragonwell | liberica | microsoft | ojdk_build | open_logic | oracle_openjdk | sap_machine | trava | zulu]`);
             }
         }
         else {
