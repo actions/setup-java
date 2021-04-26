@@ -25780,7 +25780,7 @@ exports.DISTROS = [
     'microsoft',
     'ojdk_build',
     'oracle_openjdk',
-    'open_logic',
+    'openlogic',
     'sap_machine',
     'trava',
     'zulu'
@@ -33687,7 +33687,7 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
                 distribution = distro.toLowerCase();
             }
             else {
-                throw new Error(`distro argument '${distro}' is not in [aoj | aoj_openj9 | corretto | dragonwell | liberica | microsoft | ojdk_build | open_logic | oracle_openjdk | sap_machine | trava | zulu]`);
+                throw new Error(`distro argument '${distro}' is not in [aoj | aoj_openj9 | corretto | dragonwell | liberica | microsoft | ojdk_build | openlogic | oracle_openjdk | sap_machine | trava | zulu]`);
             }
         }
         else {
@@ -33701,7 +33701,8 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
         else {
             if (process.platform === 'darwin') {
                 operatingSystem = 'macos';
-                archiveType = ((distribution === 'liberica') || (distribution === 'open_logic')) ? 'zip' : 'tar.gz';
+                let zipArchive = distribution === 'liberica' || distribution === 'openlogic';
+                archiveType = zipArchive ? 'zip' : 'tar.gz';
             }
             else {
                 operatingSystem = 'linux';

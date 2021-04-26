@@ -28,7 +28,7 @@ export const DISTROS: string[] = [
   'microsoft',
   'ojdk_build',
   'oracle_openjdk',
-  'open_logic',
+  'openlogic',
   'sap_machine',
   'trava',
   'zulu'

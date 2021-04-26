@@ -213,7 +213,7 @@ async function getDownloadInfo(
       distribution = distro.toLowerCase();
     } else {
       throw new Error(
-        `distro argument '${distro}' is not in [aoj | aoj_openj9 | corretto | dragonwell | liberica | microsoft | ojdk_build | open_logic | oracle_openjdk | sap_machine | trava | zulu]`
+        `distro argument '${distro}' is not in [aoj | aoj_openj9 | corretto | dragonwell | liberica | microsoft | ojdk_build | openlogic | oracle_openjdk | sap_machine | trava | zulu]`
       );
     }
   } else {
@@ -226,10 +226,9 @@ async function getDownloadInfo(
   } else {
     if (process.platform === 'darwin') {
       operatingSystem = 'macos';
-      archiveType =
-        distribution === 'liberica' || distribution === 'open_logic'
-          ? 'zip'
-          : 'tar.gz';
+      let zipArchive =
+        distribution === 'liberica' || distribution === 'openlogic';
+      archiveType = zipArchive ? 'zip' : 'tar.gz';
     } else {
       operatingSystem = 'linux';
       archiveType = distribution === 'ojdk_build' ? 'zip' : 'tar.gz';
