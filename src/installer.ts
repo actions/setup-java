@@ -226,7 +226,10 @@ async function getDownloadInfo(
   } else {
     if (process.platform === 'darwin') {
       operatingSystem = 'macos';
-      archiveType = distribution === 'liberica' ? 'zip' : 'tar.gz';
+      archiveType =
+        distribution === 'liberica' || distribution === 'open_logic'
+          ? 'zip'
+          : 'tar.gz';
     } else {
       operatingSystem = 'linux';
       archiveType = distribution === 'ojdk_build' ? 'zip' : 'tar.gz';

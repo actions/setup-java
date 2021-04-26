@@ -33701,7 +33701,7 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
         else {
             if (process.platform === 'darwin') {
                 operatingSystem = 'macos';
-                archiveType = distribution === 'liberica' ? 'zip' : 'tar.gz';
+                archiveType = ((distribution === 'liberica') || (distribution === 'open_logic')) ? 'zip' : 'tar.gz';
             }
             else {
                 operatingSystem = 'linux';
