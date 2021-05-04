@@ -141,10 +141,10 @@ jobs:
         java-version: '11'
 
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn --batch-mode --update-snapshots verify
 
-    - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy
+    - name: Publish to GitHub Packages
+      run: mvn --batch-mode deploy
       env:
         GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
 
@@ -160,7 +160,7 @@ jobs:
         gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
 
     - name: Publish to Apache Maven Central
-      run: mvn deploy
+      run: mvn --batch-mode deploy
       env:
         MAVEN_USERNAME: maven_username123
         MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
@@ -285,10 +285,10 @@ jobs:
         settings-path: ${{ github.workspace }} # location for the settings.xml file
 
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn --batch-mode --update-snapshots verify
 
     - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+      run: mvn --batch-mode deploy --settings $GITHUB_WORKSPACE/settings.xml
       env:
         GITHUB_TOKEN: ${{ github.token }}
 ```
