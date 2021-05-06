@@ -25768,7 +25768,7 @@ exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
-exports.DISCO_URL = 'https://stage.api.foojay.io';
+exports.DISCO_URL = 'https://api.foojay.io';
 exports.PACKAGES_PATH = '/disco/v1.0/packages';
 exports.EPHEMERAL_IDS_PATH = '/disco/v1.0/ephemeral_ids';
 exports.DISTROS = [
@@ -33694,19 +33694,23 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
             distribution = 'zulu';
         }
         let archiveType;
+        let libcType;
         if (IS_WINDOWS) {
             operatingSystem = 'windows';
             archiveType = 'zip';
+            libcType = 'c_std_lib';
         }
         else {
             if (process.platform === 'darwin') {
                 operatingSystem = 'macos';
                 let zipArchive = distribution === 'liberica' || distribution === 'openlogic';
                 archiveType = zipArchive ? 'zip' : 'tar.gz';
+                libcType = 'libc';
             }
             else {
                 operatingSystem = 'linux';
                 archiveType = distribution === 'ojdk_build' ? 'zip' : 'tar.gz';
+                libcType = 'glibc';
             }
         }
         let url = constants_1.DISCO_URL + constants_1.PACKAGES_PATH;
@@ -33728,6 +33732,7 @@ function getDownloadInfo(refs, version, arch, javaPackage, distro = 'zulu') {
         url += '&architecture=' + architecture;
         url += '&operating_system=' + operatingSystem;
         url += '&archive_type=' + archiveType;
+        url += '&libc_type=' + libcType;
         if (version.includes('x') ||
             version.includes('ea') ||
             version.startsWith('1.')) {
