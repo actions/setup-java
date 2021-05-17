@@ -7,13 +7,20 @@ import semver from 'semver';
 
 import { JavaBase } from '../base-installer';
 import { IAdoptAvailableVersions } from './models';
-import { JavaInstallerOptions, JavaDownloadRelease, JavaInstallerResults } from '../base-models';
-import { MACOS_JAVA_CONTENT_POSTFIX } from '../../constants';
+import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
 import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
 
+export enum AdoptImplementation {
+  Hotspot = 'Hotspot',
+  OpenJ9 = 'OpenJ9'
+}
+
 export class AdoptDistribution extends JavaBase {
-  constructor(installerOptions: JavaInstallerOptions) {
-    super('Adopt', installerOptions);
+  constructor(
+    installerOptions: JavaInstallerOptions,
+    private readonly jvmImpl: AdoptImplementation
+  ) {
+    super(`Adopt-${jvmImpl}`, installerOptions);
   }
 
   protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
@@ -70,6 +77,15 @@ export class AdoptDistribution extends JavaBase {
     return { version: javaRelease.version, path: javaPath };
   }
 
+  protected get toolcacheFolderName(): string {
+    if (this.jvmImpl === AdoptImplementation.Hotspot) {
+      // exclude Hotspot postfix from distribution name because Hosted runners have pre-cached Adopt OpenJDK under "Java_Adopt_jdk"
+      // for more information see: https://github.com/actions/setup-java/pull/155#discussion_r610451063
+      return `Java_Adopt_${this.packageType}`;
+    }
+    return super.toolcacheFolderName;
+  }
+
   private async getAvailableVersions(): Promise<IAdoptAvailableVersions[]> {
     const platform = this.getPlatformOption();
     const arch = this.architecture;
@@ -83,13 +99,13 @@ export class AdoptDistribution extends JavaBase {
       `project=jdk`,
       'vendor=adoptopenjdk',
       `heap_size=normal`,
-      `jvm_impl=hotspot`,
       'sort_method=DEFAULT',
       'sort_order=DESC',
       `os=${platform}`,
       `architecture=${arch}`,
       `image_type=${imageType}`,
-      `release_type=${releaseType}`
+      `release_type=${releaseType}`,
+      `jvm_impl=${this.jvmImpl.toLowerCase()}`
     ].join('&');
 
     // need to iterate through all pages to retrieve the list of all versions

@@ -1,8 +1,6 @@
 import { HttpClient } from '@actions/http-client';
 
-import * as semver from 'semver';
-
-import { AdoptDistribution } from '../../src/distributions/adopt/installer';
+import { AdoptDistribution, AdoptImplementation } from '../../src/distributions/adopt/installer';
 import { JavaInstallerOptions } from '../../src/distributions/base-models';
 
 let manifestData = require('../data/adopt.json') as [];
@@ -28,26 +26,54 @@ describe('getAvailableVersions', () => {
   it.each([
     [
       { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
-      'os=mac&architecture=x64&image_type=jdk&release_type=ga&page_size=20&page=0'
+      AdoptImplementation.Hotspot,
+      'os=mac&architecture=x64&image_type=jdk&release_type=ga&jvm_impl=hotspot&page_size=20&page=0'
     ],
     [
       { version: '11', architecture: 'x86', packageType: 'jdk', checkLatest: false },
-      'os=mac&architecture=x86&image_type=jdk&release_type=ga&page_size=20&page=0'
+      AdoptImplementation.Hotspot,
+      'os=mac&architecture=x86&image_type=jdk&release_type=ga&jvm_impl=hotspot&page_size=20&page=0'
     ],
     [
       { version: '11', architecture: 'x64', packageType: 'jre', checkLatest: false },
-      'os=mac&architecture=x64&image_type=jre&release_type=ga&page_size=20&page=0'
+      AdoptImplementation.Hotspot,
+      'os=mac&architecture=x64&image_type=jre&release_type=ga&jvm_impl=hotspot&page_size=20&page=0'
     ],
     [
       { version: '11-ea', architecture: 'x64', packageType: 'jdk', checkLatest: false },
-      'os=mac&architecture=x64&image_type=jdk&release_type=ea&page_size=20&page=0'
+      AdoptImplementation.Hotspot,
+      'os=mac&architecture=x64&image_type=jdk&release_type=ea&jvm_impl=hotspot&page_size=20&page=0'
+    ],
+    [
+      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      AdoptImplementation.OpenJ9,
+      'os=mac&architecture=x64&image_type=jdk&release_type=ga&jvm_impl=openj9&page_size=20&page=0'
+    ],
+    [
+      { version: '11', architecture: 'x86', packageType: 'jdk', checkLatest: false },
+      AdoptImplementation.OpenJ9,
+      'os=mac&architecture=x86&image_type=jdk&release_type=ga&jvm_impl=openj9&page_size=20&page=0'
+    ],
+    [
+      { version: '11', architecture: 'x64', packageType: 'jre', checkLatest: false },
+      AdoptImplementation.OpenJ9,
+      'os=mac&architecture=x64&image_type=jre&release_type=ga&jvm_impl=openj9&page_size=20&page=0'
+    ],
+    [
+      { version: '11-ea', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      AdoptImplementation.OpenJ9,
+      'os=mac&architecture=x64&image_type=jdk&release_type=ea&jvm_impl=openj9&page_size=20&page=0'
     ]
   ])(
     'build correct url for %s',
-    async (installerOptions: JavaInstallerOptions, expectedParameters) => {
-      const distribution = new AdoptDistribution(installerOptions);
+    async (
+      installerOptions: JavaInstallerOptions,
+      impl: AdoptImplementation,
+      expectedParameters
+    ) => {
+      const distribution = new AdoptDistribution(installerOptions, impl);
       const baseUrl = 'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D';
-      const expectedUrl = `${baseUrl}?project=jdk&vendor=adoptopenjdk&heap_size=normal&jvm_impl=hotspot&sort_method=DEFAULT&sort_order=DESC&${expectedParameters}`;
+      const expectedUrl = `${baseUrl}?project=jdk&vendor=adoptopenjdk&heap_size=normal&sort_method=DEFAULT&sort_order=DESC&${expectedParameters}`;
       distribution['getPlatformOption'] = () => 'mac';
 
       await distribution['getAvailableVersions']();
@@ -76,16 +102,32 @@ describe('getAvailableVersions', () => {
         result: []
       });
 
-    const distribution = new AdoptDistribution({
-      version: '11',
-      architecture: 'x64',
-      packageType: 'jdk',
-      checkLatest: false
-    });
+    const distribution = new AdoptDistribution(
+      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      AdoptImplementation.Hotspot
+    );
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).not.toBeNull();
     expect(availableVersions.length).toBe(manifestData.length * 2);
   });
+
+  it.each([
+    [AdoptImplementation.Hotspot, 'jdk', 'Java_Adopt_jdk'],
+    [AdoptImplementation.Hotspot, 'jre', 'Java_Adopt_jre'],
+    [AdoptImplementation.OpenJ9, 'jdk', 'Java_Adopt-OpenJ9_jdk'],
+    [AdoptImplementation.OpenJ9, 'jre', 'Java_Adopt-OpenJ9_jre']
+  ])(
+    'find right toolchain folder',
+    (impl: AdoptImplementation, packageType: string, expected: string) => {
+      const distribution = new AdoptDistribution(
+        { version: '11', architecture: 'x64', packageType: packageType, checkLatest: false },
+        impl
+      );
+
+      // @ts-ignore - because it is protected
+      expect(distribution.toolcacheFolderName).toBe(expected);
+    }
+  );
 });
 
 describe('findPackageForDownload', () => {
@@ -102,24 +144,20 @@ describe('findPackageForDownload', () => {
     ['15.0.1+9', '15.0.1+9'],
     ['15.0.1+9.1', '15.0.1+9.1']
   ])('version is resolved correctly %s -> %s', async (input, expected) => {
-    const distribution = new AdoptDistribution({
-      version: '11',
-      architecture: 'x64',
-      packageType: 'jdk',
-      checkLatest: false
-    });
+    const distribution = new AdoptDistribution(
+      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      AdoptImplementation.Hotspot
+    );
     distribution['getAvailableVersions'] = async () => manifestData;
     const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
   });
 
   it('version is found but binaries list is empty', async () => {
-    const distribution = new AdoptDistribution({
-      version: '11',
-      architecture: 'x64',
-      packageType: 'jdk',
-      checkLatest: false
-    });
+    const distribution = new AdoptDistribution(
+      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      AdoptImplementation.Hotspot
+    );
     distribution['getAvailableVersions'] = async () => manifestData;
     await expect(distribution['findPackageForDownload']('9.0.8')).rejects.toThrowError(
       /Could not find satisfied version for SemVer */
@@ -127,12 +165,10 @@ describe('findPackageForDownload', () => {
   });
 
   it('version is not found', async () => {
-    const distribution = new AdoptDistribution({
-      version: '11',
-      architecture: 'x64',
-      packageType: 'jdk',
-      checkLatest: false
-    });
+    const distribution = new AdoptDistribution(
+      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      AdoptImplementation.Hotspot
+    );
     distribution['getAvailableVersions'] = async () => manifestData;
     await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrowError(
       /Could not find satisfied version for SemVer */
@@ -140,12 +176,10 @@ describe('findPackageForDownload', () => {
   });
 
   it('version list is empty', async () => {
-    const distribution = new AdoptDistribution({
-      version: '11',
-      architecture: 'x64',
-      packageType: 'jdk',
-      checkLatest: false
-    });
+    const distribution = new AdoptDistribution(
+      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      AdoptImplementation.Hotspot
+    );
     distribution['getAvailableVersions'] = async () => [];
     await expect(distribution['findPackageForDownload']('11')).rejects.toThrowError(
       /Could not find satisfied version for SemVer */
