@@ -1,0 +1,15 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: actions-setup-java
+  description: |
+    This action configure java projects to be executed on GitHub Actions
+  annotations:
+    github.com/project-slug: Tradeshift/actions-setup-java
+  tags:
+    - typescript
+    - github-action
+spec:
+  type: library
+  owner: developer-productivity
+  lifecycle: production
