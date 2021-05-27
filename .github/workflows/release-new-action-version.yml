@@ -10,6 +10,8 @@ on:
 
 env:
   TAG_NAME: ${{ github.event.inputs.TAG_NAME || github.event.release.tag_name }}
+permissions:
+  contents: write
 
 jobs:
   update_tag:
@@ -17,8 +19,6 @@ jobs:
     environment:
       name: releaseNewActionVersion
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
     - name: Update the ${{ env.TAG_NAME }} tag
       id: update-major-tag
