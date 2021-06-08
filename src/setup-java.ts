@@ -6,7 +6,7 @@ import * as path from 'path';
 import { getJavaDistribution } from './distributions/distribution-factory';
 import { JavaInstallerOptions } from './distributions/base-models';
 
-async function run() {
+export default async function run() {
   try {
     const version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
     const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, { required: true });
