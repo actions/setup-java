@@ -11093,10 +11093,14 @@ function setupMaven(opts) {
         const p12Path = path.join(certDir, 'certificate.p12');
         fs.writeFileSync(p12Path, Buffer.from(opts.keystore, 'base64'));
         core.exportVariable('MAVEN_OPTS', `-Djavax.net.ssl.keyStore=${p12Path} -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.keyStorePassword=${opts.password}`);
+        var caCertsParam = '-cacerts';
+        if (opts.javaVersion === '8') {
+            caCertsParam = '-trustcacerts';
+        }
         try {
             yield exec.exec(path.join(opts.javaPath, 'bin/keytool'), [
                 '-importcert',
-                '-cacerts',
+                caCertsParam,
                 '-storepass',
                 'changeit',
                 '-noprompt',
@@ -33373,7 +33377,8 @@ function run() {
                 password: core.getInput(constants.INPUT_MAVEN_KEYSTORE_PASSWORD),
                 settings: core.getInput(constants.INPUT_MAVEN_SETTINGS_B64),
                 securitySettings: core.getInput(constants.INPUT_MAVEN_SECURITY_SETTINGS_B64),
-                javaPath: ''
+                javaPath: '',
+                javaVersion: version
             };
             const mvnVersion = core.getInput(constants.INPUT_MAVEN_VERSION);
             const arch = core.getInput(constants.INPUT_ARCHITECTURE, { required: true });

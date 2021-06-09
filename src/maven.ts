@@ -13,6 +13,7 @@ export interface MavenOpts {
   settings: string;
   securitySettings: string;
   javaPath: string;
+  javaVersion: string;
 }
 
 export function isValidOptions(mvnOpts: MavenOpts): boolean {
@@ -65,10 +66,15 @@ export async function setupMaven(opts: MavenOpts): Promise<void> {
     `-Djavax.net.ssl.keyStore=${p12Path} -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.keyStorePassword=${opts.password}`
   );
 
+  var caCertsParam = '-cacerts';
+  if (opts.javaVersion === '8') {
+    caCertsParam = '-trustcacerts';
+  }
+
   try {
     await exec.exec(path.join(opts.javaPath, 'bin/keytool'), [
       '-importcert',
-      '-cacerts',
+      caCertsParam,
       '-storepass',
       'changeit',
       '-noprompt',

@@ -21,7 +21,8 @@ async function run() {
       securitySettings: core.getInput(
         constants.INPUT_MAVEN_SECURITY_SETTINGS_B64
       ),
-      javaPath: ''
+      javaPath: '',
+      javaVersion: version
     };
 
     const mvnVersion = core.getInput(constants.INPUT_MAVEN_VERSION);
