@@ -13,6 +13,7 @@ export interface MavenOpts {
   settings: string;
   securitySettings: string;
   javaPath: string;
+  javaVersion: string;
 }
 
 export function isValidOptions(mvnOpts: MavenOpts): boolean {
@@ -50,9 +51,9 @@ export async function setupMaven(opts: MavenOpts): Promise<void> {
   );
 
   const certDir = path.join(os.homedir(), 'certs');
-  const rooCaPath = path.join(certDir, 'rootca.crt');
+  const rootCaPath = path.join(certDir, 'rootca.crt');
   await io.mkdirP(certDir);
-  fs.writeFileSync(rooCaPath, btoa(opts.caCert), {
+  fs.writeFileSync(rootCaPath, btoa(opts.caCert), {
     encoding: 'utf-8',
     flag: 'w'
   });
@@ -65,18 +66,28 @@ export async function setupMaven(opts: MavenOpts): Promise<void> {
     `-Djavax.net.ssl.keyStore=${p12Path} -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.keyStorePassword=${opts.password}`
   );
 
+  var params: string[] = ['-importcert'];
+
+  // keytool for JAVA 8 has different API
+  if (opts.javaVersion === '8') {
+    params.push('-keystore', `${opts.javaPath}/jre/lib/security/cacerts`);
+  } else {
+    params.push('-cacerts');
+  }
+
   try {
-    await exec.exec(path.join(opts.javaPath, 'bin/keytool'), [
-      '-importcert',
-      '-cacerts',
-      '-storepass',
-      'changeit',
-      '-noprompt',
-      '-alias',
-      'mycert',
-      '-file',
-      rooCaPath
-    ]);
+    await exec.exec(
+      path.join(opts.javaPath, 'bin/keytool'),
+      params.concat([
+        '-storepass',
+        'changeit',
+        '-noprompt',
+        '-alias',
+        'mycert',
+        '-file',
+        rootCaPath
+      ])
+    );
   } catch (e) {
     core.warning(`keytool return an error: ${(e as Error).message}`);
   }
