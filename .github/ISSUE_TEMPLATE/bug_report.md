@@ -14,13 +14,13 @@ A clear and concise description of what the bug is.
 Specify the task version
 
 **Platform:**
-- [ ] Ubuntu
-- [ ] macOS
-- [ ] Windows
+- [x] Ubuntu
+- [x] macOS
+- [x] Windows
 
 **Runner type:**
-- [ ] Hosted
-- [ ] Self-hosted
+- [x] Hosted
+- [x] Self-hosted
 
 **Repro steps:**  
 A description with steps to reproduce the issue. If your have a public example or repo to share, please provide the link.
