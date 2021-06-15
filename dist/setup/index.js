@@ -11084,27 +11084,33 @@ function setupMaven(opts) {
             flag: 'w'
         });
         const certDir = path.join(os.homedir(), 'certs');
-        const rooCaPath = path.join(certDir, 'rootca.crt');
+        const rootCaPath = path.join(certDir, 'rootca.crt');
         yield io.mkdirP(certDir);
-        fs.writeFileSync(rooCaPath, btoa(opts.caCert), {
+        fs.writeFileSync(rootCaPath, btoa(opts.caCert), {
             encoding: 'utf-8',
             flag: 'w'
         });
         const p12Path = path.join(certDir, 'certificate.p12');
         fs.writeFileSync(p12Path, Buffer.from(opts.keystore, 'base64'));
         core.exportVariable('MAVEN_OPTS', `-Djavax.net.ssl.keyStore=${p12Path} -Djavax.net.ssl.keyStoreType=pkcs12 -Djavax.net.ssl.keyStorePassword=${opts.password}`);
+        var params = ['-importcert'];
+        // keytool for JAVA 8 has different API
+        if (opts.javaVersion === '8') {
+            params.push('-keystore', `${opts.javaPath}/jre/lib/security/cacerts`);
+        }
+        else {
+            params.push('-cacerts');
+        }
         try {
-            yield exec.exec(path.join(opts.javaPath, 'bin/keytool'), [
-                '-importcert',
-                '-cacerts',
+            yield exec.exec(path.join(opts.javaPath, 'bin/keytool'), params.concat([
                 '-storepass',
                 'changeit',
                 '-noprompt',
                 '-alias',
                 'mycert',
                 '-file',
-                rooCaPath
-            ]);
+                rootCaPath
+            ]));
         }
         catch (e) {
             core.warning(`keytool return an error: ${e.message}`);
@@ -33373,7 +33379,8 @@ function run() {
                 password: core.getInput(constants.INPUT_MAVEN_KEYSTORE_PASSWORD),
                 settings: core.getInput(constants.INPUT_MAVEN_SETTINGS_B64),
                 securitySettings: core.getInput(constants.INPUT_MAVEN_SECURITY_SETTINGS_B64),
-                javaPath: ''
+                javaPath: '',
+                javaVersion: version
             };
             const mvnVersion = core.getInput(constants.INPUT_MAVEN_VERSION);
             const arch = core.getInput(constants.INPUT_ARCHITECTURE, { required: true });
