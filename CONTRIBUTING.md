@@ -8,7 +8,7 @@
 
 ### NCC
 
-In order to avoid uploading `node_modules` to the repository, we use [zeit/ncc](https://github.com/zeit/ncc) to create multiple `index.js` files that gets saved under `dist/`.
+In order to avoid uploading `node_modules` to the repository, we use [vercel/ncc](https://github.com/vercel/ncc) to create multiple `index.js` files that gets saved under `dist/`.
 There are two main files that get created
 - `dist/setup/index.js`
    - Core `setup-java` logic that downloads and installs an appropriate version of Java 
