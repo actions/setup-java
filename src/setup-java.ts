@@ -2,6 +2,7 @@ import * as core from '@actions/core';
 import * as auth from './auth';
 import { getBooleanInput } from './util';
 import * as constants from './constants';
+import { restore } from './cache';
 import * as path from 'path';
 import { getJavaDistribution } from './distributions/distribution-factory';
 import { JavaInstallerOptions } from './distributions/base-models';
@@ -13,6 +14,7 @@ async function run() {
     const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
     const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
     const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
+    const cache = core.getInput(constants.INPUT_CACHE);
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
 
     const installerOptions: JavaInstallerOptions = {
@@ -27,6 +29,7 @@ async function run() {
       throw new Error(`No supported distribution was found for input ${distributionName}`);
     }
 
+    const restoreResult = cache ? restore(cache) : Promise.resolve();
     const result = await distribution.setupJava();
 
     core.info('');
@@ -39,7 +42,7 @@ async function run() {
     const matchersPath = path.join(__dirname, '..', '..', '.github');
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
-    await auth.configureAuthentication();
+    await Promise.all([restoreResult, auth.configureAuthentication()]);
   } catch (error) {
     core.setFailed(error.message);
   }

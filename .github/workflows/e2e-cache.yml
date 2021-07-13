@@ -1,0 +1,88 @@
+name: Validate cache
+on:
+  push:
+    branches:
+      - main
+      - releases/*
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  save:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run setup-java with the cache for gradle
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: gradle
+      - name: Create files to cache
+        run: |
+          cat <<EOF > build.gradle
+            plugins { id 'java' }
+            repositories { mavenCentral() }
+            dependencies { implementation 'org.codehaus.groovy:groovy:1.8.6' }
+            tasks.register('downloadDependencies') { doLast {
+              def total = configurations.compileClasspath.inject (0) { sum, file ->
+                sum + file.length()
+              }
+              println total
+            }}
+          EOF
+          gradle downloadDependencies
+          if [ ! -d ~/.gradle/caches ]; then
+            echo "::error::The ~/.gradle/caches directory does not exist unexpectedly"
+            exit 1
+          fi
+  restore:
+    runs-on: ubuntu-latest
+    needs: save
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Create build.gradle
+        run: |
+          cat <<EOF > build.gradle
+            plugins { id 'java' }
+            repositories { mavenCentral() }
+            dependencies { implementation 'org.codehaus.groovy:groovy:1.8.6' }
+            tasks.register('downloadDependencies') { doLast {
+              def total = configurations.compileClasspath.inject (0) { sum, file ->
+                sum + file.length()
+              }
+              println total
+            }}
+          EOF
+          if [ -d ~/.gradle/caches ]; then
+            echo "::error::The ~/.gradle/caches directory exists unexpectedly"
+            exit 1
+          fi
+      - name: Run setup-java with the cache for gradle
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: gradle
+      - name: Confirm that ~/.gradle/caches directory has been made
+        run: |
+          if [ ! -d ~/.gradle/caches ]; then
+            echo "::error::The ~/.gradle/caches directory does not exist unexpectedly"
+            exit 1
+          fi
+          ls ~/.gradle/caches/
