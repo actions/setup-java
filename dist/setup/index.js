@@ -19008,14 +19008,11 @@ function save(id) {
             core.info(`Cache saved with the key: ${primaryKey}`);
         }
         catch (error) {
-            if (error.name === cache.ValidationError.name) {
-                throw error;
-            }
-            else if (error.name === cache.ReserveCacheError.name) {
+            if (error.name === cache.ReserveCacheError.name) {
                 core.info(error.message);
             }
             else {
-                core.warning(error.message);
+                throw error;
             }
         }
     });
