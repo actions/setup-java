@@ -18930,6 +18930,7 @@ const core = __importStar(__webpack_require__(470));
 const glob = __importStar(__webpack_require__(281));
 const STATE_CACHE_PRIMARY_KEY = 'cache-primary-key';
 const CACHE_MATCHED_KEY = 'cache-matched-key';
+const CACHE_KEY_PREFIX = 'setup-java';
 const supportedPackageManager = [
     {
         id: 'maven',
@@ -18959,7 +18960,8 @@ function findPackageManager(id) {
  */
 function computeCacheKey(packageManager) {
     return __awaiter(this, void 0, void 0, function* () {
-        return `${process.env['RUNNER_OS']}-${packageManager.id}-${yield glob.hashFiles(packageManager.pattern.join('\n'))}`;
+        const hash = yield glob.hashFiles(packageManager.pattern.join('\n'));
+        return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${hash}`;
     });
 }
 /**
@@ -18977,7 +18979,7 @@ function restore(id) {
             return;
         }
         const matchedKey = yield cache.restoreCache(packageManager.path, primaryKey, [
-            `${process.env['RUNNER_OS']}-${id}`
+            `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${id}`
         ]);
         if (matchedKey) {
             core.saveState(CACHE_MATCHED_KEY, matchedKey);

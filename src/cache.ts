@@ -10,6 +10,7 @@ import * as glob from '@actions/glob';
 
 const STATE_CACHE_PRIMARY_KEY = 'cache-primary-key';
 const CACHE_MATCHED_KEY = 'cache-matched-key';
+const CACHE_KEY_PREFIX = 'setup-java';
 
 interface PackageManager {
   id: 'maven' | 'gradle';
@@ -49,9 +50,8 @@ function findPackageManager(id: string): PackageManager {
  * @see {@link https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key|spec of cache key}
  */
 async function computeCacheKey(packageManager: PackageManager) {
-  return `${process.env['RUNNER_OS']}-${packageManager.id}-${await glob.hashFiles(
-    packageManager.pattern.join('\n')
-  )}`;
+  const hash = await glob.hashFiles(packageManager.pattern.join('\n'));
+  return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${hash}`;
 }
 
 /**
@@ -74,7 +74,7 @@ export async function restore(id: string) {
   }
 
   const matchedKey = await cache.restoreCache(packageManager.path, primaryKey, [
-    `${process.env['RUNNER_OS']}-${id}`
+    `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${id}`
   ]);
   if (matchedKey) {
     core.saveState(CACHE_MATCHED_KEY, matchedKey);
