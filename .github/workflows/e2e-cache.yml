@@ -33,17 +33,7 @@ jobs:
           cache: gradle
       - name: Create files to cache
         run: |
-          cat <<EOF > build.gradle
-            plugins { id 'java' }
-            repositories { mavenCentral() }
-            dependencies { implementation 'org.codehaus.groovy:groovy:1.8.6' }
-            tasks.register('downloadDependencies') { doLast {
-              def total = configurations.compileClasspath.inject (0) { sum, file ->
-                sum + file.length()
-              }
-              println total
-            }}
-          EOF
+          cp __tests__/cache/gradle/build.gradle .
           gradle downloadDependencies
           if [ ! -d ~/.gradle/caches ]; then
             echo "::error::The ~/.gradle/caches directory does not exist unexpectedly"
@@ -57,17 +47,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Create build.gradle
         run: |
-          cat <<EOF > build.gradle
-            plugins { id 'java' }
-            repositories { mavenCentral() }
-            dependencies { implementation 'org.codehaus.groovy:groovy:1.8.6' }
-            tasks.register('downloadDependencies') { doLast {
-              def total = configurations.compileClasspath.inject (0) { sum, file ->
-                sum + file.length()
-              }
-              println total
-            }}
-          EOF
+          cp __tests__/cache/gradle/build.gradle .
           if [ -d ~/.gradle/caches ]; then
             echo "::error::The ~/.gradle/caches directory exists unexpectedly"
             exit 1
