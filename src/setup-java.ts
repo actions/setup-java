@@ -29,7 +29,6 @@ async function run() {
       throw new Error(`No supported distribution was found for input ${distributionName}`);
     }
 
-    const restoreResult = cache ? restore(cache) : Promise.resolve();
     const result = await distribution.setupJava();
 
     core.info('');
@@ -42,7 +41,10 @@ async function run() {
     const matchersPath = path.join(__dirname, '..', '..', '.github');
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
-    await Promise.all([restoreResult, auth.configureAuthentication()]);
+    await auth.configureAuthentication();
+    if (cache) {
+      await restore(cache);
+    }
   } catch (error) {
     core.setFailed(error.message);
   }

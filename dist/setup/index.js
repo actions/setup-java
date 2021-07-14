@@ -59781,7 +59781,6 @@ function run() {
             if (!distribution) {
                 throw new Error(`No supported distribution was found for input ${distributionName}`);
             }
-            const restoreResult = cache ? cache_1.restore(cache) : Promise.resolve();
             const result = yield distribution.setupJava();
             core.info('');
             core.info('Java configuration:');
@@ -59791,7 +59790,10 @@ function run() {
             core.info('');
             const matchersPath = path.join(__dirname, '..', '..', '.github');
             core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
-            yield Promise.all([restoreResult, auth.configureAuthentication()]);
+            yield auth.configureAuthentication();
+            if (cache) {
+                yield cache_1.restore(cache);
+            }
         }
         catch (error) {
             core.setFailed(error.message);
