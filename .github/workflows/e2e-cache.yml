@@ -15,7 +15,7 @@ defaults:
     shell: bash
 
 jobs:
-  save:
+  gradle-save:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -39,13 +39,13 @@ jobs:
             echo "::error::The ~/.gradle/caches directory does not exist unexpectedly"
             exit 1
           fi
-  restore:
+  gradle-restore:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-    needs: save
+    needs: gradle-save
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -70,3 +70,58 @@ jobs:
             exit 1
           fi
           ls ~/.gradle/caches/
+  maven-save:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run setup-java with the cache for maven
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: maven
+      - name: Create files to cache
+        run: |
+          cp __tests__/cache/maven/pom.xml .
+          mvn verify
+          if [ ! -d ~/.m2/repository ]; then
+            echo "::error::The ~/.m2/repository directory does not exist unexpectedly"
+            exit 1
+          fi
+  maven-restore:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    needs: save
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Create pom.xml
+        run: |
+          cp __tests__/cache/maven/pom.xml .
+          if [ -d ~/.m2/repository ]; then
+            echo "::error::The ~/.m2/repository directory exists unexpectedly"
+            exit 1
+          fi
+      - name: Run setup-java with the cache for maven
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: maven
+      - name: Confirm that ~/.m2/repository directory has been made
+        run: |
+          if [ ! -d ~/.m2/repository ]; then
+            echo "::error::The ~/.m2/repository directory does not exist unexpectedly"
+            exit 1
+          fi
+          ls ~/.m2/repository
