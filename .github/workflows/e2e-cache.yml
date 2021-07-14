@@ -40,7 +40,11 @@ jobs:
             exit 1
           fi
   restore:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
     needs: save
     steps:
       - name: Checkout
