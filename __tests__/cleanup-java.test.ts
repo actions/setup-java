@@ -1,25 +1,21 @@
-import { mkdtempSync } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
-import { restore, save } from '../src/cache';
 import { run as cleanup } from '../src/cleanup-java';
-import * as fs from 'fs';
-import * as os from 'os';
 import * as core from '@actions/core';
 import * as cache from '@actions/cache';
 
 describe('cleanup', () => {
-  let spyInfo: jest.SpyInstance<void, Parameters<typeof core.info>>;
   let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>;
-
   let spyCacheSave: jest.SpyInstance<
     ReturnType<typeof cache.saveCache>,
     Parameters<typeof cache.saveCache>
   >;
+
   beforeEach(() => {
-    spyInfo = jest.spyOn(core, 'info');
     spyWarning = jest.spyOn(core, 'warning');
     spyCacheSave = jest.spyOn(cache, 'saveCache');
+    createStateForSuccessfulRestore();
+  });
+  afterEach(() => {
+    resetState();
   });
 
   it('does not fail nor warn even when the save provess throws a ReserveCacheError', async () => {
@@ -49,3 +45,23 @@ describe('cleanup', () => {
     expect(spyCacheSave).toBeCalled();
   });
 });
+
+function resetState() {
+  jest.spyOn(core, 'getState').mockReset();
+}
+
+/**
+ * Create states to emulate a successful restore process.
+ */
+function createStateForSuccessfulRestore() {
+  jest.spyOn(core, 'getState').mockImplementation(name => {
+    switch (name) {
+      case 'cache-primary-key':
+        return 'setup-java-cache-primary-key';
+      case 'cache-matched-key':
+        return 'setup-java-cache-matched-key';
+      default:
+        return '';
+    }
+  });
+}

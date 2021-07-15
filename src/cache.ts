@@ -90,9 +90,15 @@ export async function restore(id: string) {
  */
 export async function save(id: string) {
   const packageManager = findPackageManager(id);
-  const primaryKey = await computeCacheKey(packageManager);
   const matchedKey = core.getState(CACHE_MATCHED_KEY);
-  if (matchedKey === primaryKey) {
+
+  // Inputs are re-evaluted before the post action, so we want the original key used for restore
+  const primaryKey = core.getState(STATE_CACHE_PRIMARY_KEY);
+
+  if (!primaryKey) {
+    core.warning('Error retrieving key from state.');
+    return;
+  } else if (matchedKey === primaryKey) {
     // no change in target directories
     core.info(`Cache hit occurred on the primary key ${primaryKey}, not saving cache.`);
     return;

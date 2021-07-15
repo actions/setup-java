@@ -45,6 +45,7 @@ describe('dependency cache', () => {
     process.chdir(ORIGINAL_CWD);
     process.env['GITHUB_WORKSPACE'] = ORIGINAL_GITHUB_WORKSPACE;
     process.env['RUNNER_OS'] = ORIGINAL_RUNNER_OS;
+    resetState();
   });
 
   describe('restore', () => {
@@ -126,13 +127,21 @@ describe('dependency cache', () => {
 
     describe('for maven', () => {
       it('uploads cache even if no pom.xml found', async () => {
+        createStateForMissingBuildFile();
         await save('maven');
         expect(spyCacheSave).toBeCalled();
         expect(spyWarning).not.toBeCalled();
-        expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
+      });
+      it('does not upload cache if no restore run before', async () => {
+        createFile(join(workspace, 'pom.xml'));
+
+        await save('maven');
+        expect(spyCacheSave).not.toBeCalled();
+        expect(spyWarning).toBeCalledWith('Error retrieving key from state.');
       });
       it('uploads cache', async () => {
         createFile(join(workspace, 'pom.xml'));
+        createStateForSuccessfulRestore();
 
         await save('maven');
         expect(spyCacheSave).toBeCalled();
@@ -142,13 +151,22 @@ describe('dependency cache', () => {
     });
     describe('for gradle', () => {
       it('uploads cache even if no build.gradle found', async () => {
+        createStateForMissingBuildFile();
+
         await save('gradle');
         expect(spyCacheSave).toBeCalled();
         expect(spyWarning).not.toBeCalled();
-        expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
+      });
+      it('does not upload cache if no restore run before', async () => {
+        createFile(join(workspace, 'build.gradle'));
+
+        await save('gradle');
+        expect(spyCacheSave).not.toBeCalled();
+        expect(spyWarning).toBeCalledWith('Error retrieving key from state.');
       });
       it('uploads cache based on build.gradle', async () => {
         createFile(join(workspace, 'build.gradle'));
+        createStateForSuccessfulRestore();
 
         await save('gradle');
         expect(spyCacheSave).toBeCalled();
@@ -157,6 +175,7 @@ describe('dependency cache', () => {
       });
       it('uploads cache based on build.gradle.kts', async () => {
         createFile(join(workspace, 'build.gradle.kts'));
+        createStateForSuccessfulRestore();
 
         await save('gradle');
         expect(spyCacheSave).toBeCalled();
@@ -166,6 +185,40 @@ describe('dependency cache', () => {
     });
   });
 });
+
+function resetState() {
+  jest.spyOn(core, 'getState').mockReset();
+}
+
+/**
+ * Create states to emulate a restore process without build file.
+ */
+function createStateForMissingBuildFile() {
+  jest.spyOn(core, 'getState').mockImplementation(name => {
+    switch (name) {
+      case 'cache-primary-key':
+        return 'setup-java-cache-';
+      default:
+        return '';
+    }
+  });
+}
+
+/**
+ * Create states to emulate a successful restore process.
+ */
+function createStateForSuccessfulRestore() {
+  jest.spyOn(core, 'getState').mockImplementation(name => {
+    switch (name) {
+      case 'cache-primary-key':
+        return 'setup-java-cache-primary-key';
+      case 'cache-matched-key':
+        return 'setup-java-cache-matched-key';
+      default:
+        return '';
+    }
+  });
+}
 
 function createFile(path: string) {
   core.info(`created a file at ${path}`);
