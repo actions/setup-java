@@ -53,6 +53,9 @@ inputs:
     description: 'Environment variable name for the GPG private key passphrase. Default is
        $GPG_PASSPHRASE.'
     required: false
+  cache:
+    description: 'Name of the build platform to cache dependencies. It can be "maven" or "gradle".'
+    required: false
 outputs:
   distribution:
     description: 'Distribution of Java that has been installed'

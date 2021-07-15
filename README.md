@@ -58,6 +58,19 @@ Currently, the following distributions are supported:
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 
+#### Supported cache types
+Currently, `gradle` and `maven` are supported. You can set `cache` input like below:
+```yaml
+steps:
+- uses: actions/checkout@v2
+- uses: actions/setup-java@v2
+  with:
+    distribution: 'adopt'
+    java-version: '11'
+    cache: 'gradle' # will restore cache of dependencies and wrappers
+- run: ./gradlew build
+```
+
 ### Check latest
 In the basic examples above, the `check-latest` flag defaults to `false`. When set to `false`, the action tries to first resolve a version of Java from the local tool cache on the runner. If unable to find a specific version in the cache, the action will download a version of Java. Use the default or set `check-latest` to `false` if you prefer a faster more consistent setup experience that prioritizes trying to use the cached versions at the expense of newer versions sometimes being available for download.
 

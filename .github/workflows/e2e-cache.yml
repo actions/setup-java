@@ -1,0 +1,113 @@
+name: Validate cache
+on:
+  push:
+    branches:
+      - main
+      - releases/*
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  gradle-save:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run setup-java with the cache for gradle
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: gradle
+      - name: Create files to cache
+        # Need to avoid using Gradle daemon to stabilize the save process on Windows
+        # https://github.com/actions/cache/issues/454#issuecomment-840493935
+        run: |
+          gradle downloadDependencies --no-daemon -p __tests__/cache/gradle
+          if [ ! -d ~/.gradle/caches ]; then
+            echo "::error::The ~/.gradle/caches directory does not exist unexpectedly"
+            exit 1
+          fi
+  gradle-restore:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    needs: gradle-save
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run setup-java with the cache for gradle
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: gradle
+      - name: Confirm that ~/.gradle/caches directory has been made
+        run: |
+          if [ ! -d ~/.gradle/caches ]; then
+            echo "::error::The ~/.gradle/caches directory does not exist unexpectedly"
+            exit 1
+          fi
+          ls ~/.gradle/caches/
+  maven-save:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run setup-java with the cache for maven
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: maven
+      - name: Create files to cache
+        run: |
+          mvn verify -f __tests__/cache/maven/pom.xml
+          if [ ! -d ~/.m2/repository ]; then
+            echo "::error::The ~/.m2/repository directory does not exist unexpectedly"
+            exit 1
+          fi
+  maven-restore:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    needs: maven-save
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Run setup-java with the cache for maven
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: maven
+      - name: Confirm that ~/.m2/repository directory has been made
+        run: |
+          if [ ! -d ~/.m2/repository ]; then
+            echo "::error::The ~/.m2/repository directory does not exist unexpectedly"
+            exit 1
+          fi
+          ls ~/.m2/repository

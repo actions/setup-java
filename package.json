@@ -24,8 +24,10 @@
   "author": "GitHub",
   "license": "MIT",
   "dependencies": {
+    "@actions/cache": "^1.0.7",
     "@actions/core": "^1.2.6",
     "@actions/exec": "^1.0.4",
+    "@actions/glob": "^0.2.0",
     "@actions/http-client": "^1.0.9",
     "@actions/io": "^1.0.2",
     "@actions/tool-cache": "^1.6.1",
