@@ -32,9 +32,10 @@ jobs:
           java-version: '11'
           cache: gradle
       - name: Create files to cache
+        # Need to avoid using Gradle daemon to stabilize the save process on Windows
+        # https://github.com/actions/cache/issues/454#issuecomment-840493935
         run: |
-          cp __tests__/cache/gradle/build.gradle .
-          gradle downloadDependencies
+          gradle downloadDependencies --no-daemon -p __tests__/cache/gradle
           if [ ! -d ~/.gradle/caches ]; then
             echo "::error::The ~/.gradle/caches directory does not exist unexpectedly"
             exit 1
@@ -49,13 +50,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Create build.gradle
-        run: |
-          cp __tests__/cache/gradle/build.gradle .
-          if [ -d ~/.gradle/caches ]; then
-            echo "::error::The ~/.gradle/caches directory exists unexpectedly"
-            exit 1
-          fi
       - name: Run setup-java with the cache for gradle
         uses: ./
         id: setup-java
@@ -88,8 +82,7 @@ jobs:
           cache: maven
       - name: Create files to cache
         run: |
-          cp __tests__/cache/maven/pom.xml .
-          mvn verify
+          mvn verify -f __tests__/cache/maven/pom.xml
           if [ ! -d ~/.m2/repository ]; then
             echo "::error::The ~/.m2/repository directory does not exist unexpectedly"
             exit 1
@@ -104,13 +97,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Create pom.xml
-        run: |
-          cp __tests__/cache/maven/pom.xml .
-          if [ -d ~/.m2/repository ]; then
-            echo "::error::The ~/.m2/repository directory exists unexpectedly"
-            exit 1
-          fi
       - name: Run setup-java with the cache for maven
         uses: ./
         id: setup-java
