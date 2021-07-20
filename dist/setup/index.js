@@ -19019,12 +19019,28 @@ function save(id) {
                 core.info(error.message);
             }
             else {
+                if (isProbablyGradleDaemonProblem(packageManager, error)) {
+                    core.warning('Failed to save Gradle cache on Windows. If tar.exe reported "Permission denied", try to run Gradle with `--no-daemon` option. Refer to https://github.com/actions/cache/issues/454 for detail.');
+                }
                 throw error;
             }
         }
     });
 }
 exports.save = save;
+/**
+ * @param packageManager the specified package manager by user
+ * @param error the error thrown by the saveCache
+ * @returns true if the given error seems related to the {@link https://github.com/actions/cache/issues/454|running Gradle Daemon issue}.
+ * @see {@link https://github.com/actions/cache/issues/454#issuecomment-840493935|why --no-daemon is necessary}
+ */
+function isProbablyGradleDaemonProblem(packageManager, error) {
+    if (packageManager.id !== 'gradle' || process.env['RUNNER_OS'] !== 'Windows') {
+        return false;
+    }
+    const message = error.message || '';
+    return message.startsWith('Tar failed with error: ');
+}
 
 
 /***/ }),
