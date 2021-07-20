@@ -11,6 +11,8 @@ This action provides the following functionality for GitHub Actions runners:
 - Configuring runner for publishing using Gradle
 - Configuring runner for using GPG private key
 - Registering problem matchers for error output
+- Caching dependencies managed by Apache Maven
+- Caching dependencies managed by Gradle
 
 ## V2 vs V1
 - V2 supports custom distributions and provides support for Zulu OpenJDK and Adopt OpenJDK out of the box. V1 supports only Zulu OpenJDK
