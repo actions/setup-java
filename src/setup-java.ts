@@ -38,6 +38,7 @@ async function run() {
 
     const matchersPath = path.join(__dirname, '..', '..', '.github');
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
+    core.info(`##[add-matcher]${path.join(matchersPath, 'checkstyle.json')}`);
 
     await auth.configureAuthentication();
   } catch (error) {

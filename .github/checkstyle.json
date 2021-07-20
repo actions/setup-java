@@ -1,0 +1,19 @@
+{
+    "problemMatcher": [
+        {
+            "owner": "checkstyle",
+            "severity": "warning",
+            "pattern": [
+                {
+                    "regexp": "^.*\\[(ERROR|WARN)\\]\\s+(.*):(\\d+):(\\d+):\\s+(.*)\\s+\\[(.*)\\]$",
+                    "severity": 1,
+                    "file": 2,
+                    "line": 3,
+                    "column": 4,
+                    "message": 5,
+                    "code": 6
+                }
+            ]
+        }
+    ]
+}
