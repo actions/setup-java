@@ -3,11 +3,14 @@ import { JavaInstallerOptions } from './base-models';
 import { LocalDistribution } from './local/installer';
 import { ZuluDistribution } from './zulu/installer';
 import { AdoptDistribution, AdoptImplementation } from './adopt/installer';
+import { AdoptiumDistribution, AdoptiumImplementation } from './adoptium/installer';
 
 enum JavaDistribution {
   Adopt = 'adopt',
   AdoptHotspot = 'adopt-hotspot',
   AdoptOpenJ9 = 'adopt-openj9',
+  Adoptium = 'adoptium',
+  AdoptiumHotspot = 'adoptium-hotspot',
   Zulu = 'zulu',
   JdkFile = 'jdkfile'
 }
@@ -25,6 +28,9 @@ export function getJavaDistribution(
       return new AdoptDistribution(installerOptions, AdoptImplementation.Hotspot);
     case JavaDistribution.AdoptOpenJ9:
       return new AdoptDistribution(installerOptions, AdoptImplementation.OpenJ9);
+    case JavaDistribution.Adoptium:
+    case JavaDistribution.AdoptiumHotspot:
+      return new AdoptiumDistribution(installerOptions, AdoptiumImplementation.Hotspot);
     case JavaDistribution.Zulu:
       return new ZuluDistribution(installerOptions);
     default:
