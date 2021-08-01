@@ -1,6 +1,6 @@
 // Models from https://api.adoptium.net/q/swagger-ui/#/Assets/searchReleasesByVersion
 
-export interface IAdoptiumAvailableVersions {
+export interface ITemurinAvailableVersions {
   binaries: [
     {
       architecture: string;

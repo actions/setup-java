@@ -6,20 +6,20 @@ import path from 'path';
 import semver from 'semver';
 
 import { JavaBase } from '../base-installer';
-import { IAdoptiumAvailableVersions } from './models';
+import { ITemurinAvailableVersions } from './models';
 import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
 import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
 
-export enum AdoptiumImplementation {
+export enum TemurinImplementation {
   Hotspot = 'Hotspot'
 }
 
-export class AdoptiumDistribution extends JavaBase {
+export class TemurinDistribution extends JavaBase {
   constructor(
     installerOptions: JavaInstallerOptions,
-    private readonly jvmImpl: AdoptiumImplementation
+    private readonly jvmImpl: TemurinImplementation
   ) {
-    super(`Adoptium-${jvmImpl}`, installerOptions);
+    super(`Temurin-${jvmImpl}`, installerOptions);
   }
 
   protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
@@ -80,14 +80,14 @@ export class AdoptiumDistribution extends JavaBase {
     return super.toolcacheFolderName;
   }
 
-  private async getAvailableVersions(): Promise<IAdoptiumAvailableVersions[]> {
+  private async getAvailableVersions(): Promise<ITemurinAvailableVersions[]> {
     const platform = this.getPlatformOption();
     const arch = this.architecture;
     const imageType = this.packageType;
     const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
     const releaseType = this.stable ? 'ga' : 'ea';
 
-    console.time('adoptium-retrieve-available-versions');
+    console.time('temurin-retrieve-available-versions');
 
     const baseRequestArguments = [
       `project=jdk`,
@@ -105,7 +105,7 @@ export class AdoptiumDistribution extends JavaBase {
     // need to iterate through all pages to retrieve the list of all versions
     // Adoptium API doesn't provide way to retrieve the count of pages to iterate so infinity loop
     let page_index = 0;
-    const availableVersions: IAdoptiumAvailableVersions[] = [];
+    const availableVersions: ITemurinAvailableVersions[] = [];
     while (true) {
       const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
       const availableVersionsUrl = `https://api.adoptium.net/v3/assets/version/${versionRange}?${requestArguments}`;
@@ -115,7 +115,7 @@ export class AdoptiumDistribution extends JavaBase {
       }
 
       const paginationPage = (
-        await this.http.getJson<IAdoptiumAvailableVersions[]>(availableVersionsUrl)
+        await this.http.getJson<ITemurinAvailableVersions[]>(availableVersionsUrl)
       ).result;
       if (paginationPage === null || paginationPage.length === 0) {
         // break infinity loop because we have reached end of pagination
@@ -128,7 +128,7 @@ export class AdoptiumDistribution extends JavaBase {
 
     if (core.isDebug()) {
       core.startGroup('Print information about available versions');
-      console.timeEnd('adoptium-retrieve-available-versions');
+      console.timeEnd('temurin-retrieve-available-versions');
       console.log(`Available versions: [${availableVersions.length}]`);
       console.log(availableVersions.map(item => item.version_data.semver).join(', '));
       core.endGroup();
