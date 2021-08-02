@@ -6230,7 +6230,8 @@ function ignoreError(promise) {
 }
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
-        yield Promise.all([removePrivateKeyFromKeychain(), ignoreError(saveCache())]);
+        yield removePrivateKeyFromKeychain();
+        yield ignoreError(saveCache());
     });
 }
 exports.run = run;

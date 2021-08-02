@@ -42,7 +42,8 @@ async function ignoreError(promise: Promise<void>) {
 }
 
 export async function run() {
-  await Promise.all([removePrivateKeyFromKeychain(), ignoreError(saveCache())]);
+  await removePrivateKeyFromKeychain();
+  await ignoreError(saveCache());
 }
 
 if (require.main === module) {
