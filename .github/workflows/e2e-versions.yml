@@ -11,6 +11,7 @@ on:
       - '**.md'
   schedule:
     - cron:  '0 */12 * * *'
+  workflow_dispatch:
 jobs:
   setup-java-major-versions:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
