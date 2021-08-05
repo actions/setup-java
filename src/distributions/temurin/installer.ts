@@ -27,6 +27,7 @@ export class TemurinDistribution extends JavaBase {
     const availableVersionsWithBinaries = availableVersionsRaw
       .filter(item => item.binaries.length > 0)
       .map(item => {
+        // normalize 17.0.0-beta+33.0.202107301459 to 17.0.0+33.0.202107301459 for earlier access versions
         const formattedVersion = this.stable
           ? item.version_data.semver
           : item.version_data.semver.replace('-beta+', '+');

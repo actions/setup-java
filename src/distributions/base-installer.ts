@@ -127,13 +127,6 @@ export abstract class JavaBase {
       // transform '11.0.3-ea.2' -> '11.0.3+2'
       version = version.replace('-ea.', '+');
       stable = false;
-    } else if (version.endsWith('-beta')) {
-      version = version.replace(/-beta$/, '');
-      stable = false;
-    } else if (version.includes('-beta+')) {
-      // transform '11.0.0-beta+33' -> '11.0.3+33'
-      version = version.replace('-beta', '');
-      stable = false;
     }
 
     if (!semver.validRange(version)) {
