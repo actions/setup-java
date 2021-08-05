@@ -4068,6 +4068,15 @@ class JavaBase {
             version = version.replace('-ea.', '+');
             stable = false;
         }
+        else if (version.endsWith('-beta')) {
+            version = version.replace(/-beta$/, '');
+            stable = false;
+        }
+        else if (version.includes('-beta+')) {
+            // transform '11.0.0-beta+33' -> '11.0.3+33'
+            version = version.replace('-beta', '');
+            stable = false;
+        }
         if (!semver_1.default.validRange(version)) {
             throw new Error(`The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`);
         }
