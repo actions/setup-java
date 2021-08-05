@@ -147,14 +147,14 @@ jobs:
         shell: bash
 
   setup-java-ea-versions-temurin:
-    name: adopt ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    name: temurin ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        version: ['17-ea']
+        version: ['17-beta']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -189,6 +189,10 @@ jobs:
             java-package: jdk+fx
             version: '8.0.242'
             os: ubuntu-latest
+        exclude:
+          # Eclipse Temurin currently doesn't publish JREs, only JDKs
+          - distribution: 'temurin'
+            java-package: 'jre'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
