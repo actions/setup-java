@@ -39937,8 +39937,11 @@ class TemurinDistribution extends base_installer_1.JavaBase {
             const availableVersionsWithBinaries = availableVersionsRaw
                 .filter(item => item.binaries.length > 0)
                 .map(item => {
+                const formattedVersion = this.stable
+                    ? item.version_data.semver
+                    : item.version_data.semver.replace('-beta+', '+');
                 return {
-                    version: item.version_data.semver,
+                    version: formattedVersion,
                     url: item.binaries[0].package.link
                 };
             });
