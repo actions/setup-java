@@ -13,7 +13,7 @@ This action provides the following functionality for GitHub Actions runners:
 - Registering problem matchers for error output
 
 ## V2 vs V1
-- V2 supports custom distributions and provides support for Zulu OpenJDK and Adopt OpenJDK out of the box. V1 supports only Zulu OpenJDK
+- V2 supports custom distributions and provides support for Zulu OpenJDK, Adopt OpenJDK and Eclipse Temurin out of the box. V1 supports only Zulu OpenJDK
 - V2 requires you to specify distribution along with the version. V1 defaults to Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2
 
 ## Usage
@@ -28,6 +28,17 @@ steps:
   with:
     distribution: 'adopt' # See 'Supported distributions' for available options
     java-version: '11'
+- run: java -cp java HelloWorldApp
+```
+
+**Eclipse Temurin**
+```yaml
+steps:
+- uses: actions/checkout@v2
+- uses: actions/setup-java@v2
+  with:
+    distribution: 'temurin' # See 'Supported distributions' for available options
+    java-version: '8'
 - run: java -cp java HelloWorldApp
 ```
 
@@ -55,6 +66,7 @@ Currently, the following distributions are supported:
 | `zulu` | Zulu OpenJDK | [Link](https://www.azul.com/downloads/zulu-community/?package=jdk) | [Link](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
 | `adopt` or `adopt-hotspot` | Adopt OpenJDK Hotspot | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html)
 | `adopt-openj9` | Adopt OpenJDK OpenJ9 | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html)
+| `temurin` | Eclipse Temurin | [Link](https://adoptium.net/) | [Link](https://adoptium.net/about.html)
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 

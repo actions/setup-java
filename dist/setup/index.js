@@ -1479,11 +1479,13 @@ exports.getJavaDistribution = void 0;
 const installer_1 = __webpack_require__(144);
 const installer_2 = __webpack_require__(393);
 const installer_3 = __webpack_require__(584);
+const installer_4 = __webpack_require__(852);
 var JavaDistribution;
 (function (JavaDistribution) {
     JavaDistribution["Adopt"] = "adopt";
     JavaDistribution["AdoptHotspot"] = "adopt-hotspot";
     JavaDistribution["AdoptOpenJ9"] = "adopt-openj9";
+    JavaDistribution["Temurin"] = "temurin";
     JavaDistribution["Zulu"] = "zulu";
     JavaDistribution["JdkFile"] = "jdkfile";
 })(JavaDistribution || (JavaDistribution = {}));
@@ -1496,6 +1498,8 @@ function getJavaDistribution(distributionName, installerOptions, jdkFile) {
             return new installer_3.AdoptDistribution(installerOptions, installer_3.AdoptImplementation.Hotspot);
         case JavaDistribution.AdoptOpenJ9:
             return new installer_3.AdoptDistribution(installerOptions, installer_3.AdoptImplementation.OpenJ9);
+        case JavaDistribution.Temurin:
+            return new installer_4.TemurinDistribution(installerOptions, installer_4.TemurinImplementation.Hotspot);
         case JavaDistribution.Zulu:
             return new installer_2.ZuluDistribution(installerOptions);
         default:
@@ -39873,7 +39877,175 @@ module.exports = new Type('tag:yaml.org,2002:omap', {
 /* 849 */,
 /* 850 */,
 /* 851 */,
-/* 852 */,
+/* 852 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TemurinDistribution = exports.TemurinImplementation = void 0;
+const core = __importStar(__webpack_require__(470));
+const tc = __importStar(__webpack_require__(139));
+const fs_1 = __importDefault(__webpack_require__(747));
+const path_1 = __importDefault(__webpack_require__(622));
+const semver_1 = __importDefault(__webpack_require__(876));
+const base_installer_1 = __webpack_require__(83);
+const util_1 = __webpack_require__(322);
+var TemurinImplementation;
+(function (TemurinImplementation) {
+    TemurinImplementation["Hotspot"] = "Hotspot";
+})(TemurinImplementation = exports.TemurinImplementation || (exports.TemurinImplementation = {}));
+class TemurinDistribution extends base_installer_1.JavaBase {
+    constructor(installerOptions, jvmImpl) {
+        super(`Temurin-${jvmImpl}`, installerOptions);
+        this.jvmImpl = jvmImpl;
+    }
+    findPackageForDownload(version) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const availableVersionsRaw = yield this.getAvailableVersions();
+            const availableVersionsWithBinaries = availableVersionsRaw
+                .filter(item => item.binaries.length > 0)
+                .map(item => {
+                // normalize 17.0.0-beta+33.0.202107301459 to 17.0.0+33.0.202107301459 for earlier access versions
+                const formattedVersion = this.stable
+                    ? item.version_data.semver
+                    : item.version_data.semver.replace('-beta+', '+');
+                return {
+                    version: formattedVersion,
+                    url: item.binaries[0].package.link
+                };
+            });
+            const satisfiedVersions = availableVersionsWithBinaries
+                .filter(item => util_1.isVersionSatisfies(version, item.version))
+                .sort((a, b) => {
+                return -semver_1.default.compareBuild(a.version, b.version);
+            });
+            const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
+            if (!resolvedFullVersion) {
+                const availableOptions = availableVersionsWithBinaries.map(item => item.version).join(', ');
+                const availableOptionsMessage = availableOptions
+                    ? `\nAvailable versions: ${availableOptions}`
+                    : '';
+                throw new Error(`Could not find satisfied version for SemVer '${version}'. ${availableOptionsMessage}`);
+            }
+            return resolvedFullVersion;
+        });
+    }
+    downloadTool(javaRelease) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let javaPath;
+            let extractedJavaPath;
+            core.info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
+            const javaArchivePath = yield tc.downloadTool(javaRelease.url);
+            core.info(`Extracting Java archive...`);
+            let extension = util_1.getDownloadArchiveExtension();
+            extractedJavaPath = yield util_1.extractJdkFile(javaArchivePath, extension);
+            const archiveName = fs_1.default.readdirSync(extractedJavaPath)[0];
+            const archivePath = path_1.default.join(extractedJavaPath, archiveName);
+            const version = this.getToolcacheVersionName(javaRelease.version);
+            javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
+            return { version: javaRelease.version, path: javaPath };
+        });
+    }
+    get toolcacheFolderName() {
+        return super.toolcacheFolderName;
+    }
+    getAvailableVersions() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const platform = this.getPlatformOption();
+            const arch = this.architecture;
+            const imageType = this.packageType;
+            const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
+            const releaseType = this.stable ? 'ga' : 'ea';
+            console.time('temurin-retrieve-available-versions');
+            const baseRequestArguments = [
+                `project=jdk`,
+                'vendor=adoptium',
+                `heap_size=normal`,
+                'sort_method=DEFAULT',
+                'sort_order=DESC',
+                `os=${platform}`,
+                `architecture=${arch}`,
+                `image_type=${imageType}`,
+                `release_type=${releaseType}`,
+                `jvm_impl=${this.jvmImpl.toLowerCase()}`
+            ].join('&');
+            // need to iterate through all pages to retrieve the list of all versions
+            // Adoptium API doesn't provide way to retrieve the count of pages to iterate so infinity loop
+            let page_index = 0;
+            const availableVersions = [];
+            while (true) {
+                const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
+                const availableVersionsUrl = `https://api.adoptium.net/v3/assets/version/${versionRange}?${requestArguments}`;
+                if (core.isDebug() && page_index === 0) {
+                    // url is identical except page_index so print it once for debug
+                    core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+                }
+                const paginationPage = (yield this.http.getJson(availableVersionsUrl)).result;
+                if (paginationPage === null || paginationPage.length === 0) {
+                    // break infinity loop because we have reached end of pagination
+                    break;
+                }
+                availableVersions.push(...paginationPage);
+                page_index++;
+            }
+            if (core.isDebug()) {
+                core.startGroup('Print information about available versions');
+                console.timeEnd('temurin-retrieve-available-versions');
+                console.log(`Available versions: [${availableVersions.length}]`);
+                console.log(availableVersions.map(item => item.version_data.semver).join(', '));
+                core.endGroup();
+            }
+            return availableVersions;
+        });
+    }
+    getPlatformOption() {
+        // Adoptium has own platform names so need to map them
+        switch (process.platform) {
+            case 'darwin':
+                return 'mac';
+            case 'win32':
+                return 'windows';
+            default:
+                return process.platform;
+        }
+    }
+}
+exports.TemurinDistribution = TemurinDistribution;
+
+
+/***/ }),
 /* 853 */,
 /* 854 */,
 /* 855 */,
