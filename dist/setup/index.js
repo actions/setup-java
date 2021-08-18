@@ -19083,7 +19083,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
+exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
 const os_1 = __importDefault(__webpack_require__(87));
 const path_1 = __importDefault(__webpack_require__(622));
 const fs = __importStar(__webpack_require__(747));
@@ -19154,6 +19154,11 @@ function getToolcachePath(toolName, version, architecture) {
     return null;
 }
 exports.getToolcachePath = getToolcachePath;
+function isJobStatusSuccess() {
+    const jobStatus = core.getInput('job-status');
+    return jobStatus === 'success';
+}
+exports.isJobStatusSuccess = isJobStatusSuccess;
 
 
 /***/ }),

@@ -56,6 +56,9 @@ inputs:
   cache:
     description: 'Name of the build platform to cache dependencies. It can be "maven" or "gradle".'
     required: false
+  job-status:
+    description: 'Workaround to pass job status to post job step. This variable is not intended for manual setting'
+    default: ${{ job.status }}
 outputs:
   distribution:
     description: 'Distribution of Java that has been installed'

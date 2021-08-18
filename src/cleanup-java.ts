@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as gpg from './gpg';
 import * as constants from './constants';
+import { isJobStatusSuccess } from './util';
 import { save } from './cache';
 
 async function removePrivateKeyFromKeychain() {
@@ -20,8 +21,9 @@ async function removePrivateKeyFromKeychain() {
  * @returns Promise that will be resolved when the save process finishes
  */
 async function saveCache() {
+  const jobStatus = isJobStatusSuccess();
   const cache = core.getInput(constants.INPUT_CACHE);
-  return cache ? save(cache) : Promise.resolve();
+  return jobStatus && cache ? save(cache) : Promise.resolve();
 }
 
 /**

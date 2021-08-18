@@ -69,3 +69,9 @@ export function getToolcachePath(toolName: string, version: string, architecture
 
   return null;
 }
+
+export function isJobStatusSuccess() {
+  const jobStatus = core.getInput('job-status');
+
+  return jobStatus === 'success';
+}

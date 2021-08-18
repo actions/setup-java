@@ -1,6 +1,7 @@
 import { run as cleanup } from '../src/cleanup-java';
 import * as core from '@actions/core';
 import * as cache from '@actions/cache';
+import * as util from '../src/util';
 
 describe('cleanup', () => {
   let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>;
@@ -8,10 +9,13 @@ describe('cleanup', () => {
     ReturnType<typeof cache.saveCache>,
     Parameters<typeof cache.saveCache>
   >;
+  let spyJobStatusSuccess: jest.SpyInstance;
 
   beforeEach(() => {
     spyWarning = jest.spyOn(core, 'warning');
     spyCacheSave = jest.spyOn(cache, 'saveCache');
+    spyJobStatusSuccess = jest.spyOn(util, 'isJobStatusSuccess');
+    spyJobStatusSuccess.mockReturnValue(true);
     createStateForSuccessfulRestore();
   });
   afterEach(() => {
