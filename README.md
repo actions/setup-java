@@ -11,6 +11,8 @@ This action provides the following functionality for GitHub Actions runners:
 - Configuring runner for publishing using Gradle
 - Configuring runner for using GPG private key
 - Registering problem matchers for error output
+- Caching dependencies managed by Apache Maven
+- Caching dependencies managed by Gradle
 
 ## V2 vs V1
 - V2 supports custom distributions and provides support for Zulu OpenJDK, Adopt OpenJDK and Eclipse Temurin out of the box. V1 supports only Zulu OpenJDK
@@ -69,6 +71,19 @@ Currently, the following distributions are supported:
 | `temurin` | Eclipse Temurin | [Link](https://adoptium.net/) | [Link](https://adoptium.net/about.html)
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
+
+#### Supported cache types
+Currently, `gradle` and `maven` are supported. You can set `cache` input like below:
+```yaml
+steps:
+- uses: actions/checkout@v2
+- uses: actions/setup-java@v2
+  with:
+    distribution: 'adopt'
+    java-version: '11'
+    cache: 'gradle' # will restore cache of dependencies and wrappers
+- run: ./gradlew build
+```
 
 ### Check latest
 In the basic examples above, the `check-latest` flag defaults to `false`. When set to `false`, the action tries to first resolve a version of Java from the local tool cache on the runner. If unable to find a specific version in the cache, the action will download a version of Java. Use the default or set `check-latest` to `false` if you prefer a faster more consistent setup experience that prioritizes trying to use the cached versions at the expense of newer versions sometimes being available for download.
