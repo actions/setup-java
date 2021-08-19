@@ -11,7 +11,7 @@ async function removePrivateKeyFromKeychain() {
       const keyFingerprint = core.getState(constants.STATE_GPG_PRIVATE_KEY_FINGERPRINT);
       await gpg.deleteKey(keyFingerprint);
     } catch (error) {
-      core.setFailed('Failed to remove private key');
+      core.setFailed(`Failed to remove private key due to: ${error.message}`);
     }
   }
 }
