@@ -17,5 +17,6 @@ export const INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 export const INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 
 export const INPUT_CACHE = 'cache';
+export const INPUT_JOB_STATUS = 'job-status';
 
 export const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';

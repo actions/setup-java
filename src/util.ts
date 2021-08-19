@@ -5,6 +5,8 @@ import * as semver from 'semver';
 import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
+import { INPUT_JOB_STATUS } from './constants';
+
 export function getTempDir() {
   let tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
 
@@ -71,7 +73,7 @@ export function getToolcachePath(toolName: string, version: string, architecture
 }
 
 export function isJobStatusSuccess() {
-  const jobStatus = core.getInput('job-status');
+  const jobStatus = core.getInput(INPUT_JOB_STATUS);
 
   return jobStatus === 'success';
 }
