@@ -112,7 +112,7 @@ export async function save(id: string) {
     } else {
       if (isProbablyGradleDaemonProblem(packageManager, error)) {
         core.warning(
-          'Failed to save Gradle cache on Windows. If tar.exe reported "Permission denied", try to run Gradle with `--no-daemon` option. Refer to https://github.com/actions/cache/issues/454 for detail.'
+          'Failed to save Gradle cache on Windows. If tar.exe reported "Permission denied", try to run Gradle with `--no-daemon` option. Refer to https://github.com/actions/cache/issues/454 for details.'
         );
       }
       throw error;
