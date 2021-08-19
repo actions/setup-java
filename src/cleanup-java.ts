@@ -27,7 +27,7 @@ async function saveCache() {
 }
 
 /**
- * The save process is best-effort, and it should not make the workflow failed
+ * The save process is best-effort, and it should not make the workflow fail
  * even though this process throws an error.
  * @param promise the promise to ignore error from
  * @returns Promise that will ignore error reported by the given promise
