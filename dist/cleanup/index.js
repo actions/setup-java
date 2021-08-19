@@ -64589,8 +64589,7 @@ function restore(id) {
         core.debug(`primary key is ${primaryKey}`);
         core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
         if (primaryKey.endsWith('-')) {
-            core.warning(`No file in ${process.cwd()} matched to [${packageManager.pattern}], make sure you have checked out the target repository`);
-            return;
+            throw new Error(`No file in ${process.cwd()} matched to [${packageManager.pattern}], make sure you have checked out the target repository`);
         }
         const matchedKey = yield cache.restoreCache(packageManager.path, primaryKey, [
             `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${id}`

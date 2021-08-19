@@ -65,9 +65,8 @@ describe('dependency cache', () => {
     });
 
     describe('for maven', () => {
-      it('warns if no pom.xml found', async () => {
-        await restore('maven');
-        expect(spyWarning).toBeCalledWith(
+      it('throws error if no pom.xml found', async () => {
+        await expect(restore('maven')).rejects.toThrowError(
           `No file in ${projectRoot(
             workspace
           )} matched to [**/pom.xml], make sure you have checked out the target repository`
@@ -83,9 +82,8 @@ describe('dependency cache', () => {
       });
     });
     describe('for gradle', () => {
-      it('warns if no build.gradle found', async () => {
-        await restore('gradle');
-        expect(spyWarning).toBeCalledWith(
+      it('throws error if no build.gradle found', async () => {
+        await expect(restore('gradle')).rejects.toThrowError(
           `No file in ${projectRoot(
             workspace
           )} matched to [**/*.gradle*,**/gradle-wrapper.properties], make sure you have checked out the target repository`

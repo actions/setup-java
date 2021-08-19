@@ -65,12 +65,11 @@ export async function restore(id: string) {
   core.debug(`primary key is ${primaryKey}`);
   core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
   if (primaryKey.endsWith('-')) {
-    core.warning(
+    throw new Error(
       `No file in ${process.cwd()} matched to [${
         packageManager.pattern
       }], make sure you have checked out the target repository`
     );
-    return;
   }
 
   const matchedKey = await cache.restoreCache(packageManager.path, primaryKey, [
