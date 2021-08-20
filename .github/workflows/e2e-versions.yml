@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        distribution: ['adopt', 'adopt-openj9', 'temurin', 'zulu'] # internally 'adopt-hotspot' is the same as 'adopt'
+        distribution: ['temurin', 'adopt', 'adopt-openj9', 'zulu'] # internally 'adopt-hotspot' is the same as 'adopt'
         version: ['8', '11', '16']
     steps:
       - name: Checkout
@@ -43,30 +43,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        distribution: ['adopt', 'zulu']
+        distribution: ['temurin', 'zulu']
         version:
         - '11.0'
-        - '8.0.282'
-        - '11.0.2+7'
-        include:
-          - distribution: 'adopt'
-            version: '12.0.2+10.1'
-            os: macos-latest
-          - distribution: 'adopt'
-            version: '12.0.2+10.1'
-            os: windows-latest
-          - distribution: 'adopt'
-            version: '12.0.2+10.1'
-            os: ubuntu-latest
-          - distribution: 'temurin'
-            version: '16.0.2+7'
-            os: macos-latest
-          - distribution: 'temurin'
-            version: '16.0.2+7'
-            os: windows-latest
-          - distribution: 'temurin'
-            version: '16.0.2+7'
-            os: ubuntu-latest
+        - '8.0.302'
+        - '16.0.2+7'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -88,7 +69,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        distribution: ['adopt', 'temurin', 'zulu']
+        distribution: ['temurin', 'zulu']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -125,28 +106,6 @@ jobs:
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
 
-  setup-java-ea-versions-adopt:
-    name: adopt ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
-    needs: setup-java-major-minor-versions
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        version: ['17-ea', '15.0.0-ea.14.1.202003160455']
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: setup-java
-        uses: ./
-        id: setup-java
-        with:
-          java-version: ${{ matrix.version }}
-          distribution: adopt
-      - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
-        shell: bash
-
   setup-java-ea-versions-temurin:
     name: temurin ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
@@ -177,10 +136,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        distribution: ['adopt', 'temurin', 'zulu']
+        distribution: ['temurin', 'zulu']
         java-package: ['jre']
-        version:
-        - '16.0'
+        version: ['16.0']
         include:
           - distribution: 'zulu'
             java-package: jre+fx
