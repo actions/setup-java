@@ -1,5 +1,6 @@
 # Usage
 - [Selecting a Java distribution](#Selecting-a-Java-distribution)
+  - [Eclipse Temurin](#Eclipse-Temurin)
   - [Adopt](#Adopt)
   - [Zulu](#Zulu)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
@@ -16,13 +17,26 @@ See [action.yml](../action.yml) for more details on task inputs.
 ## Selecting a Java distribution
 Inputs `java-version` and `distribution` are mandatory and needs to be provided. See [Supported distributions](../README.md#Supported-distributions) for a list of available options.
 
-### Adopt
+### Eclipse Temurin
 ```yaml
 steps:
 - uses: actions/checkout@v2
 - uses: actions/setup-java@v2
   with:
-    distribution: 'adopt-hotspot' # See 'Supported distributions' for available options @ README.md
+    distribution: 'temurin'
+    java-version: '11'
+- run: java -cp java HelloWorldApp
+```
+
+### Adopt
+**NOTE:** Adopt OpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` to `temurin` to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
+
+```yaml
+steps:
+- uses: actions/checkout@v2
+- uses: actions/setup-java@v2
+  with:
+    distribution: 'adopt-hotspot'
     java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
@@ -91,8 +105,8 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        distribution: [ 'zulu', 'adopt' ]
-        java: [ '8', '11', '13', '15' ]
+        distribution: [ 'zulu', 'temurin' ]
+        java: [ '8', '11' ]
     name: Java ${{ matrix.Java }} (${{ matrix.distribution }}) sample
     steps:
       - uses: actions/checkout@v2
@@ -119,7 +133,7 @@ jobs:
       - name: Setup java
         uses: actions/setup-java@v2
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: ${{ matrix.java }}
       - run: java -cp java HelloWorldApp
 ```
@@ -150,7 +164,7 @@ jobs:
     - name: Set up Apache Maven Central
       uses: actions/setup-java@v2
       with: # running setup-java again overwrites the settings.xml
-        distribution: 'adopt'
+        distribution: 'temurin'
         java-version: '11'
         server-id: maven # Value of the distributionManagement/repository/id field of the pom.xml
         server-username: MAVEN_USERNAME # env variable for username in deploy

@@ -15,24 +15,13 @@ This action provides the following functionality for GitHub Actions runners:
 - Caching dependencies managed by Gradle
 
 ## V2 vs V1
-- V2 supports custom distributions and provides support for Zulu OpenJDK, Adopt OpenJDK and Eclipse Temurin out of the box. V1 supports only Zulu OpenJDK
+- V2 supports custom distributions and provides support for Zulu OpenJDK, Eclipse Temurin and Adopt OpenJDK  out of the box. V1 supports only Zulu OpenJDK
 - V2 requires you to specify distribution along with the version. V1 defaults to Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2
 
 ## Usage
 Inputs `java-version` and `distribution` are mandatory. See [Supported distributions](#supported-distributions) section for a list of available options.
 
 ### Basic
-**Adopt OpenJDK**
-```yaml
-steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
-  with:
-    distribution: 'adopt' # See 'Supported distributions' for available options
-    java-version: '11'
-- run: java -cp java HelloWorldApp
-```
-
 **Eclipse Temurin**
 ```yaml
 steps:
@@ -40,7 +29,7 @@ steps:
 - uses: actions/setup-java@v2
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
-    java-version: '8'
+    java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
 
@@ -57,32 +46,49 @@ steps:
 
 #### Supported version syntax
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
-- major versions: `8`, `11`, `15`
+- major versions: `8`, `11`, `16`
 - more specific versions: `11.0`, `11.0.4`, `8.0.232`, `8.0.282+8`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`, `15.0.0-ea.2`, `15.0.0+2-ea`
 
 #### Supported distributions
 Currently, the following distributions are supported:
-| Keyword | Distribution | Official site | License |
+| Keyword | Distribution | Official site | License
 |-|-|-|-|
-| `zulu` | Zulu OpenJDK | [Link](https://www.azul.com/downloads/zulu-community/?package=jdk) | [Link](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
-| `adopt` or `adopt-hotspot` | Adopt OpenJDK Hotspot | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html)
-| `adopt-openj9` | Adopt OpenJDK OpenJ9 | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html)
 | `temurin` | Eclipse Temurin | [Link](https://adoptium.net/) | [Link](https://adoptium.net/about.html)
+| `zulu` | Zulu OpenJDK | [Link](https://www.azul.com/downloads/zulu-community/?package=jdk) | [Link](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
+| `adopt` or `adopt-hotspot` | Adopt OpenJDK Hotspot | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
+| `adopt-openj9` | Adopt OpenJDK OpenJ9 | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html)
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 
-#### Supported cache types
-Currently, `gradle` and `maven` are supported. You can set `cache` input like below:
+**NOTE:** Adopt OpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` to `temurin` to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
+
+### Caching packages dependencies
+The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle and maven. The cache input is optional, and caching is turned off by default.
+
+#### Caching gradle dependencies
 ```yaml
 steps:
 - uses: actions/checkout@v2
 - uses: actions/setup-java@v2
   with:
-    distribution: 'adopt'
+    distribution: 'temurin'
     java-version: '11'
-    cache: 'gradle' # will restore cache of dependencies and wrappers
+    cache: 'gradle'
 - run: ./gradlew build
+```
+
+#### Caching maven dependencies
+```yaml
+steps:
+- uses: actions/checkout@v2
+- uses: actions/setup-java@v2
+  with:
+    distribution: 'temurin'
+    java-version: '11'
+    cache: 'maven'
+- name: Build with Maven
+  run: mvn -B package --file pom.xml
 ```
 
 ### Check latest
@@ -125,6 +131,7 @@ jobs:
 
 ### Advanced
 - [Selecting a Java distribution](docs/advanced-usage.md#Selecting-a-Java-distribution)
+  - [Eclipse Temurin](docs/advanced-usage.md#Eclipse-Temurin)
   - [Adopt](docs/advanced-usage.md#Adopt)
   - [Zulu](docs/advanced-usage.md#Zulu)
 - [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)
