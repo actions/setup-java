@@ -5,6 +5,7 @@ import * as util from '../src/util';
 
 describe('cleanup', () => {
   let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>;
+  let spyInfo: jest.SpyInstance<void, Parameters<typeof core.info>>;
   let spyCacheSave: jest.SpyInstance<
     ReturnType<typeof cache.saveCache>,
     Parameters<typeof cache.saveCache>
@@ -13,6 +14,9 @@ describe('cleanup', () => {
 
   beforeEach(() => {
     spyWarning = jest.spyOn(core, 'warning');
+    spyWarning.mockImplementation(() => null);
+    spyInfo = jest.spyOn(core, 'info');
+    spyInfo.mockImplementation(() => null);
     spyCacheSave = jest.spyOn(cache, 'saveCache');
     spyJobStatusSuccess = jest.spyOn(util, 'isJobStatusSuccess');
     spyJobStatusSuccess.mockReturnValue(true);

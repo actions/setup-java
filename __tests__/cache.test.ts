@@ -14,6 +14,8 @@ describe('dependency cache', () => {
   let workspace: string;
   let spyInfo: jest.SpyInstance<void, Parameters<typeof core.info>>;
   let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>;
+  let spyDebug: jest.SpyInstance<void, Parameters<typeof core.debug>>;
+  let spySaveState: jest.SpyInstance<void, Parameters<typeof core.saveState>>;
 
   beforeEach(() => {
     workspace = mkdtempSync(join(tmpdir(), 'setup-java-cache-'));
@@ -38,7 +40,16 @@ describe('dependency cache', () => {
 
   beforeEach(() => {
     spyInfo = jest.spyOn(core, 'info');
+    spyInfo.mockImplementation(() => null);
+
     spyWarning = jest.spyOn(core, 'warning');
+    spyWarning.mockImplementation(() => null);
+
+    spyDebug = jest.spyOn(core, 'debug');
+    spyDebug.mockImplementation(() => null);
+
+    spySaveState = jest.spyOn(core, 'saveState');
+    spySaveState.mockImplementation(() => null);
   });
 
   afterEach(() => {
@@ -58,6 +69,7 @@ describe('dependency cache', () => {
       spyCacheRestore = jest
         .spyOn(cache, 'restoreCache')
         .mockImplementation((paths: string[], primaryKey: string) => Promise.resolve(undefined));
+      spyWarning.mockImplementation(() => null);
     });
 
     it('throws error if unsupported package manager specified', () => {
@@ -117,6 +129,7 @@ describe('dependency cache', () => {
       spyCacheSave = jest
         .spyOn(cache, 'saveCache')
         .mockImplementation((paths: string[], key: string) => Promise.resolve(0));
+      spyWarning.mockImplementation(() => null);
     });
 
     it('throws error if unsupported package manager specified', () => {

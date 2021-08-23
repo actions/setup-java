@@ -1,6 +1,7 @@
 import io = require('@actions/io');
 import fs = require('fs');
 import path = require('path');
+import * as core from '@actions/core';
 import os from 'os';
 
 import * as auth from '../src/auth';
@@ -10,11 +11,14 @@ const settingsFile = path.join(m2Dir, auth.SETTINGS_FILE);
 
 describe('auth tests', () => {
   let spyOSHomedir: jest.SpyInstance;
+  let spyInfo: jest.SpyInstance;
 
   beforeEach(async () => {
     await io.rmRF(m2Dir);
     spyOSHomedir = jest.spyOn(os, 'homedir');
     spyOSHomedir.mockReturnValue(__dirname);
+    spyInfo = jest.spyOn(core, 'info');
+    spyInfo.mockImplementation(() => null);
   }, 300000);
 
   afterAll(async () => {
