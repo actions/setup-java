@@ -18962,7 +18962,7 @@ function findPackageManager(id) {
 function computeCacheKey(packageManager) {
     return __awaiter(this, void 0, void 0, function* () {
         const hash = yield glob.hashFiles(packageManager.pattern.join('\n'));
-        return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${hash}`;
+        return `${process.env.RUNNER_OS}-${CACHE_KEY_PREFIX}-${packageManager.id}-${hash}`;
     });
 }
 /**
@@ -18978,15 +18978,17 @@ function restore(id) {
         if (primaryKey.endsWith('-')) {
             throw new Error(`No file in ${process.cwd()} matched to [${packageManager.pattern}], make sure you have checked out the target repository`);
         }
-        const matchedKey = yield cache.restoreCache(packageManager.path, primaryKey, [
-            `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${id}`
-        ]);
+        const restoreKeys = [
+            `${process.env.RUNNER_OS}-${CACHE_KEY_PREFIX}-${id}-`,
+            `${process.env.RUNNER_OS}-${CACHE_KEY_PREFIX}-`
+        ];
+        const matchedKey = yield cache.restoreCache(packageManager.path, primaryKey, restoreKeys);
         if (matchedKey) {
             core.saveState(CACHE_MATCHED_KEY, matchedKey);
             core.info(`Cache restored from key: ${matchedKey}`);
         }
         else {
-            core.info(`${packageManager.id} cache is not found`);
+            core.info(`Cache not found for input keys: ${[primaryKey, ...restoreKeys].join(', ')}`);
         }
     });
 }

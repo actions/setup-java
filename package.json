@@ -10,7 +10,8 @@
     "format-check": "prettier --check \"{,!(node_modules)/**/}*.ts\"",
     "prerelease": "npm run-script build",
     "release": "git add -f dist/setup/index.js dist/cleanup/index.js",
-    "test": "jest"
+    "test": "jest",
+    "pre-checkin": "npm run format && npm run build && npm test"
   },
   "repository": {
     "type": "git",
