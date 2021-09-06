@@ -35,7 +35,7 @@ const supportedPackageManager: PackageManager[] = [
   }
 ];
 
-function findPackageManager(id: string): PackageManager {
+export function findPackageManager(id: string): PackageManager {
   const packageManager = supportedPackageManager.find(packageManager => packageManager.id === id);
   if (packageManager === undefined) {
     throw new Error(`unknown package manager specified: ${id}`);
@@ -49,7 +49,7 @@ function findPackageManager(id: string): PackageManager {
  * If there is no file matched to {@link PackageManager.path}, the generated key ends with a dash (-).
  * @see {@link https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key|spec of cache key}
  */
-async function computeCacheKey(packageManager: PackageManager) {
+export async function computeCacheKey(packageManager: PackageManager) {
   const hash = await glob.hashFiles(packageManager.pattern.join('\n'));
   return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${hash}`;
 }

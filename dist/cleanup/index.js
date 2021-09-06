@@ -64536,7 +64536,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.save = exports.restore = void 0;
+exports.save = exports.restore = exports.computeCacheKey = exports.findPackageManager = void 0;
 const path_1 = __webpack_require__(622);
 const os_1 = __importDefault(__webpack_require__(87));
 const cache = __importStar(__webpack_require__(692));
@@ -64566,6 +64566,7 @@ function findPackageManager(id) {
     }
     return packageManager;
 }
+exports.findPackageManager = findPackageManager;
 /**
  * A function that generates a cache key to use.
  * Format of the generated key will be "${{ platform }}-${{ id }}-${{ fileHash }}"".
@@ -64578,6 +64579,7 @@ function computeCacheKey(packageManager) {
         return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${hash}`;
     });
 }
+exports.computeCacheKey = computeCacheKey;
 /**
  * Restore the dependency cache
  * @param id ID of the package manager, should be "maven" or "gradle"

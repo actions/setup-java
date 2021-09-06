@@ -1,7 +1,7 @@
 import { mkdtempSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { restore, save } from '../src/cache';
+import { computeCacheKey, findPackageManager, restore, save } from '../src/cache';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as core from '@actions/core';
@@ -92,6 +92,19 @@ describe('dependency cache', () => {
         expect(spyWarning).not.toBeCalled();
         expect(spyInfo).toBeCalledWith('maven cache is not found');
       });
+      it('generates same cache key for every supported OS', async () => {
+        const packageManager = findPackageManager('maven');
+
+        process.env['RUNNER_OS'] = 'Windows';
+        const keyForWin = await computeCacheKey(packageManager);
+        process.env['RUNNER_OS'] = 'Linux';
+        const keyForLinux = await computeCacheKey(packageManager);
+        process.env['RUNNER_OS'] = 'macOS';
+        const keyForMacOS = await computeCacheKey(packageManager);
+
+        expect(keyForWin).toBe(keyForLinux);
+        expect(keyForWin).toBe(keyForMacOS);
+      });
     });
     describe('for gradle', () => {
       it('throws error if no build.gradle found', async () => {
@@ -116,6 +129,19 @@ describe('dependency cache', () => {
         expect(spyCacheRestore).toBeCalled();
         expect(spyWarning).not.toBeCalled();
         expect(spyInfo).toBeCalledWith('gradle cache is not found');
+      });
+      it('generates same cache key for every supported OS', async () => {
+        const packageManager = findPackageManager('gradle');
+
+        process.env['RUNNER_OS'] = 'Windows';
+        const keyForWin = await computeCacheKey(packageManager);
+        process.env['RUNNER_OS'] = 'Linux';
+        const keyForLinux = await computeCacheKey(packageManager);
+        process.env['RUNNER_OS'] = 'macOS';
+        const keyForMacOS = await computeCacheKey(packageManager);
+
+        expect(keyForWin).toEqual(keyForLinux);
+        expect(keyForWin).toEqual(keyForMacOS);
       });
     });
   });
