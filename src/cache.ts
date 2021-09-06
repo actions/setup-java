@@ -45,13 +45,13 @@ export function findPackageManager(id: string): PackageManager {
 
 /**
  * A function that generates a cache key to use.
- * Format of the generated key will be "${{ platform }}-${{ id }}-${{ fileHash }}"".
+ * Format of the generated key will be "setup-java-${{ id }}-${{ fileHash }}"".
  * If there is no file matched to {@link PackageManager.path}, the generated key ends with a dash (-).
  * @see {@link https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key|spec of cache key}
  */
 export async function computeCacheKey(packageManager: PackageManager) {
   const hash = await glob.hashFiles(packageManager.pattern.join('\n'));
-  return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${hash}`;
+  return `${CACHE_KEY_PREFIX}-${packageManager.id}-${hash}`;
 }
 
 /**
@@ -73,7 +73,7 @@ export async function restore(id: string) {
   }
 
   const matchedKey = await cache.restoreCache(packageManager.path, primaryKey, [
-    `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${id}`
+    `${CACHE_KEY_PREFIX}-${id}`
   ]);
   if (matchedKey) {
     core.saveState(CACHE_MATCHED_KEY, matchedKey);

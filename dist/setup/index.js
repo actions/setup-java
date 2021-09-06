@@ -18956,14 +18956,14 @@ function findPackageManager(id) {
 exports.findPackageManager = findPackageManager;
 /**
  * A function that generates a cache key to use.
- * Format of the generated key will be "${{ platform }}-${{ id }}-${{ fileHash }}"".
+ * Format of the generated key will be "setup-java-${{ id }}-${{ fileHash }}"".
  * If there is no file matched to {@link PackageManager.path}, the generated key ends with a dash (-).
  * @see {@link https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key|spec of cache key}
  */
 function computeCacheKey(packageManager) {
     return __awaiter(this, void 0, void 0, function* () {
         const hash = yield glob.hashFiles(packageManager.pattern.join('\n'));
-        return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${hash}`;
+        return `${CACHE_KEY_PREFIX}-${packageManager.id}-${hash}`;
     });
 }
 exports.computeCacheKey = computeCacheKey;
@@ -18981,7 +18981,7 @@ function restore(id) {
             throw new Error(`No file in ${process.cwd()} matched to [${packageManager.pattern}], make sure you have checked out the target repository`);
         }
         const matchedKey = yield cache.restoreCache(packageManager.path, primaryKey, [
-            `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${id}`
+            `${CACHE_KEY_PREFIX}-${id}`
         ]);
         if (matchedKey) {
             core.saveState(CACHE_MATCHED_KEY, matchedKey);
