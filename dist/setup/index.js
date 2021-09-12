@@ -38551,7 +38551,161 @@ module.exports = clean
 /* 504 */,
 /* 505 */,
 /* 506 */,
-/* 507 */,
+/* 507 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.LibericaDistributions = void 0;
+const base_installer_1 = __webpack_require__(83);
+const semver_1 = __importDefault(__webpack_require__(876));
+const util_1 = __webpack_require__(322);
+const core = __importStar(__webpack_require__(470));
+const tc = __importStar(__webpack_require__(139));
+const fs_1 = __importDefault(__webpack_require__(747));
+const path_1 = __importDefault(__webpack_require__(622));
+const supportedPlatform = `'linux', 'linux-musl', 'macos', 'solaris', 'windows'`;
+const supportedArchitecture = `'x86', 'x64', 'armv7', 'aarch64', 'ppc64le'`;
+const first = () => true;
+class LibericaDistributions extends base_installer_1.JavaBase {
+    constructor(installerOptions) {
+        super('Liberica', installerOptions);
+    }
+    downloadTool(javaRelease) {
+        return __awaiter(this, void 0, void 0, function* () {
+            core.info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
+            const javaArchivePath = yield tc.downloadTool(javaRelease.url);
+            core.info(`Extracting Java archive...`);
+            const extractedJavaPath = yield util_1.extractJdkFile(javaArchivePath);
+            const archiveName = fs_1.default.readdirSync(extractedJavaPath)[0];
+            const archivePath = path_1.default.join(extractedJavaPath, archiveName);
+            const javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaRelease.version), this.architecture);
+            return { version: javaRelease.version, path: javaPath };
+        });
+    }
+    findPackageForDownload(range) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const availableVersionsRaw = yield this.getAvailableVersions();
+            const availableVersions = availableVersionsRaw.map(item => ({
+                url: item.downloadUrl,
+                version: this.convertVersionToSemver(item)
+            }));
+            const satisfiedVersion = availableVersions
+                .filter(item => util_1.isVersionSatisfies(range, item.version))
+                .sort((a, b) => -semver_1.default.compareBuild(a.version, b.version))
+                .find(first);
+            if (!satisfiedVersion) {
+                const availableOptions = availableVersions.map(item => item.version).join(', ');
+                const availableOptionsMessage = availableOptions
+                    ? `\nAvailable versions: ${availableOptions}`
+                    : '';
+                throw new Error(`Could not find satisfied version for semver ${range}. ${availableOptionsMessage}`);
+            }
+            return satisfiedVersion;
+        });
+    }
+    getAvailableVersions() {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            console.time('liberica-retrieve-available-versions');
+            const url = this.prepareAvailableVersionsUrl();
+            if (core.isDebug()) {
+                core.debug(`Gathering available versions from '${url}'`);
+            }
+            const availableVersions = (_a = (yield this.http.getJson(url)).result) !== null && _a !== void 0 ? _a : [];
+            if (core.isDebug()) {
+                core.startGroup('Print information about available versions');
+                console.timeEnd('liberica-retrieve-available-versions');
+                console.log(`Available versions: [${availableVersions.length}]`);
+                console.log(availableVersions.map(item => item.version));
+                core.endGroup();
+            }
+            return availableVersions;
+        });
+    }
+    prepareAvailableVersionsUrl() {
+        var _a, _b;
+        const [bundleType, feature] = this.packageType.split('+');
+        const urlOptions = Object.assign(Object.assign({ os: this.getPlatformOption(), 'bundle-type': bundleType, fx: (_b = (_a = feature === null || feature === void 0 ? void 0 : feature.includes('fx')) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : 'false' }, this.getArchitectureOptions()), { 'build-type': this.stable ? 'all' : 'ea', 'installation-type': 'archive', fields: 'downloadUrl,version' });
+        const searchParams = new URLSearchParams(urlOptions).toString();
+        return `https://api.bell-sw.com/v1/liberica/releases?${searchParams}`;
+    }
+    getArchitectureOptions() {
+        switch (this.architecture) {
+            case 'x86':
+                return { bitness: '32', arch: 'x86' };
+            case 'x64':
+                return { bitness: '64', arch: 'x86' };
+            case 'armv7':
+                return { bitness: '32', arch: 'arm' };
+            case 'aarch64':
+                return { bitness: '64', arch: 'arm' };
+            case 'ppc64le':
+                return { bitness: '64', arch: 'ppc' };
+            default:
+                throw new Error(`Architecture '${this.architecture}' not supported. Supported architecture: ${supportedArchitecture}`);
+        }
+    }
+    getPlatformOption(platform = process.platform) {
+        switch (platform) {
+            case 'darwin':
+                return 'macos';
+            case 'win32':
+            case 'cygwin':
+                return 'windows';
+            case 'linux':
+                return 'linux';
+            case 'sunos':
+                return 'solaris';
+            default:
+                throw new Error(`Platform '${platform}' not supported. Supported platform: ${supportedPlatform}`);
+        }
+    }
+    convertVersionToSemver(version) {
+        let { buildVersion, featureVersion, interimVersion, updateVersion } = version;
+        const mainVersion = [featureVersion, interimVersion, updateVersion].join('.');
+        if (buildVersion != 0) {
+            return `${mainVersion}+${buildVersion}`;
+        }
+        return mainVersion;
+    }
+}
+exports.LibericaDistributions = LibericaDistributions;
+
+
+/***/ }),
 /* 508 */,
 /* 509 */,
 /* 510 */
@@ -55912,6 +56066,7 @@ const installer_1 = __webpack_require__(757);
 const installer_2 = __webpack_require__(834);
 const installer_3 = __webpack_require__(584);
 const installer_4 = __webpack_require__(439);
+const installer_5 = __webpack_require__(507);
 var JavaDistribution;
 (function (JavaDistribution) {
     JavaDistribution["Adopt"] = "adopt";
@@ -55919,6 +56074,7 @@ var JavaDistribution;
     JavaDistribution["AdoptOpenJ9"] = "adopt-openj9";
     JavaDistribution["Temurin"] = "temurin";
     JavaDistribution["Zulu"] = "zulu";
+    JavaDistribution["Liberica"] = "liberica";
     JavaDistribution["JdkFile"] = "jdkfile";
 })(JavaDistribution || (JavaDistribution = {}));
 function getJavaDistribution(distributionName, installerOptions, jdkFile) {
@@ -55934,6 +56090,8 @@ function getJavaDistribution(distributionName, installerOptions, jdkFile) {
             return new installer_4.TemurinDistribution(installerOptions, installer_4.TemurinImplementation.Hotspot);
         case JavaDistribution.Zulu:
             return new installer_2.ZuluDistribution(installerOptions);
+        case JavaDistribution.Liberica:
+            return new installer_5.LibericaDistributions(installerOptions);
         default:
             return null;
     }

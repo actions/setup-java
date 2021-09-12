@@ -1,0 +1,434 @@
+[
+  {
+    "buildVersion": 36,
+    "updateVersion": 0,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/14+36/bellsoft-jdk14+36-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "14+36",
+    "featureVersion": 14
+  },
+  {
+    "buildVersion": 9,
+    "updateVersion": 11,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.11+9/bellsoft-jdk11.0.11+9-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.11+9",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 8,
+    "updateVersion": 1,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/14.0.1+8/bellsoft-jdk14.0.1+8-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "14.0.1+8",
+    "featureVersion": 14
+  },
+  {
+    "buildVersion": 10,
+    "updateVersion": 262,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u262+10/bellsoft-jdk8u262+10-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u262+10",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 1,
+    "updateVersion": 275,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u275+1/bellsoft-jdk8u275+1-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u275+1",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 1,
+    "updateVersion": 9,
+    "patchVersion": 1,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.9.1+1/bellsoft-jdk11.0.9.1+1-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.9.1+1",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 8,
+    "updateVersion": 202,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u202/bellsoft-jdk8u202-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u202+8",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 33,
+    "updateVersion": 0,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/12/bellsoft-jdk12-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "12+33",
+    "featureVersion": 12
+  },
+  {
+    "buildVersion": 8,
+    "updateVersion": 282,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u282+8/bellsoft-jdk8u282+8-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u282+8",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 11,
+    "updateVersion": 9,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.9+11/bellsoft-jdk11.0.9+11-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.9+11",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 33,
+    "updateVersion": 0,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/13/bellsoft-jdk13-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "13+33",
+    "featureVersion": 13
+  },
+  {
+    "buildVersion": 12,
+    "updateVersion": 9,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.9+12/bellsoft-jdk11.0.9+12-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.9+12",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 7,
+    "updateVersion": 242,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u242+7/bellsoft-jdk8u242+7-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u242+7",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 9,
+    "updateVersion": 2,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/13.0.2+9/bellsoft-jdk13.0.2+9-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "13.0.2+9",
+    "featureVersion": 13
+  },
+  {
+    "buildVersion": 9,
+    "updateVersion": 1,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/13.0.1/bellsoft-jdk13.0.1-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "13.0.1+9",
+    "featureVersion": 13
+  },
+  {
+    "buildVersion": 1,
+    "updateVersion": 265,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u265+1/bellsoft-jdk8u265+1-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u265+1",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 9,
+    "updateVersion": 1,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/15.0.1+9/bellsoft-jdk15.0.1+9-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "15.0.1+9",
+    "featureVersion": 15
+  },
+  {
+    "buildVersion": 10,
+    "updateVersion": 272,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u272+10/bellsoft-jdk8u272+10-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u272+10",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 7,
+    "updateVersion": 2,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/16.0.2+7/bellsoft-jdk16.0.2+7-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "16.0.2+7",
+    "featureVersion": 16
+  },
+  {
+    "buildVersion": 10,
+    "updateVersion": 6,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.6+10/bellsoft-jdk11.0.6+10-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.6+10",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 9,
+    "updateVersion": 252,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u252+9/bellsoft-jdk8u252+9-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u252+9",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 12,
+    "updateVersion": 212,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u212/bellsoft-jdk8u212-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u212+12",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 10,
+    "updateVersion": 2,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/15.0.2+10/bellsoft-jdk15.0.2+10-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "15.0.2+10",
+    "featureVersion": 15
+  },
+  {
+    "buildVersion": 9,
+    "updateVersion": 10,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.10+9/bellsoft-jdk11.0.10+9-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.10+9",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 0,
+    "updateVersion": 1,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.1/bellsoft-jdk11.0.1-macos-amd64.tar.gz",
+    "interimVersion": 0,
+    "version": "11.0.1+0",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 7,
+    "updateVersion": 12,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.12+7/bellsoft-jdk11.0.12+7-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.12+7",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 36,
+    "updateVersion": 0,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/16+36/bellsoft-jdk16+36-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "16+36",
+    "featureVersion": 16
+  },
+  {
+    "buildVersion": 12,
+    "updateVersion": 3,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.3/bellsoft-jdk11.0.3-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.3+12",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 10,
+    "updateVersion": 8,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.8+10/bellsoft-jdk11.0.8+10-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.8+10",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 7,
+    "updateVersion": 2,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.2/bellsoft-jdk11.0.2-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.2+7",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 10,
+    "updateVersion": 5,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.5/bellsoft-jdk11.0.5-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.5+10",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 10,
+    "updateVersion": 4,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.4/bellsoft-jdk11.0.4-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.4+10",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 10,
+    "updateVersion": 2,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/12.0.2/bellsoft-jdk12.0.2-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "12.0.2+10",
+    "featureVersion": 12
+  },
+  {
+    "buildVersion": 12,
+    "updateVersion": 1,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/12.0.1/bellsoft-jdk12.0.1-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "12.0.1+12",
+    "featureVersion": 12
+  },
+  {
+    "buildVersion": 10,
+    "updateVersion": 1,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/13.0.1+10/bellsoft-jdk13.0.1+10-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "13.0.1+10",
+    "featureVersion": 13
+  },
+  {
+    "buildVersion": 11,
+    "updateVersion": 5,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.5+11/bellsoft-jdk11.0.5+11-macos-amd64.tar.gz",
+    "interimVersion": 0,
+    "version": "11.0.5+11",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 11,
+    "updateVersion": 5,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.5+11/bellsoft-jdk11.0.5+11-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.5+11",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 10,
+    "updateVersion": 292,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u292+10/bellsoft-jdk8u292+10-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u292+10",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 11,
+    "updateVersion": 222,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u222/bellsoft-jdk8u222-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u222+11",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 36,
+    "updateVersion": 0,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/15+36/bellsoft-jdk15+36-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "15+36",
+    "featureVersion": 15
+  },
+  {
+    "buildVersion": 10,
+    "updateVersion": 7,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/11.0.7+10/bellsoft-jdk11.0.7+10-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "11.0.7+10",
+    "featureVersion": 11
+  },
+  {
+    "buildVersion": 10,
+    "updateVersion": 232,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u232+10/bellsoft-jdk8u232+10-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u232+10",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 8,
+    "updateVersion": 2,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/15.0.2+8/bellsoft-jdk15.0.2+8-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "15.0.2+8",
+    "featureVersion": 15
+  },
+  {
+    "buildVersion": 8,
+    "updateVersion": 302,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u302+8/bellsoft-jdk8u302+8-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u302+8",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 12,
+    "updateVersion": 192,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u192.all/bellsoft-jdk1.8.0-macos-amd64.tar.gz",
+    "interimVersion": 0,
+    "version": "8u192+12",
+    "featureVersion": 8
+  },
+  {
+    "buildVersion": 13,
+    "updateVersion": 2,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/14.0.2+13/bellsoft-jdk14.0.2+13-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "14.0.2+13",
+    "featureVersion": 14
+  },
+  {
+    "buildVersion": 9,
+    "updateVersion": 1,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/16.0.1+9/bellsoft-jdk16.0.1+9-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "16.0.1+9",
+    "featureVersion": 16
+  },
+  {
+    "buildVersion": 9,
+    "updateVersion": 232,
+    "patchVersion": 0,
+    "downloadUrl": "https://github.com/bell-sw/Liberica/releases/download/8u232/bellsoft-jdk8u232-macos-amd64.zip",
+    "interimVersion": 0,
+    "version": "8u232+9",
+    "featureVersion": 8
+  }
+]
