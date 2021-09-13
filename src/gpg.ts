@@ -39,8 +39,7 @@ export async function importKey(privateKey: string) {
 }
 
 export async function deleteKey(keyFingerprint: string) {
-  await exec.exec('gpg', ['--batch', '--yes', '--delete-secret-keys', keyFingerprint], {
+  await exec.exec('gpg', ['--batch', '--yes', '--delete-secret-and-public-key', keyFingerprint], {
     silent: true
   });
-  await exec.exec('gpg', ['--batch', '--yes', '--delete-keys', keyFingerprint], { silent: true });
 }
