@@ -75,7 +75,7 @@ steps:
     distribution: 'temurin'
     java-version: '11'
     cache: 'gradle'
-- run: ./gradlew build
+- run: ./gradlew build --no-daemon
 ```
 
 #### Caching maven dependencies

@@ -49663,7 +49663,9 @@ class HttpClient {
                 maxSockets: maxSockets,
                 keepAlive: this._keepAlive,
                 proxy: {
-                    proxyAuth: `${proxyUrl.username}:${proxyUrl.password}`,
+                    ...((proxyUrl.username || proxyUrl.password) && {
+                        proxyAuth: `${proxyUrl.username}:${proxyUrl.password}`
+                    }),
                     host: proxyUrl.hostname,
                     port: proxyUrl.port
                 }
@@ -63235,10 +63237,9 @@ function importKey(privateKey) {
 exports.importKey = importKey;
 function deleteKey(keyFingerprint) {
     return __awaiter(this, void 0, void 0, function* () {
-        yield exec.exec('gpg', ['--batch', '--yes', '--delete-secret-keys', keyFingerprint], {
+        yield exec.exec('gpg', ['--batch', '--yes', '--delete-secret-and-public-key', keyFingerprint], {
             silent: true
         });
-        yield exec.exec('gpg', ['--batch', '--yes', '--delete-keys', keyFingerprint], { silent: true });
     });
 }
 exports.deleteKey = deleteKey;
