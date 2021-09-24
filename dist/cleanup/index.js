@@ -6196,7 +6196,7 @@ function removePrivateKeyFromKeychain() {
                 yield gpg.deleteKey(keyFingerprint);
             }
             catch (error) {
-                core.setFailed('Failed to remove private key');
+                core.setFailed(`Failed to remove private key due to: ${error.message}`);
             }
         }
     });
