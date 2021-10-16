@@ -29,7 +29,7 @@ steps:
 - uses: actions/setup-java@v2
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
-    java-version: '11'
+    java-version: '17'
 - run: java -cp java HelloWorldApp
 ```
 
@@ -46,8 +46,8 @@ steps:
 
 #### Supported version syntax
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
-- major versions: `8`, `11`, `16`
-- more specific versions: `11.0`, `11.0.4`, `8.0.232`, `8.0.282+8`
+- major versions: `8`, `11`, `16`, `17`
+- more specific versions: `17.0`, `11.0`, `11.0.4`, `8.0.232`, `8.0.282+8`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`, `15.0.0-ea.2`, `15.0.0+2-ea`
 
 #### Supported distributions
