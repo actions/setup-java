@@ -12,8 +12,6 @@ const supportedPlatform = `'linux', 'linux-musl', 'macos', 'solaris', 'windows'`
 
 const supportedArchitecture = `'x86', 'x64', 'armv7', 'aarch64', 'ppc64le'`;
 
-const first = () => true;
-
 export class LibericaDistributions extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('Liberica', installerOptions);
@@ -51,8 +49,7 @@ export class LibericaDistributions extends JavaBase {
 
     const satisfiedVersion = availableVersions
       .filter(item => isVersionSatisfies(range, item.version))
-      .sort((a, b) => -semver.compareBuild(a.version, b.version))
-      .find(first);
+      .sort((a, b) => -semver.compareBuild(a.version, b.version))[0];
 
     if (!satisfiedVersion) {
       const availableOptions = availableVersions.map(item => item.version).join(', ');
@@ -120,7 +117,7 @@ export class LibericaDistributions extends JavaBase {
         return { bitness: '64', arch: 'ppc' };
       default:
         throw new Error(
-          `Architecture '${this.architecture}' not supported. Supported architecture: ${supportedArchitecture}`
+          `Architecture '${this.architecture}' is not supported. Supported architectures: ${supportedArchitecture}`
         );
     }
   }
@@ -138,7 +135,7 @@ export class LibericaDistributions extends JavaBase {
         return 'solaris';
       default:
         throw new Error(
-          `Platform '${platform}' not supported. Supported platform: ${supportedPlatform}`
+          `Platform '${platform}' is not supported. Supported platforms: ${supportedPlatform}`
         );
     }
   }
