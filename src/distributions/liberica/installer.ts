@@ -95,7 +95,7 @@ export class LibericaDistributions extends JavaBase {
       ...this.getArchitectureOptions(),
       'build-type': this.stable ? 'all' : 'ea',
       'installation-type': 'archive',
-      fields: 'downloadUrl,version'
+      fields: 'downloadUrl,version,featureVersion,interimVersion,updateVersion,buildVersion'
     };
 
     const searchParams = new URLSearchParams(urlOptions).toString();

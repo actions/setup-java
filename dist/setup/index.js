@@ -38598,7 +38598,6 @@ const fs_1 = __importDefault(__webpack_require__(747));
 const path_1 = __importDefault(__webpack_require__(622));
 const supportedPlatform = `'linux', 'linux-musl', 'macos', 'solaris', 'windows'`;
 const supportedArchitecture = `'x86', 'x64', 'armv7', 'aarch64', 'ppc64le'`;
-const first = () => true;
 class LibericaDistributions extends base_installer_1.JavaBase {
     constructor(installerOptions) {
         super('Liberica', installerOptions);
@@ -38624,8 +38623,7 @@ class LibericaDistributions extends base_installer_1.JavaBase {
             }));
             const satisfiedVersion = availableVersions
                 .filter(item => util_1.isVersionSatisfies(range, item.version))
-                .sort((a, b) => -semver_1.default.compareBuild(a.version, b.version))
-                .find(first);
+                .sort((a, b) => -semver_1.default.compareBuild(a.version, b.version))[0];
             if (!satisfiedVersion) {
                 const availableOptions = availableVersions.map(item => item.version).join(', ');
                 const availableOptionsMessage = availableOptions
@@ -38658,7 +38656,7 @@ class LibericaDistributions extends base_installer_1.JavaBase {
     prepareAvailableVersionsUrl() {
         var _a, _b;
         const [bundleType, feature] = this.packageType.split('+');
-        const urlOptions = Object.assign(Object.assign({ os: this.getPlatformOption(), 'bundle-type': bundleType, fx: (_b = (_a = feature === null || feature === void 0 ? void 0 : feature.includes('fx')) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : 'false' }, this.getArchitectureOptions()), { 'build-type': this.stable ? 'all' : 'ea', 'installation-type': 'archive', fields: 'downloadUrl,version' });
+        const urlOptions = Object.assign(Object.assign({ os: this.getPlatformOption(), 'bundle-type': bundleType, fx: (_b = (_a = feature === null || feature === void 0 ? void 0 : feature.includes('fx')) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : 'false' }, this.getArchitectureOptions()), { 'build-type': this.stable ? 'all' : 'ea', 'installation-type': 'archive', fields: 'downloadUrl,version,featureVersion,interimVersion,updateVersion,buildVersion' });
         const searchParams = new URLSearchParams(urlOptions).toString();
         return `https://api.bell-sw.com/v1/liberica/releases?${searchParams}`;
     }
@@ -38675,7 +38673,7 @@ class LibericaDistributions extends base_installer_1.JavaBase {
             case 'ppc64le':
                 return { bitness: '64', arch: 'ppc' };
             default:
-                throw new Error(`Architecture '${this.architecture}' not supported. Supported architecture: ${supportedArchitecture}`);
+                throw new Error(`Architecture '${this.architecture}' is not supported. Supported architectures: ${supportedArchitecture}`);
         }
     }
     getPlatformOption(platform = process.platform) {
@@ -38690,7 +38688,7 @@ class LibericaDistributions extends base_installer_1.JavaBase {
             case 'sunos':
                 return 'solaris';
             default:
-                throw new Error(`Platform '${platform}' not supported. Supported platform: ${supportedPlatform}`);
+                throw new Error(`Platform '${platform}' is not supported. Supported platforms: ${supportedPlatform}`);
         }
     }
     convertVersionToSemver(version) {

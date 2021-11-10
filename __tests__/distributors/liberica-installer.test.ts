@@ -48,7 +48,9 @@ describe('getAvailableVersions', () => {
       'bundle-type=jre&fx=true&bitness=64&arch=arm&build-type=all'
     ]
   ])('build correct url for %s -> %s', async (input, urlParams) => {
-    const additionalParams = '&installation-type=archive&fields=downloadUrl%2Cversion';
+    const additionalParams =
+      '&installation-type=archive&fields=downloadUrl%2Cversion%2CfeatureVersion%2CinterimVersion%2C' +
+      'updateVersion%2CbuildVersion';
     const distribution = new LibericaDistributions(input);
     distribution['getPlatformOption'] = () => 'macos';
     const buildUrl = `https://api.bell-sw.com/v1/liberica/releases?os=macos&${urlParams}${additionalParams}`;
@@ -98,7 +100,7 @@ describe('getArchitectureOptions', () => {
     });
 
     expect(() => distributions['getArchitectureOptions']()).toThrow(
-      /Architecture '\w+' not supported\. Supported architecture: .*/
+      /Architecture '\w+' is not supported\. Supported architectures: .*/
     );
   });
 });
@@ -164,7 +166,7 @@ describe('getPlatformOption', () => {
     'not support os version %s',
     input => {
       expect(() => distributions['getPlatformOption'](input as NodeJS.Platform)).toThrow(
-        /Platform '\w+' not supported\. Supported platform: .+/
+        /Platform '\w+' is not supported\. Supported platforms: .+/
       );
     }
   );
