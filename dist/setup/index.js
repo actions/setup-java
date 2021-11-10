@@ -38607,7 +38607,8 @@ class LibericaDistributions extends base_installer_1.JavaBase {
             core.info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
             const javaArchivePath = yield tc.downloadTool(javaRelease.url);
             core.info(`Extracting Java archive...`);
-            const extractedJavaPath = yield util_1.extractJdkFile(javaArchivePath);
+            const extension = util_1.getDownloadArchiveExtension();
+            const extractedJavaPath = yield util_1.extractJdkFile(javaArchivePath, extension);
             const archiveName = fs_1.default.readdirSync(extractedJavaPath)[0];
             const archivePath = path_1.default.join(extractedJavaPath, archiveName);
             const javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaRelease.version), this.architecture);

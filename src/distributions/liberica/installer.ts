@@ -1,7 +1,7 @@
 import { JavaBase } from '../base-installer';
 import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
 import semver from 'semver';
-import { extractJdkFile, isVersionSatisfies } from '../../util';
+import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
 import * as core from '@actions/core';
 import { ArchitectureOptions, LibericaVersion, OsVersions } from './models';
 import * as tc from '@actions/tool-cache';
@@ -24,7 +24,8 @@ export class LibericaDistributions extends JavaBase {
     const javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
-    const extractedJavaPath = await extractJdkFile(javaArchivePath);
+    const extension = getDownloadArchiveExtension();
+    const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
