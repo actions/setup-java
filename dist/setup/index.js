@@ -38655,11 +38655,16 @@ class LibericaDistributions extends base_installer_1.JavaBase {
         });
     }
     prepareAvailableVersionsUrl() {
-        var _a, _b;
-        const [bundleType, feature] = this.packageType.split('+');
-        const urlOptions = Object.assign(Object.assign({ os: this.getPlatformOption(), 'bundle-type': bundleType, fx: (_b = (_a = feature === null || feature === void 0 ? void 0 : feature.includes('fx')) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : 'false' }, this.getArchitectureOptions()), { 'build-type': this.stable ? 'all' : 'ea', 'installation-type': 'archive', fields: 'downloadUrl,version,featureVersion,interimVersion,updateVersion,buildVersion' });
+        const urlOptions = Object.assign(Object.assign({ os: this.getPlatformOption(), 'bundle-type': this.getBundleType() }, this.getArchitectureOptions()), { 'build-type': this.stable ? 'all' : 'ea', 'installation-type': 'archive', fields: 'downloadUrl,version,featureVersion,interimVersion,updateVersion,buildVersion' });
         const searchParams = new URLSearchParams(urlOptions).toString();
         return `https://api.bell-sw.com/v1/liberica/releases?${searchParams}`;
+    }
+    getBundleType() {
+        const [bundleType, feature] = this.packageType.split('+');
+        if (feature === null || feature === void 0 ? void 0 : feature.includes('fx')) {
+            return bundleType + '-full';
+        }
+        return bundleType;
     }
     getArchitectureOptions() {
         switch (this.architecture) {

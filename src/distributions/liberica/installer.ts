@@ -87,12 +87,9 @@ export class LibericaDistributions extends JavaBase {
   }
 
   private prepareAvailableVersionsUrl() {
-    const [bundleType, feature] = this.packageType.split('+');
-
     const urlOptions = {
       os: this.getPlatformOption(),
-      'bundle-type': bundleType,
-      fx: feature?.includes('fx')?.toString() ?? 'false',
+      'bundle-type': this.getBundleType(),
       ...this.getArchitectureOptions(),
       'build-type': this.stable ? 'all' : 'ea',
       'installation-type': 'archive',
@@ -102,6 +99,14 @@ export class LibericaDistributions extends JavaBase {
     const searchParams = new URLSearchParams(urlOptions).toString();
 
     return `https://api.bell-sw.com/v1/liberica/releases?${searchParams}`;
+  }
+
+  private getBundleType(): string {
+    const [bundleType, feature] = this.packageType.split('+');
+    if (feature?.includes('fx')) {
+      return bundleType + '-full';
+    }
+    return bundleType;
   }
 
   private getArchitectureOptions(): ArchitectureOptions {

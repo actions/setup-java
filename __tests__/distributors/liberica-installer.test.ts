@@ -25,27 +25,27 @@ describe('getAvailableVersions', () => {
   it.each([
     [
       { version: '11.x', architecture: 'x86', packageType: 'jdk', checkLatest: false },
-      'bundle-type=jdk&fx=false&bitness=32&arch=x86&build-type=all'
+      'bundle-type=jdk&bitness=32&arch=x86&build-type=all'
     ],
     [
       { version: '11-ea', architecture: 'x86', packageType: 'jdk', checkLatest: false },
-      'bundle-type=jdk&fx=false&bitness=32&arch=x86&build-type=ea'
+      'bundle-type=jdk&bitness=32&arch=x86&build-type=ea'
     ],
     [
       { version: '16.0.2', architecture: 'x64', packageType: 'jdk', checkLatest: false },
-      'bundle-type=jdk&fx=false&bitness=64&arch=x86&build-type=all'
+      'bundle-type=jdk&bitness=64&arch=x86&build-type=all'
     ],
     [
       { version: '16.0.2', architecture: 'x64', packageType: 'jre', checkLatest: false },
-      'bundle-type=jre&fx=false&bitness=64&arch=x86&build-type=all'
+      'bundle-type=jre&bitness=64&arch=x86&build-type=all'
     ],
     [
       { version: '8', architecture: 'armv7', packageType: 'jdk+fx', checkLatest: false },
-      'bundle-type=jdk&fx=true&bitness=32&arch=arm&build-type=all'
+      'bundle-type=jdk-full&bitness=32&arch=arm&build-type=all'
     ],
     [
       { version: '8', architecture: 'aarch64', packageType: 'jre+fx', checkLatest: false },
-      'bundle-type=jre&fx=true&bitness=64&arch=arm&build-type=all'
+      'bundle-type=jre-full&bitness=64&arch=arm&build-type=all'
     ]
   ])('build correct url for %s -> %s', async (input, urlParams) => {
     const additionalParams =
