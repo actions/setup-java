@@ -76,18 +76,33 @@ export async function setupMaven(opts: MavenOpts): Promise<void> {
   }
 
   try {
-    await exec.exec(
+    const certexists = await exec.exec(
       path.join(opts.javaPath, 'bin/keytool'),
-      params.concat([
+      [
+        '-list',
         '-storepass',
         'changeit',
         '-noprompt',
         '-alias',
         'mycert',
-        '-file',
-        rootCaPath
-      ])
+        '-keystore',
+        `${opts.javaPath}/jre/lib/security/cacerts`
+      ]
     );
+    if (certexists !== 0) {
+      await exec.exec(
+        path.join(opts.javaPath, 'bin/keytool'),
+        params.concat([
+          '-storepass',
+          'changeit',
+          '-noprompt',
+          '-alias',
+          'mycert',
+          '-file',
+          rootCaPath
+        ])
+      );
+    }
   } catch (e) {
     core.warning(`keytool return an error: ${(e as Error).message}`);
   }
