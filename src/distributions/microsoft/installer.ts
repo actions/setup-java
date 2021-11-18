@@ -44,7 +44,9 @@ export class MicrosoftDistributions extends JavaBase {
     const availableVersionsRaw = await this.getAvailableVersions();
 
     const availableVersions = availableVersionsRaw.map(item => ({
-      url: `https://aka.ms/download-jdk/microsoft-jdk-${item.fullVersion}-${this.getPlatformOption()}-${this.architecture}.tar.gz`,
+      url: `https://aka.ms/download-jdk/microsoft-jdk-${
+        item.fullVersion
+      }-${this.getPlatformOption()}-${this.architecture}.tar.gz`,
       version: this.convertVersionToSemver(item)
     }));
 
@@ -69,22 +71,26 @@ export class MicrosoftDistributions extends JavaBase {
     console.time('microsoft-retrieve-available-versions');
 
     // TODO get these dynamically!
-    var jdkVersions = [{
-      majorVersion: 17,
-      minorVersion: 0,
-      patchVersion: 1,
-      fullVersion: '17.0.1.12.1'
-    }, {
-      majorVersion: 16,
-      minorVersion: 0,
-      patchVersion: 2,
-      fullVersion: '16.0.2.7.1'
-    }, {
-      majorVersion: 11,
-      minorVersion: 0,
-      patchVersion: 13,
-      fullVersion: '11.0.13.8.1'
-    }];
+    var jdkVersions = [
+      {
+        majorVersion: 17,
+        minorVersion: 0,
+        patchVersion: 1,
+        fullVersion: '17.0.1.12.1'
+      },
+      {
+        majorVersion: 16,
+        minorVersion: 0,
+        patchVersion: 2,
+        fullVersion: '16.0.2.7.1'
+      },
+      {
+        majorVersion: 11,
+        minorVersion: 0,
+        patchVersion: 13,
+        fullVersion: '11.0.13.8.1'
+      }
+    ];
 
     return jdkVersions;
   }

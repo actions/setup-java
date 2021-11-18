@@ -38,7 +38,7 @@ export function getJavaDistribution(
     case JavaDistribution.Liberica:
       return new LibericaDistributions(installerOptions);
     case JavaDistribution.Microsoft:
-        return new MicrosoftDistributions(installerOptions);
+      return new MicrosoftDistributions(installerOptions);
     default:
       return null;
   }
