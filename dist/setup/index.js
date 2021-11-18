@@ -14303,22 +14303,26 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
         return __awaiter(this, void 0, void 0, function* () {
             console.time('microsoft-retrieve-available-versions');
             // TODO get these dynamically!
-            var jdkVersions = [{
+            var jdkVersions = [
+                {
                     majorVersion: 17,
                     minorVersion: 0,
                     patchVersion: 1,
                     fullVersion: '17.0.1.12.1'
-                }, {
+                },
+                {
                     majorVersion: 16,
                     minorVersion: 0,
                     patchVersion: 2,
                     fullVersion: '16.0.2.7.1'
-                }, {
+                },
+                {
                     majorVersion: 11,
                     minorVersion: 0,
                     patchVersion: 13,
                     fullVersion: '11.0.13.8.1'
-                }];
+                }
+            ];
             return jdkVersions;
         });
     }
