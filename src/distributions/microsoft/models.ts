@@ -1,11 +1,9 @@
-export type Bitness = '32' | '64';
-export type ArchType = 'arm' | 'ppc' | 'sparc' | 'x86';
+export type OsVersions = 'linux' | 'macos' | 'windows';
+export type ArchiveType = 'tar.gz' | 'zip';
 
-export type OsVersions = 'linux' | 'linux-musl' | 'macos' | 'solaris' | 'windows';
-
-export interface ArchitectureOptions {
-  bitness: Bitness;
-  arch: ArchType;
+export interface PlatformOptions {
+  archive: ArchiveType;
+  os: OsVersions;
 }
 
 export interface MicrosoftVersion {

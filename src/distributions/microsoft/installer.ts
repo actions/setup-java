@@ -3,7 +3,7 @@ import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from 
 import semver from 'semver';
 import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
 import * as core from '@actions/core';
-import { ArchitectureOptions, MicrosoftVersion, OsVersions } from './models';
+import { MicrosoftVersion, PlatformOptions } from './models';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
@@ -41,12 +41,14 @@ export class MicrosoftDistributions extends JavaBase {
   }
 
   protected async findPackageForDownload(range: string): Promise<JavaDownloadRelease> {
+    if (this.architecture !== 'x64' && this.architecture != 'aarch64') {
+      throw new Error(`Unsupported architecture: ${this.architecture}`);
+    }
     const availableVersionsRaw = await this.getAvailableVersions();
 
+    const opts = this.getPlatformOption();
     const availableVersions = availableVersionsRaw.map(item => ({
-      url: `https://aka.ms/download-jdk/microsoft-jdk-${
-        item.fullVersion
-      }-${this.getPlatformOption()}-${this.architecture}.tar.gz`,
+      url: `https://aka.ms/download-jdk/microsoft-jdk-${item.fullVersion}-${opts.os}-${this.architecture}.${opts.archive}`,
       version: this.convertVersionToSemver(item)
     }));
 
@@ -83,39 +85,30 @@ export class MicrosoftDistributions extends JavaBase {
         minorVersion: 0,
         patchVersion: 2,
         fullVersion: '16.0.2.7.1'
-      },
-      {
+      }
+    ];
+
+    // M1 is only supported for Java 16 & 17
+    if (process.platform !== 'darwin' || this.architecture !== 'aarch64') {
+      jdkVersions.push({
         majorVersion: 11,
         minorVersion: 0,
         patchVersion: 13,
         fullVersion: '11.0.13.8.1'
-      }
-    ];
+      });
+    }
 
     return jdkVersions;
   }
 
-  private getArchitectureOptions(): ArchitectureOptions {
-    switch (this.architecture) {
-      case 'x64':
-        return { bitness: '64', arch: 'x86' };
-      case 'aarch64':
-        return { bitness: '64', arch: 'arm' };
-      default:
-        throw new Error(
-          `Architecture '${this.architecture}' is not supported. Supported architectures: ${supportedArchitecture}`
-        );
-    }
-  }
-
-  private getPlatformOption(platform: NodeJS.Platform = process.platform): OsVersions {
+  private getPlatformOption(platform: NodeJS.Platform = process.platform): PlatformOptions {
     switch (platform) {
       case 'darwin':
-        return 'macos';
+        return { archive: 'tar.gz', os: 'macos' };
       case 'win32':
-        return 'windows';
+        return { archive: 'zip', os: 'windows' };
       case 'linux':
-        return 'linux';
+        return { archive: 'tar.gz', os: 'linux' };
       default:
         throw new Error(
           `Platform '${platform}' is not supported. Supported platforms: ${supportedPlatform}`
