@@ -1,17 +1,14 @@
 ---
-name: "@azure/core-http"
-version: 2.2.2
+name: tr46
+version: 0.0.3
 type: npm
-summary: Isomorphic client Runtime for Typescript/node.js/browser javascript client
-  libraries generated using AutoRest
-homepage: https://github.com/Azure/azure-sdk-for-js/blob/main/sdk/core/core-http/README.md
+summary: An implementation of the Unicode TR46 spec
+homepage: https://github.com/Sebmaster/tr46.js#readme
 license: mit
 licenses:
-- sources: LICENSE
+- sources: Auto-generated MIT license text
   text: |
-    The MIT License (MIT)
-
-    Copyright (c) 2020 Microsoft
+    MIT License
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
