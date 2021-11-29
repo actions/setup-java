@@ -4,6 +4,7 @@ import { LocalDistribution } from './local/installer';
 import { ZuluDistribution } from './zulu/installer';
 import { AdoptDistribution, AdoptImplementation } from './adopt/installer';
 import { TemurinDistribution, TemurinImplementation } from './temurin/installer';
+import { LibericaDistributions } from './liberica/installer';
 
 enum JavaDistribution {
   Adopt = 'adopt',
@@ -11,6 +12,7 @@ enum JavaDistribution {
   AdoptOpenJ9 = 'adopt-openj9',
   Temurin = 'temurin',
   Zulu = 'zulu',
+  Liberica = 'liberica',
   JdkFile = 'jdkfile'
 }
 
@@ -31,6 +33,8 @@ export function getJavaDistribution(
       return new TemurinDistribution(installerOptions, TemurinImplementation.Hotspot);
     case JavaDistribution.Zulu:
       return new ZuluDistribution(installerOptions);
+    case JavaDistribution.Liberica:
+      return new LibericaDistributions(installerOptions);
     default:
       return null;
   }
