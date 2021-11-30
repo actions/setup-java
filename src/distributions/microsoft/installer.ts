@@ -62,7 +62,7 @@ export class MicrosoftDistributions extends JavaBase {
         ? `\nAvailable versions: ${availableOptions}`
         : '';
       throw new Error(
-        `Could not find satisfied version for semver ${range}. ${availableOptionsMessage}`
+        `Could not find satisfied version for SemVer ${range}. ${availableOptionsMessage}`
       );
     }
 
