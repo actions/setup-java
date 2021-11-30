@@ -73,7 +73,7 @@ export class MicrosoftDistributions extends JavaBase {
     console.time('microsoft-retrieve-available-versions');
 
     // TODO get these dynamically!
-    var jdkVersions = [
+    const jdkVersions = [
       {
         majorVersion: 17,
         minorVersion: 0,
