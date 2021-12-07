@@ -14,7 +14,6 @@ on:
   workflow_dispatch:
 jobs:
   setup-java-major-versions:
-    if: ${{ matrix.distribution != 'microsoft' || matrix.version != '8' }}
     name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -23,6 +22,9 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['temurin', 'adopt', 'adopt-openj9', 'zulu', 'liberica', 'microsoft' ] # internally 'adopt-hotspot' is the same as 'adopt'
         version: ['8', '11', '16']
+        exclude:
+        - distribution: microsoft
+          version: 8
     steps:
       - name: Checkout
         uses: actions/checkout@v2

@@ -1,5 +1,5 @@
-export type OsVersions = 'linux' | 'macos' | 'windows';
-export type ArchiveType = 'tar.gz' | 'zip';
+type OsVersions = 'linux' | 'macos' | 'windows';
+type ArchiveType = 'tar.gz' | 'zip';
 
 export interface PlatformOptions {
   archive: ArchiveType;
@@ -11,5 +11,5 @@ export interface MicrosoftVersion {
   majorVersion: number;
   minorVersion: number;
   patchVersion: number;
-  fullVersion: string;
+  fullVersion: Array<number>;
 }
