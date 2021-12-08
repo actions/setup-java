@@ -13819,7 +13819,136 @@ exports.XMLCBWriter = XMLCBWriter;
 /* 193 */,
 /* 194 */,
 /* 195 */,
-/* 196 */,
+/* 196 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MicrosoftDistributions = void 0;
+const base_installer_1 = __webpack_require__(83);
+const semver_1 = __importDefault(__webpack_require__(876));
+const util_1 = __webpack_require__(322);
+const core = __importStar(__webpack_require__(470));
+const tc = __importStar(__webpack_require__(139));
+const fs_1 = __importDefault(__webpack_require__(747));
+const path_1 = __importDefault(__webpack_require__(622));
+class MicrosoftDistributions extends base_installer_1.JavaBase {
+    constructor(installerOptions) {
+        super('Microsoft', installerOptions);
+    }
+    downloadTool(javaRelease) {
+        return __awaiter(this, void 0, void 0, function* () {
+            core.info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
+            const javaArchivePath = yield tc.downloadTool(javaRelease.url);
+            core.info(`Extracting Java archive...`);
+            const extension = util_1.getDownloadArchiveExtension();
+            const extractedJavaPath = yield util_1.extractJdkFile(javaArchivePath, extension);
+            const archiveName = fs_1.default.readdirSync(extractedJavaPath)[0];
+            const archivePath = path_1.default.join(extractedJavaPath, archiveName);
+            const javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaRelease.version), this.architecture);
+            return { version: javaRelease.version, path: javaPath };
+        });
+    }
+    findPackageForDownload(range) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.architecture !== 'x64' && this.architecture !== 'aarch64') {
+                throw new Error(`Unsupported architecture: ${this.architecture}`);
+            }
+            const availableVersionsRaw = yield this.getAvailableVersions();
+            const opts = this.getPlatformOption();
+            const availableVersions = availableVersionsRaw.map(item => ({
+                url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${this.architecture}.${opts.archive}`,
+                version: this.convertVersionToSemver(item)
+            }));
+            const satisfiedVersion = availableVersions
+                .filter(item => util_1.isVersionSatisfies(range, item.version))
+                .sort((a, b) => -semver_1.default.compareBuild(a.version, b.version))[0];
+            if (!satisfiedVersion) {
+                const availableOptions = availableVersions.map(item => item.version).join(', ');
+                const availableOptionsMessage = availableOptions
+                    ? `\nAvailable versions: ${availableOptions}`
+                    : '';
+                throw new Error(`Could not find satisfied version for SemVer ${range}. ${availableOptionsMessage}`);
+            }
+            return satisfiedVersion;
+        });
+    }
+    getAvailableVersions() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // TODO get these dynamically!
+            // We will need Microsoft to add an endpoint where we can query for versions.
+            const jdkVersions = [
+                {
+                    version: [17, 0, 1, 12, 1]
+                },
+                {
+                    version: [16, 0, 2, 7, 1]
+                }
+            ];
+            // M1 is only supported for Java 16 & 17
+            if (process.platform !== 'darwin' || this.architecture !== 'aarch64') {
+                jdkVersions.push({
+                    version: [11, 0, 13, 8, 1]
+                });
+            }
+            return jdkVersions;
+        });
+    }
+    getPlatformOption(platform = process.platform /* for testing */) {
+        switch (platform) {
+            case 'darwin':
+                return { archive: 'tar.gz', os: 'macos' };
+            case 'win32':
+                return { archive: 'zip', os: 'windows' };
+            case 'linux':
+                return { archive: 'tar.gz', os: 'linux' };
+            default:
+                throw new Error(`Platform '${platform}' is not supported. Supported platforms: 'darwin', 'linux', 'win32'`);
+        }
+    }
+    convertVersionToSemver(version) {
+        const major = version.version[0];
+        const minor = version.version[1];
+        const patch = version.version[2];
+        return `${major}.${minor}.${patch}`;
+    }
+}
+exports.MicrosoftDistributions = MicrosoftDistributions;
+
+
+/***/ }),
 /* 197 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -56004,6 +56133,7 @@ const installer_2 = __webpack_require__(834);
 const installer_3 = __webpack_require__(584);
 const installer_4 = __webpack_require__(439);
 const installer_5 = __webpack_require__(507);
+const installer_6 = __webpack_require__(196);
 var JavaDistribution;
 (function (JavaDistribution) {
     JavaDistribution["Adopt"] = "adopt";
@@ -56013,6 +56143,7 @@ var JavaDistribution;
     JavaDistribution["Zulu"] = "zulu";
     JavaDistribution["Liberica"] = "liberica";
     JavaDistribution["JdkFile"] = "jdkfile";
+    JavaDistribution["Microsoft"] = "microsoft";
 })(JavaDistribution || (JavaDistribution = {}));
 function getJavaDistribution(distributionName, installerOptions, jdkFile) {
     switch (distributionName) {
@@ -56029,6 +56160,8 @@ function getJavaDistribution(distributionName, installerOptions, jdkFile) {
             return new installer_2.ZuluDistribution(installerOptions);
         case JavaDistribution.Liberica:
             return new installer_5.LibericaDistributions(installerOptions);
+        case JavaDistribution.Microsoft:
+            return new installer_6.MicrosoftDistributions(installerOptions);
         default:
             return null;
     }
