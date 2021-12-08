@@ -13864,7 +13864,6 @@ const core = __importStar(__webpack_require__(470));
 const tc = __importStar(__webpack_require__(139));
 const fs_1 = __importDefault(__webpack_require__(747));
 const path_1 = __importDefault(__webpack_require__(622));
-const supportedPlatform = `'linux', 'macos', 'windows'`;
 class MicrosoftDistributions extends base_installer_1.JavaBase {
     constructor(installerOptions) {
         super('Microsoft', installerOptions);
@@ -13884,13 +13883,13 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
     }
     findPackageForDownload(range) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.architecture !== 'x64' && this.architecture != 'aarch64') {
+            if (this.architecture !== 'x64' && this.architecture !== 'aarch64') {
                 throw new Error(`Unsupported architecture: ${this.architecture}`);
             }
             const availableVersionsRaw = yield this.getAvailableVersions();
             const opts = this.getPlatformOption();
             const availableVersions = availableVersionsRaw.map(item => ({
-                url: `https://aka.ms/download-jdk/microsoft-jdk-${item.fullVersion.join('.')}-${opts.os}-${this.architecture}.${opts.archive}`,
+                url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${this.architecture}.${opts.archive}`,
                 version: this.convertVersionToSemver(item)
             }));
             const satisfiedVersion = availableVersions
@@ -13909,34 +13908,26 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
     getAvailableVersions() {
         return __awaiter(this, void 0, void 0, function* () {
             // TODO get these dynamically!
+            // We will need Microsoft to add an endpoint where we can query for versions.
             const jdkVersions = [
                 {
-                    majorVersion: 17,
-                    minorVersion: 0,
-                    patchVersion: 1,
-                    fullVersion: [17, 0, 1, 12, 1],
+                    version: [17, 0, 1, 12, 1]
                 },
                 {
-                    majorVersion: 16,
-                    minorVersion: 0,
-                    patchVersion: 2,
-                    fullVersion: [16, 0, 2.7, 1],
-                },
+                    version: [16, 0, 2, 7, 1]
+                }
             ];
             // M1 is only supported for Java 16 & 17
             if (process.platform !== 'darwin' || this.architecture !== 'aarch64') {
                 jdkVersions.push({
-                    majorVersion: 11,
-                    minorVersion: 0,
-                    patchVersion: 13,
-                    fullVersion: [11, 0, 13, 8, 1],
+                    version: [11, 0, 13, 8, 1]
                 });
             }
             return jdkVersions;
         });
     }
-    getPlatformOption(platform = process.platform) {
-        switch (platform) {
+    getPlatformOption() {
+        switch (process.platform) {
             case 'darwin':
                 return { archive: 'tar.gz', os: 'macos' };
             case 'win32':
@@ -13944,11 +13935,14 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
             case 'linux':
                 return { archive: 'tar.gz', os: 'linux' };
             default:
-                throw new Error(`Platform '${platform}' is not supported. Supported platforms: ${supportedPlatform}`);
+                throw new Error(`Platform '${process.platform}' is not supported. Supported platforms: 'darwin', 'linux', 'win32'`);
         }
     }
     convertVersionToSemver(version) {
-        return `${version.majorVersion}.${version.minorVersion}.${version.patchVersion}`;
+        const major = version.version[0];
+        const minor = version.version[1];
+        const patch = version.version[2];
+        return `${major}.${minor}.${patch}`;
     }
 }
 exports.MicrosoftDistributions = MicrosoftDistributions;

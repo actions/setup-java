@@ -8,8 +8,5 @@ export interface PlatformOptions {
 
 export interface MicrosoftVersion {
   downloadUrl?: string;
-  majorVersion: number;
-  minorVersion: number;
-  patchVersion: number;
-  fullVersion: Array<number>;
+  version: Array<number>;
 }
