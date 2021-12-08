@@ -177,26 +177,18 @@ jobs:
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
 
-  setup-java-custom-architecture:
-    # Only Zulu provides x86 arch for now and only for windows / ubuntu
-    # Only Microsoft provides arm64 for windows / ubuntu / os x
-    if: ${{ (matrix.distribution == 'zulu' && matrix.architecture == 'x86' && matrix.os != 'macos-latest' ) || (matrix.distribution == 'microsoft' && matrix.architecture == 'arm64') }}
+  # Only Liberica and Zulu provide x86
+  setup-java-x86:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-${{ matrix.architecture }}) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-<<<<<<< HEAD
-        # Only Zulu and Liberica provides x86 arch for now and only for windows / ubuntu
+        # x86 is not supported on macOS
         os: [windows-latest, ubuntu-latest]
-        distribution: ['zulu', 'liberica']
-=======
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        distribution: ['zulu', 'microsoft']
->>>>>>> Add microsoft distribution of the JDK.
+        distribution: ['liberica', 'zulu']
         version: ['11']
-        architecture: [ 'x86', 'arm64' ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -206,7 +198,9 @@ jobs:
         with:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.version }}
-          architecture: ${{ matrix.architecture }}
+          architecture: 'x86'
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
+
+  # Only Microsoft provides AArch64. However, GitHub-hosted runners do not support this architecture.
