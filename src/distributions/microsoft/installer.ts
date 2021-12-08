@@ -46,7 +46,9 @@ export class MicrosoftDistributions extends JavaBase {
 
     const opts = this.getPlatformOption();
     const availableVersions = availableVersionsRaw.map(item => ({
-      url: `https://aka.ms/download-jdk/microsoft-jdk-${item.fullVersion.join('.')}-${opts.os}-${this.architecture}.${opts.archive}`,
+      url: `https://aka.ms/download-jdk/microsoft-jdk-${item.fullVersion.join('.')}-${opts.os}-${
+        this.architecture
+      }.${opts.archive}`,
       version: this.convertVersionToSemver(item)
     }));
 
@@ -74,14 +76,14 @@ export class MicrosoftDistributions extends JavaBase {
         majorVersion: 17,
         minorVersion: 0,
         patchVersion: 1,
-        fullVersion: [17,0,1,12,1],
+        fullVersion: [17, 0, 1, 12, 1]
       },
       {
         majorVersion: 16,
         minorVersion: 0,
         patchVersion: 2,
-        fullVersion: [16,0,2.7,1],
-      },
+        fullVersion: [16, 0, 2.7, 1]
+      }
     ];
 
     // M1 is only supported for Java 16 & 17
@@ -90,7 +92,7 @@ export class MicrosoftDistributions extends JavaBase {
         majorVersion: 11,
         minorVersion: 0,
         patchVersion: 13,
-        fullVersion: [11, 0, 13, 8, 1],
+        fullVersion: [11, 0, 13, 8, 1]
       });
     }
 
