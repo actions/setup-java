@@ -13926,8 +13926,8 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
             return jdkVersions;
         });
     }
-    getPlatformOption() {
-        switch (process.platform) {
+    getPlatformOption(platform = process.platform /* for testing */) {
+        switch (platform) {
             case 'darwin':
                 return { archive: 'tar.gz', os: 'macos' };
             case 'win32':
@@ -13935,7 +13935,7 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
             case 'linux':
                 return { archive: 'tar.gz', os: 'linux' };
             default:
-                throw new Error(`Platform '${process.platform}' is not supported. Supported platforms: 'darwin', 'linux', 'win32'`);
+                throw new Error(`Platform '${platform}' is not supported. Supported platforms: 'darwin', 'linux', 'win32'`);
         }
     }
     convertVersionToSemver(version) {

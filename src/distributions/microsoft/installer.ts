@@ -89,8 +89,10 @@ export class MicrosoftDistributions extends JavaBase {
     return jdkVersions;
   }
 
-  private getPlatformOption(): PlatformOptions {
-    switch (process.platform) {
+  private getPlatformOption(
+    platform: NodeJS.Platform = process.platform /* for testing */
+  ): PlatformOptions {
+    switch (platform) {
       case 'darwin':
         return { archive: 'tar.gz', os: 'macos' };
       case 'win32':
@@ -99,7 +101,7 @@ export class MicrosoftDistributions extends JavaBase {
         return { archive: 'tar.gz', os: 'linux' };
       default:
         throw new Error(
-          `Platform '${process.platform}' is not supported. Supported platforms: 'darwin', 'linux', 'win32'`
+          `Platform '${platform}' is not supported. Supported platforms: 'darwin', 'linux', 'win32'`
         );
     }
   }
