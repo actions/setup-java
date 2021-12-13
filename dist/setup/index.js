@@ -13886,6 +13886,9 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
             if (this.architecture !== 'x64' && this.architecture !== 'aarch64') {
                 throw new Error(`Unsupported architecture: ${this.architecture}`);
             }
+            if (!this.stable) {
+                throw new Error('Unstable versions are not supported');
+            }
             const availableVersionsRaw = yield this.getAvailableVersions();
             const opts = this.getPlatformOption();
             const availableVersions = availableVersionsRaw.map(item => ({

@@ -40,6 +40,11 @@ export class MicrosoftDistributions extends JavaBase {
     if (this.architecture !== 'x64' && this.architecture !== 'aarch64') {
       throw new Error(`Unsupported architecture: ${this.architecture}`);
     }
+
+    if (!this.stable) {
+      throw new Error('Unstable versions are not supported');
+    }
+
     const availableVersionsRaw = await this.getAvailableVersions();
 
     const opts = this.getPlatformOption();
