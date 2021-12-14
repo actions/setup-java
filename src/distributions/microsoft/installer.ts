@@ -42,7 +42,7 @@ export class MicrosoftDistributions extends JavaBase {
     }
 
     if (!this.stable) {
-      throw new Error('Unstable versions are not supported');
+      throw new Error('Early access versions are not supported');
     }
 
     const availableVersionsRaw = await this.getAvailableVersions();
