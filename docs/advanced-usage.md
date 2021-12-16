@@ -65,6 +65,17 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
+### Microsoft
+```yaml
+steps:
+- uses: actions/checkout@v2
+- uses: actions/setup-java@v2
+  with:
+    distribution: 'microsoft'
+    java-version: '11'
+- run: java -cp java HelloWorldApp
+```
+
 ## Installing custom Java package type
 ```yaml
 steps:

@@ -13889,6 +13889,9 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
             if (!this.stable) {
                 throw new Error('Early access versions are not supported');
             }
+            if (this.packageType !== 'jdk') {
+                throw new Error(`${this.packageType} versions are not supported`);
+            }
             const availableVersionsRaw = yield this.getAvailableVersions();
             const opts = this.getPlatformOption();
             const availableVersions = availableVersionsRaw.map(item => ({

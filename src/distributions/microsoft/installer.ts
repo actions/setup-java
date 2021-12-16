@@ -45,6 +45,10 @@ export class MicrosoftDistributions extends JavaBase {
       throw new Error('Early access versions are not supported');
     }
 
+    if (this.packageType !== 'jdk') {
+      throw new Error(`${this.packageType} versions are not supported`);
+    }
+
     const availableVersionsRaw = await this.getAvailableVersions();
 
     const opts = this.getPlatformOption();
