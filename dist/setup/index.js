@@ -13890,7 +13890,8 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
                 throw new Error('Early access versions are not supported');
             }
             if (this.packageType !== 'jdk') {
-                throw new Error(`${this.packageType} versions are not supported`);
+                this.packageType = 'jdk';
+                core.warning('Microsoft Build of OpenJDK always uses the `jdk` package type.  Remove the `java-package` argument when calling the action to silence this warning.');
             }
             const availableVersionsRaw = yield this.getAvailableVersions();
             const opts = this.getPlatformOption();
