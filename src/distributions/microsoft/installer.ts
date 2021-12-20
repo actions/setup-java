@@ -46,10 +46,7 @@ export class MicrosoftDistributions extends JavaBase {
     }
 
     if (this.packageType !== 'jdk') {
-      this.packageType = 'jdk';
-      core.warning(
-        'Microsoft Build of OpenJDK always uses the `jdk` package type.  Remove the `java-package` argument when calling the action to silence this warning.'
-      );
+      throw new Error('Microsoft Build of OpenJDK provides only the `jdk` package type');
     }
 
     const availableVersionsRaw = await this.getAvailableVersions();
