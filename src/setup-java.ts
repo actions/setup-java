@@ -42,7 +42,9 @@ async function run() {
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
     await auth.configureAuthentication();
-    if (cache) {
+    const cacheMode = core.getInput(constants.INPUT_CACHE_MODE)
+    const restoreCache = Boolean(cacheMode === "both" || cacheMode === "read")
+    if (cache && restoreCache) {
       await restore(cache);
     }
   } catch (error) {

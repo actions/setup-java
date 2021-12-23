@@ -23,8 +23,9 @@ async function removePrivateKeyFromKeychain() {
 async function saveCache() {
   const jobStatus = isJobStatusSuccess();
   const cache = core.getInput(constants.INPUT_CACHE);
-  const readOnlyCache = core.getInput(constants.INPUT_CACHE_READ_ONLY)
-  return jobStatus && cache && !readOnlyCache ? save(cache) : Promise.resolve();
+  const cacheMode = core.getInput(constants.INPUT_CACHE_MODE)
+  const updateCache = Boolean(cacheMode === "both" || cacheMode === "write")
+  return jobStatus && cache && updateCache ? save(cache) : Promise.resolve();
 }
 
 /**
