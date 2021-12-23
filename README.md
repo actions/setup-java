@@ -68,9 +68,11 @@ Currently, the following distributions are supported:
 ### Caching packages dependencies
 The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle and maven. The cache input is optional, and caching is turned off by default.
 
-The option to use the cache in a read-only mode is available via the parameter `cache-is-read-only`, which
-defaults to `false`. When set to `true`, and caching is enabled, this allows PR workflows to benefit from 
-cached build artifacts, but not taint the cache with PR specific changes which may be in a state of flux.
+The interaction with the cache can be controlled by the `cache-mode` parameter. This allows for builds to
+be performed with no cache, and the output cached (`write` mode), builds to read the cache before running
+but not update the cache afterwards (`read` mode), or both (`both` mode). This feature allows you to
+populate the cache from your `main` branch, and then let PR builds benefit from that cache without polluting
+it with PR-specific build artifacts.
 
 #### Caching gradle dependencies
 ```yaml
