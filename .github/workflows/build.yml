@@ -24,10 +24,8 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 12.x
+          cache: npm
       - run: npm ci
       - run: npm run build
       - run: npm run format-check
       - run: npm test
-      - name: Verify no unstaged changes
-        if: runner.os != 'windows'
-        run: bash __tests__/verify-no-unstaged-changes.sh

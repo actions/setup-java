@@ -29,7 +29,7 @@ steps:
 - uses: actions/setup-java@v2
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
-    java-version: '11'
+    java-version: '17'
 - run: java -cp java HelloWorldApp
 ```
 
@@ -46,8 +46,8 @@ steps:
 
 #### Supported version syntax
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
-- major versions: `8`, `11`, `16`
-- more specific versions: `11.0`, `11.0.4`, `8.0.232`, `8.0.282+8`
+- major versions: `8`, `11`, `16`, `17`
+- more specific versions: `17.0`, `11.0`, `11.0.4`, `8.0.232`, `8.0.282+8`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`, `15.0.0-ea.2`, `15.0.0+2-ea`
 
 #### Supported distributions
@@ -57,14 +57,20 @@ Currently, the following distributions are supported:
 | `temurin` | Eclipse Temurin | [Link](https://adoptium.net/) | [Link](https://adoptium.net/about.html)
 | `zulu` | Zulu OpenJDK | [Link](https://www.azul.com/downloads/zulu-community/?package=jdk) | [Link](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
 | `adopt` or `adopt-hotspot` | Adopt OpenJDK Hotspot | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
-| `adopt-openj9` | Adopt OpenJDK OpenJ9 | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html)
+| `adopt-openj9` | Adopt OpenJDK OpenJ9 | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
+| `liberica` | Liberica JDK | [Link](https://bell-sw.com/) | [Link](https://bell-sw.com/liberica_eula/) |
+| `microsoft` | Microsoft Build of OpenJDK | [Link](https://www.microsoft.com/openjdk) | [Link](https://docs.microsoft.com/java/openjdk/faq)
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 
 **NOTE:** Adopt OpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` to `temurin` to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 
 ### Caching packages dependencies
-The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle and maven. The cache input is optional, and caching is turned off by default.
+The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle and maven. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
+- gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`
+- maven: `**/pom.xml`
+
+The cache input is optional, and caching is turned off by default.
 
 #### Caching gradle dependencies
 ```yaml
@@ -75,7 +81,7 @@ steps:
     distribution: 'temurin'
     java-version: '11'
     cache: 'gradle'
-- run: ./gradlew build
+- run: ./gradlew build --no-daemon
 ```
 
 #### Caching maven dependencies
@@ -134,6 +140,7 @@ jobs:
   - [Eclipse Temurin](docs/advanced-usage.md#Eclipse-Temurin)
   - [Adopt](docs/advanced-usage.md#Adopt)
   - [Zulu](docs/advanced-usage.md#Zulu)
+  - [Liberica](docs/advanced-usage.md#Liberica)
 - [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](docs/advanced-usage.md#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](docs/advanced-usage.md#Installing-Java-from-local-file)
