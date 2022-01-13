@@ -72,9 +72,8 @@ export async function restore(id: string) {
     );
   }
 
-  const matchedKey = await cache.restoreCache(packageManager.path, primaryKey, [
-    `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${id}`
-  ]);
+  // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
+  const matchedKey = await cache.restoreCache(packageManager.path, primaryKey);
   if (matchedKey) {
     core.saveState(CACHE_MATCHED_KEY, matchedKey);
     core.info(`Cache restored from key: ${matchedKey}`);

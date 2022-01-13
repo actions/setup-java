@@ -61868,9 +61868,8 @@ function restore(id) {
         if (primaryKey.endsWith('-')) {
             throw new Error(`No file in ${process.cwd()} matched to [${packageManager.pattern}], make sure you have checked out the target repository`);
         }
-        const matchedKey = yield cache.restoreCache(packageManager.path, primaryKey, [
-            `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${id}`
-        ]);
+        // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
+        const matchedKey = yield cache.restoreCache(packageManager.path, primaryKey);
         if (matchedKey) {
             core.saveState(CACHE_MATCHED_KEY, matchedKey);
             core.info(`Cache restored from key: ${matchedKey}`);
