@@ -61873,9 +61873,11 @@ function restore(id) {
         ]);
         if (matchedKey) {
             core.saveState(CACHE_MATCHED_KEY, matchedKey);
+            core.setOutput('cache-hit', true);
             core.info(`Cache restored from key: ${matchedKey}`);
         }
         else {
+            core.setOutput('cache-hit', false);
             core.info(`${packageManager.id} cache is not found`);
         }
     });
