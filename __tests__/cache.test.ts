@@ -98,7 +98,7 @@ describe('dependency cache', () => {
         await expect(restore('gradle')).rejects.toThrowError(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/*.gradle*,**/gradle-wrapper.properties], make sure you have checked out the target repository`
+          )} matched to [**/*.gradle*,**/gradle-wrapper.properties,buildSrc/**/*.kt], make sure you have checked out the target repository`
         );
       });
       it('downloads cache based on build.gradle', async () => {
@@ -117,6 +117,15 @@ describe('dependency cache', () => {
         expect(spyWarning).not.toBeCalled();
         expect(spyInfo).toBeCalledWith('gradle cache is not found');
       });
+    });
+    it('downloads cache based on buildSrc/Versions.kt', async () => {
+      createDirectory(join(workspace, 'buildSrc'));
+      createFile(join(workspace, 'buildSrc', 'Versions.kt'));
+
+      await restore('gradle');
+      expect(spyCacheRestore).toBeCalled();
+      expect(spyWarning).not.toBeCalled();
+      expect(spyInfo).toBeCalledWith('gradle cache is not found');
     });
   });
   describe('save', () => {
@@ -193,6 +202,16 @@ describe('dependency cache', () => {
         expect(spyWarning).not.toBeCalled();
         expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
       });
+      it('uploads cache based on buildSrc/Versions.kt', async () => {
+        createDirectory(join(workspace, 'buildSrc'));
+        createFile(join(workspace, 'buildSrc', 'Versions.kt'));
+        createStateForSuccessfulRestore();
+
+        await save('gradle');
+        expect(spyCacheSave).toBeCalled();
+        expect(spyWarning).not.toBeCalled();
+        expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
+      });
     });
   });
 });
@@ -234,6 +253,11 @@ function createStateForSuccessfulRestore() {
 function createFile(path: string) {
   core.info(`created a file at ${path}`);
   fs.writeFileSync(path, '');
+}
+
+function createDirectory(path: string) {
+  core.info(`created a directory at ${path}`);
+  fs.mkdirSync(path);
 }
 
 function projectRoot(workspace: string): string {
