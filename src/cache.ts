@@ -77,7 +77,7 @@ export async function restore(id: string) {
   ]);
   if (matchedKey) {
     core.saveState(CACHE_MATCHED_KEY, matchedKey);
-    core.setOutput('cache-hit', true);
+    core.setOutput('cache-hit', matchedKey === primaryKey);
     core.info(`Cache restored from key: ${matchedKey}`);
   } else {
     core.setOutput('cache-hit', false);
