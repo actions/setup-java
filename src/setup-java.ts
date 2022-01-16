@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as auth from './auth';
 import { getBooleanInput, isCacheFeatureAvailable } from './util';
+import * as toolchains from './toolchains';
 import * as constants from './constants';
 import { restore } from './cache';
 import * as path from 'path';
@@ -16,9 +17,14 @@ async function run() {
     const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
     const cache = core.getInput(constants.INPUT_CACHE);
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
+    let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
+
+    if (versions.length !== toolchainIds.length) {
+      toolchainIds = [];
+    }
 
     core.startGroup('Installed distributions');
-    for (const version of versions) {
+    for (const [index, version] of versions.entries()) {
       const installerOptions: JavaInstallerOptions = {
         architecture,
         packageType,
@@ -32,6 +38,12 @@ async function run() {
       }
 
       const result = await distribution.setupJava();
+      await toolchains.configureToolchains(
+        version,
+        distributionName,
+        result.path,
+        toolchainIds[index]
+      );
 
       core.info('');
       core.info('Java configuration:');

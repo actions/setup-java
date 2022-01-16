@@ -10,15 +10,12 @@ import * as constants from './constants';
 import * as gpg from './gpg';
 import { getBooleanInput } from './util';
 
-export const M2_DIR = '.m2';
-export const SETTINGS_FILE = 'settings.xml';
-
 export async function configureAuthentication() {
   const id = core.getInput(constants.INPUT_SERVER_ID);
   const username = core.getInput(constants.INPUT_SERVER_USERNAME);
   const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
   const settingsDirectory =
-    core.getInput(constants.INPUT_SETTINGS_PATH) || path.join(os.homedir(), M2_DIR);
+    core.getInput(constants.INPUT_SETTINGS_PATH) || path.join(os.homedir(), constants.M2_DIR);
   const overwriteSettings = getBooleanInput(constants.INPUT_OVERWRITE_SETTINGS, true);
   const gpgPrivateKey =
     core.getInput(constants.INPUT_GPG_PRIVATE_KEY) || constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
@@ -54,7 +51,7 @@ export async function createAuthenticationSettings(
   overwriteSettings: boolean,
   gpgPassphrase: string | undefined = undefined
 ) {
-  core.info(`Creating ${SETTINGS_FILE} with server-id: ${id}`);
+  core.info(`Creating ${constants.MVN_SETTINGS_FILE} with server-id: ${id}`);
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
   await io.mkdirP(settingsDirectory);
@@ -106,7 +103,7 @@ export function generate(
 }
 
 async function write(directory: string, settings: string, overwriteSettings: boolean) {
-  const location = path.join(directory, SETTINGS_FILE);
+  const location = path.join(directory, constants.MVN_SETTINGS_FILE);
   const settingsExists = fs.existsSync(location);
   if (settingsExists && overwriteSettings) {
     core.info(`Overwriting existing file ${location}`);
