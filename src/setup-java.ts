@@ -16,12 +16,14 @@ async function run() {
     const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
     const cache = core.getInput(constants.INPUT_CACHE);
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
+    const cacerts = core.getInput(constants.INPUT_CACERTS);
 
     const installerOptions: JavaInstallerOptions = {
       architecture,
       packageType,
       version,
-      checkLatest
+      checkLatest,
+      cacerts
     };
 
     const distribution = getJavaDistribution(distributionName, installerOptions, jdkFile);

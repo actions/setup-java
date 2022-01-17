@@ -11,6 +11,7 @@ import {
   JavaInstallerOptions,
   JavaInstallerResults
 } from '../../src/distributions/base-models';
+import fs from "fs";
 
 class EmptyJavaBase extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -347,5 +348,45 @@ describe('getToolcacheVersionName', () => {
     });
     const actual = mockJavaBase['getToolcacheVersionName'](input.version);
     expect(actual).toBe(expected);
+  });
+});
+
+describe('initCacerts', () => {
+  const DummyJavaBase = JavaBase as any;
+
+  let spyFsCopyFileSync: jest.SpyInstance;
+
+  beforeEach(() => {
+    spyFsCopyFileSync = jest.spyOn(fs, 'copyFileSync').mockImplementation();
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  it('should do nothing when not set', () => {
+    const mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      packageType: 'jdk',
+      architecture: 'x64',
+      checkLatest: false,
+      cacerts: '',
+    });
+    DummyJavaBase.prototype.initCacerts.call(mockJavaBase, '/tmp/dummy_jdk');
+    expect(spyFsCopyFileSync).not.toHaveBeenCalled()
+  });
+
+  it('should copy cacerts file', () => {
+    const mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      packageType: 'jdk',
+      architecture: 'x64',
+      checkLatest: false,
+      cacerts: '/etc/ssl/certs/java/cacerts',
+    });
+    DummyJavaBase.prototype.initCacerts.call(mockJavaBase, '/tmp/dummy_jdk');
+    expect(spyFsCopyFileSync).toHaveBeenCalledWith('/etc/ssl/certs/java/cacerts', path.join('/tmp/dummy_jdk', 'lib/security/cacerts'))
   });
 });
