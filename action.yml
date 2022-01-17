@@ -18,7 +18,7 @@ inputs:
     required: false
     default: 'x64'
   jdkFile:
-    description: 'Path to where the compressed JDK is located'
+    description: 'Path to where the compressed JDK is located, or URL where it should be downloaded from'
     required: false
   check-latest:
     description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec'

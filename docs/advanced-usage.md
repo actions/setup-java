@@ -120,6 +120,21 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
+## Installing Java from remote archive
+If your use-case requires a custom distribution or a version that is not provided by setup-java, you can specify URL directly and setup-java will take care of the installation and caching on the VM:
+
+```yaml
+steps:
+- uses: actions/setup-java@v2
+  with:
+    distribution: 'jdkfile'
+    jdkFile: https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz
+    java-version: '11.0.0'
+    architecture: x64
+    
+- run: java -cp java HelloWorldApp
+```
+
 ## Testing against different Java distributions
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 ```yaml

@@ -3,11 +3,10 @@ import * as core from '@actions/core';
 
 import fs from 'fs';
 import path from 'path';
-import semver from 'semver';
 
 import { JavaBase } from '../base-installer';
 import { JavaInstallerOptions, JavaDownloadRelease, JavaInstallerResults } from '../base-models';
-import { extractJdkFile } from '../../util';
+import { extractJdkFile, getDownloadArchiveExtension } from '../../util';
 import { MACOS_JAVA_CONTENT_POSTFIX } from '../../constants';
 
 export class LocalDistribution extends JavaBase {
@@ -25,16 +24,27 @@ export class LocalDistribution extends JavaBase {
       if (!this.jdkFile) {
         throw new Error("'jdkFile' is not specified");
       }
-      const jdkFilePath = path.resolve(this.jdkFile);
-      const stats = fs.statSync(jdkFilePath);
 
+      let jdkFilePath;
+      let extension;
+
+      if (this.jdkFile.match(/^https?:\/\//)) {
+        core.info(`Downloading Java archive from ${this.jdkFile}...`);
+        const javaRelease = await tc.downloadTool(this.jdkFile);
+        jdkFilePath = path.resolve(javaRelease);
+        extension = getDownloadArchiveExtension();
+      } else {
+        jdkFilePath = path.resolve(this.jdkFile);
+      }
+
+      const stats = fs.statSync(jdkFilePath);
       if (!stats.isFile()) {
         throw new Error(`JDK file was not found in path '${jdkFilePath}'`);
       }
 
       core.info(`Extracting Java from '${jdkFilePath}'`);
 
-      const extractedJavaPath = await extractJdkFile(jdkFilePath);
+      const extractedJavaPath = await extractJdkFile(jdkFilePath, extension);
       const archiveName = fs.readdirSync(extractedJavaPath)[0];
       const archivePath = path.join(extractedJavaPath, archiveName);
       const javaVersion = this.version;

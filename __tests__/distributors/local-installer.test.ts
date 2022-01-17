@@ -161,6 +161,36 @@ describe('setupJava', () => {
     );
   });
 
+  it('java is downloaded from remote jdkfile', async () => {
+    const inputs = {
+      version: '11.0.289',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false
+    };
+    const expected = {
+      version: '11.0.289',
+      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture)
+    };
+
+    const jdkFile = 'https://example.com/jdk.tar.gz';
+
+    const spyTcDownloadTool = jest.spyOn(tc, 'downloadTool');
+    spyTcDownloadTool.mockReturnValue(Promise.resolve(expectedJdkFile));
+
+    mockJavaBase = new LocalDistribution(inputs, jdkFile);
+    await expect(mockJavaBase.setupJava()).resolves.toEqual(expected);
+    expect(spyTcFindAllVersions).toHaveBeenCalled();
+    expect(spyTcDownloadTool).toHaveBeenCalledWith(jdkFile);
+    expect(spyCoreInfo).not.toHaveBeenCalledWith(
+      `Resolved Java ${actualJavaVersion} from tool-cache`
+    );
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Extracting Java from '${expectedJdkFile}'`);
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      `Java ${inputs.version} was not found in tool-cache. Trying to unpack JDK file...`
+    );
+  });
+
   it('jdk file is not found', async () => {
     const inputs = {
       version: '11.0.289',
