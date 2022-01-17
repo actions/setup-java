@@ -98,7 +98,7 @@ describe('dependency cache', () => {
         await expect(restore('gradle')).rejects.toThrowError(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/*.gradle*,**/gradle-wrapper.properties], make sure you have checked out the target repository`
+          )} matched to [**/*.gradle*,**/gradle-wrapper.properties, versions.properties], make sure you have checked out the target repository`
         );
       });
       it('downloads cache based on build.gradle', async () => {
@@ -117,6 +117,14 @@ describe('dependency cache', () => {
         expect(spyWarning).not.toBeCalled();
         expect(spyInfo).toBeCalledWith('gradle cache is not found');
       });
+    });
+    it('downloads cache based on versions.properties', async () => {
+      createFile(join(workspace, 'versions.properties'));
+
+      await restore('gradle');
+      expect(spyCacheRestore).toBeCalled();
+      expect(spyWarning).not.toBeCalled();
+      expect(spyInfo).toBeCalledWith('gradle cache is not found');
     });
   });
   describe('save', () => {
@@ -193,53 +201,61 @@ describe('dependency cache', () => {
         expect(spyWarning).not.toBeCalled();
         expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
       });
+      it('uploads cache based on versions.properties', async () => {
+        createFile(join(workspace, 'versions.properties'));
+        createStateForSuccessfulRestore();
+
+        await save('gradle');
+        expect(spyCacheSave).toBeCalled();
+        expect(spyWarning).not.toBeCalled();
+        expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
+      });
     });
   });
-});
 
-function resetState() {
-  jest.spyOn(core, 'getState').mockReset();
-}
-
-/**
- * Create states to emulate a restore process without build file.
- */
-function createStateForMissingBuildFile() {
-  jest.spyOn(core, 'getState').mockImplementation(name => {
-    switch (name) {
-      case 'cache-primary-key':
-        return 'setup-java-cache-';
-      default:
-        return '';
-    }
-  });
-}
-
-/**
- * Create states to emulate a successful restore process.
- */
-function createStateForSuccessfulRestore() {
-  jest.spyOn(core, 'getState').mockImplementation(name => {
-    switch (name) {
-      case 'cache-primary-key':
-        return 'setup-java-cache-primary-key';
-      case 'cache-matched-key':
-        return 'setup-java-cache-matched-key';
-      default:
-        return '';
-    }
-  });
-}
-
-function createFile(path: string) {
-  core.info(`created a file at ${path}`);
-  fs.writeFileSync(path, '');
-}
-
-function projectRoot(workspace: string): string {
-  if (os.platform() === 'darwin') {
-    return `/private${workspace}`;
-  } else {
-    return workspace;
+  function resetState() {
+    jest.spyOn(core, 'getState').mockReset();
   }
-}
+
+  /**
+   * Create states to emulate a restore process without build file.
+   */
+  function createStateForMissingBuildFile() {
+    jest.spyOn(core, 'getState').mockImplementation(name => {
+      switch (name) {
+        case 'cache-primary-key':
+          return 'setup-java-cache-';
+        default:
+          return '';
+      }
+    });
+  }
+
+  /**
+   * Create states to emulate a successful restore process.
+   */
+  function createStateForSuccessfulRestore() {
+    jest.spyOn(core, 'getState').mockImplementation(name => {
+      switch (name) {
+        case 'cache-primary-key':
+          return 'setup-java-cache-primary-key';
+        case 'cache-matched-key':
+          return 'setup-java-cache-matched-key';
+        default:
+          return '';
+      }
+    });
+  }
+
+  function createFile(path: string) {
+    core.info(`created a file at ${path}`);
+    fs.writeFileSync(path, '');
+  }
+
+  function projectRoot(workspace: string): string {
+    if (os.platform() === 'darwin') {
+      return `/private${workspace}`;
+    } else {
+      return workspace;
+    }
+  }
