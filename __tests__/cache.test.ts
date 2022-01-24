@@ -259,3 +259,4 @@ describe('dependency cache', () => {
       return workspace;
     }
   }
+});
