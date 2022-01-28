@@ -98,7 +98,7 @@ describe('dependency cache', () => {
         await expect(restore('gradle')).rejects.toThrowError(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/*.gradle*,**/gradle-wrapper.properties, versions.properties], make sure you have checked out the target repository`
+          )} matched to [**/*.gradle*,**/gradle-wrapper.properties,**/versions.properties], make sure you have checked out the target repository`
         );
       });
       it('downloads cache based on build.gradle', async () => {
