@@ -6,6 +6,7 @@ import { AdoptDistribution, AdoptImplementation } from './adopt/installer';
 import { TemurinDistribution, TemurinImplementation } from './temurin/installer';
 import { LibericaDistributions } from './liberica/installer';
 import { MicrosoftDistributions } from './microsoft/installer';
+import { SemeruDistribution } from './semeru/installer';
 
 enum JavaDistribution {
   Adopt = 'adopt',
@@ -15,7 +16,8 @@ enum JavaDistribution {
   Zulu = 'zulu',
   Liberica = 'liberica',
   JdkFile = 'jdkfile',
-  Microsoft = 'microsoft'
+  Microsoft = 'microsoft',
+  Semeru = 'semeru'
 }
 
 export function getJavaDistribution(
@@ -39,6 +41,8 @@ export function getJavaDistribution(
       return new LibericaDistributions(installerOptions);
     case JavaDistribution.Microsoft:
       return new MicrosoftDistributions(installerOptions);
+    case JavaDistribution.Semeru:
+      return new SemeruDistribution(installerOptions);
     default:
       return null;
   }
