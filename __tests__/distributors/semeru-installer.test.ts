@@ -207,7 +207,7 @@ describe('findPackageForDownload', () => {
     }
   );
 
-  it.each(['jdk+fx', ' jre+fx', 'test', 'test2', 'jdk-fx', 'javafx', 'jdk-javafx', 'ibm'])(
+  it.each(['jdk+fx', 'jre+fx', 'test', 'test2', 'jdk-fx', 'javafx', 'jdk-javafx', 'ibm', ' '])(
     'rejects incorrect `%s` Semeru package type',
     async (packageType: string) => {
       const distribution = new SemeruDistribution({
