@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import { ValidationError } from '@actions/cache';
 import * as auth from './auth';
 import { getBooleanInput } from './util';
 import * as constants from './constants';
@@ -46,7 +47,11 @@ async function run() {
       await restore(cache);
     }
   } catch (error) {
-    core.setFailed(error.message);
+    if (error.name === ValidationError.name) {
+      core.setFailed(error.message);
+    } else {
+      core.warning(error.message);
+    }
   }
 }
 
