@@ -53,7 +53,7 @@ export class MicrosoftDistributions extends JavaBase {
 
     const opts = this.getPlatformOption();
     const availableVersions = availableVersionsRaw.map(item => ({
-      url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${
+      url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version}-${opts.os}-${
         this.architecture
       }.${opts.archive}`,
       version: this.convertVersionToSemver(item)
@@ -77,21 +77,19 @@ export class MicrosoftDistributions extends JavaBase {
   }
 
   private async getAvailableVersions(): Promise<MicrosoftVersion[]> {
-    // TODO get these dynamically!
-    // We will need Microsoft to add an endpoint where we can query for versions.
     const jdkVersions = [
       {
-        version: [17, 0, 2, 8, 1]
+        version: [17]
       },
       {
-        version: [16, 0, 2, 7, 1]
+        version: [16]
       }
     ];
 
     // M1 is only supported for Java 16 & 17
     if (process.platform !== 'darwin' || this.architecture !== 'aarch64') {
       jdkVersions.push({
-        version: [11, 0, 14, 1, 1]
+        version: [11]
       });
     }
 
