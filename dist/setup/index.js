@@ -11501,13 +11501,23 @@ class LocalDistribution extends base_installer_1.JavaBase {
                 if (!this.jdkFile) {
                     throw new Error("'jdkFile' is not specified");
                 }
-                const jdkFilePath = path_1.default.resolve(this.jdkFile);
+                let jdkFilePath;
+                let extension;
+                if (this.jdkFile.match(/^https?:\/\//)) {
+                    core.info(`Downloading Java archive from ${this.jdkFile}...`);
+                    const javaRelease = yield tc.downloadTool(this.jdkFile);
+                    jdkFilePath = path_1.default.resolve(javaRelease);
+                    extension = util_1.getDownloadArchiveExtension();
+                }
+                else {
+                    jdkFilePath = path_1.default.resolve(this.jdkFile);
+                }
                 const stats = fs_1.default.statSync(jdkFilePath);
                 if (!stats.isFile()) {
                     throw new Error(`JDK file was not found in path '${jdkFilePath}'`);
                 }
                 core.info(`Extracting Java from '${jdkFilePath}'`);
-                const extractedJavaPath = yield util_1.extractJdkFile(jdkFilePath);
+                const extractedJavaPath = yield util_1.extractJdkFile(jdkFilePath, extension);
                 const archiveName = fs_1.default.readdirSync(extractedJavaPath)[0];
                 const archivePath = path_1.default.join(extractedJavaPath, archiveName);
                 const javaVersion = this.version;
@@ -30687,17 +30697,9 @@ AbortError.prototype = Object.create(Error.prototype);
 AbortError.prototype.constructor = AbortError;
 AbortError.prototype.name = 'AbortError';
 
-const URL$1 = Url.URL || whatwgUrl.URL;
-
 // fix an issue where "PassThrough", "resolve" aren't a named export for node <10
 const PassThrough$1 = Stream.PassThrough;
-
-const isDomainOrSubdomain = function isDomainOrSubdomain(destination, original) {
-	const orig = new URL$1(original).hostname;
-	const dest = new URL$1(destination).hostname;
-
-	return orig === dest || orig[orig.length - dest.length - 1] === '.' && orig.endsWith(dest);
-};
+const resolve_url = Url.resolve;
 
 /**
  * Fetch function
@@ -30785,19 +30787,7 @@ function fetch(url, opts) {
 				const location = headers.get('Location');
 
 				// HTTP fetch step 5.3
-				let locationURL = null;
-				try {
-					locationURL = location === null ? null : new URL$1(location, request.url).toString();
-				} catch (err) {
-					// error here can only be invalid URL in Location: header
-					// do not throw when options.redirect == manual
-					// let the user extract the errorneous redirect URL
-					if (request.redirect !== 'manual') {
-						reject(new FetchError(`uri requested responds with an invalid redirect URL: ${location}`, 'invalid-redirect'));
-						finalize();
-						return;
-					}
-				}
+				const locationURL = location === null ? null : resolve_url(request.url, location);
 
 				// HTTP fetch step 5.5
 				switch (request.redirect) {
@@ -30844,12 +30834,6 @@ function fetch(url, opts) {
 							timeout: request.timeout,
 							size: request.size
 						};
-
-						if (!isDomainOrSubdomain(request.url, locationURL)) {
-							for (const name of ['authorization', 'www-authenticate', 'cookie', 'cookie2']) {
-								requestOpts.headers.delete(name);
-							}
-						}
 
 						// HTTP-redirect fetch step 9
 						if (res.statusCode !== 303 && request.body && getTotalBytes(request) === null) {
