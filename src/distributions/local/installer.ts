@@ -63,6 +63,7 @@ export class LocalDistribution extends JavaBase {
     core.info(`Setting Java ${foundJava.version} as default`);
 
     this.setJavaDefault(foundJava.version, foundJava.path);
+    this.initCacerts(foundJava.path);
     return foundJava;
   }
 

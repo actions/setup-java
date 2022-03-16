@@ -24,6 +24,9 @@ inputs:
     description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec'
     required: false
     default: false
+  cacerts:
+    description: 'Copy cacerts file from given path into newly downloaded Java installation'
+    required: false
   server-id:
     description: 'ID of the distributionManagement repository in the pom.xml
        file. Default is `github`'

@@ -5,6 +5,7 @@ export const INPUT_JAVA_PACKAGE = 'java-package';
 export const INPUT_DISTRIBUTION = 'distribution';
 export const INPUT_JDK_FILE = 'jdkFile';
 export const INPUT_CHECK_LATEST = 'check-latest';
+export const INPUT_CACERTS = 'cacerts';
 export const INPUT_SERVER_ID = 'server-id';
 export const INPUT_SERVER_USERNAME = 'server-username';
 export const INPUT_SERVER_PASSWORD = 'server-password';

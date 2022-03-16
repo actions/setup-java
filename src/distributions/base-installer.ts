@@ -15,6 +15,7 @@ export abstract class JavaBase {
   protected packageType: string;
   protected stable: boolean;
   protected checkLatest: boolean;
+  protected cacerts?: string;
 
   constructor(protected distribution: string, installerOptions: JavaInstallerOptions) {
     this.http = new httpm.HttpClient('actions/setup-java', undefined, {
@@ -28,6 +29,7 @@ export abstract class JavaBase {
     this.architecture = installerOptions.architecture;
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
+    this.cacerts = installerOptions.cacerts;
   }
 
   protected abstract downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults>;
@@ -58,6 +60,7 @@ export abstract class JavaBase {
 
     core.info(`Setting Java ${foundJava.version} as the default`);
     this.setJavaDefault(foundJava.version, foundJava.path);
+    this.initCacerts(foundJava.path);
 
     return foundJava;
   }
@@ -147,5 +150,16 @@ export abstract class JavaBase {
     core.setOutput('distribution', this.distribution);
     core.setOutput('path', toolPath);
     core.setOutput('version', version);
+  }
+
+  protected initCacerts(toolPath: string) {
+    if (!this.cacerts) {
+      return;
+    }
+
+    const toolCacerts = path.join(toolPath, 'lib', 'security', 'cacerts');
+
+    core.info(`Copying cacerts from ${this.cacerts}`);
+    fs.copyFileSync(this.cacerts, toolCacerts);
   }
 }

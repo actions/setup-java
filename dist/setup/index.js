@@ -4730,6 +4730,7 @@ class JavaBase {
         this.architecture = installerOptions.architecture;
         this.packageType = installerOptions.packageType;
         this.checkLatest = installerOptions.checkLatest;
+        this.cacerts = installerOptions.cacerts;
     }
     setupJava() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -4757,6 +4758,7 @@ class JavaBase {
             }
             core.info(`Setting Java ${foundJava.version} as the default`);
             this.setJavaDefault(foundJava.version, foundJava.path);
+            this.initCacerts(foundJava.path);
             return foundJava;
         });
     }
@@ -4835,6 +4837,14 @@ class JavaBase {
         core.setOutput('distribution', this.distribution);
         core.setOutput('path', toolPath);
         core.setOutput('version', version);
+    }
+    initCacerts(toolPath) {
+        if (!this.cacerts) {
+            return;
+        }
+        const toolCacerts = path_1.default.join(toolPath, 'lib', 'security', 'cacerts');
+        core.info(`Copying cacerts from ${this.cacerts}`);
+        fs.copyFileSync(this.cacerts, toolCacerts);
     }
 }
 exports.JavaBase = JavaBase;
@@ -11524,6 +11534,7 @@ class LocalDistribution extends base_installer_1.JavaBase {
             }
             core.info(`Setting Java ${foundJava.version} as default`);
             this.setJavaDefault(foundJava.version, foundJava.path);
+            this.initCacerts(foundJava.path);
             return foundJava;
         });
     }
@@ -14227,7 +14238,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
+exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_CACERTS = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
 exports.MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
 exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_ARCHITECTURE = 'architecture';
@@ -14235,6 +14246,7 @@ exports.INPUT_JAVA_PACKAGE = 'java-package';
 exports.INPUT_DISTRIBUTION = 'distribution';
 exports.INPUT_JDK_FILE = 'jdkFile';
 exports.INPUT_CHECK_LATEST = 'check-latest';
+exports.INPUT_CACERTS = 'cacerts';
 exports.INPUT_SERVER_ID = 'server-id';
 exports.INPUT_SERVER_USERNAME = 'server-username';
 exports.INPUT_SERVER_PASSWORD = 'server-password';
@@ -59995,11 +60007,13 @@ function run() {
             const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
             const cache = core.getInput(constants.INPUT_CACHE);
             const checkLatest = util_1.getBooleanInput(constants.INPUT_CHECK_LATEST, false);
+            const cacerts = core.getInput(constants.INPUT_CACERTS);
             const installerOptions = {
                 architecture,
                 packageType,
                 version,
-                checkLatest
+                checkLatest,
+                cacerts
             };
             const distribution = distribution_factory_1.getJavaDistribution(distributionName, installerOptions, jdkFile);
             if (!distribution) {

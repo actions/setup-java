@@ -120,6 +120,19 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
+## Using existing cacerts file
+In enterprise environment, custom CA truststore is often used. By specifying source file action can copy the `cacerts`
+into new Java installation automatically.
+
+```yaml
+- uses: actions/setup-java@v2
+  with:
+    distribution: '<distribution>'
+    java-version: '11'
+    cacerts: '/etc/ssl/certs/java/cacerts'
+- run: java -cp java HelloWorldApp
+```
+
 ## Testing against different Java distributions
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 ```yaml

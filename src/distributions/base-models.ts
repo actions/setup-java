@@ -3,6 +3,7 @@ export interface JavaInstallerOptions {
   architecture: string;
   packageType: string;
   checkLatest: boolean;
+  cacerts?: string;
 }
 
 export interface JavaInstallerResults {
