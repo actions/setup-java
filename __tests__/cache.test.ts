@@ -123,7 +123,7 @@ describe('dependency cache', () => {
         await expect(restore('sbt')).rejects.toThrowError(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/*.sbt,**/project/**.scala,**/project/build.properties,**/project/**.scala], make sure you have checked out the target repository`
+          )} matched to [**/*.sbt,**/project/build.properties,**/project/**.scala], make sure you have checked out the target repository`
         );
       });
       it('downloads cache', async () => {

@@ -36,7 +36,7 @@ const supportedPackageManager: PackageManager[] = [
   {
     id: 'sbt',
     path: [join(os.homedir(), '.ivy2', 'cache'), join(os.homedir(), '.sbt')],
-    pattern: ['**/*.sbt', '**/project/**.scala', '**/project/build.properties', '**/project/**.scala']
+    pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.scala']
   }
 ];
 
