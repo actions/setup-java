@@ -25,7 +25,7 @@ Inputs `java-version` and `distribution` are mandatory. See [Supported distribut
 **Eclipse Temurin**
 ```yaml
 steps:
-- uses: actions/checkout@v2
+- uses: actions/checkout@v3
 - uses: actions/setup-java@v2
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
@@ -36,7 +36,7 @@ steps:
 **Zulu OpenJDK**
 ```yaml
 steps:
-- uses: actions/checkout@v2
+- uses: actions/checkout@v3
 - uses: actions/setup-java@v2
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
@@ -69,13 +69,14 @@ Currently, the following distributions are supported:
 The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle and maven. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
 - gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`
 - maven: `**/pom.xml`
+- sbt:  `**/build.sbt`
 
 The cache input is optional, and caching is turned off by default.
 
 #### Caching gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v2
+- uses: actions/checkout@v3
 - uses: actions/setup-java@v2
   with:
     distribution: 'temurin'
@@ -87,7 +88,7 @@ steps:
 #### Caching maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v2
+- uses: actions/checkout@v3
 - uses: actions/setup-java@v2
   with:
     distribution: 'temurin'
@@ -95,6 +96,19 @@ steps:
     cache: 'maven'
 - name: Build with Maven
   run: mvn -B package --file pom.xml
+```
+
+#### Caching sbt dependencies
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v2
+  with:
+    distribution: 'temurin'
+    java-version: '11'
+    cache: 'sbt'
+- name: Build with SBT
+  run: sbt package
 ```
 
 ### Check latest
@@ -107,7 +121,7 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 
 ```yaml
 steps:
-- uses: actions/checkout@v2
+- uses: actions/checkout@v3
 - uses: actions/setup-java@v2
   with:
     distribution: 'adopt'
@@ -126,7 +140,7 @@ jobs:
         java: [ '8', '11', '13', '15' ]
     name: Java ${{ matrix.Java }} sample
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup java
         uses: actions/setup-java@v2
         with:
