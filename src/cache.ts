@@ -36,8 +36,7 @@ const supportedPackageManager: PackageManager[] = [
   {
     id: 'sbt',
     path: [join(os.homedir(), '.ivy2', 'cache'), join(os.homedir(), '.sbt')],
-    // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#scala---sbt
-    pattern: ['**/build.sbt']
+    pattern: ['**/*.sbt', '**/project/**.scala', '**/project/build.properties', '**/project/**.scala']
   }
 ];
 
