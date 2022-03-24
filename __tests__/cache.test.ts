@@ -118,6 +118,23 @@ describe('dependency cache', () => {
         expect(spyInfo).toBeCalledWith('gradle cache is not found');
       });
     });
+    describe('for sbt', () => {
+      it('throws error if no build.sbt found', async () => {
+        await expect(restore('sbt')).rejects.toThrowError(
+          `No file in ${projectRoot(
+            workspace
+          )} matched to [**/build.sbt], make sure you have checked out the target repository`
+        );
+      });
+      it('downloads cache', async () => {
+        createFile(join(workspace, 'build.sbt'));
+
+        await restore('sbt');
+        expect(spyCacheRestore).toBeCalled();
+        expect(spyWarning).not.toBeCalled();
+        expect(spyInfo).toBeCalledWith('sbt cache is not found');
+      });
+    });
   });
   describe('save', () => {
     let spyCacheSave: jest.SpyInstance<
@@ -189,6 +206,30 @@ describe('dependency cache', () => {
         createStateForSuccessfulRestore();
 
         await save('gradle');
+        expect(spyCacheSave).toBeCalled();
+        expect(spyWarning).not.toBeCalled();
+        expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
+      });
+    });
+    describe('for sbt', () => {
+      it('uploads cache even if no build.sbt found', async () => {
+        createStateForMissingBuildFile();
+        await save('sbt');
+        expect(spyCacheSave).toBeCalled();
+        expect(spyWarning).not.toBeCalled();
+      });
+      it('does not upload cache if no restore run before', async () => {
+        createFile(join(workspace, 'build.sbt'));
+  
+        await save('sbt');
+        expect(spyCacheSave).not.toBeCalled();
+        expect(spyWarning).toBeCalledWith('Error retrieving key from state.');
+      });
+      it('uploads cache', async () => {
+        createFile(join(workspace, 'build.sbt'));
+        createStateForSuccessfulRestore();
+  
+        await save('sbt');
         expect(spyCacheSave).toBeCalled();
         expect(spyWarning).not.toBeCalled();
         expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
