@@ -2,6 +2,7 @@ import os from 'os';
 import path from 'path';
 import * as fs from 'fs';
 import * as semver from 'semver';
+import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
@@ -76,4 +77,27 @@ export function isJobStatusSuccess() {
   const jobStatus = core.getInput(INPUT_JOB_STATUS);
 
   return jobStatus === 'success';
+}
+
+export function isGhes(): boolean {
+  const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
+  return ghUrl.hostname.toUpperCase() !== 'GITHUB.COM';
+}
+
+export function isCacheFeatureAvailable(): boolean {
+  if (!cache.isFeatureAvailable()) {
+    if (isGhes()) {
+      throw new Error(
+        'Caching is only supported on GHES version >= 3.5. If you are on a version >= 3.5, please check with your GHES admin if the Actions cache service is enabled or not.'
+      );
+    } else {
+      core.warning(
+        'An internal error has occurred in cache backend. Please check https://www.githubstatus.com/ for any ongoing issue in actions.'
+      );
+    }
+
+    return false;
+  }
+
+  return true;
 }

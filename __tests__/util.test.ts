@@ -1,4 +1,9 @@
-import { isVersionSatisfies } from '../src/util';
+import * as cache from '@actions/cache';
+import * as core from '@actions/core';
+import { isVersionSatisfies, isCacheFeatureAvailable } from '../src/util';
+
+jest.mock('@actions/cache');
+jest.mock('@actions/core');
 
 describe('isVersionSatisfies', () => {
   it.each([
@@ -18,5 +23,41 @@ describe('isVersionSatisfies', () => {
   ])('%s, %s -> %s', (inputRange: string, inputVersion: string, expected: boolean) => {
     const actual = isVersionSatisfies(inputRange, inputVersion);
     expect(actual).toBe(expected);
+  });
+});
+
+describe('isCacheFeatureAvailable', () => {
+  it('isCacheFeatureAvailable disabled on GHES', () => {
+    jest.spyOn(cache, 'isFeatureAvailable').mockImplementation(() => false);
+    try {
+      process.env['GITHUB_SERVER_URL'] = 'http://example.com';
+      isCacheFeatureAvailable();
+    } catch (error) {
+      expect(error).toHaveProperty(
+        'message',
+        'Caching is only supported on GHES version >= 3.5. If you are on a version >= 3.5, please check with your GHES admin if the Actions cache service is enabled or not.'
+      );
+    } finally {
+      delete process.env['GITHUB_SERVER_URL'];
+    }
+  });
+
+  it('isCacheFeatureAvailable disabled on dotcom', () => {
+    jest.spyOn(cache, 'isFeatureAvailable').mockImplementation(() => false);
+    const infoMock = jest.spyOn(core, 'warning');
+    const message =
+      'An internal error has occurred in cache backend. Please check https://www.githubstatus.com/ for any ongoing issue in actions.';
+    try {
+      process.env['GITHUB_SERVER_URL'] = 'http://github.com';
+      expect(isCacheFeatureAvailable()).toBe(false);
+      expect(infoMock).toHaveBeenCalledWith(message);
+    } finally {
+      delete process.env['GITHUB_SERVER_URL'];
+    }
+  });
+
+  it('isCacheFeatureAvailable is enabled', () => {
+    jest.spyOn(cache, 'isFeatureAvailable').mockImplementation(() => true);
+    expect(isCacheFeatureAvailable()).toBe(true);
   });
 });
