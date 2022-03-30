@@ -46,7 +46,7 @@ describe('isCacheFeatureAvailable', () => {
     jest.spyOn(cache, 'isFeatureAvailable').mockImplementation(() => false);
     const infoMock = jest.spyOn(core, 'warning');
     const message =
-      'An internal error has occurred in cache backend. Please check https://www.githubstatus.com/ for any ongoing issue in actions.';
+      'This runner is not configured to use the cache service. Caching will be skipped';
     try {
       process.env['GITHUB_SERVER_URL'] = 'http://github.com';
       expect(isCacheFeatureAvailable()).toBe(false);

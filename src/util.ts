@@ -92,7 +92,7 @@ export function isCacheFeatureAvailable(): boolean {
       );
     } else {
       core.warning(
-        'An internal error has occurred in cache backend. Please check https://www.githubstatus.com/ for any ongoing issue in actions.'
+        'This runner is not configured to use the cache service. Caching will be skipped'
       );
     }
 
