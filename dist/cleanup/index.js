@@ -3730,10 +3730,7 @@ const options_1 = __webpack_require__(538);
 const requestUtils_1 = __webpack_require__(899);
 const versionSalt = '1.0';
 function getCacheApiUrl(resource) {
-    // Ideally we just use ACTIONS_CACHE_URL
-    const baseUrl = (process.env['ACTIONS_CACHE_URL'] ||
-        process.env['ACTIONS_RUNTIME_URL'] ||
-        '').replace('pipelines', 'artifactcache');
+    const baseUrl = process.env['ACTIONS_CACHE_URL'] || '';
     if (!baseUrl) {
         throw new Error('Cache Service Url not found, unable to restore cache.');
     }
@@ -5932,7 +5929,35 @@ module.exports = {
 /* 193 */,
 /* 194 */,
 /* 195 */,
-/* 196 */,
+/* 196 */
+/***/ (function(__unusedmodule, exports) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
+exports.MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
+exports.INPUT_JAVA_VERSION = 'java-version';
+exports.INPUT_ARCHITECTURE = 'architecture';
+exports.INPUT_JAVA_PACKAGE = 'java-package';
+exports.INPUT_DISTRIBUTION = 'distribution';
+exports.INPUT_JDK_FILE = 'jdkFile';
+exports.INPUT_CHECK_LATEST = 'check-latest';
+exports.INPUT_SERVER_ID = 'server-id';
+exports.INPUT_SERVER_USERNAME = 'server-username';
+exports.INPUT_SERVER_PASSWORD = 'server-password';
+exports.INPUT_SETTINGS_PATH = 'settings-path';
+exports.INPUT_OVERWRITE_SETTINGS = 'overwrite-settings';
+exports.INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
+exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
+exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
+exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
+exports.INPUT_CACHE = 'cache';
+exports.INPUT_JOB_STATUS = 'job-status';
+exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
+
+
+/***/ }),
 /* 197 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
@@ -6092,7 +6117,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.run = void 0;
 const core = __importStar(__webpack_require__(470));
 const gpg = __importStar(__webpack_require__(884));
-const constants = __importStar(__webpack_require__(694));
+const constants = __importStar(__webpack_require__(196));
 const util_1 = __webpack_require__(322);
 const cache_1 = __webpack_require__(913);
 function removePrivateKeyFromKeychain() {
@@ -6889,7 +6914,8 @@ function downloadCacheStorageSDK(archiveLocation, archivePath, options) {
             //
             // If the file exceeds the buffer maximum length (~1 GB on 32-bit systems and ~2 GB
             // on 64-bit systems), split the download into multiple segments
-            const maxSegmentSize = buffer.constants.MAX_LENGTH;
+            // ~2 GB = 2147483647, beyond this, we start getting out of range error. So, capping it accordingly.
+            const maxSegmentSize = Math.min(2147483647, buffer.constants.MAX_LENGTH);
             const downloadProgress = new DownloadProgress(contentLength);
             const fd = fs.openSync(archivePath, 'w');
             try {
@@ -9110,14 +9136,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
+exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
 const os_1 = __importDefault(__webpack_require__(87));
 const path_1 = __importDefault(__webpack_require__(622));
 const fs = __importStar(__webpack_require__(747));
 const semver = __importStar(__webpack_require__(876));
+const cache = __importStar(__webpack_require__(692));
 const core = __importStar(__webpack_require__(470));
 const tc = __importStar(__webpack_require__(533));
-const constants_1 = __webpack_require__(694);
+const constants_1 = __webpack_require__(196);
 function getTempDir() {
     let tempDirectory = process.env['RUNNER_TEMP'] || os_1.default.tmpdir();
     return tempDirectory;
@@ -9187,6 +9214,24 @@ function isJobStatusSuccess() {
     return jobStatus === 'success';
 }
 exports.isJobStatusSuccess = isJobStatusSuccess;
+function isGhes() {
+    const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
+    return ghUrl.hostname.toUpperCase() !== 'GITHUB.COM';
+}
+exports.isGhes = isGhes;
+function isCacheFeatureAvailable() {
+    if (!cache.isFeatureAvailable()) {
+        if (isGhes()) {
+            throw new Error('Caching is only supported on GHES version >= 3.5. If you are on a version >= 3.5, please check with your GHES admin if the Actions cache service is enabled or not.');
+        }
+        else {
+            core.warning('The runner was not able to contact the cache service. Caching will be skipped');
+        }
+        return false;
+    }
+    return true;
+}
+exports.isCacheFeatureAvailable = isCacheFeatureAvailable;
 
 
 /***/ }),
@@ -41953,7 +41998,7 @@ __exportStar(__webpack_require__(220), exports);
 __exportStar(__webpack_require__(932), exports);
 __exportStar(__webpack_require__(975), exports);
 __exportStar(__webpack_require__(207), exports);
-__exportStar(__webpack_require__(773), exports);
+__exportStar(__webpack_require__(694), exports);
 __exportStar(__webpack_require__(695), exports);
 var spancontext_utils_1 = __webpack_require__(629);
 Object.defineProperty(exports, "isSpanContextValid", { enumerable: true, get: function () { return spancontext_utils_1.isSpanContextValid; } });
@@ -53507,6 +53552,15 @@ function checkKey(key) {
     }
 }
 /**
+ * isFeatureAvailable to check the presence of Actions cache service
+ *
+ * @returns boolean return true if Actions cache service feature is available, otherwise false
+ */
+function isFeatureAvailable() {
+    return !!process.env['ACTIONS_CACHE_URL'];
+}
+exports.isFeatureAvailable = isFeatureAvailable;
+/**
  * Restores cache from keys
  *
  * @param paths a list of file paths to restore from the cache
@@ -53626,28 +53680,23 @@ exports.saveCache = saveCache;
 
 "use strict";
 
+/*
+ * Copyright The OpenTelemetry Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
-exports.MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
-exports.INPUT_JAVA_VERSION = 'java-version';
-exports.INPUT_ARCHITECTURE = 'architecture';
-exports.INPUT_JAVA_PACKAGE = 'java-package';
-exports.INPUT_DISTRIBUTION = 'distribution';
-exports.INPUT_JDK_FILE = 'jdkFile';
-exports.INPUT_CHECK_LATEST = 'check-latest';
-exports.INPUT_SERVER_ID = 'server-id';
-exports.INPUT_SERVER_USERNAME = 'server-username';
-exports.INPUT_SERVER_PASSWORD = 'server-password';
-exports.INPUT_SETTINGS_PATH = 'settings-path';
-exports.INPUT_OVERWRITE_SETTINGS = 'overwrite-settings';
-exports.INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
-exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
-exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
-exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
-exports.INPUT_CACHE = 'cache';
-exports.INPUT_JOB_STATUS = 'job-status';
-exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
-
+//# sourceMappingURL=tracer_provider.js.map
 
 /***/ }),
 /* 695 */
@@ -55714,30 +55763,7 @@ module.exports = function(dst, src) {
 /* 770 */,
 /* 771 */,
 /* 772 */,
-/* 773 */
-/***/ (function(__unusedmodule, exports) {
-
-"use strict";
-
-/*
- * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-Object.defineProperty(exports, "__esModule", { value: true });
-//# sourceMappingURL=tracer_provider.js.map
-
-/***/ }),
+/* 773 */,
 /* 774 */,
 /* 775 */,
 /* 776 */,
