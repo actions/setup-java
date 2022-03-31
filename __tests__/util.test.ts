@@ -45,8 +45,7 @@ describe('isCacheFeatureAvailable', () => {
   it('isCacheFeatureAvailable disabled on dotcom', () => {
     jest.spyOn(cache, 'isFeatureAvailable').mockImplementation(() => false);
     const infoMock = jest.spyOn(core, 'warning');
-    const message =
-      'The runner was not able to contact the cache service. Caching will be skipped';
+    const message = 'The runner was not able to contact the cache service. Caching will be skipped';
     try {
       process.env['GITHUB_SERVER_URL'] = 'http://github.com';
       expect(isCacheFeatureAvailable()).toBe(false);
