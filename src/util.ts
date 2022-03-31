@@ -51,7 +51,7 @@ export function getDownloadArchiveExtension() {
 export function isVersionSatisfies(range: string, version: string): boolean {
   if (semver.valid(range)) {
     // if full version with build digit is provided as a range (such as '1.2.3+4')
-    // we should check for exact equal via compareBuild
+    // Tes we should check for exact equal via compareBuild
     // since semver.satisfies doesn't handle 4th digit
     const semRange = semver.parse(range);
     if (semRange && semRange.build?.length > 0) {
