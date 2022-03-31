@@ -92,7 +92,7 @@ export function isCacheFeatureAvailable(): boolean {
       );
     } else {
       core.warning(
-        'This runner is not configured to use the cache service. Caching will be skipped'
+        'The runner was not able to contact the cache service. Caching will be skipped'
       );
     }
 
