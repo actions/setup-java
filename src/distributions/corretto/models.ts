@@ -20,5 +20,6 @@ export interface ICorettoAvailableVersions {
   checksum: string;
   checksum_sha256: string;
   resource: string;
+  downloadLink: string;
   correttoVersion: string;
 }
