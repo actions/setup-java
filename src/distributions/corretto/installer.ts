@@ -122,7 +122,7 @@ export class CorettoDistribution extends JavaBase {
     // Coretto has its own platform names so we need to map them
     switch (process.platform) {
       case 'darwin':
-        return 'mac';
+        return 'macos';
       case 'win32':
         return 'windows';
       default:
