@@ -90,7 +90,9 @@ describe('dependency cache', () => {
         await restore('maven');
         expect(spyCacheRestore).toBeCalled();
         expect(spyWarning).not.toBeCalled();
-        expect(spyInfo).toBeCalledWith('maven cache is not found');
+        expect(spyInfo).toBeCalledWith(
+          `Cache not found for input keys: ${process.env['RUNNER_OS']}-setup-java-maven-5df6e0e2761359d30a8275058e299fcc0381534545f55cf43e41983f5d4c9456, ${process.env['RUNNER_OS']}-setup-java-maven-, ${process.env['RUNNER_OS']}-setup-java-`
+        );
       });
     });
     describe('for gradle', () => {
@@ -107,7 +109,9 @@ describe('dependency cache', () => {
         await restore('gradle');
         expect(spyCacheRestore).toBeCalled();
         expect(spyWarning).not.toBeCalled();
-        expect(spyInfo).toBeCalledWith('gradle cache is not found');
+        expect(spyInfo).toBeCalledWith(
+          `Cache not found for input keys: ${process.env['RUNNER_OS']}-setup-java-gradle-5df6e0e2761359d30a8275058e299fcc0381534545f55cf43e41983f5d4c9456, ${process.env['RUNNER_OS']}-setup-java-gradle-, ${process.env['RUNNER_OS']}-setup-java-`
+        );
       });
       it('downloads cache based on build.gradle.kts', async () => {
         createFile(join(workspace, 'build.gradle.kts'));
@@ -115,7 +119,9 @@ describe('dependency cache', () => {
         await restore('gradle');
         expect(spyCacheRestore).toBeCalled();
         expect(spyWarning).not.toBeCalled();
-        expect(spyInfo).toBeCalledWith('gradle cache is not found');
+        expect(spyInfo).toBeCalledWith(
+          `Cache not found for input keys: ${process.env['RUNNER_OS']}-setup-java-gradle-5df6e0e2761359d30a8275058e299fcc0381534545f55cf43e41983f5d4c9456, ${process.env['RUNNER_OS']}-setup-java-gradle-, ${process.env['RUNNER_OS']}-setup-java-`
+        );
       });
     });
   });
