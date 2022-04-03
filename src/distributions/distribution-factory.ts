@@ -6,7 +6,7 @@ import { AdoptDistribution, AdoptImplementation } from './adopt/installer';
 import { TemurinDistribution, TemurinImplementation } from './temurin/installer';
 import { LibericaDistributions } from './liberica/installer';
 import { MicrosoftDistributions } from './microsoft/installer';
-import { CorettoDistribution } from './corretto/installer';
+import { CorrettoDistribution } from './corretto/installer';
 
 enum JavaDistribution {
   Adopt = 'adopt',
@@ -42,7 +42,7 @@ export function getJavaDistribution(
     case JavaDistribution.Microsoft:
       return new MicrosoftDistributions(installerOptions);
     case JavaDistribution.Corretto:
-      return new CorettoDistribution(installerOptions);
+      return new CorrettoDistribution(installerOptions);
     default:
       return null;
   }

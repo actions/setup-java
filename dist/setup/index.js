@@ -101137,6 +101137,172 @@ exports.JavaBase = JavaBase;
 
 /***/ }),
 
+/***/ 4750:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CorrettoDistribution = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const tc = __importStar(__nccwpck_require__(7784));
+const fs_1 = __importDefault(__nccwpck_require__(7147));
+const path_1 = __importDefault(__nccwpck_require__(1017));
+const util_1 = __nccwpck_require__(2629);
+const base_installer_1 = __nccwpck_require__(9741);
+class CorrettoDistribution extends base_installer_1.JavaBase {
+    constructor(installerOptions) {
+        super('Corretto', installerOptions);
+    }
+    downloadTool(javaRelease) {
+        return __awaiter(this, void 0, void 0, function* () {
+            core.info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
+            const javaArchivePath = yield tc.downloadTool(javaRelease.url);
+            core.info(`Extracting Java archive...`);
+            const extractedJavaPath = yield util_1.extractJdkFile(javaArchivePath, util_1.getDownloadArchiveExtension());
+            const archiveName = fs_1.default.readdirSync(extractedJavaPath)[0];
+            const archivePath = path_1.default.join(extractedJavaPath, archiveName);
+            const version = this.getToolcacheVersionName(javaRelease.version);
+            const javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
+            return { version: javaRelease.version, path: javaPath };
+        });
+    }
+    findPackageForDownload(version) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.stable) {
+                throw new Error('Early access versions are not supported');
+            }
+            if (version.includes('.')) {
+                throw new Error('Only major versions are supported');
+            }
+            const availableVersions = yield this.getAvailableVersions();
+            const matchingVersions = availableVersions
+                .filter(item => item.version == version)
+                .map(item => {
+                return {
+                    version: item.correttoVersion,
+                    url: item.downloadLink
+                };
+            });
+            const resolvedVersion = matchingVersions.length > 0 ? matchingVersions[0] : null;
+            if (!resolvedVersion) {
+                const availableOptions = availableVersions.map(item => item.version).join(', ');
+                const availableOptionsMessage = availableOptions
+                    ? `\nAvailable versions: ${availableOptions}`
+                    : '';
+                throw new Error(`Could not find satisfied version for SemVer '${version}'. ${availableOptionsMessage}`);
+            }
+            return resolvedVersion;
+        });
+    }
+    getAvailableVersions() {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function* () {
+            const platform = this.getPlatformOption();
+            const arch = this.architecture;
+            const imageType = this.packageType;
+            console.time('coretto-retrieve-available-versions');
+            const availableVersionsUrl = 'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
+            const fetchCurrentVersions = yield this.http.getJson(availableVersionsUrl);
+            const fetchedCurrentVersions = fetchCurrentVersions.result;
+            if (!fetchedCurrentVersions) {
+                throw Error(`Could not fetch latest corretto versions from ${availableVersionsUrl}`);
+            }
+            const eligbleVersions = (_b = (_a = fetchedCurrentVersions === null || fetchedCurrentVersions === void 0 ? void 0 : fetchedCurrentVersions[platform]) === null || _a === void 0 ? void 0 : _a[arch]) === null || _b === void 0 ? void 0 : _b[imageType];
+            const availableVersions = this.getAvailableVersionsForPlatform(eligbleVersions);
+            if (core.isDebug()) {
+                this.printAvailableVersions(availableVersions);
+            }
+            return availableVersions;
+        });
+    }
+    getAvailableVersionsForPlatform(eligbleVersions) {
+        const availableVersions = [];
+        for (const version in eligbleVersions) {
+            const availableVersion = eligbleVersions[version];
+            for (const fileType in availableVersion) {
+                const skipNonExtractableBinaries = fileType != util_1.getDownloadArchiveExtension();
+                if (skipNonExtractableBinaries) {
+                    continue;
+                }
+                const availableVersionDetails = availableVersion[fileType];
+                const correttoVersion = this.getCorettoVersion(availableVersionDetails.resource);
+                availableVersions.push({
+                    checksum: availableVersionDetails.checksum,
+                    checksum_sha256: availableVersionDetails.checksum_sha256,
+                    fileType,
+                    resource: availableVersionDetails.resource,
+                    downloadLink: `https://corretto.aws${availableVersionDetails.resource}`,
+                    version: version,
+                    correttoVersion
+                });
+            }
+        }
+        return availableVersions;
+    }
+    printAvailableVersions(availableVersions) {
+        core.startGroup('Print information about available versions');
+        console.timeEnd('coretto-retrieve-available-versions');
+        console.log(`Available versions: [${availableVersions.length}]`);
+        console.log(availableVersions.map(item => `${item.version}: ${item.correttoVersion}`).join(', '));
+        core.endGroup();
+    }
+    getPlatformOption() {
+        // Coretto has its own platform names so we need to map them
+        switch (process.platform) {
+            case 'darwin':
+                return 'macos';
+            case 'win32':
+                return 'windows';
+            default:
+                return process.platform;
+        }
+    }
+    getCorettoVersion(resource) {
+        const regex = /(\d+.+)\//;
+        const match = regex.exec(resource);
+        if (match === null) {
+            throw Error(`Could not parse corretto version from ${resource}`);
+        }
+        return match[1];
+    }
+}
+exports.CorrettoDistribution = CorrettoDistribution;
+
+
+/***/ }),
+
 /***/ 924:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -101150,6 +101316,7 @@ const installer_3 = __nccwpck_require__(8766);
 const installer_4 = __nccwpck_require__(8579);
 const installer_5 = __nccwpck_require__(883);
 const installer_6 = __nccwpck_require__(3613);
+const installer_7 = __nccwpck_require__(4750);
 var JavaDistribution;
 (function (JavaDistribution) {
     JavaDistribution["Adopt"] = "adopt";
@@ -101160,6 +101327,7 @@ var JavaDistribution;
     JavaDistribution["Liberica"] = "liberica";
     JavaDistribution["JdkFile"] = "jdkfile";
     JavaDistribution["Microsoft"] = "microsoft";
+    JavaDistribution["Corretto"] = "corretto";
 })(JavaDistribution || (JavaDistribution = {}));
 function getJavaDistribution(distributionName, installerOptions, jdkFile) {
     switch (distributionName) {
@@ -101178,6 +101346,8 @@ function getJavaDistribution(distributionName, installerOptions, jdkFile) {
             return new installer_5.LibericaDistributions(installerOptions);
         case JavaDistribution.Microsoft:
             return new installer_6.MicrosoftDistributions(installerOptions);
+        case JavaDistribution.Corretto:
+            return new installer_7.CorrettoDistribution(installerOptions);
         default:
             return null;
     }

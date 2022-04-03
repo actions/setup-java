@@ -7,7 +7,7 @@ import { JavaBase } from '../base-installer';
 import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
 import { ICorrettoAllAvailableVersions, ICorettoAvailableVersions } from './models';
 
-export class CorettoDistribution extends JavaBase {
+export class CorrettoDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('Corretto', installerOptions);
   }
@@ -75,14 +75,29 @@ export class CorettoDistribution extends JavaBase {
 
     const availableVersionsUrl =
       'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
-    const fetchResult = await this.http.getJson<ICorrettoAllAvailableVersions>(
+    const fetchCurrentVersions = await this.http.getJson<ICorrettoAllAvailableVersions>(
       availableVersionsUrl
     );
-    if (!fetchResult.result) {
+    const fetchedCurrentVersions = fetchCurrentVersions.result;
+    if (!fetchedCurrentVersions) {
       throw Error(`Could not fetch latest corretto versions from ${availableVersionsUrl}`);
     }
+
+    const eligbleVersions = fetchedCurrentVersions?.[platform]?.[arch]?.[imageType];
+    const availableVersions = this.getAvailableVersionsForPlatform(eligbleVersions);
+
+    if (core.isDebug()) {
+      this.printAvailableVersions(availableVersions);
+    }
+
+    return availableVersions;
+  }
+
+  private getAvailableVersionsForPlatform(
+    eligbleVersions: ICorrettoAllAvailableVersions['os']['arch']['imageType'] | undefined
+  ): ICorettoAvailableVersions[] {
     const availableVersions: ICorettoAvailableVersions[] = [];
-    const eligbleVersions = fetchResult.result[platform][arch][imageType];
+
     for (const version in eligbleVersions) {
       const availableVersion = eligbleVersions[version];
       for (const fileType in availableVersion) {
@@ -104,18 +119,17 @@ export class CorettoDistribution extends JavaBase {
         });
       }
     }
-
-    if (core.isDebug()) {
-      core.startGroup('Print information about available versions');
-      console.timeEnd('coretto-retrieve-available-versions');
-      console.log(`Available versions: [${availableVersions.length}]`);
-      console.log(
-        availableVersions.map(item => `${item.version}: ${item.correttoVersion}`).join(', ')
-      );
-      core.endGroup();
-    }
-
     return availableVersions;
+  }
+
+  private printAvailableVersions(availableVersions: ICorettoAvailableVersions[]) {
+    core.startGroup('Print information about available versions');
+    console.timeEnd('coretto-retrieve-available-versions');
+    console.log(`Available versions: [${availableVersions.length}]`);
+    console.log(
+      availableVersions.map(item => `${item.version}: ${item.correttoVersion}`).join(', ')
+    );
+    core.endGroup();
   }
 
   private getPlatformOption(): string {
