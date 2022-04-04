@@ -141,7 +141,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['temurin', 'zulu', 'liberica']
         java-package: ['jre']
-        version: ['16.0']
+        version: ['17.0']
         include:
           - distribution: 'zulu'
             java-package: jre+fx
@@ -163,10 +163,6 @@ jobs:
             java-package: jre
             version: '8'
             os: windows-latest
-        exclude:
-          # Eclipse Temurin currently doesn't publish JREs, only JDKs
-          - distribution: 'temurin'
-            java-package: 'jre'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
