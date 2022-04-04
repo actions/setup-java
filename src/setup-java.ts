@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as auth from './auth';
-import { getBooleanInput } from './util';
+import { getBooleanInput, isCacheFeatureAvailable } from './util';
 import * as constants from './constants';
 import { restore } from './cache';
 import * as path from 'path';
@@ -42,7 +42,7 @@ async function run() {
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
     await auth.configureAuthentication();
-    if (cache) {
+    if (cache && isCacheFeatureAvailable()) {
       await restore(cache);
     }
   } catch (error) {
