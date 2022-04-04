@@ -159,6 +159,10 @@ jobs:
             java-package: jre+fx
             version: '11'
             os: ubuntu-latest
+          - distribution: 'corretto'
+            java-package: jre
+            version: '8'
+            os: windows-latest
         exclude:
           # Eclipse Temurin currently doesn't publish JREs, only JDKs
           - distribution: 'temurin'
