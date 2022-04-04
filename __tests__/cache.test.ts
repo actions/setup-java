@@ -220,7 +220,7 @@ describe('dependency cache', () => {
       });
       it('does not upload cache if no restore run before', async () => {
         createFile(join(workspace, 'build.sbt'));
-  
+
         await save('sbt');
         expect(spyCacheSave).not.toBeCalled();
         expect(spyWarning).toBeCalledWith('Error retrieving key from state.');
@@ -228,7 +228,7 @@ describe('dependency cache', () => {
       it('uploads cache', async () => {
         createFile(join(workspace, 'build.sbt'));
         createStateForSuccessfulRestore();
-  
+
         await save('sbt');
         expect(spyCacheSave).toBeCalled();
         expect(spyWarning).not.toBeCalled();

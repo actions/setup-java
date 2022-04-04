@@ -18623,6 +18623,11 @@ const supportedPackageManager = [
         path: [path_1.join(os_1.default.homedir(), '.gradle', 'caches'), path_1.join(os_1.default.homedir(), '.gradle', 'wrapper')],
         // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---gradle
         pattern: ['**/*.gradle*', '**/gradle-wrapper.properties']
+    },
+    {
+        id: 'sbt',
+        path: [path_1.join(os_1.default.homedir(), '.ivy2', 'cache'), path_1.join(os_1.default.homedir(), '.sbt')],
+        pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.scala']
     }
 ];
 function findPackageManager(id) {
