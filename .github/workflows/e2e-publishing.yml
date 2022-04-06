@@ -24,7 +24,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -59,7 +59,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Create fake settings.xml
         run: |
           $xmlDirectory = Join-Path $HOME ".m2"
@@ -95,7 +95,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Create fake settings.xml
         run: |
           $xmlDirectory = Join-Path $HOME ".m2"
@@ -132,7 +132,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
