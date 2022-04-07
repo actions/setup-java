@@ -70,6 +70,8 @@ The action has a built-in functionality for caching and restoring dependencies. 
 - gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`
 - maven: `**/pom.xml`
 
+The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
+
 The cache input is optional, and caching is turned off by default.
 
 #### Caching gradle dependencies
