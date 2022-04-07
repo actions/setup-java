@@ -27,7 +27,7 @@ jobs:
           version: 8
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -53,7 +53,7 @@ jobs:
         - '16.0.2+7'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -75,7 +75,7 @@ jobs:
         distribution: ['temurin', 'zulu', 'liberica']
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -98,7 +98,7 @@ jobs:
         version: ['17-ea', '15.0.0-ea.14']
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -120,7 +120,7 @@ jobs:
         version: ['17-ea']
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -165,7 +165,7 @@ jobs:
             java-package: 'jre'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -191,7 +191,7 @@ jobs:
         version: ['11']
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java

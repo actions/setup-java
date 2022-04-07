@@ -25,8 +25,8 @@ Inputs `java-version` and `distribution` are mandatory. See [Supported distribut
 **Eclipse Temurin**
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
     java-version: '17'
@@ -36,8 +36,8 @@ steps:
 **Zulu OpenJDK**
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
     java-version: '11'
@@ -77,8 +77,8 @@ The cache input is optional, and caching is turned off by default.
 #### Caching gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
     java-version: '11'
@@ -89,8 +89,8 @@ steps:
 #### Caching maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
     java-version: '11'
@@ -109,8 +109,8 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'adopt'
     java-version: '11'
@@ -128,9 +128,9 @@ jobs:
         java: [ '8', '11', '13', '15' ]
     name: Java ${{ matrix.Java }} sample
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
