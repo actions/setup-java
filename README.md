@@ -26,7 +26,7 @@ Inputs `java-version` and `distribution` are mandatory. See [Supported distribut
 ```yaml
 steps:
 - uses: actions/checkout@v3
-- uses: actions/setup-java@v2
+- uses: actions/setup-java@v3
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
     java-version: '17'
@@ -37,7 +37,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v3
-- uses: actions/setup-java@v2
+- uses: actions/setup-java@v3
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
     java-version: '11'
@@ -71,13 +71,15 @@ The action has a built-in functionality for caching and restoring dependencies. 
 - maven: `**/pom.xml`
 - sbt:  `**/build.sbt`
 
+The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
+
 The cache input is optional, and caching is turned off by default.
 
 #### Caching gradle dependencies
 ```yaml
 steps:
 - uses: actions/checkout@v3
-- uses: actions/setup-java@v2
+- uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
     java-version: '11'
@@ -89,7 +91,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v3
-- uses: actions/setup-java@v2
+- uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
     java-version: '11'
@@ -122,7 +124,7 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 ```yaml
 steps:
 - uses: actions/checkout@v3
-- uses: actions/setup-java@v2
+- uses: actions/setup-java@v3
   with:
     distribution: 'adopt'
     java-version: '11'
@@ -142,7 +144,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
