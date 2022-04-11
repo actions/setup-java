@@ -104,7 +104,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v3
-- uses: actions/setup-java@v2
+- uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
     java-version: '11'
