@@ -18631,7 +18631,7 @@ const supportedPackageManager = [
             path_1.join(os_1.default.homedir(), '.sbt'),
             getCoursierCachePath()
         ],
-        pattern: ['*.sbt', 'project/build.properties', 'project/**.{scala,sbt}']
+        pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.{scala,sbt}']
     }
 ];
 function getCoursierCachePath() {

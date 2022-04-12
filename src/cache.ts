@@ -40,7 +40,7 @@ const supportedPackageManager: PackageManager[] = [
       join(os.homedir(), '.sbt'),
       getCoursierCachePath()
     ],
-    pattern: ['*.sbt', 'project/build.properties', 'project/**.{scala,sbt}']
+    pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.{scala,sbt}']
   }
 ];
 
