@@ -132,12 +132,33 @@ jobs:
           java-version: '11'
           cache: sbt
       - name: Create files to cache
+        run: sbt update
+
+      - name: Check files to cache on macos-latest
+        if: matrix.os == 'macos-latest'
         run: |
-          sbt update
-          if [ ! -d ~/.ivy2/cache ]; then
-            echo "::error::The ~/.ivy2/cache directory does not exist unexpectedly"
+          if [ ! -d ~/Library/Caches/Coursier ]; then
+            echo "::error::The ~/Library/Caches/Coursier directory does not exist unexpectedly"
             exit 1
           fi
+
+      - name: Check files to cache on windows-latest
+        if: matrix.os == 'windows-latest'
+        run: |
+          if [ ! -d ~/AppData/Local/Coursier/Cache ]; then
+            echo "::error::The ~/AppData/Local/Coursier/Cache directory does not exist unexpectedly"
+            exit 1
+          fi
+
+      
+      - name: Check files to cache on ubuntu-latest
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          if [ ! -d ~/.cache/coursier ]; then
+            echo "::error::The ~/.cache/coursier directory does not exist unexpectedly"
+            exit 1
+          fi
+
   sbt-restore:
     runs-on: ${{ matrix.os }}
     defaults:

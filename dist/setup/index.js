@@ -18626,10 +18626,21 @@ const supportedPackageManager = [
     },
     {
         id: 'sbt',
-        path: [path_1.join(os_1.default.homedir(), '.ivy2', 'cache'), path_1.join(os_1.default.homedir(), '.sbt')],
-        pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.scala']
+        path: [
+            path_1.join(os_1.default.homedir(), '.ivy2', 'cache'),
+            path_1.join(os_1.default.homedir(), '.sbt'),
+            getCoursierCachePath()
+        ],
+        pattern: ['*.sbt', 'project/build.properties', 'project/**.{scala,sbt}']
     }
 ];
+function getCoursierCachePath() {
+    if (os_1.default.type() === 'Linux')
+        return path_1.join(os_1.default.homedir(), 'AppData', 'Local', 'Coursier', 'Cache');
+    if (os_1.default.type() === 'Darwin')
+        return path_1.join(os_1.default.homedir(), 'Library', 'Caches', 'Coursier');
+    return path_1.join(os_1.default.homedir(), '.cache', 'coursier');
+}
 function findPackageManager(id) {
     const packageManager = supportedPackageManager.find(packageManager => packageManager.id === id);
     if (packageManager === undefined) {
