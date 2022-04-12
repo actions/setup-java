@@ -111,3 +111,58 @@ jobs:
             exit 1
           fi
           ls ~/.m2/repository
+  sbt-save:
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: __tests__/cache/sbt
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run setup-java with the cache for sbt
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: sbt
+      - name: Create files to cache
+        run: |
+          sbt update
+          if [ ! -d ~/.ivy2/cache ]; then
+            echo "::error::The ~/.ivy2/cache directory does not exist unexpectedly"
+            exit 1
+          fi
+  sbt-restore:
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: __tests__/cache/sbt
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    needs: sbt-save
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run setup-java with the cache for sbt
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: sbt
+      - name: Confirm that ~/.ivy2/cache directory has been made
+        run: |
+          if [ ! -d ~/.ivy2/cache ]; then
+            echo "::error::The ~/.ivy2/cache directory does not exist unexpectedly"
+            exit 1
+          fi
+          ls ~/.ivy2/cache
