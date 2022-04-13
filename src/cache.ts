@@ -45,9 +45,9 @@ const supportedPackageManager: PackageManager[] = [
 ];
 
 function getCoursierCachePath(): string {
-  if (os.type() === 'Linux') return join(os.homedir(), 'AppData', 'Local', 'Coursier', 'Cache');
+  if (os.type() === 'Linux') return join(os.homedir(), '.cache', 'coursier');
   if (os.type() === 'Darwin') return join(os.homedir(), 'Library', 'Caches', 'Coursier');
-  return join(os.homedir(), '.cache', 'coursier');
+  return join(os.homedir(), 'AppData', 'Local', 'Coursier', 'Cache');
 }
 
 function findPackageManager(id: string): PackageManager {

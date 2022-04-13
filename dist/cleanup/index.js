@@ -61899,10 +61899,10 @@ const supportedPackageManager = [
 ];
 function getCoursierCachePath() {
     if (os_1.default.type() === 'Linux')
-        return path_1.join(os_1.default.homedir(), 'AppData', 'Local', 'Coursier', 'Cache');
+        return path_1.join(os_1.default.homedir(), '.cache', 'coursier');
     if (os_1.default.type() === 'Darwin')
         return path_1.join(os_1.default.homedir(), 'Library', 'Caches', 'Coursier');
-    return path_1.join(os_1.default.homedir(), '.cache', 'coursier');
+    return path_1.join(os_1.default.homedir(), 'AppData', 'Local', 'Coursier', 'Cache');
 }
 function findPackageManager(id) {
     const packageManager = supportedPackageManager.find(packageManager => packageManager.id === id);
