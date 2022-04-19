@@ -139,6 +139,7 @@ describe('findPackageForDownload', () => {
       packageType: 'jdk',
       checkLatest: false
     });
+    distribution['getAvailableVersions'] = async () => manifestData;
     await expect(
       distribution['findPackageForDownload'](distribution['version'])
     ).rejects.toThrowError(/Could not find satisfied version for semver */);
