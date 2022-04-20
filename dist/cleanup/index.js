@@ -63300,8 +63300,24 @@ const supportedPackageManager = [
         path: [path_1.join(os_1.default.homedir(), '.gradle', 'caches'), path_1.join(os_1.default.homedir(), '.gradle', 'wrapper')],
         // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---gradle
         pattern: ['**/*.gradle*', '**/gradle-wrapper.properties']
+    },
+    {
+        id: 'sbt',
+        path: [
+            path_1.join(os_1.default.homedir(), '.ivy2', 'cache'),
+            path_1.join(os_1.default.homedir(), '.sbt'),
+            getCoursierCachePath()
+        ],
+        pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.{scala,sbt}']
     }
 ];
+function getCoursierCachePath() {
+    if (os_1.default.type() === 'Linux')
+        return path_1.join(os_1.default.homedir(), '.cache', 'coursier');
+    if (os_1.default.type() === 'Darwin')
+        return path_1.join(os_1.default.homedir(), 'Library', 'Caches', 'Coursier');
+    return path_1.join(os_1.default.homedir(), 'AppData', 'Local', 'Coursier', 'Cache');
+}
 function findPackageManager(id) {
     const packageManager = supportedPackageManager.find(packageManager => packageManager.id === id);
     if (packageManager === undefined) {

@@ -13,7 +13,7 @@ const CACHE_MATCHED_KEY = 'cache-matched-key';
 const CACHE_KEY_PREFIX = 'setup-java';
 
 interface PackageManager {
-  id: 'maven' | 'gradle';
+  id: 'maven' | 'gradle' | 'sbt';
   /**
    * Paths of the file that specify the files to cache.
    */
@@ -32,8 +32,23 @@ const supportedPackageManager: PackageManager[] = [
     path: [join(os.homedir(), '.gradle', 'caches'), join(os.homedir(), '.gradle', 'wrapper')],
     // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---gradle
     pattern: ['**/*.gradle*', '**/gradle-wrapper.properties']
+  },
+  {
+    id: 'sbt',
+    path: [
+      join(os.homedir(), '.ivy2', 'cache'),
+      join(os.homedir(), '.sbt'),
+      getCoursierCachePath()
+    ],
+    pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.{scala,sbt}']
   }
 ];
+
+function getCoursierCachePath(): string {
+  if (os.type() === 'Linux') return join(os.homedir(), '.cache', 'coursier');
+  if (os.type() === 'Darwin') return join(os.homedir(), 'Library', 'Caches', 'Coursier');
+  return join(os.homedir(), 'AppData', 'Local', 'Coursier', 'Cache');
+}
 
 function findPackageManager(id: string): PackageManager {
   const packageManager = supportedPackageManager.find(packageManager => packageManager.id === id);
