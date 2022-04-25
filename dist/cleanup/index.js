@@ -63299,7 +63299,12 @@ const supportedPackageManager = [
         id: 'gradle',
         path: [path_1.join(os_1.default.homedir(), '.gradle', 'caches'), path_1.join(os_1.default.homedir(), '.gradle', 'wrapper')],
         // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---gradle
-        pattern: ['**/*.gradle*', '**/gradle-wrapper.properties', 'buildSrc/**/*.kt']
+        pattern: [
+            '**/*.gradle*',
+            '**/gradle-wrapper.properties',
+            'buildSrc/**/Versions.kt',
+            'buildSrc/**/Dependencies.kt'
+        ]
     },
     {
         id: 'sbt',
