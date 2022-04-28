@@ -66,9 +66,10 @@ Currently, the following distributions are supported:
 **NOTE:** Adopt OpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` to `temurin` to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 
 ### Caching packages dependencies
-The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle and maven. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
+The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
 - gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`
 - maven: `**/pom.xml`
+- sbt:  `**/build.sbt`
 
 The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
 
@@ -97,6 +98,19 @@ steps:
     cache: 'maven'
 - name: Build with Maven
   run: mvn -B package --file pom.xml
+```
+
+#### Caching sbt dependencies
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'temurin'
+    java-version: '11'
+    cache: 'sbt'
+- name: Build with SBT
+  run: sbt package
 ```
 
 ### Check latest
