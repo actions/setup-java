@@ -158,6 +158,8 @@ jobs:
   - [Adopt](docs/advanced-usage.md#Adopt)
   - [Zulu](docs/advanced-usage.md#Zulu)
   - [Liberica](docs/advanced-usage.md#Liberica)
+  - [Microsoft](docs/advanced-usage.md#Microsoft)
+  - [Amazon Corretto](docs/advanced-usage.md#Amazon-Corretto)
 - [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](docs/advanced-usage.md#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](docs/advanced-usage.md#Installing-Java-from-local-file)
