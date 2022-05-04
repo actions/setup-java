@@ -80,6 +80,8 @@ steps:
 ```
 
 ### Amazon Corretto
+**NOTE:** Amazon Corretto only supports the major version specification.
+
 ```yaml
 steps:
 - uses: actions/checkout@v3
