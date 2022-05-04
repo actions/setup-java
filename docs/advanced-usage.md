@@ -3,6 +3,9 @@
   - [Eclipse Temurin](#Eclipse-Temurin)
   - [Adopt](#Adopt)
   - [Zulu](#Zulu)
+  - [Liberica](#Liberica)
+  - [Microsoft](#Microsoft)
+  - [Amazon Corretto](#Amazon-Corretto)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -72,6 +75,19 @@ steps:
 - uses: actions/setup-java@v3
   with:
     distribution: 'microsoft'
+    java-version: '11'
+- run: java -cp java HelloWorldApp
+```
+
+### Amazon Corretto
+**NOTE:** Amazon Corretto only supports the major version specification.
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'corretto'
     java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
