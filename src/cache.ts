@@ -38,7 +38,10 @@ const supportedPackageManager: PackageManager[] = [
     path: [
       join(os.homedir(), '.ivy2', 'cache'),
       join(os.homedir(), '.sbt'),
-      getCoursierCachePath()
+      getCoursierCachePath(),
+      //TODO: comment the reason of exclusions
+      '!' + join(os.homedir(), '.sbt', '*.lock'),
+      '!' + join(os.homedir(), '**', 'ivydata-*.properties')
     ],
     pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.{scala,sbt}']
   }
