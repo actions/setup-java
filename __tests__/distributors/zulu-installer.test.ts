@@ -52,6 +52,14 @@ describe('getAvailableVersions', () => {
     [
       { version: '8', architecture: 'x64', packageType: 'jre+fx', checkLatest: false },
       '?os=macos&ext=tar.gz&bundle_type=jre&javafx=true&arch=x86&hw_bitness=64&release_status=ga&features=fx'
+    ],
+    [
+      { version: '11', architecture: 'arm64', packageType: 'jdk', checkLatest: false },
+      '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=arm&hw_bitness=64&release_status=ga'
+    ],
+    [
+      { version: '11', architecture: 'arm', packageType: 'jdk', checkLatest: false },
+      '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=arm&hw_bitness=&release_status=ga'
     ]
   ])('build correct url for %s -> %s', async (input, parsedUrl) => {
     const distribution = new ZuluDistribution(input);

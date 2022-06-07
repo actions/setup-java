@@ -133,6 +133,8 @@ export class ZuluDistribution extends JavaBase {
       return { arch: 'x86', hw_bitness: '64', abi: '' };
     } else if (this.architecture == 'x86') {
       return { arch: 'x86', hw_bitness: '32', abi: '' };
+    } else if (this.architecture == 'arm64') {
+      return { arch: 'arm', hw_bitness: '64', abi: '' };
     } else {
       return { arch: this.architecture, hw_bitness: '', abi: '' };
     }
