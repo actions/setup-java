@@ -27,6 +27,11 @@ describe('findPackageForDownload', () => {
       '11.0.13',
       '11.0.13',
       'https://aka.ms/download-jdk/microsoft-jdk-11.0.13.8.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+    ],
+    [
+      '11.0.15',
+      '11.0.15',
+      'https://aka.ms/download-jdk/microsoft-jdk-11.0.15-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ]
   ])('version is %s -> %s', async (input, expectedVersion, expectedUrl) => {
     const result = await distribution['findPackageForDownload'](input);

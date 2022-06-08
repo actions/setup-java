@@ -93,6 +93,9 @@ export class MicrosoftDistributions extends JavaBase {
       jdkVersions.push({
         version: [11, 0, 13, 8, 1]
       });
+      jdkVersions.push({
+        version: [11, 0, 15]
+      });
     }
 
     return jdkVersions;
