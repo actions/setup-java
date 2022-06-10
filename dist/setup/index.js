@@ -101718,19 +101718,22 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
             // We will need Microsoft to add an endpoint where we can query for versions.
             const jdkVersions = [
                 {
+                    version: [17, 0, 3]
+                },
+                {
                     version: [17, 0, 1, 12, 1]
                 },
                 {
                     version: [16, 0, 2, 7, 1]
+                },
+                {
+                    version: [11, 0, 15]
                 }
             ];
             // M1 is only supported for Java 16 & 17
             if (process.platform !== 'darwin' || this.architecture !== 'aarch64') {
                 jdkVersions.push({
                     version: [11, 0, 13, 8, 1]
-                });
-                jdkVersions.push({
-                    version: [11, 0, 15]
                 });
             }
             return jdkVersions;
