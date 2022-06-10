@@ -66,6 +66,8 @@ Currently, the following distributions are supported:
 
 **NOTE:** Adopt OpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` to `temurin` to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 
+**NOTE:** For Zulu OpenJDK architectures x64 and arm64 are mapped to x86 / arm with proper hw_bitness.
+
 ### Caching packages dependencies
 The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
 - gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`
