@@ -39,7 +39,8 @@ const supportedPackageManager: PackageManager[] = [
       join(os.homedir(), '.ivy2', 'cache'),
       join(os.homedir(), '.sbt'),
       getCoursierCachePath(),
-      //TODO: comment the reason of exclusions
+      // Some files should not be cached to avoid resolution problems.
+      // In particular the resolution of snapshots (ideological gap between maven/ivy).
       '!' + join(os.homedir(), '.sbt', '*.lock'),
       '!' + join(os.homedir(), '**', 'ivydata-*.properties')
     ],
@@ -84,8 +85,7 @@ export async function restore(id: string) {
   core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
   if (primaryKey.endsWith('-')) {
     throw new Error(
-      `No file in ${process.cwd()} matched to [${
-        packageManager.pattern
+      `No file in ${process.cwd()} matched to [${packageManager.pattern
       }], make sure you have checked out the target repository`
     );
   }
