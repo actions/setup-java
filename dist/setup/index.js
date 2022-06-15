@@ -100654,8 +100654,9 @@ const supportedPackageManager = [
             path_1.join(os_1.default.homedir(), '.ivy2', 'cache'),
             path_1.join(os_1.default.homedir(), '.sbt'),
             getCoursierCachePath(),
+            // Some files should not be cached to avoid resolution problems.
+            // In particular the resolution of snapshots (ideological gap between maven/ivy).
             '!' + path_1.join(os_1.default.homedir(), '.sbt', '*.lock'),
-            // Avoid SNAPSHOT resolution problems by forcing the deletion of these files (due to ideological gaps in maven/ivy).
             '!' + path_1.join(os_1.default.homedir(), '**', 'ivydata-*.properties')
         ],
         pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.{scala,sbt}']
