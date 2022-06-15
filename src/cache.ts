@@ -85,7 +85,8 @@ export async function restore(id: string) {
   core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
   if (primaryKey.endsWith('-')) {
     throw new Error(
-      `No file in ${process.cwd()} matched to [${packageManager.pattern
+      `No file in ${process.cwd()} matched to [${
+        packageManager.pattern
       }], make sure you have checked out the target repository`
     );
   }
