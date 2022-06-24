@@ -54,7 +54,7 @@ inputs:
        $GPG_PASSPHRASE.'
     required: false
   cache:
-    description: 'Name of the build platform to cache dependencies. It can be "maven" or "gradle".'
+    description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle" or "sbt".'
     required: false
   job-status:
     description: 'Workaround to pass job status to post job step. This variable is not intended for manual setting'
