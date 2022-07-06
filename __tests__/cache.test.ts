@@ -153,6 +153,27 @@ describe('dependency cache', () => {
       return expect(save('ant')).rejects.toThrowError('unknown package manager specified: ant');
     });
 
+    it('save with -1 cacheId , should not fail workflow', async () => {
+      spyCacheSave.mockImplementation(() => Promise.resolve(-1));
+      createStateForMissingBuildFile();
+
+      await save('maven');
+      expect(spyCacheSave).toBeCalled();
+      expect(spyWarning).not.toBeCalled();
+      expect(spyInfo).toBeCalled();
+      expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
+    });
+
+    it('saves with error from toolkit, should fail workflow', async () => {
+      spyCacheSave.mockImplementation(() =>
+        Promise.reject(new cache.ValidationError('Validation failed'))
+      );
+      createStateForMissingBuildFile();
+
+      expect.assertions(1);
+      await expect(save('maven')).rejects.toEqual(new cache.ValidationError('Validation failed'));
+    });
+
     describe('for maven', () => {
       it('uploads cache even if no pom.xml found', async () => {
         createStateForMissingBuildFile();
