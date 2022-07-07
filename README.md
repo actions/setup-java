@@ -13,6 +13,9 @@ This action provides the following functionality for GitHub Actions runners:
 - Registering problem matchers for error output
 - Caching dependencies managed by Apache Maven
 - Caching dependencies managed by Gradle
+- Caching dependencies managed by sbt
+
+This action allows you to work with Java and Scala projects.
 
 ## V2 vs V1
 - V2 supports custom distributions and provides support for Zulu OpenJDK, Eclipse Temurin and Adopt OpenJDK  out of the box. V1 supports only Zulu OpenJDK
