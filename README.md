@@ -156,12 +156,7 @@ jobs:
 
 ### Install multiple JDKs
 ```yaml
-jobs:
-  build:
-    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
-
       - uses: actions/setup-java@v1
         with:
           java-version: 8
