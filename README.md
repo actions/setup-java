@@ -154,6 +154,30 @@ jobs:
       - run: java -cp java HelloWorldApp
 ```
 
+### Install multiple JDKs
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - run: echo "JAVA_8=$JAVA_HOME" >> $GITHUB_ENV
+  
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - run: echo "JAVA_11=$JAVA_HOME" >> $GITHUB_ENV
+  
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 15
+      - run: echo "JAVA_15=$JAVA_HOME" >> $GITHUB_ENV
+```
+
 ### Advanced
 - [Selecting a Java distribution](docs/advanced-usage.md#Selecting-a-Java-distribution)
   - [Eclipse Temurin](docs/advanced-usage.md#Eclipse-Temurin)
