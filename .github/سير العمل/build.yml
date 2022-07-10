@@ -1,5 +1,5 @@
 name: Build Action
-
+[![Build Action](https://github.com/actions/setup-java/actions/workflows/build.yml/badge.svg)](https://github.com/actions/setup-java/actions/workflows/build.yml)
 on:
   push:
     branches:
