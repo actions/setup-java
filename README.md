@@ -159,16 +159,19 @@ jobs:
     steps:
       - uses: actions/setup-java@v3
         with:
+          distribution: '<distribution>'
           java-version: 8
       - run: echo "JAVA_8=$JAVA_HOME" >> $GITHUB_ENV
   
       - uses: actions/setup-java@v3
         with:
+          distribution: '<distribution>'
           java-version: 11
       - run: echo "JAVA_11=$JAVA_HOME" >> $GITHUB_ENV
   
       - uses: actions/setup-java@v3
         with:
+          distribution: '<distribution>'
           java-version: 15
       - run: echo "JAVA_15=$JAVA_HOME" >> $GITHUB_ENV
 ```
