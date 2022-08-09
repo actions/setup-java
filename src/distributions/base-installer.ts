@@ -129,7 +129,7 @@ export abstract class JavaBase {
       stable = false;
     }
 
-    if (!semver.validRange(version)) {
+    if (this.distribution !== 'jdkfile' && !semver.validRange(version)) {
       throw new Error(
         `The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`
       );
