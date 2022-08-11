@@ -325,7 +325,9 @@ describe('normalizeVersion', () => {
     ['11.0.2-ea', { version: '11.0.2', stable: false }],
     ['11g', { version: '11g', stable: true }]
   ])('normalizeVersion from %s to %s if distribution is local', (input, expected) => {
-    expect(DummyJavaBase.prototype.normalizeVersion.call({distribution: 'jdkfile'}, input)).toEqual(expected);
+    expect(
+      DummyJavaBase.prototype.normalizeVersion.call({ distribution: 'jdkfile' }, input)
+    ).toEqual(expected);
   });
 
   it('normalizeVersion should throw an error for non semver if distribution is not local', () => {
@@ -337,7 +339,9 @@ describe('normalizeVersion', () => {
 
   it('normalizeVersion should throw an error for non semver if distribution is local', () => {
     const version = '11g';
-    expect(DummyJavaBase.prototype.normalizeVersion.bind({distribution: 'jdkfile'}, version)).not.toThrowError(
+    expect(
+      DummyJavaBase.prototype.normalizeVersion.bind({ distribution: 'jdkfile' }, version)
+    ).not.toThrowError(
       `The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`
     );
   });
