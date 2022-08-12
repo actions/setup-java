@@ -56,6 +56,9 @@ inputs:
   cache:
     description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle" or "sbt".'
     required: false
+  cache-key-prefix:
+    description: 'Custom key prefix to give extra flexibility on managing the cache expiration'
+    required: false
   job-status:
     description: 'Workaround to pass job status to post job step. This variable is not intended for manual setting'
     default: ${{ job.status }}

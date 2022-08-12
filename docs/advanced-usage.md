@@ -14,6 +14,7 @@
 - [Publishing using Apache Maven](#Publishing-using-Apache-Maven)
 - [Publishing using Gradle](#Publishing-using-Gradle)
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
+- [Expiring Dependencies Cache](#Expiring-Dependencies-Cache)
 
 See [action.yml](../action.yml) for more details on task inputs.
 
@@ -350,3 +351,33 @@ GitHub Hosted Runners have a tool cache that comes with some Java versions pre-i
 Currently, LTS versions of Adopt OpenJDK (`adopt`) are cached on the GitHub Hosted Runners.
 
 The tools cache gets updated on a weekly basis. For information regarding locally cached versions of Java on GitHub hosted runners, check out [GitHub Actions Virtual Environments](https://github.com/actions/virtual-environments).
+
+## Expiring Dependencies Cache
+
+You can define the `cache-key-prefix` input and either bump it manually, or use a certain time period. That way you can prevent the cache from growing abnormally.
+
+### Manually
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    cache-key-prefix: V1
+- run: java -cp java HelloWorldApp
+```
+And then just bump `V1` manually.
+
+### Monthly
+```yaml
+steps:
+- uses: actions/checkout@v3
+- name: Get current month
+  id: month
+  run: echo "::set-output name=month::$(date +'%Y-%m')"
+- uses: actions/setup-java@v3
+  with:
+    cache-key-prefix: ${{ steps.month.outputs.month }}
+- run: java -cp java HelloWorldApp
+```
+The cache is busted automatically every month. 
+You can define any time period that better suits your pipeline.

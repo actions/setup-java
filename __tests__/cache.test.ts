@@ -92,6 +92,18 @@ describe('dependency cache', () => {
         expect(spyWarning).not.toBeCalled();
         expect(spyInfo).toBeCalledWith('maven cache is not found');
       });
+      it('downloads cache with a custom key prefix', async () => {
+        createFile(join(workspace, 'pom.xml'));
+
+        await restore('maven', 'YYYY-MM');
+        expect(spyCacheRestore).toBeCalledWith(
+          [expect.stringContaining('/.m2/repository')],
+          expect.stringContaining('setup-java-YYYY-MM-macOS-maven-'),
+          ['setup-java-YYYY-MM-macOS-maven-', 'setup-java-YYYY-MM-macOS-', 'setup-java-YYYY-MM-']
+        );
+        expect(spyWarning).not.toBeCalled();
+        expect(spyInfo).toBeCalledWith('maven cache is not found');
+      });
     });
     describe('for gradle', () => {
       it('throws error if no build.gradle found', async () => {

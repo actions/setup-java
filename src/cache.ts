@@ -10,7 +10,7 @@ import * as glob from '@actions/glob';
 
 const STATE_CACHE_PRIMARY_KEY = 'cache-primary-key';
 const CACHE_MATCHED_KEY = 'cache-matched-key';
-const CACHE_KEY_PREFIX = 'setup-java';
+const SETUP_JAVA_CACHE_PREFIX = 'setup-java';
 
 interface PackageManager {
   id: 'maven' | 'gradle' | 'sbt';
@@ -67,24 +67,48 @@ function findPackageManager(id: string): PackageManager {
   return packageManager;
 }
 
+function computeKeyPrefix(keyPrefix: string | undefined) {
+  if (keyPrefix === undefined) {
+    return SETUP_JAVA_CACHE_PREFIX;
+  }
+
+  return `${SETUP_JAVA_CACHE_PREFIX}-${keyPrefix}`;
+}
+
 /**
  * A function that generates a cache key to use.
  * Format of the generated key will be "${{ platform }}-${{ id }}-${{ fileHash }}"".
  * If there is no file matched to {@link PackageManager.path}, the generated key ends with a dash (-).
  * @see {@link https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key|spec of cache key}
  */
-async function computeCacheKey(packageManager: PackageManager) {
+async function computeCacheKey(packageManager: PackageManager, cacheKeyPrefix: string) {
   const hash = await glob.hashFiles(packageManager.pattern.join('\n'));
-  return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${hash}`;
+  return `${cacheKeyPrefix}-${process.env['RUNNER_OS']}-${packageManager.id}-${hash}`;
+}
+
+/**
+ * A function that generates a list of restore keys to use.
+ * The restore keys will follow the same format as the computed cache key.
+ * @see {@link https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#example-of-search-priority|spec of cache key}
+ */
+async function computeRestoreKeys(packageManager: PackageManager, cacheKeyPrefix: string) {
+  return [
+    `${cacheKeyPrefix}-${process.env['RUNNER_OS']}-${packageManager.id}-`,
+    `${cacheKeyPrefix}-${process.env['RUNNER_OS']}-`,
+    `${cacheKeyPrefix}-`
+  ];
 }
 
 /**
  * Restore the dependency cache
  * @param id ID of the package manager, should be "maven" or "gradle"
+ * @param customKeyPrefix Optional cache key prefix. If not present will default to the action name.
  */
-export async function restore(id: string) {
+export async function restore(id: string, customKeyPrefix: string | undefined = undefined) {
   const packageManager = findPackageManager(id);
-  const primaryKey = await computeCacheKey(packageManager);
+  const cacheKeyPrefix = computeKeyPrefix(customKeyPrefix);
+  const primaryKey = await computeCacheKey(packageManager, cacheKeyPrefix);
+  const restoreKeys = await computeRestoreKeys(packageManager, cacheKeyPrefix);
 
   core.debug(`primary key is ${primaryKey}`);
   core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
@@ -96,8 +120,7 @@ export async function restore(id: string) {
     );
   }
 
-  // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
-  const matchedKey = await cache.restoreCache(packageManager.path, primaryKey);
+  const matchedKey = await cache.restoreCache(packageManager.path, primaryKey, restoreKeys);
   if (matchedKey) {
     core.saveState(CACHE_MATCHED_KEY, matchedKey);
     core.setOutput('cache-hit', matchedKey === primaryKey);
