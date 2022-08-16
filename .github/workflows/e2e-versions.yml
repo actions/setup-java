@@ -87,6 +87,43 @@ jobs:
         run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
         shell: bash
 
+  setup-java-multiple-jdks:
+    name: ${{ matrix.distribution }} ${{ matrix.version }} - multiple jdks - ${{ matrix.os }}
+    needs: setup-java-major-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['temurin', 'zulu', 'liberica']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version: |
+            11
+            17
+      - name: Verify Java
+        run: |
+          $versionsArr = "11","17"
+          foreach ($version in $versionsArr)
+          {
+            $envName = "JAVA_HOME_${version}_${env:RUNNER_ARCH}"
+            $JavaVersionPath = [Environment]::GetEnvironmentVariable($envName)
+            if (-not (Test-Path "$JavaVersionPath")) { 
+              Write-Host "$envName is not found"
+              exit 1
+            } 
+          }
+        shell: pwsh
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "17" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
   setup-java-ea-versions-zulu:
     name: zulu ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
