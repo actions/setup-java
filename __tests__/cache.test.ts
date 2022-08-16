@@ -98,8 +98,12 @@ describe('dependency cache', () => {
         await restore('maven', 'YYYY-MM');
         expect(spyCacheRestore).toBeCalledWith(
           [expect.stringContaining('/.m2/repository')],
-          expect.stringContaining('setup-java-YYYY-MM-macOS-maven-'),
-          ['setup-java-YYYY-MM-macOS-maven-', 'setup-java-YYYY-MM-macOS-', 'setup-java-YYYY-MM-']
+          expect.stringContaining(`setup-java-YYYY-MM-${process.env['RUNNER_OS']}-maven-`),
+          [
+            `setup-java-YYYY-MM-${process.env['RUNNER_OS']}-maven-`,
+            `setup-java-YYYY-MM-${process.env['RUNNER_OS']}-`,
+            'setup-java-YYYY-MM-'
+          ]
         );
         expect(spyWarning).not.toBeCalled();
         expect(spyInfo).toBeCalledWith('maven cache is not found');
