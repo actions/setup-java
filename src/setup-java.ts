@@ -6,12 +6,13 @@ import { restore } from './cache';
 import * as path from 'path';
 import { getJavaDistribution } from './distributions/distribution-factory';
 import { JavaInstallerOptions } from './distributions/base-models';
+import * as os from 'os';
 
 async function run() {
   try {
     const version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
     const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, { required: true });
-    const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
+    const architecture = core.getInput(constants.INPUT_ARCHITECTURE) || os.arch();
     const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
     const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
     const cache = core.getInput(constants.INPUT_CACHE);
