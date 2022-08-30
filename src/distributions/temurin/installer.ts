@@ -155,13 +155,11 @@ export class TemurinDistribution extends JavaBase {
   }
 
   private osArchToDistributionArch(osArch: string): string {
-    let dArch;
     switch (osArch) {
-      case 'amd64': dArch = 'x64'; break;
-      case 'ia32': dArch = 'x32'; break;
-      case 'arm64': dArch = 'aarch64'; break;
-      default: dArch = osArch;
+      case 'amd64': return 'x64';
+      case 'ia32': return 'x32';
+      case 'arm64': return 'aarch64';
+      default: return osArch;
     }
-    return dArch;
   }
 }
