@@ -20,7 +20,6 @@ export class TemurinDistribution extends JavaBase {
     private readonly jvmImpl: TemurinImplementation
   ) {
     super(`Temurin-${jvmImpl}`, installerOptions);
-    installerOptions.architecture = this.osArchToDistributionArch(installerOptions.architecture);
   }
 
   protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
@@ -87,7 +86,7 @@ export class TemurinDistribution extends JavaBase {
 
   private async getAvailableVersions(): Promise<ITemurinAvailableVersions[]> {
     const platform = this.getPlatformOption();
-    const arch = this.architecture;
+    const arch = this.distributionArchitecture();
     const imageType = this.packageType;
     const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
     const releaseType = this.stable ? 'ga' : 'ea';
@@ -154,8 +153,9 @@ export class TemurinDistribution extends JavaBase {
     }
   }
 
-  private osArchToDistributionArch(osArch: string): string {
-    switch (osArch) {
+  protected distributionArchitecture(): string {
+    // Temurin has own architecture names so need to map them
+    switch (this.architecture) {
       case 'amd64':
         return 'x64';
       case 'ia32':
@@ -163,7 +163,7 @@ export class TemurinDistribution extends JavaBase {
       case 'arm64':
         return 'aarch64';
       default:
-        return osArch;
+        return this.architecture;
     }
   }
 }

@@ -149,4 +149,8 @@ export abstract class JavaBase {
     core.setOutput('path', toolPath);
     core.setOutput('version', version);
   }
+
+  protected distributionArchitecture(): string {
+    return this.architecture;
+  }
 }
