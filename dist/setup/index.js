@@ -101753,6 +101753,7 @@ const path_1 = __importDefault(__nccwpck_require__(1017));
 const httpm = __importStar(__nccwpck_require__(9925));
 const util_1 = __nccwpck_require__(2629);
 const constants_1 = __nccwpck_require__(9042);
+const os_1 = __importDefault(__nccwpck_require__(2037));
 class JavaBase {
     constructor(distribution, installerOptions) {
         this.distribution = distribution;
@@ -101761,7 +101762,7 @@ class JavaBase {
             maxRetries: 3
         });
         ({ version: this.version, stable: this.stable } = this.normalizeVersion(installerOptions.version));
-        this.architecture = installerOptions.architecture;
+        this.architecture = installerOptions.architecture || os_1.default.arch();
         this.packageType = installerOptions.packageType;
         this.checkLatest = installerOptions.checkLatest;
     }
@@ -101869,6 +101870,9 @@ class JavaBase {
         core.setOutput('distribution', this.distribution);
         core.setOutput('path', toolPath);
         core.setOutput('version', version);
+    }
+    distributionArchitecture() {
+        return this.architecture;
     }
 }
 exports.JavaBase = JavaBase;
@@ -102555,7 +102559,6 @@ class TemurinDistribution extends base_installer_1.JavaBase {
     constructor(installerOptions, jvmImpl) {
         super(`Temurin-${jvmImpl}`, installerOptions);
         this.jvmImpl = jvmImpl;
-        installerOptions.architecture = this.osArchToDistributionArch(installerOptions.architecture);
     }
     findPackageForDownload(version) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -102610,7 +102613,7 @@ class TemurinDistribution extends base_installer_1.JavaBase {
     getAvailableVersions() {
         return __awaiter(this, void 0, void 0, function* () {
             const platform = this.getPlatformOption();
-            const arch = this.architecture;
+            const arch = this.distributionArchitecture();
             const imageType = this.packageType;
             const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
             const releaseType = this.stable ? 'ga' : 'ea';
@@ -102667,8 +102670,9 @@ class TemurinDistribution extends base_installer_1.JavaBase {
                 return process.platform;
         }
     }
-    osArchToDistributionArch(osArch) {
-        switch (osArch) {
+    distributionArchitecture() {
+        // Temurin has own architecture names so need to map them
+        switch (this.architecture) {
             case 'amd64':
                 return 'x64';
             case 'ia32':
@@ -102676,7 +102680,7 @@ class TemurinDistribution extends base_installer_1.JavaBase {
             case 'arm64':
                 return 'aarch64';
             default:
-                return osArch;
+                return this.architecture;
         }
     }
 }
@@ -102978,13 +102982,12 @@ const constants = __importStar(__nccwpck_require__(9042));
 const cache_1 = __nccwpck_require__(4810);
 const path = __importStar(__nccwpck_require__(1017));
 const distribution_factory_1 = __nccwpck_require__(924);
-const os = __importStar(__nccwpck_require__(2037));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
             const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, { required: true });
-            const architecture = core.getInput(constants.INPUT_ARCHITECTURE) || os.arch();
+            const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
             const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
             const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
             const cache = core.getInput(constants.INPUT_CACHE);
