@@ -7,6 +7,7 @@ import * as httpm from '@actions/http-client';
 import { getToolcachePath, isVersionSatisfies } from '../util';
 import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from './base-models';
 import { MACOS_JAVA_CONTENT_POSTFIX } from '../constants';
+import os from 'os';
 
 export abstract class JavaBase {
   protected http: httpm.HttpClient;
@@ -25,7 +26,7 @@ export abstract class JavaBase {
     ({ version: this.version, stable: this.stable } = this.normalizeVersion(
       installerOptions.version
     ));
-    this.architecture = installerOptions.architecture;
+    this.architecture = installerOptions.architecture || os.arch();
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
   }
