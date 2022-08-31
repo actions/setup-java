@@ -102555,6 +102555,7 @@ class TemurinDistribution extends base_installer_1.JavaBase {
     constructor(installerOptions, jvmImpl) {
         super(`Temurin-${jvmImpl}`, installerOptions);
         this.jvmImpl = jvmImpl;
+        installerOptions.architecture = this.osArchToDistributionArch(installerOptions.architecture);
     }
     findPackageForDownload(version) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -102664,6 +102665,18 @@ class TemurinDistribution extends base_installer_1.JavaBase {
                 return 'windows';
             default:
                 return process.platform;
+        }
+    }
+    osArchToDistributionArch(osArch) {
+        switch (osArch) {
+            case 'amd64':
+                return 'x64';
+            case 'ia32':
+                return 'x32';
+            case 'arm64':
+                return 'aarch64';
+            default:
+                return osArch;
         }
     }
 }
@@ -102965,12 +102978,13 @@ const constants = __importStar(__nccwpck_require__(9042));
 const cache_1 = __nccwpck_require__(4810);
 const path = __importStar(__nccwpck_require__(1017));
 const distribution_factory_1 = __nccwpck_require__(924);
+const os = __importStar(__nccwpck_require__(2037));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
             const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, { required: true });
-            const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
+            const architecture = core.getInput(constants.INPUT_ARCHITECTURE) || os.arch();
             const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
             const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
             const cache = core.getInput(constants.INPUT_CACHE);
