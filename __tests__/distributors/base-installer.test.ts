@@ -12,6 +12,8 @@ import {
   JavaInstallerResults
 } from '../../src/distributions/base-models';
 
+import os from 'os';
+
 class EmptyJavaBase extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('Empty', installerOptions);
@@ -192,6 +194,8 @@ describe('setupJava', () => {
 
     spyCoreSetOutput = jest.spyOn(core, 'setOutput');
     spyCoreSetOutput.mockImplementation(() => undefined);
+
+    jest.spyOn(os, 'arch').mockReturnValue('x86');
   });
 
   afterEach(() => {
@@ -211,6 +215,10 @@ describe('setupJava', () => {
     ],
     [
       { version: '11.0.8', architecture: 'x86', packageType: 'jdk', checkLatest: false },
+      { version: installedJavaVersion, path: javaPath }
+    ],
+    [
+      { version: '11', architecture: '', packageType: 'jdk', checkLatest: false },
       { version: installedJavaVersion, path: javaPath }
     ]
   ])('should find java locally for %s', (input, expected) => {
@@ -237,6 +245,10 @@ describe('setupJava', () => {
     [
       { version: '11', architecture: 'x64', packageType: 'jre', checkLatest: false },
       { path: path.join('toolcache', 'Java_Empty_jre', '11.0.9', 'x64'), version: '11.0.9' }
+    ],
+    [
+      { version: '11', architecture: '', packageType: 'jre', checkLatest: false },
+      { path: path.join('toolcache', 'Java_Empty_jre', '11.0.9', 'x86'), version: '11.0.9' }
     ]
   ])('download java with configuration %s', async (input, expected) => {
     mockJavaBase = new EmptyJavaBase(input);
@@ -255,6 +267,10 @@ describe('setupJava', () => {
   it.each([
     [
       { version: '11.0.9', architecture: 'x86', packageType: 'jdk', checkLatest: true },
+      { version: '11.0.9', path: javaPathInstalled }
+    ],
+    [
+      { version: '11.0.9', architecture: '', packageType: 'jdk', checkLatest: true },
       { version: '11.0.9', path: javaPathInstalled }
     ]
   ])('should check the latest java version for %s and resolve locally', async (input, expected) => {
@@ -278,6 +294,10 @@ describe('setupJava', () => {
     ],
     [
       { version: '11.0.x', architecture: 'x86', packageType: 'jdk', checkLatest: true },
+      { version: actualJavaVersion, path: javaPathInstalled }
+    ],
+    [
+      { version: '11', architecture: '', packageType: 'jdk', checkLatest: true },
       { version: actualJavaVersion, path: javaPathInstalled }
     ]
   ])('should check the latest java version for %s and download', async (input, expected) => {
