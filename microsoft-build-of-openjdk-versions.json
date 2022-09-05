@@ -2,6 +2,7 @@
     {
         "version": "17.0.3",
         "stable": true,
+        "release_url": "https://aka.ms/download-jdk",
         "files": [
           {
             "filename": "microsoft-jdk-17.0.3-macos-x64.tar.gz",
@@ -38,6 +39,7 @@
     {
         "version": "17.0.1+12.1",
         "stable": true,
+        "release_url": "https://aka.ms/download-jdk",
         "files": [
           {
             "filename": "microsoft-jdk-17.0.1.12.1-macos-x64.tar.gz",
@@ -74,6 +76,7 @@
     {
         "version": "16.0.2+7.1",
         "stable": true,
+        "release_url": "https://aka.ms/download-jdk",
         "files": [
           {
             "filename": "microsoft-jdk-16.0.2+7.1-macos-x64.tar.gz",
@@ -110,6 +113,7 @@
     {
         "version": "11.0.15",
         "stable": true,
+        "release_url": "https://aka.ms/download-jdk",
         "files": [
           {
             "filename": "microsoft-jdk-11.0.15-macos-x64.tar.gz",
@@ -146,6 +150,7 @@
     {
         "version": "11.0.13+8.1",
         "stable": true,
+        "release_url": "https://aka.ms/download-jdk",
         "files": [
           {
             "filename": "microsoft-jdk-11.0.13+8.1-macos-x64.tar.gz",

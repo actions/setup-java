@@ -63,7 +63,7 @@ export class MicrosoftDistributions extends JavaBase {
     const foundRelease = await tc.findFromManifest(
       range,
       true,
-      availableVersionsRaw.map(item => Object.assign(item, { release_url: '' })),
+      availableVersionsRaw,
       this.architecture
     );
 
@@ -100,21 +100,18 @@ export class MicrosoftDistributions extends JavaBase {
     return { url: foundRelease.release_url, version: foundRelease.version };
   }
 
-  private async getAvailableVersions(): Promise<IToolRelease[] | null> {
+  private async getAvailableVersions(): Promise<tc.IToolRelease[] | null> {
     // TODO get these dynamically!
     // We will need Microsoft to add an endpoint where we can query for versions.
     const token = core.getInput('token');
-    const {result, statusCode} = (
-      await this.http.getJson<any>(
-        'https://github.com/dmitry-shibanov/setup-java/blob/add-json-for-microsoft-versions/microsoft-build-of-openjdk-versions.json',
-        { authorization: token }
-      )
+    const manifest = await tc.getManifestFromRepo(
+      'dmitry-shibanov',
+      'setup-java',
+      token,
+      'add-json-for-microsoft-versions'
     );
 
-    core.info(result);
-    core.info(statusCode.toString());
-
-    return result;
+    return manifest;
   }
 
   private getPlatformOption(
