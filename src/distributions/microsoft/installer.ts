@@ -1,12 +1,17 @@
 import { JavaBase } from '../base-installer';
 import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
-import semver from 'semver';
-import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
+import { extractJdkFile, getDownloadArchiveExtension } from '../../util';
 import * as core from '@actions/core';
 import { MicrosoftVersion, PlatformOptions } from './models';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
+
+export interface IToolRelease {
+  version: string;
+  stable: boolean;
+  files: tc.IToolReleaseFile[];
+}
 
 export class MicrosoftDistributions extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -58,7 +63,7 @@ export class MicrosoftDistributions extends JavaBase {
     const foundRelease = await tc.findFromManifest(
       range,
       true,
-      availableVersionsRaw,
+      availableVersionsRaw.map(item => Object.assign(item, { release_url: '' })),
       this.architecture
     );
 
@@ -95,12 +100,12 @@ export class MicrosoftDistributions extends JavaBase {
     return { url: foundRelease.release_url, version: foundRelease.version };
   }
 
-  private async getAvailableVersions(): Promise<tc.IToolRelease[] | null> {
+  private async getAvailableVersions(): Promise<IToolRelease[] | null> {
     // TODO get these dynamically!
     // We will need Microsoft to add an endpoint where we can query for versions.
     const token = core.getInput('token');
     const manifest = (
-      await this.http.getJson<tc.IToolRelease[]>(
+      await this.http.getJson<IToolRelease[]>(
         'https://github.com/dmitry-shibanov/setup-java/blob/add-json-for-microsoft-versions/microsoft-build-of-openjdk-versions.json',
         { authorization: token }
       )
