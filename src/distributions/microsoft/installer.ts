@@ -97,7 +97,7 @@ export class MicrosoftDistributions extends JavaBase {
       );
     }
 
-    return { url: foundRelease.release_url, version: foundRelease.version };
+    return { url: foundRelease.files[0].download_url, version: foundRelease.version };
   }
 
   private async getAvailableVersions(): Promise<tc.IToolRelease[] | null> {

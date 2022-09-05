@@ -102460,7 +102460,7 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
                     .map(item => item.version)
                     .join(', ')}`);
             }
-            return { url: foundRelease.release_url, version: foundRelease.version };
+            return { url: foundRelease.files[0].download_url, version: foundRelease.version };
         });
     }
     getAvailableVersions() {
