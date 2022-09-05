@@ -102468,7 +102468,7 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
             // TODO get these dynamically!
             // We will need Microsoft to add an endpoint where we can query for versions.
             const token = core.getInput('token');
-            const manifest = (yield this.http.getJson('https://github.com/dmitry-shibanov/setup-java/tree/add-json-for-microsoft-versions', { authorization: token })).result;
+            const manifest = (yield this.http.getJson('https://github.com/dmitry-shibanov/setup-java/blob/add-json-for-microsoft-versions/microsoft-build-of-openjdk-versions.json', { authorization: token })).result;
             return manifest;
         });
     }

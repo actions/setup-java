@@ -101,7 +101,7 @@ export class MicrosoftDistributions extends JavaBase {
     const token = core.getInput('token');
     const manifest = (
       await this.http.getJson<tc.IToolRelease[]>(
-        'https://github.com/dmitry-shibanov/setup-java/tree/add-json-for-microsoft-versions',
+        'https://github.com/dmitry-shibanov/setup-java/blob/add-json-for-microsoft-versions/microsoft-build-of-openjdk-versions.json',
         { authorization: token }
       )
     ).result;
