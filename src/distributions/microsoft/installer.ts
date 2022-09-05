@@ -51,57 +51,62 @@ export class MicrosoftDistributions extends JavaBase {
 
     const availableVersionsRaw = await this.getAvailableVersions();
 
-    const opts = this.getPlatformOption();
-    const availableVersions = availableVersionsRaw.map(item => ({
-      url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${
-        this.architecture
-      }.${opts.archive}`,
-      version: this.convertVersionToSemver(item)
-    }));
+    if (!availableVersionsRaw) {
+      throw new Error('Could not load manifest for Microsoft Build of OpenJDK');
+    }
 
-    const satisfiedVersion = availableVersions
-      .filter(item => isVersionSatisfies(range, item.version))
-      .sort((a, b) => -semver.compareBuild(a.version, b.version))[0];
+    const foundRelease = await tc.findFromManifest(
+      range,
+      true,
+      availableVersionsRaw,
+      this.architecture
+    );
 
-    if (!satisfiedVersion) {
-      const availableOptions = availableVersions.map(item => item.version).join(', ');
-      const availableOptionsMessage = availableOptions
-        ? `\nAvailable versions: ${availableOptions}`
-        : '';
+    // const opts = this.getPlatformOption();
+    // const availableVersions = availableVersionsRaw.map(item => ({
+    //   url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${
+    //     this.architecture // https://aka.ms/download-jdk/microsoft-jdk-17.0.3-linux-aarch64.tar.gz
+    //   }.${opts.archive}`,
+    //   version: this.convertVersionToSemver(item)
+    // }));
+
+    // const satisfiedVersion = availableVersions
+    //   .filter(item => isVersionSatisfies(range, item.version))
+    //   .sort((a, b) => -semver.compareBuild(a.version, b.version))[0];
+
+    // if (!satisfiedVersion) {
+    //   const availableOptions = availableVersions.map(item => item.version).join(', ');
+    //   const availableOptionsMessage = availableOptions
+    //     ? `\nAvailable versions: ${availableOptions}`
+    //     : '';
+    //   throw new Error(
+    //     `Could not find satisfied version for SemVer ${range}. ${availableOptionsMessage}`
+    //   );
+    // }
+
+    if (!foundRelease) {
       throw new Error(
-        `Could not find satisfied version for SemVer ${range}. ${availableOptionsMessage}`
+        `Could not find satisfied version for SemVer ${range}. ${availableVersionsRaw
+          .map(item => item.version)
+          .join(', ')}`
       );
     }
 
-    return satisfiedVersion;
+    return { url: foundRelease.release_url, version: foundRelease.version };
   }
 
-  private async getAvailableVersions(): Promise<MicrosoftVersion[]> {
+  private async getAvailableVersions(): Promise<tc.IToolRelease[] | null> {
     // TODO get these dynamically!
     // We will need Microsoft to add an endpoint where we can query for versions.
-    const jdkVersions = [
-      {
-        version: [17, 0, 3]
-      },
-      {
-        version: [17, 0, 1, 12, 1]
-      },
-      {
-        version: [16, 0, 2, 7, 1]
-      },
-      {
-        version: [11, 0, 15]
-      }
-    ];
+    const token = core.getInput('token');
+    const manifest = (
+      await this.http.getJson<tc.IToolRelease[]>(
+        'https://github.com/dmitry-shibanov/setup-java/tree/main',
+        { authorization: token }
+      )
+    ).result;
 
-    // M1 is only supported for Java 16 & 17
-    if (process.platform !== 'darwin' || this.architecture !== 'aarch64') {
-      jdkVersions.push({
-        version: [11, 0, 13, 8, 1]
-      });
-    }
-
-    return jdkVersions;
+    return manifest;
   }
 
   private getPlatformOption(
