@@ -102435,7 +102435,7 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
             if (!availableVersionsRaw) {
                 throw new Error('Could not load manifest for Microsoft Build of OpenJDK');
             }
-            const foundRelease = yield tc.findFromManifest(range, true, availableVersionsRaw, this.architecture);
+            const foundRelease = yield tc.findFromManifest(range, true, availableVersionsRaw.map(item => Object.assign(item, { release_url: '' })), this.architecture);
             // const opts = this.getPlatformOption();
             // const availableVersions = availableVersionsRaw.map(item => ({
             //   url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${
@@ -102469,6 +102469,7 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
             // We will need Microsoft to add an endpoint where we can query for versions.
             const token = core.getInput('token');
             const manifest = (yield this.http.getJson('https://github.com/dmitry-shibanov/setup-java/blob/add-json-for-microsoft-versions/microsoft-build-of-openjdk-versions.json', { authorization: token })).result;
+            core.info(manifest);
             return manifest;
         });
     }
