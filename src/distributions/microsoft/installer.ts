@@ -104,16 +104,17 @@ export class MicrosoftDistributions extends JavaBase {
     // TODO get these dynamically!
     // We will need Microsoft to add an endpoint where we can query for versions.
     const token = core.getInput('token');
-    const manifest = (
+    const {result, statusCode} = (
       await this.http.getJson<any>(
         'https://github.com/dmitry-shibanov/setup-java/blob/add-json-for-microsoft-versions/microsoft-build-of-openjdk-versions.json',
         { authorization: token }
       )
-    ).result;
+    );
 
-    core.info(manifest);
+    core.info(result);
+    core.info(statusCode.toString());
 
-    return manifest;
+    return result;
   }
 
   private getPlatformOption(
