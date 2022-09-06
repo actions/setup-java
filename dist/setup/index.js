@@ -102431,32 +102431,13 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
             if (this.packageType !== 'jdk') {
                 throw new Error('Microsoft Build of OpenJDK provides only the `jdk` package type');
             }
-            const availableVersionsRaw = yield this.getAvailableVersions();
-            if (!availableVersionsRaw) {
+            const manifest = yield this.getAvailableVersions();
+            if (!manifest) {
                 throw new Error('Could not load manifest for Microsoft Build of OpenJDK');
             }
-            const foundRelease = yield tc.findFromManifest(range, true, availableVersionsRaw, this.architecture);
-            // const opts = this.getPlatformOption();
-            // const availableVersions = availableVersionsRaw.map(item => ({
-            //   url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${
-            //     this.architecture // https://aka.ms/download-jdk/microsoft-jdk-17.0.3-linux-aarch64.tar.gz
-            //   }.${opts.archive}`,
-            //   version: this.convertVersionToSemver(item)
-            // }));
-            // const satisfiedVersion = availableVersions
-            //   .filter(item => isVersionSatisfies(range, item.version))
-            //   .sort((a, b) => -semver.compareBuild(a.version, b.version))[0];
-            // if (!satisfiedVersion) {
-            //   const availableOptions = availableVersions.map(item => item.version).join(', ');
-            //   const availableOptionsMessage = availableOptions
-            //     ? `\nAvailable versions: ${availableOptions}`
-            //     : '';
-            //   throw new Error(
-            //     `Could not find satisfied version for SemVer ${range}. ${availableOptionsMessage}`
-            //   );
-            // }
+            const foundRelease = yield tc.findFromManifest(range, true, manifest, this.architecture);
             if (!foundRelease) {
-                throw new Error(`Could not find satisfied version for SemVer ${range}. ${availableVersionsRaw
+                throw new Error(`Could not find satisfied version for SemVer ${range}. ${manifest
                     .map(item => item.version)
                     .join(', ')}`);
             }
@@ -102471,24 +102452,6 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
             const manifest = yield tc.getManifestFromRepo('dmitry-shibanov', 'setup-java', token, 'add-json-for-microsoft-versions');
             return manifest;
         });
-    }
-    getPlatformOption(platform = process.platform /* for testing */) {
-        switch (platform) {
-            case 'darwin':
-                return { archive: 'tar.gz', os: 'macos' };
-            case 'win32':
-                return { archive: 'zip', os: 'windows' };
-            case 'linux':
-                return { archive: 'tar.gz', os: 'linux' };
-            default:
-                throw new Error(`Platform '${platform}' is not supported. Supported platforms: 'darwin', 'linux', 'win32'`);
-        }
-    }
-    convertVersionToSemver(version) {
-        const major = version.version[0];
-        const minor = version.version[1];
-        const patch = version.version[2];
-        return `${major}.${minor}.${patch}`;
     }
 }
 exports.MicrosoftDistributions = MicrosoftDistributions;

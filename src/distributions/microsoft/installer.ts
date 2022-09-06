@@ -2,7 +2,6 @@ import { JavaBase } from '../base-installer';
 import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
 import { extractJdkFile, getDownloadArchiveExtension } from '../../util';
 import * as core from '@actions/core';
-import { MicrosoftVersion, PlatformOptions } from './models';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
@@ -54,44 +53,17 @@ export class MicrosoftDistributions extends JavaBase {
       throw new Error('Microsoft Build of OpenJDK provides only the `jdk` package type');
     }
 
-    const availableVersionsRaw = await this.getAvailableVersions();
+    const manifest = await this.getAvailableVersions();
 
-    if (!availableVersionsRaw) {
+    if (!manifest) {
       throw new Error('Could not load manifest for Microsoft Build of OpenJDK');
     }
 
-    const foundRelease = await tc.findFromManifest(
-      range,
-      true,
-      availableVersionsRaw,
-      this.architecture
-    );
-
-    // const opts = this.getPlatformOption();
-    // const availableVersions = availableVersionsRaw.map(item => ({
-    //   url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${
-    //     this.architecture // https://aka.ms/download-jdk/microsoft-jdk-17.0.3-linux-aarch64.tar.gz
-    //   }.${opts.archive}`,
-    //   version: this.convertVersionToSemver(item)
-    // }));
-
-    // const satisfiedVersion = availableVersions
-    //   .filter(item => isVersionSatisfies(range, item.version))
-    //   .sort((a, b) => -semver.compareBuild(a.version, b.version))[0];
-
-    // if (!satisfiedVersion) {
-    //   const availableOptions = availableVersions.map(item => item.version).join(', ');
-    //   const availableOptionsMessage = availableOptions
-    //     ? `\nAvailable versions: ${availableOptions}`
-    //     : '';
-    //   throw new Error(
-    //     `Could not find satisfied version for SemVer ${range}. ${availableOptionsMessage}`
-    //   );
-    // }
+    const foundRelease = await tc.findFromManifest(range, true, manifest, this.architecture);
 
     if (!foundRelease) {
       throw new Error(
-        `Could not find satisfied version for SemVer ${range}. ${availableVersionsRaw
+        `Could not find satisfied version for SemVer ${range}. ${manifest
           .map(item => item.version)
           .join(', ')}`
       );
@@ -112,29 +84,5 @@ export class MicrosoftDistributions extends JavaBase {
     );
 
     return manifest;
-  }
-
-  private getPlatformOption(
-    platform: NodeJS.Platform = process.platform /* for testing */
-  ): PlatformOptions {
-    switch (platform) {
-      case 'darwin':
-        return { archive: 'tar.gz', os: 'macos' };
-      case 'win32':
-        return { archive: 'zip', os: 'windows' };
-      case 'linux':
-        return { archive: 'tar.gz', os: 'linux' };
-      default:
-        throw new Error(
-          `Platform '${platform}' is not supported. Supported platforms: 'darwin', 'linux', 'win32'`
-        );
-    }
-  }
-
-  private convertVersionToSemver(version: MicrosoftVersion): string {
-    const major = version.version[0];
-    const minor = version.version[1];
-    const patch = version.version[2];
-    return `${major}.${minor}.${patch}`;
   }
 }
