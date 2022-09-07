@@ -158,6 +158,9 @@ jobs:
 ```
 
 ### Install multiple JDKs
+
+All versions are added to the PATH. The last version will be used and available globally. Other Java versions can be accessed through env variables with such specification as 'JAVA_HOME_{{ MAJOR_VERSION }}_{{ ARCHITECTURE }}'.
+
 ```yaml
     steps:
       - uses: actions/setup-java@v3

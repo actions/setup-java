@@ -91,7 +91,9 @@ export class TemurinDistribution extends JavaBase {
     const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
     const releaseType = this.stable ? 'ga' : 'ea';
 
-    console.time('temurin-retrieve-available-versions');
+    if (core.isDebug()) {
+      console.time('temurin-retrieve-available-versions');
+    }
 
     const baseRequestArguments = [
       `project=jdk`,
