@@ -73,7 +73,7 @@ Currently, the following distributions are supported:
 
 ### Caching packages dependencies
 The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
-- gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`
+- gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`
 - maven: `**/pom.xml`
 - sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.{scala,sbt}`
 
@@ -192,4 +192,4 @@ The scripts and documentation in this project are released under the [MIT Licens
 
 ## Contributions
 
-Contributions are welcome! See [Contributor's Guide](CONTRIBUTING.md)
+Contributions are welcome! See [Contributor's Guide](docs/contributors.md)
