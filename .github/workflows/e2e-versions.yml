@@ -107,7 +107,7 @@ jobs:
           java-version: |
             11
             17
-      - name: Verify Java
+      - name: Verify Java env variables
         run: |
           $versionsArr = "11","17"
           foreach ($version in $versionsArr)
