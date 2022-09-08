@@ -9,7 +9,7 @@ import { JavaInstallerOptions } from './distributions/base-models';
 
 async function run() {
   try {
-    const version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
+    const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION, { required: true });
     const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, { required: true });
     const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
     const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
@@ -17,27 +17,30 @@ async function run() {
     const cache = core.getInput(constants.INPUT_CACHE);
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
 
-    const installerOptions: JavaInstallerOptions = {
-      architecture,
-      packageType,
-      version,
-      checkLatest
-    };
+    core.startGroup('Installed distributions');
+    for (const version of versions) {
+      const installerOptions: JavaInstallerOptions = {
+        architecture,
+        packageType,
+        version,
+        checkLatest
+      };
 
-    const distribution = getJavaDistribution(distributionName, installerOptions, jdkFile);
-    if (!distribution) {
-      throw new Error(`No supported distribution was found for input ${distributionName}`);
+      const distribution = getJavaDistribution(distributionName, installerOptions, jdkFile);
+      if (!distribution) {
+        throw new Error(`No supported distribution was found for input ${distributionName}`);
+      }
+
+      const result = await distribution.setupJava();
+
+      core.info('');
+      core.info('Java configuration:');
+      core.info(`  Distribution: ${distributionName}`);
+      core.info(`  Version: ${result.version}`);
+      core.info(`  Path: ${result.path}`);
+      core.info('');
     }
-
-    const result = await distribution.setupJava();
-
-    core.info('');
-    core.info('Java configuration:');
-    core.info(`  Distribution: ${distributionName}`);
-    core.info(`  Version: ${result.version}`);
-    core.info(`  Path: ${result.path}`);
-    core.info('');
-
+    core.endGroup();
     const matchersPath = path.join(__dirname, '..', '..', '.github');
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 

@@ -71,7 +71,9 @@ export class CorrettoDistribution extends JavaBase {
     const arch = this.architecture;
     const imageType = this.packageType;
 
-    console.time('coretto-retrieve-available-versions');
+    if (core.isDebug()) {
+      console.time('coretto-retrieve-available-versions');
+    }
 
     const availableVersionsUrl =
       'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
