@@ -14,7 +14,7 @@ export interface ICorrettoAllAvailableVersions {
   };
 }
 
-export interface ICorettoAvailableVersions {
+export interface ICorrettoAvailableVersions {
   version: string;
   fileType: string;
   checksum: string;

@@ -68253,7 +68253,7 @@ function save(id) {
     return __awaiter(this, void 0, void 0, function* () {
         const packageManager = findPackageManager(id);
         const matchedKey = core.getState(CACHE_MATCHED_KEY);
-        // Inputs are re-evaluted before the post action, so we want the original key used for restore
+        // Inputs are re-evaluated before the post action, so we want the original key used for restore
         const primaryKey = core.getState(STATE_CACHE_PRIMARY_KEY);
         if (!primaryKey) {
             core.warning('Error retrieving key from state.');
