@@ -152,18 +152,4 @@ export class TemurinDistribution extends JavaBase {
         return process.platform;
     }
   }
-
-  protected distributionArchitecture(): string {
-    // Temurin has own architecture names so need to map them
-    switch (this.architecture) {
-      case 'amd64':
-        return 'x64';
-      case 'ia32':
-        return 'x32';
-      case 'arm64':
-        return 'aarch64';
-      default:
-        return this.architecture;
-    }
-  }
 }

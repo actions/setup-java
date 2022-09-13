@@ -151,6 +151,22 @@ export abstract class JavaBase {
   }
 
   protected distributionArchitecture(): string {
-    return this.architecture;
+    // default mappings of config architectures to distribution architectures
+    // override if a distribution uses any different names; see liberica for an example
+
+    // node's os.arch() - which this defaults to - can return any of:
+    // 'arm', 'arm64', 'ia32', 'mips', 'mipsel', 'ppc', 'ppc64', 's390', 's390x', and 'x64'
+    // so we need to map these to java distribution architectures
+    // 'amd64' is included here too b/c it's a common alias for 'x64' people might use explicitly
+    switch (this.architecture) {
+      case 'amd64':
+        return 'x64';
+      case 'ia32':
+        return 'x86';
+      case 'arm64':
+        return 'aarch64';
+      default:
+        return this.architecture;
+    }
   }
 }
