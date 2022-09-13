@@ -54,8 +54,9 @@ export class MicrosoftDistributions extends JavaBase {
 
     const opts = this.getPlatformOption();
     const availableVersions = availableVersionsRaw.map(item => ({
-      url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${arch
-        }.${opts.archive}`,
+      url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${
+        opts.os
+      }-${arch}.${opts.archive}`,
       version: this.convertVersionToSemver(item)
     }));
 
