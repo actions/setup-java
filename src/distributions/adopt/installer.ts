@@ -88,7 +88,7 @@ export class AdoptDistribution extends JavaBase {
 
   private async getAvailableVersions(): Promise<IAdoptAvailableVersions[]> {
     const platform = this.getPlatformOption();
-    const arch = this.architecture;
+    const arch = this.distributionArchitecture();
     const imageType = this.packageType;
     const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
     const releaseType = this.stable ? 'ga' : 'ea';

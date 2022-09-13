@@ -37,7 +37,8 @@ export class MicrosoftDistributions extends JavaBase {
   }
 
   protected async findPackageForDownload(range: string): Promise<JavaDownloadRelease> {
-    if (this.architecture !== 'x64' && this.architecture !== 'aarch64') {
+    const arch = this.distributionArchitecture();
+    if (arch !== 'x64' && arch !== 'aarch64') {
       throw new Error(`Unsupported architecture: ${this.architecture}`);
     }
 
@@ -53,9 +54,8 @@ export class MicrosoftDistributions extends JavaBase {
 
     const opts = this.getPlatformOption();
     const availableVersions = availableVersionsRaw.map(item => ({
-      url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${
-        this.architecture
-      }.${opts.archive}`,
+      url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${arch
+        }.${opts.archive}`,
       version: this.convertVersionToSemver(item)
     }));
 
@@ -95,7 +95,7 @@ export class MicrosoftDistributions extends JavaBase {
     ];
 
     // M1 is only supported for Java 16 & 17
-    if (process.platform !== 'darwin' || this.architecture !== 'aarch64') {
+    if (process.platform !== 'darwin' || this.distributionArchitecture() !== 'aarch64') {
       jdkVersions.push({
         version: [11, 0, 13, 8, 1]
       });
