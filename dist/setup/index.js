@@ -101644,7 +101644,7 @@ class AdoptDistribution extends base_installer_1.JavaBase {
     getAvailableVersions() {
         return __awaiter(this, void 0, void 0, function* () {
             const platform = this.getPlatformOption();
-            const arch = this.architecture;
+            const arch = this.distributionArchitecture();
             const imageType = this.packageType;
             const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
             const releaseType = this.stable ? 'ga' : 'ea';
@@ -101872,7 +101872,22 @@ class JavaBase {
         core.setOutput('version', version);
     }
     distributionArchitecture() {
-        return this.architecture;
+        // default mappings of config architectures to distribution architectures
+        // override if a distribution uses any different names; see liberica for an example
+        // node's os.arch() - which this defaults to - can return any of:
+        // 'arm', 'arm64', 'ia32', 'mips', 'mipsel', 'ppc', 'ppc64', 's390', 's390x', and 'x64'
+        // so we need to map these to java distribution architectures
+        // 'amd64' is included here too b/c it's a common alias for 'x64' people might use explicitly
+        switch (this.architecture) {
+            case 'amd64':
+                return 'x64';
+            case 'ia32':
+                return 'x86';
+            case 'arm64':
+                return 'aarch64';
+            default:
+                return this.architecture;
+        }
     }
 }
 exports.JavaBase = JavaBase;
@@ -101973,7 +101988,7 @@ class CorrettoDistribution extends base_installer_1.JavaBase {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             const platform = this.getPlatformOption();
-            const arch = this.architecture;
+            const arch = this.distributionArchitecture();
             const imageType = this.packageType;
             console.time('coretto-retrieve-available-versions');
             const availableVersionsUrl = 'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
@@ -102146,7 +102161,7 @@ const tc = __importStar(__nccwpck_require__(7784));
 const fs_1 = __importDefault(__nccwpck_require__(7147));
 const path_1 = __importDefault(__nccwpck_require__(1017));
 const supportedPlatform = `'linux', 'linux-musl', 'macos', 'solaris', 'windows'`;
-const supportedArchitecture = `'x86', 'x64', 'armv7', 'aarch64', 'ppc64le'`;
+const supportedArchitectures = `'x86', 'x64', 'armv7', 'aarch64', 'ppc64le'`;
 class LibericaDistributions extends base_installer_1.JavaBase {
     constructor(installerOptions) {
         super('Liberica', installerOptions);
@@ -102216,7 +102231,8 @@ class LibericaDistributions extends base_installer_1.JavaBase {
         return bundleType;
     }
     getArchitectureOptions() {
-        switch (this.architecture) {
+        const arch = this.distributionArchitecture();
+        switch (arch) {
             case 'x86':
                 return { bitness: '32', arch: 'x86' };
             case 'x64':
@@ -102228,7 +102244,7 @@ class LibericaDistributions extends base_installer_1.JavaBase {
             case 'ppc64le':
                 return { bitness: '64', arch: 'ppc' };
             default:
-                throw new Error(`Architecture '${this.architecture}' is not supported. Supported architectures: ${supportedArchitecture}`);
+                throw new Error(`Architecture '${this.architecture}' is not supported. Supported architectures: ${supportedArchitectures}`);
         }
     }
     getPlatformOption(platform = process.platform) {
@@ -102253,6 +102269,15 @@ class LibericaDistributions extends base_installer_1.JavaBase {
             return `${mainVersion}+${buildVersion}`;
         }
         return mainVersion;
+    }
+    distributionArchitecture() {
+        let arch = super.distributionArchitecture();
+        switch (arch) {
+            case 'arm':
+                return 'armv7';
+            default:
+                return arch;
+        }
     }
 }
 exports.LibericaDistributions = LibericaDistributions;
@@ -102427,7 +102452,8 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
     }
     findPackageForDownload(range) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.architecture !== 'x64' && this.architecture !== 'aarch64') {
+            const arch = this.distributionArchitecture();
+            if (arch !== 'x64' && arch !== 'aarch64') {
                 throw new Error(`Unsupported architecture: ${this.architecture}`);
             }
             if (!this.stable) {
@@ -102439,7 +102465,7 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
             const availableVersionsRaw = yield this.getAvailableVersions();
             const opts = this.getPlatformOption();
             const availableVersions = availableVersionsRaw.map(item => ({
-                url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${this.architecture}.${opts.archive}`,
+                url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${arch}.${opts.archive}`,
                 version: this.convertVersionToSemver(item)
             }));
             const satisfiedVersion = availableVersions
@@ -102474,7 +102500,7 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
                 }
             ];
             // M1 is only supported for Java 16 & 17
-            if (process.platform !== 'darwin' || this.architecture !== 'aarch64') {
+            if (process.platform !== 'darwin' || this.distributionArchitecture() !== 'aarch64') {
                 jdkVersions.push({
                     version: [11, 0, 13, 8, 1]
                 });
@@ -102670,19 +102696,6 @@ class TemurinDistribution extends base_installer_1.JavaBase {
                 return process.platform;
         }
     }
-    distributionArchitecture() {
-        // Temurin has own architecture names so need to map them
-        switch (this.architecture) {
-            case 'amd64':
-                return 'x64';
-            case 'ia32':
-                return 'x32';
-            case 'arm64':
-                return 'aarch64';
-            default:
-                return this.architecture;
-        }
-    }
 }
 exports.TemurinDistribution = TemurinDistribution;
 
@@ -102826,17 +102839,17 @@ class ZuluDistribution extends base_installer_1.JavaBase {
         });
     }
     getArchitectureOptions() {
-        if (this.architecture == 'x64') {
-            return { arch: 'x86', hw_bitness: '64', abi: '' };
-        }
-        else if (this.architecture == 'x86') {
-            return { arch: 'x86', hw_bitness: '32', abi: '' };
-        }
-        else if (this.architecture == 'arm64') {
-            return { arch: 'arm', hw_bitness: '64', abi: '' };
-        }
-        else {
-            return { arch: this.architecture, hw_bitness: '', abi: '' };
+        const arch = this.distributionArchitecture();
+        switch (arch) {
+            case 'x64':
+                return { arch: 'x86', hw_bitness: '64', abi: '' };
+            case 'x86':
+                return { arch: 'x86', hw_bitness: '32', abi: '' };
+            case 'aarch64':
+            case 'arm64':
+                return { arch: 'arm', hw_bitness: '64', abi: '' };
+            default:
+                return { arch: arch, hw_bitness: '', abi: '' };
         }
     }
     getPlatformOption() {
