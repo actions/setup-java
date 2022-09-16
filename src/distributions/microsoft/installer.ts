@@ -81,10 +81,16 @@ export class MicrosoftDistributions extends JavaBase {
     // We will need Microsoft to add an endpoint where we can query for versions.
     const jdkVersions = [
       {
+        version: [17, 0, 3]
+      },
+      {
         version: [17, 0, 1, 12, 1]
       },
       {
         version: [16, 0, 2, 7, 1]
+      },
+      {
+        version: [11, 0, 15]
       }
     ];
 

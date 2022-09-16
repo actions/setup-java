@@ -1,10 +1,8 @@
-# setup-java
+# Setup Java
 
-<p align="left">
-  <a href="https://github.com/actions/setup-java"><img alt="GitHub Actions status" src="https://github.com/actions/setup-java/workflows/Main%20workflow/badge.svg"></a>
-</p>
+[![Main workflow](https://github.com/actions/setup-java/actions/workflows/workflow.yml/badge.svg)](https://github.com/actions/setup-java/actions/workflows/workflow.yml)
 
-This action provides the following functionality for GitHub Actions runners:
+The `setup-java` action provides the following functionality for GitHub Actions runners:
 - Downloading and setting up a requested version of Java. See [Usage](#Usage) for a list of supported distributions
 - Extracting and caching custom version of Java from a local file
 - Configuring runner for publishing using Apache Maven
@@ -13,35 +11,41 @@ This action provides the following functionality for GitHub Actions runners:
 - Registering problem matchers for error output
 - Caching dependencies managed by Apache Maven
 - Caching dependencies managed by Gradle
+- Caching dependencies managed by sbt
+
+This action allows you to work with Java and Scala projects.
 
 ## V2 vs V1
-- V2 supports custom distributions and provides support for Zulu OpenJDK, Eclipse Temurin and Adopt OpenJDK  out of the box. V1 supports only Zulu OpenJDK
-- V2 requires you to specify distribution along with the version. V1 defaults to Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2
+
+- V2 supports custom distributions and provides support for Azul Zulu OpenJDK, Eclipse Temurin and AdoptOpenJDK  out of the box. V1 supports only Azul Zulu OpenJDK
+- V2 requires you to specify distribution along with the version. V1 defaults to Azul Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2
 
 ## Usage
+
 Inputs `java-version` and `distribution` are mandatory. See [Supported distributions](#supported-distributions) section for a list of available options.
 
-### Basic
-**Eclipse Temurin**
+### Basic Configuration
+
+#### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
     java-version: '17'
-- run: java -cp java HelloWorldApp
+- run: java HelloWorldApp.java
 ```
 
-**Zulu OpenJDK**
+#### Azul Zulu OpenJDK
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
-    java-version: '11'
-- run: java -cp java HelloWorldApp
+    java-version: '17'
+- run: java HelloWorldApp.java
 ```
 
 #### Supported version syntax
@@ -55,32 +59,38 @@ Currently, the following distributions are supported:
 | Keyword | Distribution | Official site | License
 |-|-|-|-|
 | `temurin` | Eclipse Temurin | [Link](https://adoptium.net/) | [Link](https://adoptium.net/about.html)
-| `zulu` | Zulu OpenJDK | [Link](https://www.azul.com/downloads/zulu-community/?package=jdk) | [Link](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
-| `adopt` or `adopt-hotspot` | Adopt OpenJDK Hotspot | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
-| `adopt-openj9` | Adopt OpenJDK OpenJ9 | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
+| `zulu` | Azul Zulu OpenJDK | [Link](https://www.azul.com/downloads/zulu-community/?package=jdk) | [Link](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
+| `adopt` or `adopt-hotspot` | AdoptOpenJDK Hotspot | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
+| `adopt-openj9` | AdoptOpenJDK OpenJ9 | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
 | `liberica` | Liberica JDK | [Link](https://bell-sw.com/) | [Link](https://bell-sw.com/liberica_eula/) |
 | `microsoft` | Microsoft Build of OpenJDK | [Link](https://www.microsoft.com/openjdk) | [Link](https://docs.microsoft.com/java/openjdk/faq)
+| `corretto` | Amazon Corretto Build of OpenJDK | [Link](https://aws.amazon.com/corretto/) | [Link](https://aws.amazon.com/corretto/faqs/)
 | `semeru` | IBM Semeru Runtime Open Edition | [Link](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) | [Link](https://openjdk.java.net/legal/gplv2+ce.html) |
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 
-**NOTE:** Adopt OpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` and `adopt-openj9`, to `temurin` and `semeru` respectively, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
+**NOTE:** AdoptOpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` and `adopt-openj9`, to `temurin` and `semeru` respectively, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
+
+**NOTE:** For Azul Zulu OpenJDK architectures x64 and arm64 are mapped to x86 / arm with proper hw_bitness.
 
 ### Caching packages dependencies
-The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle and maven. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
-- gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`
+The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
+- gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`
 - maven: `**/pom.xml`
+- sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.{scala,sbt}`
+
+The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
 
 The cache input is optional, and caching is turned off by default.
 
 #### Caching gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
-    java-version: '11'
+    java-version: '17'
     cache: 'gradle'
 - run: ./gradlew build --no-daemon
 ```
@@ -88,17 +98,31 @@ steps:
 #### Caching maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
-    java-version: '11'
+    java-version: '17'
     cache: 'maven'
 - name: Build with Maven
   run: mvn -B package --file pom.xml
 ```
 
+#### Caching sbt dependencies
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'temurin'
+    java-version: '17'
+    cache: 'sbt'
+- name: Build with SBT
+  run: sbt package
+```
+
 ### Check latest
+
 In the basic examples above, the `check-latest` flag defaults to `false`. When set to `false`, the action tries to first resolve a version of Java from the local tool cache on the runner. If unable to find a specific version in the cache, the action will download a version of Java. Use the default or set `check-latest` to `false` if you prefer a faster more consistent setup experience that prioritizes trying to use the cached versions at the expense of newer versions sometimes being available for download.
 
 If `check-latest` is set to `true`, the action first checks if the cached version is the latest one. If the locally cached version is not the most up-to-date, the latest version of Java will be downloaded. Set `check-latest` to `true` if you want the most up-to-date version of Java to always be used. Setting `check-latest` to `true` has performance implications as downloading versions of Java is slower than using cached versions.
@@ -108,13 +132,13 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'adopt'
-    java-version: '11'
+    java-version: '17'
     check-latest: true
-- run: java -cp java HelloWorldApp
+- run: java HelloWorldApp.java
 ```
 
 ### Testing against different Java versions
@@ -124,24 +148,41 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        java: [ '8', '11', '13', '15' ]
+        java: [ '8', '11', '17' ]
     name: Java ${{ matrix.Java }} sample
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
-      - run: java -cp java HelloWorldApp
+      - run: java HelloWorldApp.java
 ```
 
-### Advanced
+### Install multiple JDKs
+
+All versions are added to the PATH. The last version will be used and available globally. Other Java versions can be accessed through env variables with such specification as 'JAVA_HOME_{{ MAJOR_VERSION }}_{{ ARCHITECTURE }}'.
+
+```yaml
+    steps:
+      - uses: actions/setup-java@v3
+        with:
+          distribution: '<distribution>'
+          java-version: |
+            8
+            11
+            15
+```
+
+### Advanced Configuration
 - [Selecting a Java distribution](docs/advanced-usage.md#Selecting-a-Java-distribution)
   - [Eclipse Temurin](docs/advanced-usage.md#Eclipse-Temurin)
   - [Adopt](docs/advanced-usage.md#Adopt)
   - [Zulu](docs/advanced-usage.md#Zulu)
   - [Liberica](docs/advanced-usage.md#Liberica)
+  - [Microsoft](docs/advanced-usage.md#Microsoft)
+  - [Amazon Corretto](docs/advanced-usage.md#Amazon-Corretto)
 - [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](docs/advanced-usage.md#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](docs/advanced-usage.md#Installing-Java-from-local-file)
@@ -157,4 +198,4 @@ The scripts and documentation in this project are released under the [MIT Licens
 
 ## Contributions
 
-Contributions are welcome! See [Contributor's Guide](CONTRIBUTING.md)
+Contributions are welcome! See [Contributor's Guide](docs/contributors.md)

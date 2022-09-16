@@ -90,7 +90,9 @@ export class ZuluDistribution extends JavaBase {
     const javafx = features?.includes('fx') ?? false;
     const releaseStatus = this.stable ? 'ga' : 'ea';
 
-    console.time('azul-retrieve-available-versions');
+    if (core.isDebug()) {
+      console.time('azul-retrieve-available-versions');
+    }
     const requestArguments = [
       `os=${platform}`,
       `ext=${extension}`,
@@ -133,6 +135,8 @@ export class ZuluDistribution extends JavaBase {
       return { arch: 'x86', hw_bitness: '64', abi: '' };
     } else if (this.architecture == 'x86') {
       return { arch: 'x86', hw_bitness: '32', abi: '' };
+    } else if (this.architecture == 'arm64') {
+      return { arch: 'arm', hw_bitness: '64', abi: '' };
     } else {
       return { arch: this.architecture, hw_bitness: '', abi: '' };
     }

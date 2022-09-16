@@ -13,7 +13,7 @@ const CACHE_MATCHED_KEY = 'cache-matched-key';
 const CACHE_KEY_PREFIX = 'setup-java';
 
 interface PackageManager {
-  id: 'maven' | 'gradle';
+  id: 'maven' | 'gradle' | 'sbt';
   /**
    * Paths of the file that specify the files to cache.
    */
@@ -31,9 +31,33 @@ const supportedPackageManager: PackageManager[] = [
     id: 'gradle',
     path: [join(os.homedir(), '.gradle', 'caches'), join(os.homedir(), '.gradle', 'wrapper')],
     // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---gradle
-    pattern: ['**/*.gradle*', '**/gradle-wrapper.properties']
+    pattern: [
+      '**/*.gradle*',
+      '**/gradle-wrapper.properties',
+      'buildSrc/**/Versions.kt',
+      'buildSrc/**/Dependencies.kt'
+    ]
+  },
+  {
+    id: 'sbt',
+    path: [
+      join(os.homedir(), '.ivy2', 'cache'),
+      join(os.homedir(), '.sbt'),
+      getCoursierCachePath(),
+      // Some files should not be cached to avoid resolution problems.
+      // In particular the resolution of snapshots (ideological gap between maven/ivy).
+      '!' + join(os.homedir(), '.sbt', '*.lock'),
+      '!' + join(os.homedir(), '**', 'ivydata-*.properties')
+    ],
+    pattern: ['**/*.sbt', '**/project/build.properties', '**/project/**.{scala,sbt}']
   }
 ];
+
+function getCoursierCachePath(): string {
+  if (os.type() === 'Linux') return join(os.homedir(), '.cache', 'coursier');
+  if (os.type() === 'Darwin') return join(os.homedir(), 'Library', 'Caches', 'Coursier');
+  return join(os.homedir(), 'AppData', 'Local', 'Coursier', 'Cache');
+}
 
 function findPackageManager(id: string): PackageManager {
   const packageManager = supportedPackageManager.find(packageManager => packageManager.id === id);
@@ -72,13 +96,14 @@ export async function restore(id: string) {
     );
   }
 
-  const matchedKey = await cache.restoreCache(packageManager.path, primaryKey, [
-    `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${id}`
-  ]);
+  // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
+  const matchedKey = await cache.restoreCache(packageManager.path, primaryKey);
   if (matchedKey) {
     core.saveState(CACHE_MATCHED_KEY, matchedKey);
+    core.setOutput('cache-hit', matchedKey === primaryKey);
     core.info(`Cache restored from key: ${matchedKey}`);
   } else {
+    core.setOutput('cache-hit', false);
     core.info(`${packageManager.id} cache is not found`);
   }
 }
@@ -91,7 +116,7 @@ export async function save(id: string) {
   const packageManager = findPackageManager(id);
   const matchedKey = core.getState(CACHE_MATCHED_KEY);
 
-  // Inputs are re-evaluted before the post action, so we want the original key used for restore
+  // Inputs are re-evaluated before the post action, so we want the original key used for restore
   const primaryKey = core.getState(STATE_CACHE_PRIMARY_KEY);
 
   if (!primaryKey) {

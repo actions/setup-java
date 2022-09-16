@@ -52,6 +52,14 @@ describe('getAvailableVersions', () => {
     [
       { version: '8', architecture: 'x64', packageType: 'jre+fx', checkLatest: false },
       '?os=macos&ext=tar.gz&bundle_type=jre&javafx=true&arch=x86&hw_bitness=64&release_status=ga&features=fx'
+    ],
+    [
+      { version: '11', architecture: 'arm64', packageType: 'jdk', checkLatest: false },
+      '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=arm&hw_bitness=64&release_status=ga'
+    ],
+    [
+      { version: '11', architecture: 'arm', packageType: 'jdk', checkLatest: false },
+      '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=arm&hw_bitness=&release_status=ga'
     ]
   ])('build correct url for %s -> %s', async (input, parsedUrl) => {
     const distribution = new ZuluDistribution(input);
@@ -102,7 +110,7 @@ describe('findPackageForDownload', () => {
     ['15', '15.0.2+7'],
     ['9.0.0', '9.0.0+0'],
     ['9.0', '9.0.1+0'],
-    ['8.0.262', '8.0.262+19'], // validate correct choise between [8.0.262.17, 8.0.262.19, 8.0.262.18]
+    ['8.0.262', '8.0.262+19'], // validate correct choice between [8.0.262.17, 8.0.262.19, 8.0.262.18]
     ['8.0.262+17', '8.0.262+17'],
     ['15.0.1+8', '15.0.1+8'],
     ['15.0.1+9', '15.0.1+9']
@@ -139,6 +147,7 @@ describe('findPackageForDownload', () => {
       packageType: 'jdk',
       checkLatest: false
     });
+    distribution['getAvailableVersions'] = async () => manifestData;
     await expect(
       distribution['findPackageForDownload'](distribution['version'])
     ).rejects.toThrowError(/Could not find satisfied version for semver */);

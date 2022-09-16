@@ -3,6 +3,9 @@
   - [Eclipse Temurin](#Eclipse-Temurin)
   - [Adopt](#Adopt)
   - [Zulu](#Zulu)
+  - [Liberica](#Liberica)
+  - [Microsoft](#Microsoft)
+  - [Amazon Corretto](#Amazon-Corretto)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -20,8 +23,8 @@ Inputs `java-version` and `distribution` are mandatory and needs to be provided.
 ### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
     java-version: '11'
@@ -33,8 +36,8 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'adopt-hotspot'
     java-version: '11'
@@ -44,8 +47,8 @@ steps:
 ### Zulu
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'zulu'
     java-version: '11'
@@ -56,8 +59,8 @@ steps:
 ### Liberica
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'liberica'
     java-version: '11'
@@ -68,10 +71,23 @@ steps:
 ### Microsoft
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'microsoft'
+    java-version: '11'
+- run: java -cp java HelloWorldApp
+```
+
+### Amazon Corretto
+**NOTE:** Amazon Corretto only supports the major version specification.
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'corretto'
     java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
@@ -79,8 +95,8 @@ steps:
 ## Installing custom Java package type
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: '<distribution>'
     java-version: '11'
@@ -93,8 +109,8 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: '<distribution>'
     java-version: '11'
@@ -110,7 +126,7 @@ steps:
 - run: |
     download_url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz"
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v2
+- uses: actions/setup-java@v3
   with:
     distribution: 'jdkfile'
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
@@ -132,9 +148,9 @@ jobs:
         java: [ '8', '11' ]
     name: Java ${{ matrix.Java }} (${{ matrix.distribution }}) sample
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
@@ -152,9 +168,9 @@ jobs:
         os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
     name: Java ${{ matrix.Java }} (${{ matrix.os }}) sample
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
@@ -169,9 +185,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up JDK 11
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -185,7 +201,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
 
     - name: Set up Apache Maven Central
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with: # running setup-java again overwrites the settings.xml
         distribution: 'temurin'
         java-version: '11'
@@ -280,9 +296,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up JDK 11 for Shared Runner
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -306,10 +322,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up JDK 11
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: '<distribution>'
         java-version: '11'

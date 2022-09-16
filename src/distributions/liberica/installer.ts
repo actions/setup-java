@@ -66,7 +66,9 @@ export class LibericaDistributions extends JavaBase {
   }
 
   private async getAvailableVersions(): Promise<LibericaVersion[]> {
-    console.time('liberica-retrieve-available-versions');
+    if (core.isDebug()) {
+      console.time('liberica-retrieve-available-versions');
+    }
     const url = this.prepareAvailableVersionsUrl();
 
     if (core.isDebug()) {

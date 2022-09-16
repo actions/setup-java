@@ -20,14 +20,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        distribution: ['temurin', 'adopt', 'adopt-openj9', 'zulu', 'liberica', 'microsoft', 'semeru'] # internally 'adopt-hotspot' is the same as 'adopt'
+        distribution: ['temurin', 'adopt', 'adopt-openj9', 'zulu', 'liberica', 'microsoft', 'semeru', 'corretto'] # internally 'adopt-hotspot' is the same as 'adopt'
         version: ['8', '11', '16']
         exclude:
         - distribution: microsoft
           version: 8
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -53,7 +53,7 @@ jobs:
         - '16.0.2+7'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -75,7 +75,7 @@ jobs:
         distribution: ['temurin', 'zulu', 'liberica']
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -85,6 +85,43 @@ jobs:
           check-latest: true
       - name: Verify Java
         run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
+  setup-java-multiple-jdks:
+    name: ${{ matrix.distribution }} ${{ matrix.version }} - multiple jdks - ${{ matrix.os }}
+    needs: setup-java-major-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['temurin', 'zulu', 'liberica']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version: |
+            11
+            17
+      - name: Verify Java env variables
+        run: |
+          $versionsArr = "11","17"
+          foreach ($version in $versionsArr)
+          {
+            $envName = "JAVA_HOME_${version}_${env:RUNNER_ARCH}"
+            $JavaVersionPath = [Environment]::GetEnvironmentVariable($envName)
+            if (-not (Test-Path "$JavaVersionPath")) { 
+              Write-Host "$envName is not found"
+              exit 1
+            } 
+          }
+        shell: pwsh
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "17" "${{ steps.setup-java.outputs.path }}"
         shell: bash
 
   setup-java-ea-versions-zulu:
@@ -98,7 +135,7 @@ jobs:
         version: ['17-ea', '15.0.0-ea.14']
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -120,7 +157,7 @@ jobs:
         version: ['17-ea']
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -141,7 +178,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['temurin', 'zulu', 'liberica', 'semeru']
         java-package: ['jre']
-        version: ['16.0']
+        version: ['17.0']
         include:
           - distribution: 'zulu'
             java-package: jre+fx
@@ -159,13 +196,13 @@ jobs:
             java-package: jre+fx
             version: '11'
             os: ubuntu-latest
-        exclude:
-          # Eclipse Temurin currently doesn't publish JREs, only JDKs
-          - distribution: 'temurin'
-            java-package: 'jre'
+          - distribution: 'corretto'
+            java-package: jre
+            version: '8'
+            os: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java
@@ -187,11 +224,11 @@ jobs:
       matrix:
         # x86 is not supported on macOS
         os: [windows-latest, ubuntu-latest]
-        distribution: ['liberica', 'zulu']
+        distribution: ['liberica', 'zulu', 'corretto']
         version: ['11']
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: setup-java
         uses: ./
         id: setup-java

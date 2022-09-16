@@ -98,7 +98,7 @@ describe('dependency cache', () => {
         await expect(restore('gradle')).rejects.toThrowError(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/*.gradle*,**/gradle-wrapper.properties], make sure you have checked out the target repository`
+          )} matched to [**/*.gradle*,**/gradle-wrapper.properties,buildSrc/**/Versions.kt,buildSrc/**/Dependencies.kt], make sure you have checked out the target repository`
         );
       });
       it('downloads cache based on build.gradle', async () => {
@@ -118,6 +118,32 @@ describe('dependency cache', () => {
         expect(spyInfo).toBeCalledWith('gradle cache is not found');
       });
     });
+    it('downloads cache based on buildSrc/Versions.kt', async () => {
+      createDirectory(join(workspace, 'buildSrc'));
+      createFile(join(workspace, 'buildSrc', 'Versions.kt'));
+
+      await restore('gradle');
+      expect(spyCacheRestore).toBeCalled();
+      expect(spyWarning).not.toBeCalled();
+      expect(spyInfo).toBeCalledWith('gradle cache is not found');
+    });
+    describe('for sbt', () => {
+      it('throws error if no build.sbt found', async () => {
+        await expect(restore('sbt')).rejects.toThrowError(
+          `No file in ${projectRoot(
+            workspace
+          )} matched to [**/*.sbt,**/project/build.properties,**/project/**.{scala,sbt}], make sure you have checked out the target repository`
+        );
+      });
+      it('downloads cache', async () => {
+        createFile(join(workspace, 'build.sbt'));
+
+        await restore('sbt');
+        expect(spyCacheRestore).toBeCalled();
+        expect(spyWarning).not.toBeCalled();
+        expect(spyInfo).toBeCalledWith('sbt cache is not found');
+      });
+    });
   });
   describe('save', () => {
     let spyCacheSave: jest.SpyInstance<
@@ -134,6 +160,27 @@ describe('dependency cache', () => {
 
     it('throws error if unsupported package manager specified', () => {
       return expect(save('ant')).rejects.toThrowError('unknown package manager specified: ant');
+    });
+
+    it('save with -1 cacheId , should not fail workflow', async () => {
+      spyCacheSave.mockImplementation(() => Promise.resolve(-1));
+      createStateForMissingBuildFile();
+
+      await save('maven');
+      expect(spyCacheSave).toBeCalled();
+      expect(spyWarning).not.toBeCalled();
+      expect(spyInfo).toBeCalled();
+      expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
+    });
+
+    it('saves with error from toolkit, should fail workflow', async () => {
+      spyCacheSave.mockImplementation(() =>
+        Promise.reject(new cache.ValidationError('Validation failed'))
+      );
+      createStateForMissingBuildFile();
+
+      expect.assertions(1);
+      await expect(save('maven')).rejects.toEqual(new cache.ValidationError('Validation failed'));
     });
 
     describe('for maven', () => {
@@ -193,6 +240,40 @@ describe('dependency cache', () => {
         expect(spyWarning).not.toBeCalled();
         expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
       });
+      it('uploads cache based on buildSrc/Versions.kt', async () => {
+        createDirectory(join(workspace, 'buildSrc'));
+        createFile(join(workspace, 'buildSrc', 'Versions.kt'));
+        createStateForSuccessfulRestore();
+
+        await save('gradle');
+        expect(spyCacheSave).toBeCalled();
+        expect(spyWarning).not.toBeCalled();
+        expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
+      });
+    });
+    describe('for sbt', () => {
+      it('uploads cache even if no build.sbt found', async () => {
+        createStateForMissingBuildFile();
+        await save('sbt');
+        expect(spyCacheSave).toBeCalled();
+        expect(spyWarning).not.toBeCalled();
+      });
+      it('does not upload cache if no restore run before', async () => {
+        createFile(join(workspace, 'build.sbt'));
+
+        await save('sbt');
+        expect(spyCacheSave).not.toBeCalled();
+        expect(spyWarning).toBeCalledWith('Error retrieving key from state.');
+      });
+      it('uploads cache', async () => {
+        createFile(join(workspace, 'build.sbt'));
+        createStateForSuccessfulRestore();
+
+        await save('sbt');
+        expect(spyCacheSave).toBeCalled();
+        expect(spyWarning).not.toBeCalled();
+        expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
+      });
     });
   });
 });
@@ -234,6 +315,11 @@ function createStateForSuccessfulRestore() {
 function createFile(path: string) {
   core.info(`created a file at ${path}`);
   fs.writeFileSync(path, '');
+}
+
+function createDirectory(path: string) {
+  core.info(`created a directory at ${path}`);
+  fs.mkdirSync(path);
 }
 
 function projectRoot(workspace: string): string {
