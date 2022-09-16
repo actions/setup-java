@@ -8,23 +8,19 @@ import fs from 'fs';
 import path from 'path';
 import { ISemeruAvailableVersions } from './models';
 
+const supportedArchitectures = ['x64', 'x86', 'ppc64le', 'ppc64', 's390x', 'aarch64'];
+
 export class SemeruDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('IBM_Semeru', installerOptions);
   }
 
   protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
-    if (
-      this.architecture !== 'x64' &&
-      this.architecture !== 'x86' &&
-      this.architecture !== 'ppc64le' &&
-      this.architecture !== 'ppc64' &&
-      this.architecture !== 's390x' &&
-      this.architecture !== 'aarch64'
-    ) {
+    if (!supportedArchitectures.includes(this.architecture)) {
       throw new Error(
-        `Unsupported architecture for IBM Semeru: ${this.architecture}, the following are supported: ` +
-          'x64, x86, ppc64le, ppc64, s390x, aarch64'
+        `Unsupported architecture for IBM Semeru: ${
+          this.architecture
+        }, the following are supported: ${supportedArchitectures.join(', ')}`
       );
     }
 
@@ -131,9 +127,19 @@ export class SemeruDistribution extends JavaBase {
         core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
       }
 
-      const paginationPage = (
-        await this.http.getJson<ISemeruAvailableVersions[]>(availableVersionsUrl)
-      ).result;
+      if (core.isDebug()) {
+        core.debug('Semeru distribution version URL: ' + availableVersionsUrl);
+      }
+
+      let iTypedResponse = null;
+      try {
+        iTypedResponse = await this.http.getJson<ISemeruAvailableVersions[]>(availableVersionsUrl);
+      } catch (element) {
+        console.log('error', element);
+      }
+
+      // @ts-ignore
+      const paginationPage = iTypedResponse.result;
       if (paginationPage === null || paginationPage.length === 0) {
         // break infinity loop because we have reached end of pagination
         break;
@@ -148,6 +154,7 @@ export class SemeruDistribution extends JavaBase {
       console.timeEnd('semeru-retrieve-available-versions');
       console.log(`Available versions: [${availableVersions.length}]`);
       console.log(availableVersions.map(item => item.version_data.semver).join(', '));
+      console.log(JSON.stringify(availableVersions));
       core.endGroup();
     }
 
