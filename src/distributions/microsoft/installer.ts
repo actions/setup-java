@@ -77,7 +77,7 @@ export class MicrosoftDistributions extends JavaBase {
     const branch = 'add-json-for-microsoft-versions';
     const filePath = 'src/distributions/microsoft/microsoft-openjdk-versions.json';
 
-    let releases: tc.IToolRelease[] = [];
+    let releases: tc.IToolRelease[] | null = null;
     const fileUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
 
     const headers: OutgoingHttpHeaders = {
@@ -85,10 +85,10 @@ export class MicrosoftDistributions extends JavaBase {
       accept: 'application/vnd.github.VERSION.raw'
     };
 
-    let response: ITypedResponse<string> | null = null;
+    let response: ITypedResponse<tc.IToolRelease[]> | null = null;
 
     try {
-      response = await this.http.getJson<string>(fileUrl, headers);
+      response = await this.http.getJson<tc.IToolRelease[]>(fileUrl, headers);
       if (!response.result) {
         return null;
       }
@@ -99,15 +99,8 @@ export class MicrosoftDistributions extends JavaBase {
       return null;
     }
 
-    let versionsRaw = response.result;
-
-    if (versionsRaw) {
-      versionsRaw = versionsRaw.replace(/^\uFEFF/, '');
-      try {
-        releases = JSON.parse(versionsRaw);
-      } catch {
-        core.debug('Invalid json');
-      }
+    if (response.result) {
+      releases = response.result;
     }
 
     return releases;

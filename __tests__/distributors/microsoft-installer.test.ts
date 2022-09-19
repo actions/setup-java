@@ -19,7 +19,7 @@ describe('findPackageForDownload', () => {
 
     spyGetManifestFromRepo = jest.spyOn(httpm.HttpClient.prototype, 'getJson');
     spyGetManifestFromRepo.mockReturnValue({
-      result: JSON.stringify(data),
+      result: data,
       statusCode: 200,
       headers: {}
     });
