@@ -256,6 +256,10 @@ describe('setupJava', () => {
     expect(spyGetToolcachePath).toHaveBeenCalled();
     expect(spyCoreAddPath).toHaveBeenCalled();
     expect(spyCoreExportVariable).toHaveBeenCalled();
+    expect(spyCoreExportVariable).toHaveBeenCalledWith(
+      `JAVA_HOME_${input.version}_${input.architecture.toLocaleUpperCase()}`,
+      expected.path
+    );
     expect(spyCoreSetOutput).toHaveBeenCalled();
     expect(spyCoreInfo).toHaveBeenCalledWith('Trying to resolve the latest version from remote');
     expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved latest version as ${expected.version}`);

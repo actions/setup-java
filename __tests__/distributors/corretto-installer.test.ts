@@ -144,8 +144,8 @@ describe('getAvailableVersions', () => {
     });
   });
 
-  const mockPlatform = (distributon: CorrettoDistribution, platform: string) => {
-    distributon['getPlatformOption'] = () => platform;
+  const mockPlatform = (distribution: CorrettoDistribution, platform: string) => {
+    distribution['getPlatformOption'] = () => platform;
     const mockedExtension = platform === 'windows' ? 'zip' : 'tar.gz';
     spyGetDownloadArchiveExtension.mockReturnValue(mockedExtension);
   };

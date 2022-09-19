@@ -93,7 +93,9 @@ export class AdoptDistribution extends JavaBase {
     const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
     const releaseType = this.stable ? 'ga' : 'ea';
 
-    console.time('adopt-retrieve-available-versions');
+    if (core.isDebug()) {
+      console.time('adopt-retrieve-available-versions');
+    }
 
     const baseRequestArguments = [
       `project=jdk`,

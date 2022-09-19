@@ -116,7 +116,7 @@ export async function save(id: string) {
   const packageManager = findPackageManager(id);
   const matchedKey = core.getState(CACHE_MATCHED_KEY);
 
-  // Inputs are re-evaluted before the post action, so we want the original key used for restore
+  // Inputs are re-evaluated before the post action, so we want the original key used for restore
   const primaryKey = core.getState(STATE_CACHE_PRIMARY_KEY);
 
   if (!primaryKey) {
