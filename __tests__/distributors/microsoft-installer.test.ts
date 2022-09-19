@@ -1,6 +1,7 @@
 import { MicrosoftDistributions } from '../../src/distributions/microsoft/installer';
 import * as tc from '@actions/tool-cache';
-import data from '../../versions-manifest.json';
+import data from '../../src/distributions/microsoft/microsoft-openjdk-versions.json';
+import * as httpm from '@actions/http-client';
 import * as core from '@actions/core';
 
 describe('findPackageForDownload', () => {
@@ -16,9 +17,11 @@ describe('findPackageForDownload', () => {
       checkLatest: false
     });
 
-    spyGetManifestFromRepo = jest.spyOn(tc, 'getManifestFromRepo');
-    spyGetManifestFromRepo.mockImplementation(() => {
-      return data;
+    spyGetManifestFromRepo = jest.spyOn(httpm.HttpClient.prototype, 'getJson');
+    spyGetManifestFromRepo.mockReturnValue({
+      result: JSON.stringify(data),
+      statusCode: 200,
+      headers: {}
     });
 
     spyDebug = jest.spyOn(core, 'debug');

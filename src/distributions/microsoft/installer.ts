@@ -3,14 +3,10 @@ import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from 
 import { extractJdkFile, getDownloadArchiveExtension } from '../../util';
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
+import { OutgoingHttpHeaders } from 'http';
 import fs from 'fs';
 import path from 'path';
-
-export interface IToolRelease {
-  version: string;
-  stable: boolean;
-  files: tc.IToolReleaseFile[];
-}
+import { ITypedResponse } from '@actions/http-client/interfaces';
 
 export class MicrosoftDistributions extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -76,13 +72,44 @@ export class MicrosoftDistributions extends JavaBase {
     // TODO get these dynamically!
     // We will need Microsoft to add an endpoint where we can query for versions.
     const token = core.getInput('token');
-    const manifest = await tc.getManifestFromRepo(
-      'dmitry-shibanov',
-      'setup-java',
-      token,
-      'add-json-for-microsoft-versions'
-    );
+    const owner = 'dmitry-shibanov';
+    const repository = 'setup-java';
+    const branch = 'add-json-for-microsoft-versions';
+    const filePath = 'src/distributions/microsoft/microsoft-openjdk-versions.json';
 
-    return manifest;
+    let releases: tc.IToolRelease[] = [];
+    const fileUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
+
+    const headers: OutgoingHttpHeaders = {
+      authorization: token,
+      accept: 'application/vnd.github.VERSION.raw'
+    };
+
+    let response: ITypedResponse<string> | null = null;
+
+    try {
+      response = await this.http.getJson<string>(fileUrl, headers);
+      if (!response.result) {
+        return null;
+      }
+    } catch (err) {
+      core.debug(
+        `Http request for microsoft-openjdk-versions.json failed with status code: ${response?.statusCode}`
+      );
+      return null;
+    }
+
+    let versionsRaw = response.result;
+
+    if (versionsRaw) {
+      versionsRaw = versionsRaw.replace(/^\uFEFF/, '');
+      try {
+        releases = JSON.parse(versionsRaw);
+      } catch {
+        core.debug('Invalid json');
+      }
+    }
+
+    return releases;
   }
 }
