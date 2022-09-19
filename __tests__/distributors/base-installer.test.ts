@@ -257,7 +257,7 @@ describe('setupJava', () => {
     expect(spyCoreAddPath).toHaveBeenCalled();
     expect(spyCoreExportVariable).toHaveBeenCalled();
     expect(spyCoreExportVariable).toHaveBeenCalledWith(
-      `JAVA_HOME_${input.version}_${input.architecture.toLocaleUpperCase()}`,
+      `JAVA_HOME_${input.version}_${(input.architecture || 'x86').toLocaleUpperCase()}`,
       expected.path
     );
     expect(spyCoreSetOutput).toHaveBeenCalled();
