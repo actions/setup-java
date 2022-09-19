@@ -5,7 +5,7 @@ import path from 'path';
 import { extractJdkFile, getDownloadArchiveExtension } from '../../util';
 import { JavaBase } from '../base-installer';
 import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
-import { ICorrettoAllAvailableVersions, ICorettoAvailableVersions } from './models';
+import { ICorrettoAllAvailableVersions, ICorrettoAvailableVersions } from './models';
 
 export class CorrettoDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -66,12 +66,14 @@ export class CorrettoDistribution extends JavaBase {
     return resolvedVersion;
   }
 
-  private async getAvailableVersions(): Promise<ICorettoAvailableVersions[]> {
+  private async getAvailableVersions(): Promise<ICorrettoAvailableVersions[]> {
     const platform = this.getPlatformOption();
     const arch = this.architecture;
     const imageType = this.packageType;
 
-    console.time('coretto-retrieve-available-versions');
+    if (core.isDebug()) {
+      console.time('corretto-retrieve-available-versions');
+    }
 
     const availableVersionsUrl =
       'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
@@ -83,8 +85,8 @@ export class CorrettoDistribution extends JavaBase {
       throw Error(`Could not fetch latest corretto versions from ${availableVersionsUrl}`);
     }
 
-    const eligbleVersions = fetchedCurrentVersions?.[platform]?.[arch]?.[imageType];
-    const availableVersions = this.getAvailableVersionsForPlatform(eligbleVersions);
+    const eligibleVersions = fetchedCurrentVersions?.[platform]?.[arch]?.[imageType];
+    const availableVersions = this.getAvailableVersionsForPlatform(eligibleVersions);
 
     if (core.isDebug()) {
       this.printAvailableVersions(availableVersions);
@@ -94,19 +96,19 @@ export class CorrettoDistribution extends JavaBase {
   }
 
   private getAvailableVersionsForPlatform(
-    eligbleVersions: ICorrettoAllAvailableVersions['os']['arch']['imageType'] | undefined
-  ): ICorettoAvailableVersions[] {
-    const availableVersions: ICorettoAvailableVersions[] = [];
+    eligibleVersions: ICorrettoAllAvailableVersions['os']['arch']['imageType'] | undefined
+  ): ICorrettoAvailableVersions[] {
+    const availableVersions: ICorrettoAvailableVersions[] = [];
 
-    for (const version in eligbleVersions) {
-      const availableVersion = eligbleVersions[version];
+    for (const version in eligibleVersions) {
+      const availableVersion = eligibleVersions[version];
       for (const fileType in availableVersion) {
         const skipNonExtractableBinaries = fileType != getDownloadArchiveExtension();
         if (skipNonExtractableBinaries) {
           continue;
         }
         const availableVersionDetails = availableVersion[fileType];
-        const correttoVersion = this.getCorettoVersion(availableVersionDetails.resource);
+        const correttoVersion = this.getCorrettoVersion(availableVersionDetails.resource);
 
         availableVersions.push({
           checksum: availableVersionDetails.checksum,
@@ -122,9 +124,9 @@ export class CorrettoDistribution extends JavaBase {
     return availableVersions;
   }
 
-  private printAvailableVersions(availableVersions: ICorettoAvailableVersions[]) {
+  private printAvailableVersions(availableVersions: ICorrettoAvailableVersions[]) {
     core.startGroup('Print information about available versions');
-    console.timeEnd('coretto-retrieve-available-versions');
+    console.timeEnd('corretto-retrieve-available-versions');
     console.log(`Available versions: [${availableVersions.length}]`);
     console.log(
       availableVersions.map(item => `${item.version}: ${item.correttoVersion}`).join(', ')
@@ -133,7 +135,7 @@ export class CorrettoDistribution extends JavaBase {
   }
 
   private getPlatformOption(): string {
-    // Coretto has its own platform names so we need to map them
+    // Corretto has its own platform names so we need to map them
     switch (process.platform) {
       case 'darwin':
         return 'macos';
@@ -144,7 +146,7 @@ export class CorrettoDistribution extends JavaBase {
     }
   }
 
-  private getCorettoVersion(resource: string): string {
+  private getCorrettoVersion(resource: string): string {
     const regex = /(\d+.+)\//;
     const match = regex.exec(resource);
     if (match === null) {

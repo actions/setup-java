@@ -69,6 +69,8 @@ outputs:
     description: 'Actual version of the java environment that has been installed'
   path:
     description: 'Path to where the java environment has been installed (same as $JAVA_HOME)'
+  cache-hit:
+    description: 'A boolean value to indicate an exact match was found for the primary key'
 runs:
   using: 'node16'
   main: 'dist/setup/index.js'
