@@ -3,6 +3,8 @@ import { HttpClient } from '@actions/http-client';
 import { AdoptDistribution, AdoptImplementation } from '../../src/distributions/adopt/installer';
 import { JavaInstallerOptions } from '../../src/distributions/base-models';
 
+import os from 'os';
+
 let manifestData = require('../data/adopt.json') as [];
 
 describe('getAvailableVersions', () => {
@@ -126,6 +128,35 @@ describe('getAvailableVersions', () => {
 
       // @ts-ignore - because it is protected
       expect(distribution.toolcacheFolderName).toBe(expected);
+    }
+  );
+
+  it.each([
+    ['amd64', 'x64'],
+    ['arm64', 'aarch64']
+  ])(
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArch: string) => {
+      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+
+      const installerOptions: JavaInstallerOptions = {
+        version: '17',
+        architecture: '', // to get default value
+        packageType: 'jdk',
+        checkLatest: false
+      };
+
+      const expectedParameters = `os=mac&architecture=${distroArch}&image_type=jdk&release_type=ga&jvm_impl=hotspot&page_size=20&page=0`;
+
+      const distribution = new AdoptDistribution(installerOptions, AdoptImplementation.Hotspot);
+      const baseUrl = 'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D';
+      const expectedUrl = `${baseUrl}?project=jdk&vendor=adoptopenjdk&heap_size=normal&sort_method=DEFAULT&sort_order=DESC&${expectedParameters}`;
+      distribution['getPlatformOption'] = () => 'mac';
+
+      await distribution['getAvailableVersions']();
+
+      expect(spyHttpClient.mock.calls).toHaveLength(1);
+      expect(spyHttpClient.mock.calls[0][0]).toBe(expectedUrl);
     }
   );
 });

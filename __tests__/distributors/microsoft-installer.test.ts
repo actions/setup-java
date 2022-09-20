@@ -1,4 +1,5 @@
 import { MicrosoftDistributions } from '../../src/distributions/microsoft/installer';
+import os from 'os';
 
 describe('findPackageForDownload', () => {
   let distribution: MicrosoftDistributions;
@@ -60,6 +61,33 @@ describe('findPackageForDownload', () => {
     const url = expectedUrl.replace('{{OS_TYPE}}', os).replace('{{ARCHIVE_TYPE}}', archive);
     expect(result.url).toBe(url);
   });
+
+  it.each([
+    ['amd64', 'x64'],
+    ['arm64', 'aarch64']
+  ])(
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArch: string) => {
+      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+
+      const version = '17';
+      const distro = new MicrosoftDistributions({
+        version,
+        architecture: '', // to get default value
+        packageType: 'jdk',
+        checkLatest: false
+      });
+
+      distribution['getPlatformOption'] = () => {
+        return { archive: 'tar.gz', os: 'macos' };
+      };
+
+      const result = await distro['findPackageForDownload'](version);
+      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.3-macos-${distroArch}.tar.gz`;
+
+      expect(result.url).toBe(expectedUrl);
+    }
+  );
 
   it('should throw an error', async () => {
     await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(

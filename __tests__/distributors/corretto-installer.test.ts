@@ -3,6 +3,8 @@ import { JavaInstallerOptions } from '../../src/distributions/base-models';
 
 import { CorrettoDistribution } from '../../src/distributions/corretto/installer';
 import * as util from '../../src/util';
+import os from 'os';
+import { isGeneratorFunction } from 'util/types';
 
 const manifestData = require('../data/corretto.json') as [];
 
@@ -142,6 +144,33 @@ describe('getAvailableVersions', () => {
         "Could not find satisfied version for SemVer '4'"
       );
     });
+
+    it.each([
+      ['arm64', 'aarch64'],
+      ['amd64', 'x64']
+    ])(
+      'defaults to os.arch(): %s mapped to distro arch: %s',
+      async (osArch: string, distroArch: string) => {
+        jest.spyOn(os, 'arch').mockReturnValue(osArch);
+
+        const version = '17';
+        const installerOptions: JavaInstallerOptions = {
+          version,
+          architecture: '', // to get default value
+          packageType: 'jdk',
+          checkLatest: false
+        };
+
+        const distribution = new CorrettoDistribution(installerOptions);
+        mockPlatform(distribution, 'macos');
+
+        const expectedLink = `https://corretto.aws/downloads/resources/17.0.2.8.1/amazon-corretto-17.0.2.8.1-macosx-${distroArch}.tar.gz`;
+
+        const availableVersion = await distribution['findPackageForDownload'](version);
+        expect(availableVersion).not.toBeNull();
+        expect(availableVersion.url).toBe(expectedLink);
+      }
+    );
   });
 
   const mockPlatform = (distribution: CorrettoDistribution, platform: string) => {

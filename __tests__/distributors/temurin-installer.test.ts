@@ -110,29 +110,34 @@ describe('getAvailableVersions', () => {
     }
   );
 
-  it('defaults to os.arch() mapped to temurin arch', async () => {
-    jest.spyOn(os, 'arch').mockReturnValue('amd64');
+  it.each([
+    ['amd64', 'x64'],
+    ['arm64', 'aarch64']
+  ])(
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArch: string) => {
+      jest.spyOn(os, 'arch').mockReturnValue(distroArch);
 
-    const installerOptions: JavaInstallerOptions = {
-      version: '17',
-      architecture: '',
-      packageType: 'jdk',
-      checkLatest: false
-    };
+      const installerOptions: JavaInstallerOptions = {
+        version: '17',
+        architecture: '',
+        packageType: 'jdk',
+        checkLatest: false
+      };
 
-    const expectedParameters =
-      'os=mac&architecture=x64&image_type=jdk&release_type=ga&jvm_impl=hotspot&page_size=20&page=0';
+      const expectedParameters = `os=mac&architecture=${distroArch}&image_type=jdk&release_type=ga&jvm_impl=hotspot&page_size=20&page=0`;
 
-    const distribution = new TemurinDistribution(installerOptions, TemurinImplementation.Hotspot);
-    const baseUrl = 'https://api.adoptium.net/v3/assets/version/%5B1.0,100.0%5D';
-    const expectedUrl = `${baseUrl}?project=jdk&vendor=adoptium&heap_size=normal&sort_method=DEFAULT&sort_order=DESC&${expectedParameters}`;
-    distribution['getPlatformOption'] = () => 'mac';
+      const distribution = new TemurinDistribution(installerOptions, TemurinImplementation.Hotspot);
+      const baseUrl = 'https://api.adoptium.net/v3/assets/version/%5B1.0,100.0%5D';
+      const expectedUrl = `${baseUrl}?project=jdk&vendor=adoptium&heap_size=normal&sort_method=DEFAULT&sort_order=DESC&${expectedParameters}`;
+      distribution['getPlatformOption'] = () => 'mac';
 
-    await distribution['getAvailableVersions']();
+      await distribution['getAvailableVersions']();
 
-    expect(spyHttpClient.mock.calls).toHaveLength(1);
-    expect(spyHttpClient.mock.calls[0][0]).toBe(expectedUrl);
-  });
+      expect(spyHttpClient.mock.calls).toHaveLength(1);
+      expect(spyHttpClient.mock.calls[0][0]).toBe(expectedUrl);
+    }
+  );
 });
 
 describe('findPackageForDownload', () => {
