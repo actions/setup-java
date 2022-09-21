@@ -32,6 +32,8 @@ steps:
 ```
 
 ### Adopt
+Input `java-package` is optional and intended to select a packaging variant(subset) of the distor. List of available options is "jdk", "jre", "jdk+fx" or "jre+fx". If the input omiited it is set to "jdk".
+
 **NOTE:** Adopt OpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` to `temurin` to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 
 ```yaml
