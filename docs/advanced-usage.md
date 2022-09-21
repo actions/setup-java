@@ -32,8 +32,6 @@ steps:
 ```
 
 ### Adopt
-Input `java-package` is optional and intended to select a packaging variant(subset) of the distro. List of available options is "jdk", "jre", "jdk+fx" or "jre+fx". If the input omiited it is set to "jdk".
-
 **NOTE:** Adopt OpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` to `temurin` to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 
 ```yaml
@@ -95,6 +93,8 @@ steps:
 ```
 
 ## Installing custom Java package type
+Input `java-package` is optional and intended to select a packaging variant(subset) of the distro. List of available options is "jdk", "jre", "jdk+fx" or "jre+fx". If the input omiited it is set to "jdk".
+
 ```yaml
 steps:
 - uses: actions/checkout@v3
@@ -108,7 +108,6 @@ steps:
 
 
 ## Installing custom Java architecture
-
 Input `architecture` is optional and selects a targer architecture. Available values are "x86", "x64", "armv7", "aarch64" or "ppc64le". The default value is "x64".
 
 
