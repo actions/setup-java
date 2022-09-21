@@ -78,7 +78,7 @@ describe('findPackageForDownload', () => {
         checkLatest: false
       });
 
-      distribution['getPlatformOption'] = () => {
+      distro['getPlatformOption'] = () => {
         return { archive: 'tar.gz', os: 'macos' };
       };
 
