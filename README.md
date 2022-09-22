@@ -24,6 +24,42 @@ This action allows you to work with Java and Scala projects.
 
 Inputs `java-version` and `distribution` are mandatory. See [Supported distributions](#supported-distributions) section for a list of available options.
 
+### Inputs reference
+
+  - `java-version`: _(required)_ The Java version to set up. Takes a whole or semver Java version. See examples of supported syntax.
+   
+  - `distribution`: _(required)_ Java distribution. See the list of supported distributions.
+
+  - `java-package`: The packaging variant of the choosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. 
+    Default value: `jdk`
+
+  - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`.
+    Default value: `x64`
+
+  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM
+
+  - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec
+
+  `cache`: Quick setup caching for the dependencies managed through one of the predifined package managers. It can be on of "maven", "gradle" or "sbt". See ...
+
+  #### Maven options
+
+  In order to do not store sensetive information in the repository there is set of options to generate maven settings.xml  file.
+
+  - `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
+
+  - `server-username`: Environment variable name for the username for authentication to the Apache Maven repository. Default is GITHUB_ACTOR.
+
+  - `server-password`: Environment variable name for password or token for authentication to the Apache Maven repository. Default is GITHUB_TOKEN.
+
+  - `settings-path`: Maven related setting to point to the diractory where the settings.xml file will be written. Default is ~/.m2.
+
+  - `overwrite-settings`: Maven related setting to make to overwrite the settings.xml file if it exists. Default is "true".
+
+  - `gpg-private-key`: GPG private key to import. Default is empty string.'
+
+  - `gpg-passphrase`: description: 'Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
+
 ### Basic Configuration
 
 #### Eclipse Temurin
