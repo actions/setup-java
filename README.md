@@ -22,29 +22,24 @@ This action allows you to work with Java and Scala projects.
 
 ## Usage
 
-Inputs `java-version` and `distribution` are mandatory. See [Supported distributions](#supported-distributions) section for a list of available options.
-
-### Inputs reference
-
-  - `java-version`: _(required)_ The Java version to set up. Takes a whole or semver Java version. See examples of supported syntax.
+  - `java-version`: _(required)_ The Java version to set up. Takes a whole or [semver](#supported-version-syntax) Java version.
    
-  - `distribution`: _(required)_ Java distribution. See the list of supported distributions.
+  - `distribution`: _(required)_ Java [distribution](#supported-distributions).
 
-  - `java-package`: The packaging variant of the choosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. 
-    Default value: `jdk`
+  - `java-package`: The packaging variant of the choosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
 
-  - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`.
-    Default value: `x64`
+  - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: `x64`.
 
-  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM
+  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM.
 
-  - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec
+  - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
-  `cache`: Quick setup caching for the dependencies managed through one of the predifined package managers. It can be on of "maven", "gradle" or "sbt". See ...
+  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predifined package managers. It can be one of "maven", "gradle" or "sbt". 
 
   #### Maven options
+  The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin. See [advanced usage](docs/advanced-usage.md) for more.
 
-  In order to do not store sensetive information in the repository there is set of options to generate maven settings.xml  file.
+  - `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists set this to `false`.
 
   - `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
 
@@ -53,8 +48,6 @@ Inputs `java-version` and `distribution` are mandatory. See [Supported distribut
   - `server-password`: Environment variable name for password or token for authentication to the Apache Maven repository. Default is GITHUB_TOKEN.
 
   - `settings-path`: Maven related setting to point to the diractory where the settings.xml file will be written. Default is ~/.m2.
-
-  - `overwrite-settings`: Maven related setting to make to overwrite the settings.xml file if it exists. Default is "true".
 
   - `gpg-private-key`: GPG private key to import. Default is empty string.'
 
