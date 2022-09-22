@@ -72,9 +72,9 @@ export class MicrosoftDistributions extends JavaBase {
     // TODO get these dynamically!
     // We will need Microsoft to add an endpoint where we can query for versions.
     const token = core.getInput('token');
-    const owner = 'dmitry-shibanov';
+    const owner = 'actions';
     const repository = 'setup-java';
-    const branch = 'add-json-for-microsoft-versions';
+    const branch = 'main';
     const filePath = 'src/distributions/microsoft/microsoft-openjdk-versions.json';
 
     let releases: tc.IToolRelease[] | null = null;
