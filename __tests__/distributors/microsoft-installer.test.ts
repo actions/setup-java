@@ -1,7 +1,13 @@
 import { MicrosoftDistributions } from '../../src/distributions/microsoft/installer';
+import * as tc from '@actions/tool-cache';
+import data from '../../src/distributions/microsoft/microsoft-openjdk-versions.json';
+import * as httpm from '@actions/http-client';
+import * as core from '@actions/core';
 
 describe('findPackageForDownload', () => {
   let distribution: MicrosoftDistributions;
+  let spyGetManifestFromRepo: jest.SpyInstance;
+  let spyDebug: jest.SpyInstance;
 
   beforeEach(() => {
     distribution = new MicrosoftDistributions({
@@ -10,12 +16,22 @@ describe('findPackageForDownload', () => {
       packageType: 'jdk',
       checkLatest: false
     });
+
+    spyGetManifestFromRepo = jest.spyOn(httpm.HttpClient.prototype, 'getJson');
+    spyGetManifestFromRepo.mockReturnValue({
+      result: data,
+      statusCode: 200,
+      headers: {}
+    });
+
+    spyDebug = jest.spyOn(core, 'debug');
+    spyDebug.mockImplementation(() => {});
   });
 
   it.each([
     [
       '17.0.1',
-      '17.0.1',
+      '17.0.1+12.1',
       'https://aka.ms/download-jdk/microsoft-jdk-17.0.1.12.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ],
     [
@@ -25,12 +41,12 @@ describe('findPackageForDownload', () => {
     ],
     [
       '16.0.x',
-      '16.0.2',
+      '16.0.2+7.1',
       'https://aka.ms/download-jdk/microsoft-jdk-16.0.2.7.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ],
     [
       '11.0.13',
-      '11.0.13',
+      '11.0.13+8.1',
       'https://aka.ms/download-jdk/microsoft-jdk-11.0.13.8.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ],
     [
@@ -66,33 +82,4 @@ describe('findPackageForDownload', () => {
       /Could not find satisfied version for SemVer */
     );
   });
-});
-
-describe('getPlatformOption', () => {
-  const distributions = new MicrosoftDistributions({
-    architecture: 'x64',
-    version: '11',
-    packageType: 'jdk',
-    checkLatest: false
-  });
-
-  it.each([
-    ['linux', 'tar.gz', 'linux'],
-    ['darwin', 'tar.gz', 'macos'],
-    ['win32', 'zip', 'windows']
-  ])('os version %s -> %s', (input, expectedArchive, expectedOs) => {
-    const actual = distributions['getPlatformOption'](input as NodeJS.Platform);
-
-    expect(actual.archive).toEqual(expectedArchive);
-    expect(actual.os).toEqual(expectedOs);
-  });
-
-  it.each(['aix', 'android', 'freebsd', 'openbsd', 'netbsd', 'solaris', 'cygwin'])(
-    'not support os version %s',
-    input => {
-      expect(() => distributions['getPlatformOption'](input as NodeJS.Platform)).toThrow(
-        /Platform '\w+' is not supported\. Supported platforms: .+/
-      );
-    }
-  );
 });
