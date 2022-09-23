@@ -25,7 +25,7 @@ describe('findPackageForDownload', () => {
     });
 
     spyDebug = jest.spyOn(core, 'debug');
-    spyDebug.mockImplementation(() => { });
+    spyDebug.mockImplementation(() => {});
   });
 
   it.each([
