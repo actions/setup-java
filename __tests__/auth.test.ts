@@ -5,9 +5,10 @@ import * as core from '@actions/core';
 import os from 'os';
 
 import * as auth from '../src/auth';
+import { M2_DIR, MVN_SETTINGS_FILE } from '../src/constants';
 
-const m2Dir = path.join(__dirname, auth.M2_DIR);
-const settingsFile = path.join(m2Dir, auth.SETTINGS_FILE);
+const m2Dir = path.join(__dirname, M2_DIR);
+const settingsFile = path.join(m2Dir, MVN_SETTINGS_FILE);
 
 describe('auth tests', () => {
   let spyOSHomedir: jest.SpyInstance;
@@ -38,7 +39,7 @@ describe('auth tests', () => {
     const password = 'TOLKIEN';
 
     const altHome = path.join(__dirname, 'runner', 'settings');
-    const altSettingsFile = path.join(altHome, auth.SETTINGS_FILE);
+    const altSettingsFile = path.join(altHome, MVN_SETTINGS_FILE);
     await io.rmRF(altHome); // ensure it doesn't already exist
 
     await auth.createAuthenticationSettings(id, username, password, altHome, true);
