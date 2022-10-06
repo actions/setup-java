@@ -61,6 +61,12 @@ inputs:
   token:
     description: Used to pull java versions from setup-java. Since there is a default value, token is typically not supplied by the user.
     default: ${{ github.token }}
+  mvn-toolchain-id:
+    description: 'Name of Maven Toolchain ID if the default name of "${distribution}_${java-version}" is not wanted. See examples of supported syntax in Advanced Usage file'
+    required: false
+  mvn-toolchain-vendor:
+    description: 'Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file'
+    required: false
 outputs:
   distribution:
     description: 'Distribution of Java that has been installed'

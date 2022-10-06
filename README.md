@@ -12,6 +12,7 @@ The `setup-java` action provides the following functionality for GitHub Actions 
 - Caching dependencies managed by Apache Maven
 - Caching dependencies managed by Gradle
 - Caching dependencies managed by sbt
+- [Maven Toolchains declaration](https://maven.apache.org/guides/mini/guide-using-toolchains.html) for specified JDK versions
 
 This action allows you to work with Java and Scala projects.
 
@@ -22,7 +23,40 @@ This action allows you to work with Java and Scala projects.
 
 ## Usage
 
-Inputs `java-version` and `distribution` are mandatory. See [Supported distributions](#supported-distributions) section for a list of available options.
+  - `java-version`: _(required)_ The Java version to set up. Takes a whole or [semver](#supported-version-syntax) Java version.
+   
+  - `distribution`: _(required)_ Java [distribution](#supported-distributions).
+
+  - `java-package`: The packaging variant of the choosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
+
+  - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: `x64`.
+
+  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM.
+
+  - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
+
+  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predifined package managers. It can be one of "maven", "gradle" or "sbt". 
+
+  #### Maven options
+  The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
+
+  - `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists set this to `false`.
+
+  - `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
+
+  - `server-username`: Environment variable name for the username for authentication to the Apache Maven repository. Default is GITHUB_ACTOR.
+
+  - `server-password`: Environment variable name for password or token for authentication to the Apache Maven repository. Default is GITHUB_TOKEN.
+
+  - `settings-path`: Maven related setting to point to the diractory where the settings.xml file will be written. Default is ~/.m2.
+
+  - `gpg-private-key`: GPG private key to import. Default is empty string.'
+
+  - `gpg-passphrase`: description: 'Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
+
+  - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
+
+  - `mvn-toolchain-vendor`: Name of Maven Toolchain Vendor if the default name of `${distribution}` is not wanted.
 
 ### Basic Configuration
 
@@ -174,7 +208,11 @@ All versions are added to the PATH. The last version will be used and available 
             15
 ```
 
+### Using Maven Toolchains
+In the example above multiple JDKs are installed for the same job. The result after the last JDK is installed is a Maven Toolchains declaration containing references to all three JDKs. The values for `id`, `version`, and `vendor` of the individual Toolchain entries are the given input values for `distribution` and `java-version` (`vendor` being the combination of `${distribution}_${java-version}`) by default.
+
 ### Advanced Configuration
+
 - [Selecting a Java distribution](docs/advanced-usage.md#Selecting-a-Java-distribution)
   - [Eclipse Temurin](docs/advanced-usage.md#Eclipse-Temurin)
   - [Adopt](docs/advanced-usage.md#Adopt)
@@ -190,6 +228,7 @@ All versions are added to the PATH. The last version will be used and available 
 - [Publishing using Apache Maven](docs/advanced-usage.md#Publishing-using-Apache-Maven)
 - [Publishing using Gradle](docs/advanced-usage.md#Publishing-using-Gradle)
 - [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache)
+- [Modifying Maven Toolchains](docs/advanced-usage.md#Modifying-Maven-Toolchains)
 
 ## License
 
