@@ -14,7 +14,7 @@ inputs:
     required: false
     default: 'jdk'
   architecture:
-    description: 'The architecture of the package (defaults to the action runner's architecture)'
+    description: "The architecture of the package (defaults to the action runner's architecture)"
     required: false
   jdkFile:
     description: 'Path to where the compressed JDK is located'
