@@ -1,5 +1,5 @@
 import { MicrosoftDistributions } from '../../src/distributions/microsoft/installer';
-import * as tc from '@actions/tool-cache';
+import os from 'os';
 import data from '../../src/distributions/microsoft/microsoft-openjdk-versions.json';
 import * as httpm from '@actions/http-client';
 import * as core from '@actions/core';
@@ -76,6 +76,30 @@ describe('findPackageForDownload', () => {
     const url = expectedUrl.replace('{{OS_TYPE}}', os).replace('{{ARCHIVE_TYPE}}', archive);
     expect(result.url).toBe(url);
   });
+
+  it.each([
+    ['amd64', 'x64'],
+    ['arm64', 'aarch64']
+  ])(
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArch: string) => {
+      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+      jest.spyOn(os, 'platform').mockReturnValue('linux');
+
+      const version = '17';
+      const distro = new MicrosoftDistributions({
+        version,
+        architecture: '', // to get default value
+        packageType: 'jdk',
+        checkLatest: false
+      });
+
+      const result = await distro['findPackageForDownload'](version);
+      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.3-linux-${distroArch}.tar.gz`;
+
+      expect(result.url).toBe(expectedUrl);
+    }
+  );
 
   it('should throw an error', async () => {
     await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(

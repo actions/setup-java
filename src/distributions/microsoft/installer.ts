@@ -37,7 +37,8 @@ export class MicrosoftDistributions extends JavaBase {
   }
 
   protected async findPackageForDownload(range: string): Promise<JavaDownloadRelease> {
-    if (this.architecture !== 'x64' && this.architecture !== 'aarch64') {
+    const arch = this.distributionArchitecture();
+    if (arch !== 'x64' && arch !== 'aarch64') {
       throw new Error(`Unsupported architecture: ${this.architecture}`);
     }
 
@@ -55,7 +56,7 @@ export class MicrosoftDistributions extends JavaBase {
       throw new Error('Could not load manifest for Microsoft Build of OpenJDK');
     }
 
-    const foundRelease = await tc.findFromManifest(range, true, manifest, this.architecture);
+    const foundRelease = await tc.findFromManifest(range, true, manifest, arch);
 
     if (!foundRelease) {
       throw new Error(

@@ -7,6 +7,7 @@ import * as httpm from '@actions/http-client';
 import { getToolcachePath, isVersionSatisfies } from '../util';
 import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from './base-models';
 import { MACOS_JAVA_CONTENT_POSTFIX } from '../constants';
+import os from 'os';
 
 export abstract class JavaBase {
   protected http: httpm.HttpClient;
@@ -25,7 +26,7 @@ export abstract class JavaBase {
     ({ version: this.version, stable: this.stable } = this.normalizeVersion(
       installerOptions.version
     ));
-    this.architecture = installerOptions.architecture;
+    this.architecture = installerOptions.architecture || os.arch();
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
   }
@@ -149,5 +150,25 @@ export abstract class JavaBase {
     core.setOutput('path', toolPath);
     core.setOutput('version', version);
     core.exportVariable(`JAVA_HOME_${majorVersion}_${this.architecture.toUpperCase()}`, toolPath);
+  }
+
+  protected distributionArchitecture(): string {
+    // default mappings of config architectures to distribution architectures
+    // override if a distribution uses any different names; see liberica for an example
+
+    // node's os.arch() - which this defaults to - can return any of:
+    // 'arm', 'arm64', 'ia32', 'mips', 'mipsel', 'ppc', 'ppc64', 's390', 's390x', and 'x64'
+    // so we need to map these to java distribution architectures
+    // 'amd64' is included here too b/c it's a common alias for 'x64' people might use explicitly
+    switch (this.architecture) {
+      case 'amd64':
+        return 'x64';
+      case 'ia32':
+        return 'x86';
+      case 'arm64':
+        return 'aarch64';
+      default:
+        return this.architecture;
+    }
   }
 }
