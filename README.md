@@ -168,7 +168,7 @@ steps:
 - uses: actions/checkout@v3
 - uses: actions/setup-java@v3
   with:
-    distribution: 'adopt'
+    distribution: 'temurin'
     java-version: '17'
     check-latest: true
 - run: java HelloWorldApp.java
