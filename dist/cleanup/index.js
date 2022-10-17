@@ -525,13 +525,7 @@ function resolvePaths(patterns) {
                     .replace(new RegExp(`\\${path.sep}`, 'g'), '/');
                 core.debug(`Matched: ${relativeFile}`);
                 // Paths are made relative so the tar entries are all relative to the root of the workspace.
-                if (relativeFile === '') {
-                    // path.relative returns empty string if workspace and file are equal
-                    paths.push('.');
-                }
-                else {
-                    paths.push(`${relativeFile}`);
-                }
+                paths.push(`${relativeFile}`);
             }
         }
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -689,7 +683,6 @@ const util = __importStar(__nccwpck_require__(3837));
 const utils = __importStar(__nccwpck_require__(1518));
 const constants_1 = __nccwpck_require__(8840);
 const requestUtils_1 = __nccwpck_require__(3981);
-const abort_controller_1 = __nccwpck_require__(2557);
 /**
  * Pipes the body of a HTTP response to a stream
  *
@@ -873,24 +866,15 @@ function downloadCacheStorageSDK(archiveLocation, archivePath, options) {
             const fd = fs.openSync(archivePath, 'w');
             try {
                 downloadProgress.startDisplayTimer();
-                const controller = new abort_controller_1.AbortController();
-                const abortSignal = controller.signal;
                 while (!downloadProgress.isDone()) {
                     const segmentStart = downloadProgress.segmentOffset + downloadProgress.segmentSize;
                     const segmentSize = Math.min(maxSegmentSize, contentLength - segmentStart);
                     downloadProgress.nextSegment(segmentSize);
-                    const result = yield promiseWithTimeout(options.segmentTimeoutInMs || 3600000, client.downloadToBuffer(segmentStart, segmentSize, {
-                        abortSignal,
+                    const result = yield client.downloadToBuffer(segmentStart, segmentSize, {
                         concurrency: options.downloadConcurrency,
                         onProgress: downloadProgress.onProgress()
-                    }));
-                    if (result === 'timeout') {
-                        controller.abort();
-                        throw new Error('Aborting cache download as the download time exceeded the timeout.');
-                    }
-                    else if (Buffer.isBuffer(result)) {
-                        fs.writeFileSync(fd, result);
-                    }
+                    });
+                    fs.writeFileSync(fd, result);
                 }
             }
             finally {
@@ -901,16 +885,6 @@ function downloadCacheStorageSDK(archiveLocation, archivePath, options) {
     });
 }
 exports.downloadCacheStorageSDK = downloadCacheStorageSDK;
-const promiseWithTimeout = (timeoutMs, promise) => __awaiter(void 0, void 0, void 0, function* () {
-    let timeoutHandle;
-    const timeoutPromise = new Promise(resolve => {
-        timeoutHandle = setTimeout(() => resolve('timeout'), timeoutMs);
-    });
-    return Promise.race([promise, timeoutPromise]).then(result => {
-        clearTimeout(timeoutHandle);
-        return result;
-    });
-});
 //# sourceMappingURL=downloadUtils.js.map
 
 /***/ }),
@@ -1070,7 +1044,6 @@ const fs_1 = __nccwpck_require__(7147);
 const path = __importStar(__nccwpck_require__(1017));
 const utils = __importStar(__nccwpck_require__(1518));
 const constants_1 = __nccwpck_require__(8840);
-const IS_WINDOWS = process.platform === 'win32';
 function getTarPath(args, compressionMethod) {
     return __awaiter(this, void 0, void 0, function* () {
         switch (process.platform) {
@@ -1118,43 +1091,26 @@ function getWorkingDirectory() {
     var _a;
     return (_a = process.env['GITHUB_WORKSPACE']) !== null && _a !== void 0 ? _a : process.cwd();
 }
-// Common function for extractTar and listTar to get the compression method
-function getCompressionProgram(compressionMethod) {
-    // -d: Decompress.
-    // unzstd is equivalent to 'zstd -d'
-    // --long=#: Enables long distance matching with # bits. Maximum is 30 (1GB) on 32-bit OS and 31 (2GB) on 64-bit.
-    // Using 30 here because we also support 32-bit self-hosted runners.
-    switch (compressionMethod) {
-        case constants_1.CompressionMethod.Zstd:
-            return [
-                '--use-compress-program',
-                IS_WINDOWS ? 'zstd -d --long=30' : 'unzstd --long=30'
-            ];
-        case constants_1.CompressionMethod.ZstdWithoutLong:
-            return ['--use-compress-program', IS_WINDOWS ? 'zstd -d' : 'unzstd'];
-        default:
-            return ['-z'];
-    }
-}
-function listTar(archivePath, compressionMethod) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const args = [
-            ...getCompressionProgram(compressionMethod),
-            '-tf',
-            archivePath.replace(new RegExp(`\\${path.sep}`, 'g'), '/'),
-            '-P'
-        ];
-        yield execTar(args, compressionMethod);
-    });
-}
-exports.listTar = listTar;
 function extractTar(archivePath, compressionMethod) {
     return __awaiter(this, void 0, void 0, function* () {
         // Create directory to extract tar into
         const workingDirectory = getWorkingDirectory();
         yield io.mkdirP(workingDirectory);
+        // --d: Decompress.
+        // --long=#: Enables long distance matching with # bits. Maximum is 30 (1GB) on 32-bit OS and 31 (2GB) on 64-bit.
+        // Using 30 here because we also support 32-bit self-hosted runners.
+        function getCompressionProgram() {
+            switch (compressionMethod) {
+                case constants_1.CompressionMethod.Zstd:
+                    return ['--use-compress-program', 'zstd -d --long=30'];
+                case constants_1.CompressionMethod.ZstdWithoutLong:
+                    return ['--use-compress-program', 'zstd -d'];
+                default:
+                    return ['-z'];
+            }
+        }
         const args = [
-            ...getCompressionProgram(compressionMethod),
+            ...getCompressionProgram(),
             '-xf',
             archivePath.replace(new RegExp(`\\${path.sep}`, 'g'), '/'),
             '-P',
@@ -1173,19 +1129,15 @@ function createTar(archiveFolder, sourceDirectories, compressionMethod) {
         fs_1.writeFileSync(path.join(archiveFolder, manifestFilename), sourceDirectories.join('\n'));
         const workingDirectory = getWorkingDirectory();
         // -T#: Compress using # working thread. If # is 0, attempt to detect and use the number of physical CPU cores.
-        // zstdmt is equivalent to 'zstd -T0'
         // --long=#: Enables long distance matching with # bits. Maximum is 30 (1GB) on 32-bit OS and 31 (2GB) on 64-bit.
         // Using 30 here because we also support 32-bit self-hosted runners.
         // Long range mode is added to zstd in v1.3.2 release, so we will not use --long in older version of zstd.
         function getCompressionProgram() {
             switch (compressionMethod) {
                 case constants_1.CompressionMethod.Zstd:
-                    return [
-                        '--use-compress-program',
-                        IS_WINDOWS ? 'zstd -T0 --long=30' : 'zstdmt --long=30'
-                    ];
+                    return ['--use-compress-program', 'zstd -T0 --long=30'];
                 case constants_1.CompressionMethod.ZstdWithoutLong:
-                    return ['--use-compress-program', IS_WINDOWS ? 'zstd -T0' : 'zstdmt'];
+                    return ['--use-compress-program', 'zstd -T0'];
                 default:
                     return ['-z'];
             }
@@ -1207,6 +1159,32 @@ function createTar(archiveFolder, sourceDirectories, compressionMethod) {
     });
 }
 exports.createTar = createTar;
+function listTar(archivePath, compressionMethod) {
+    return __awaiter(this, void 0, void 0, function* () {
+        // --d: Decompress.
+        // --long=#: Enables long distance matching with # bits.
+        // Maximum is 30 (1GB) on 32-bit OS and 31 (2GB) on 64-bit.
+        // Using 30 here because we also support 32-bit self-hosted runners.
+        function getCompressionProgram() {
+            switch (compressionMethod) {
+                case constants_1.CompressionMethod.Zstd:
+                    return ['--use-compress-program', 'zstd -d --long=30'];
+                case constants_1.CompressionMethod.ZstdWithoutLong:
+                    return ['--use-compress-program', 'zstd -d'];
+                default:
+                    return ['-z'];
+            }
+        }
+        const args = [
+            ...getCompressionProgram(),
+            '-tf',
+            archivePath.replace(new RegExp(`\\${path.sep}`, 'g'), '/'),
+            '-P'
+        ];
+        yield execTar(args, compressionMethod);
+    });
+}
+exports.listTar = listTar;
 //# sourceMappingURL=tar.js.map
 
 /***/ }),
@@ -1257,8 +1235,7 @@ function getDownloadOptions(copy) {
     const result = {
         useAzureSdk: true,
         downloadConcurrency: 8,
-        timeoutInMs: 30000,
-        segmentTimeoutInMs: 3600000
+        timeoutInMs: 30000
     };
     if (copy) {
         if (typeof copy.useAzureSdk === 'boolean') {
@@ -1270,21 +1247,10 @@ function getDownloadOptions(copy) {
         if (typeof copy.timeoutInMs === 'number') {
             result.timeoutInMs = copy.timeoutInMs;
         }
-        if (typeof copy.segmentTimeoutInMs === 'number') {
-            result.segmentTimeoutInMs = copy.segmentTimeoutInMs;
-        }
-    }
-    const segmentDownloadTimeoutMins = process.env['SEGMENT_DOWNLOAD_TIMEOUT_MINS'];
-    if (segmentDownloadTimeoutMins &&
-        !isNaN(Number(segmentDownloadTimeoutMins)) &&
-        isFinite(Number(segmentDownloadTimeoutMins))) {
-        result.segmentTimeoutInMs = Number(segmentDownloadTimeoutMins) * 60 * 1000;
     }
     core.debug(`Use Azure SDK: ${result.useAzureSdk}`);
     core.debug(`Download concurrency: ${result.downloadConcurrency}`);
     core.debug(`Request timeout (ms): ${result.timeoutInMs}`);
-    core.debug(`Cache segment download timeout mins env var: ${process.env['SEGMENT_DOWNLOAD_TIMEOUT_MINS']}`);
-    core.debug(`Segment download timeout (ms): ${result.segmentTimeoutInMs}`);
     return result;
 }
 exports.getDownloadOptions = getDownloadOptions;
@@ -12494,18 +12460,19 @@ function coerce (version, options) {
 /***/ }),
 
 /***/ 2557:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
+var tslib = __nccwpck_require__(9268);
+
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-/// <reference path="../shims-public.d.ts" />
-const listenersMap = new WeakMap();
-const abortedMap = new WeakMap();
+var listenersMap = new WeakMap();
+var abortedMap = new WeakMap();
 /**
  * An aborter instance implements AbortSignal interface, can abort HTTP requests.
  *
@@ -12519,8 +12486,8 @@ const abortedMap = new WeakMap();
  * await doAsyncWork(AbortSignal.none);
  * ```
  */
-class AbortSignal {
-    constructor() {
+var AbortSignal = /** @class */ (function () {
+    function AbortSignal() {
         /**
          * onabort event listener.
          */
@@ -12528,65 +12495,74 @@ class AbortSignal {
         listenersMap.set(this, []);
         abortedMap.set(this, false);
     }
-    /**
-     * Status of whether aborted or not.
-     *
-     * @readonly
-     */
-    get aborted() {
-        if (!abortedMap.has(this)) {
-            throw new TypeError("Expected `this` to be an instance of AbortSignal.");
-        }
-        return abortedMap.get(this);
-    }
-    /**
-     * Creates a new AbortSignal instance that will never be aborted.
-     *
-     * @readonly
-     */
-    static get none() {
-        return new AbortSignal();
-    }
+    Object.defineProperty(AbortSignal.prototype, "aborted", {
+        /**
+         * Status of whether aborted or not.
+         *
+         * @readonly
+         */
+        get: function () {
+            if (!abortedMap.has(this)) {
+                throw new TypeError("Expected `this` to be an instance of AbortSignal.");
+            }
+            return abortedMap.get(this);
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Object.defineProperty(AbortSignal, "none", {
+        /**
+         * Creates a new AbortSignal instance that will never be aborted.
+         *
+         * @readonly
+         */
+        get: function () {
+            return new AbortSignal();
+        },
+        enumerable: false,
+        configurable: true
+    });
     /**
      * Added new "abort" event listener, only support "abort" event.
      *
      * @param _type - Only support "abort" event
      * @param listener - The listener to be added
      */
-    addEventListener(
+    AbortSignal.prototype.addEventListener = function (
     // tslint:disable-next-line:variable-name
     _type, listener) {
         if (!listenersMap.has(this)) {
             throw new TypeError("Expected `this` to be an instance of AbortSignal.");
         }
-        const listeners = listenersMap.get(this);
+        var listeners = listenersMap.get(this);
         listeners.push(listener);
-    }
+    };
     /**
      * Remove "abort" event listener, only support "abort" event.
      *
      * @param _type - Only support "abort" event
      * @param listener - The listener to be removed
      */
-    removeEventListener(
+    AbortSignal.prototype.removeEventListener = function (
     // tslint:disable-next-line:variable-name
     _type, listener) {
         if (!listenersMap.has(this)) {
             throw new TypeError("Expected `this` to be an instance of AbortSignal.");
         }
-        const listeners = listenersMap.get(this);
-        const index = listeners.indexOf(listener);
+        var listeners = listenersMap.get(this);
+        var index = listeners.indexOf(listener);
         if (index > -1) {
             listeners.splice(index, 1);
         }
-    }
+    };
     /**
      * Dispatches a synthetic event to the AbortSignal.
      */
-    dispatchEvent(_event) {
+    AbortSignal.prototype.dispatchEvent = function (_event) {
         throw new Error("This is a stub dispatchEvent implementation that should not be used.  It only exists for type-checking purposes.");
-    }
-}
+    };
+    return AbortSignal;
+}());
 /**
  * Helper to trigger an abort event immediately, the onabort and all abort event listeners will be triggered.
  * Will try to trigger abort event for all linked AbortSignal nodes.
@@ -12604,12 +12580,12 @@ function abortSignal(signal) {
     if (signal.onabort) {
         signal.onabort.call(signal);
     }
-    const listeners = listenersMap.get(signal);
+    var listeners = listenersMap.get(signal);
     if (listeners) {
         // Create a copy of listeners so mutations to the array
         // (e.g. via removeListener calls) don't affect the listeners
         // we invoke.
-        listeners.slice().forEach((listener) => {
+        listeners.slice().forEach(function (listener) {
             listener.call(signal, { type: "abort" });
         });
     }
@@ -12635,12 +12611,15 @@ function abortSignal(signal) {
  * }
  * ```
  */
-class AbortError extends Error {
-    constructor(message) {
-        super(message);
-        this.name = "AbortError";
+var AbortError = /** @class */ (function (_super) {
+    tslib.__extends(AbortError, _super);
+    function AbortError(message) {
+        var _this = _super.call(this, message) || this;
+        _this.name = "AbortError";
+        return _this;
     }
-}
+    return AbortError;
+}(Error));
 /**
  * An AbortController provides an AbortSignal and the associated controls to signal
  * that an asynchronous operation should be aborted.
@@ -12675,9 +12654,10 @@ class AbortError extends Error {
  * await doAsyncWork(aborter.withTimeout(25 * 1000));
  * ```
  */
-class AbortController {
+var AbortController = /** @class */ (function () {
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-    constructor(parentSignals) {
+    function AbortController(parentSignals) {
+        var _this = this;
         this._signal = new AbortSignal();
         if (!parentSignals) {
             return;
@@ -12687,7 +12667,8 @@ class AbortController {
             // eslint-disable-next-line prefer-rest-params
             parentSignals = arguments;
         }
-        for (const parentSignal of parentSignals) {
+        for (var _i = 0, parentSignals_1 = parentSignals; _i < parentSignals_1.length; _i++) {
+            var parentSignal = parentSignals_1[_i];
             // if the parent signal has already had abort() called,
             // then call abort on this signal as well.
             if (parentSignal.aborted) {
@@ -12695,48 +12676,380 @@ class AbortController {
             }
             else {
                 // when the parent signal aborts, this signal should as well.
-                parentSignal.addEventListener("abort", () => {
-                    this.abort();
+                parentSignal.addEventListener("abort", function () {
+                    _this.abort();
                 });
             }
         }
     }
-    /**
-     * The AbortSignal associated with this controller that will signal aborted
-     * when the abort method is called on this controller.
-     *
-     * @readonly
-     */
-    get signal() {
-        return this._signal;
-    }
+    Object.defineProperty(AbortController.prototype, "signal", {
+        /**
+         * The AbortSignal associated with this controller that will signal aborted
+         * when the abort method is called on this controller.
+         *
+         * @readonly
+         */
+        get: function () {
+            return this._signal;
+        },
+        enumerable: false,
+        configurable: true
+    });
     /**
      * Signal that any operations passed this controller's associated abort signal
      * to cancel any remaining work and throw an `AbortError`.
      */
-    abort() {
+    AbortController.prototype.abort = function () {
         abortSignal(this._signal);
-    }
+    };
     /**
      * Creates a new AbortSignal instance that will abort after the provided ms.
      * @param ms - Elapsed time in milliseconds to trigger an abort.
      */
-    static timeout(ms) {
-        const signal = new AbortSignal();
-        const timer = setTimeout(abortSignal, ms, signal);
+    AbortController.timeout = function (ms) {
+        var signal = new AbortSignal();
+        var timer = setTimeout(abortSignal, ms, signal);
         // Prevent the active Timer from keeping the Node.js event loop active.
         if (typeof timer.unref === "function") {
             timer.unref();
         }
         return signal;
-    }
-}
+    };
+    return AbortController;
+}());
 
 exports.AbortController = AbortController;
 exports.AbortError = AbortError;
 exports.AbortSignal = AbortSignal;
 //# sourceMappingURL=index.js.map
 
+
+/***/ }),
+
+/***/ 9268:
+/***/ ((module) => {
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global global, define, System, Reflect, Promise */
+var __extends;
+var __assign;
+var __rest;
+var __decorate;
+var __param;
+var __metadata;
+var __awaiter;
+var __generator;
+var __exportStar;
+var __values;
+var __read;
+var __spread;
+var __spreadArrays;
+var __spreadArray;
+var __await;
+var __asyncGenerator;
+var __asyncDelegator;
+var __asyncValues;
+var __makeTemplateObject;
+var __importStar;
+var __importDefault;
+var __classPrivateFieldGet;
+var __classPrivateFieldSet;
+var __createBinding;
+(function (factory) {
+    var root = typeof global === "object" ? global : typeof self === "object" ? self : typeof this === "object" ? this : {};
+    if (typeof define === "function" && define.amd) {
+        define("tslib", ["exports"], function (exports) { factory(createExporter(root, createExporter(exports))); });
+    }
+    else if ( true && typeof module.exports === "object") {
+        factory(createExporter(root, createExporter(module.exports)));
+    }
+    else {
+        factory(createExporter(root));
+    }
+    function createExporter(exports, previous) {
+        if (exports !== root) {
+            if (typeof Object.create === "function") {
+                Object.defineProperty(exports, "__esModule", { value: true });
+            }
+            else {
+                exports.__esModule = true;
+            }
+        }
+        return function (id, v) { return exports[id] = previous ? previous(id, v) : v; };
+    }
+})
+(function (exporter) {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+
+    __extends = function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+
+    __assign = Object.assign || function (t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
+    };
+
+    __rest = function (s, e) {
+        var t = {};
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+            t[p] = s[p];
+        if (s != null && typeof Object.getOwnPropertySymbols === "function")
+            for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+                if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                    t[p[i]] = s[p[i]];
+            }
+        return t;
+    };
+
+    __decorate = function (decorators, target, key, desc) {
+        var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+        if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+        else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+        return c > 3 && r && Object.defineProperty(target, key, r), r;
+    };
+
+    __param = function (paramIndex, decorator) {
+        return function (target, key) { decorator(target, key, paramIndex); }
+    };
+
+    __metadata = function (metadataKey, metadataValue) {
+        if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(metadataKey, metadataValue);
+    };
+
+    __awaiter = function (thisArg, _arguments, P, generator) {
+        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
+        });
+    };
+
+    __generator = function (thisArg, body) {
+        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+        return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+        function verb(n) { return function (v) { return step([n, v]); }; }
+        function step(op) {
+            if (f) throw new TypeError("Generator is already executing.");
+            while (_) try {
+                if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+                if (y = 0, t) op = [op[0] & 2, t.value];
+                switch (op[0]) {
+                    case 0: case 1: t = op; break;
+                    case 4: _.label++; return { value: op[1], done: false };
+                    case 5: _.label++; y = op[1]; op = [0]; continue;
+                    case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                    default:
+                        if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                        if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                        if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                        if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                        if (t[2]) _.ops.pop();
+                        _.trys.pop(); continue;
+                }
+                op = body.call(thisArg, _);
+            } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+            if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+        }
+    };
+
+    __exportStar = function(m, o) {
+        for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(o, p)) __createBinding(o, m, p);
+    };
+
+    __createBinding = Object.create ? (function(o, m, k, k2) {
+        if (k2 === undefined) k2 = k;
+        Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    }) : (function(o, m, k, k2) {
+        if (k2 === undefined) k2 = k;
+        o[k2] = m[k];
+    });
+
+    __values = function (o) {
+        var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+        if (m) return m.call(o);
+        if (o && typeof o.length === "number") return {
+            next: function () {
+                if (o && i >= o.length) o = void 0;
+                return { value: o && o[i++], done: !o };
+            }
+        };
+        throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+    };
+
+    __read = function (o, n) {
+        var m = typeof Symbol === "function" && o[Symbol.iterator];
+        if (!m) return o;
+        var i = m.call(o), r, ar = [], e;
+        try {
+            while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+        }
+        catch (error) { e = { error: error }; }
+        finally {
+            try {
+                if (r && !r.done && (m = i["return"])) m.call(i);
+            }
+            finally { if (e) throw e.error; }
+        }
+        return ar;
+    };
+
+    /** @deprecated */
+    __spread = function () {
+        for (var ar = [], i = 0; i < arguments.length; i++)
+            ar = ar.concat(__read(arguments[i]));
+        return ar;
+    };
+
+    /** @deprecated */
+    __spreadArrays = function () {
+        for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+        for (var r = Array(s), k = 0, i = 0; i < il; i++)
+            for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+                r[k] = a[j];
+        return r;
+    };
+
+    __spreadArray = function (to, from, pack) {
+        if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+            if (ar || !(i in from)) {
+                if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+                ar[i] = from[i];
+            }
+        }
+        return to.concat(ar || Array.prototype.slice.call(from));
+    };
+
+    __await = function (v) {
+        return this instanceof __await ? (this.v = v, this) : new __await(v);
+    };
+
+    __asyncGenerator = function (thisArg, _arguments, generator) {
+        if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+        var g = generator.apply(thisArg, _arguments || []), i, q = [];
+        return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i;
+        function verb(n) { if (g[n]) i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; }
+        function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
+        function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r);  }
+        function fulfill(value) { resume("next", value); }
+        function reject(value) { resume("throw", value); }
+        function settle(f, v) { if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]); }
+    };
+
+    __asyncDelegator = function (o) {
+        var i, p;
+        return i = {}, verb("next"), verb("throw", function (e) { throw e; }), verb("return"), i[Symbol.iterator] = function () { return this; }, i;
+        function verb(n, f) { i[n] = o[n] ? function (v) { return (p = !p) ? { value: __await(o[n](v)), done: n === "return" } : f ? f(v) : v; } : f; }
+    };
+
+    __asyncValues = function (o) {
+        if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+        var m = o[Symbol.asyncIterator], i;
+        return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+        function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+        function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+    };
+
+    __makeTemplateObject = function (cooked, raw) {
+        if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
+        return cooked;
+    };
+
+    var __setModuleDefault = Object.create ? (function(o, v) {
+        Object.defineProperty(o, "default", { enumerable: true, value: v });
+    }) : function(o, v) {
+        o["default"] = v;
+    };
+
+    __importStar = function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+
+    __importDefault = function (mod) {
+        return (mod && mod.__esModule) ? mod : { "default": mod };
+    };
+
+    __classPrivateFieldGet = function (receiver, state, kind, f) {
+        if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+        if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+        return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+    };
+
+    __classPrivateFieldSet = function (receiver, state, value, kind, f) {
+        if (kind === "m") throw new TypeError("Private method is not writable");
+        if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+        if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+        return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+    };
+
+    exporter("__extends", __extends);
+    exporter("__assign", __assign);
+    exporter("__rest", __rest);
+    exporter("__decorate", __decorate);
+    exporter("__param", __param);
+    exporter("__metadata", __metadata);
+    exporter("__awaiter", __awaiter);
+    exporter("__generator", __generator);
+    exporter("__exportStar", __exportStar);
+    exporter("__createBinding", __createBinding);
+    exporter("__values", __values);
+    exporter("__read", __read);
+    exporter("__spread", __spread);
+    exporter("__spreadArrays", __spreadArrays);
+    exporter("__spreadArray", __spreadArray);
+    exporter("__await", __await);
+    exporter("__asyncGenerator", __asyncGenerator);
+    exporter("__asyncDelegator", __asyncDelegator);
+    exporter("__asyncValues", __asyncValues);
+    exporter("__makeTemplateObject", __makeTemplateObject);
+    exporter("__importStar", __importStar);
+    exporter("__importDefault", __importDefault);
+    exporter("__classPrivateFieldGet", __classPrivateFieldGet);
+    exporter("__classPrivateFieldSet", __classPrivateFieldSet);
+});
+
+
+/***/ }),
+
+/***/ 2356:
+/***/ (() => {
+
+"use strict";
+
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+if (typeof Symbol === undefined || !Symbol.asyncIterator) {
+    Symbol.asyncIterator = Symbol.for("Symbol.asyncIterator");
+}
+//# sourceMappingURL=index.js.map
 
 /***/ }),
 
@@ -12976,7 +13289,6 @@ var util = __nccwpck_require__(3837);
 var tslib = __nccwpck_require__(2107);
 var xml2js = __nccwpck_require__(6189);
 var abortController = __nccwpck_require__(2557);
-var coreUtil = __nccwpck_require__(1333);
 var logger$1 = __nccwpck_require__(3233);
 var coreAuth = __nccwpck_require__(9645);
 var os = __nccwpck_require__(2037);
@@ -12988,6 +13300,8 @@ var stream = __nccwpck_require__(2781);
 var FormData = __nccwpck_require__(6279);
 var node_fetch = __nccwpck_require__(467);
 var coreTracing = __nccwpck_require__(4175);
+var url = __nccwpck_require__(7310);
+__nccwpck_require__(2356);
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
@@ -13205,7 +13519,7 @@ const Constants = {
     /**
      * The core-http version
      */
-    coreHttpVersion: "2.2.7",
+    coreHttpVersion: "2.2.4",
     /**
      * Specifies HTTP.
      */
@@ -13506,7 +13820,6 @@ class Serializer {
      * @param mapper - The definition of data models.
      * @param value - The value.
      * @param objectName - Name of the object. Used in the error messages.
-     * @deprecated Removing the constraints validation on client side.
      */
     validateConstraints(mapper, value, objectName) {
         const failValidation = (constraintName, constraintValue) => {
@@ -13605,6 +13918,8 @@ class Serializer {
             payload = object;
         }
         else {
+            // Validate Constraints if any
+            this.validateConstraints(mapper, object, objectName);
             if (mapperType.match(/^any$/i) !== null) {
                 payload = object;
             }
@@ -15331,7 +15646,6 @@ const defaultAllowedHeaderNames = [
     "Server",
     "Transfer-Encoding",
     "User-Agent",
-    "WWW-Authenticate",
 ];
 const defaultAllowedQueryParameters = ["api-version"];
 class Sanitizer {
@@ -15794,6 +16108,7 @@ exports.HttpPipelineLogLevel = void 0;
  * @param opts - OperationOptions object to convert to RequestOptionsBase
  */
 function operationOptionsToRequestOptionsBase(opts) {
+    var _a;
     const { requestOptions, tracingOptions } = opts, additionalOptions = tslib.__rest(opts, ["requestOptions", "tracingOptions"]);
     let result = additionalOptions;
     if (requestOptions) {
@@ -15802,7 +16117,7 @@ function operationOptionsToRequestOptionsBase(opts) {
     if (tracingOptions) {
         result.tracingContext = tracingOptions.tracingContext;
         // By passing spanOptions if they exist at runtime, we're backwards compatible with @azure/core-tracing@preview.13 and earlier.
-        result.spanOptions = tracingOptions === null || tracingOptions === void 0 ? void 0 : tracingOptions.spanOptions;
+        result.spanOptions = (_a = tracingOptions) === null || _a === void 0 ? void 0 : _a.spanOptions;
     }
     return result;
 }
@@ -16092,7 +16407,7 @@ function deserializeResponseBody(jsonContentTypes, xmlContentTypes, response, op
                 parsedResponse.parsedBody = response.status >= 200 && response.status < 300;
             }
             if (responseSpec.headersMapper) {
-                parsedResponse.parsedHeaders = operationSpec.serializer.deserialize(responseSpec.headersMapper, parsedResponse.headers.toJson(), "operationRes.parsedHeaders", options);
+                parsedResponse.parsedHeaders = operationSpec.serializer.deserialize(responseSpec.headersMapper, parsedResponse.headers.rawHeaders(), "operationRes.parsedHeaders", options);
             }
         }
         return parsedResponse;
@@ -16158,7 +16473,7 @@ function handleErrorResponse(parsedResponse, operationSpec, responseSpec) {
         }
         // If error response has headers, try to deserialize it using default header mapper
         if (parsedResponse.headers && defaultHeadersMapper) {
-            error.response.parsedHeaders = operationSpec.serializer.deserialize(defaultHeadersMapper, parsedResponse.headers.toJson(), "operationRes.parsedHeaders");
+            error.response.parsedHeaders = operationSpec.serializer.deserialize(defaultHeadersMapper, parsedResponse.headers.rawHeaders(), "operationRes.parsedHeaders");
         }
     }
     catch (defaultError) {
@@ -16360,6 +16675,17 @@ function updateRetryData(retryOptions, retryData = { retryCount: 0, retryInterva
 }
 
 // Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+/**
+ * Helper TypeGuard that checks if the value is not null or undefined.
+ * @param thing - Anything
+ * @internal
+ */
+function isDefined(thing) {
+    return typeof thing !== "undefined" && thing !== null;
+}
+
+// Copyright (c) Microsoft Corporation.
 const StandardAbortMessage$1 = "The operation was aborted.";
 /**
  * A wrapper for setTimeout that resolves a promise after delayInMs milliseconds.
@@ -16383,7 +16709,7 @@ function delay(delayInMs, value, options) {
             }
         };
         onAborted = () => {
-            if (coreUtil.isDefined(timer)) {
+            if (isDefined(timer)) {
                 clearTimeout(timer);
             }
             removeListeners();
@@ -18202,8 +18528,8 @@ function getCredentialScopes(options, baseUri) {
     if (options === null || options === void 0 ? void 0 : options.credentialScopes) {
         const scopes = options.credentialScopes;
         return Array.isArray(scopes)
-            ? scopes.map((scope) => new URL(scope).toString())
-            : new URL(scopes).toString();
+            ? scopes.map((scope) => new url.URL(scope).toString())
+            : new url.URL(scopes).toString();
     }
     if (baseUri) {
         return `${baseUri}/.default`;
@@ -19026,7 +19352,7 @@ module.exports = function(dst, src) {
 
 "use strict";
 /*!
- * Copyright (c) 2015-2020, Salesforce.com, Inc.
+ * Copyright (c) 2015, Salesforce.com, Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -19056,16 +19382,15 @@ module.exports = function(dst, src) {
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-const punycode = __nccwpck_require__(9540);
-const urlParse = __nccwpck_require__(5682);
+const punycode = __nccwpck_require__(5477);
+const urlParse = (__nccwpck_require__(7310).parse);
+const util = __nccwpck_require__(3837);
 const pubsuffix = __nccwpck_require__(8292);
 const Store = (__nccwpck_require__(7707)/* .Store */ .y);
 const MemoryCookieStore = (__nccwpck_require__(6738)/* .MemoryCookieStore */ .m);
 const pathMatch = (__nccwpck_require__(807)/* .pathMatch */ .U);
-const validators = __nccwpck_require__(1598);
 const VERSION = __nccwpck_require__(8742);
-const { fromCallback } = __nccwpck_require__(4605);
-const { getCustomInspectSymbol } = __nccwpck_require__(9375);
+const { fromCallback } = __nccwpck_require__(9046);
 
 // From RFC6265 S4.1.1
 // note that it excludes \x3B ";"
@@ -19107,7 +19432,6 @@ const SAME_SITE_CONTEXT_VAL_ERR =
   'Invalid sameSiteContext option for getCookies(); expected one of "strict", "lax", or "none"';
 
 function checkSameSiteContext(value) {
-  validators.validate(validators.isNonEmptyString(value), value);
   const context = String(value).toLowerCase();
   if (context === "none" || context === "lax" || context === "strict") {
     return context;
@@ -19126,23 +19450,7 @@ const PrefixSecurityEnum = Object.freeze({
 // * all capturing groups converted to non-capturing -- "(?:)"
 // * support for IPv6 Scoped Literal ("%eth1") removed
 // * lowercase hexadecimal only
-const IP_REGEX_LOWERCASE = /(?:^(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}$)|(?:^(?:(?:[a-f\d]{1,4}:){7}(?:[a-f\d]{1,4}|:)|(?:[a-f\d]{1,4}:){6}(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|:[a-f\d]{1,4}|:)|(?:[a-f\d]{1,4}:){5}(?::(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|(?::[a-f\d]{1,4}){1,2}|:)|(?:[a-f\d]{1,4}:){4}(?:(?::[a-f\d]{1,4}){0,1}:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|(?::[a-f\d]{1,4}){1,3}|:)|(?:[a-f\d]{1,4}:){3}(?:(?::[a-f\d]{1,4}){0,2}:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|(?::[a-f\d]{1,4}){1,4}|:)|(?:[a-f\d]{1,4}:){2}(?:(?::[a-f\d]{1,4}){0,3}:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|(?::[a-f\d]{1,4}){1,5}|:)|(?:[a-f\d]{1,4}:){1}(?:(?::[a-f\d]{1,4}){0,4}:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|(?::[a-f\d]{1,4}){1,6}|:)|(?::(?:(?::[a-f\d]{1,4}){0,5}:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|(?::[a-f\d]{1,4}){1,7}|:)))$)/;
-const IP_V6_REGEX = `
-\\[?(?:
-(?:[a-fA-F\\d]{1,4}:){7}(?:[a-fA-F\\d]{1,4}|:)|
-(?:[a-fA-F\\d]{1,4}:){6}(?:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|:[a-fA-F\\d]{1,4}|:)|
-(?:[a-fA-F\\d]{1,4}:){5}(?::(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|(?::[a-fA-F\\d]{1,4}){1,2}|:)|
-(?:[a-fA-F\\d]{1,4}:){4}(?:(?::[a-fA-F\\d]{1,4}){0,1}:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|(?::[a-fA-F\\d]{1,4}){1,3}|:)|
-(?:[a-fA-F\\d]{1,4}:){3}(?:(?::[a-fA-F\\d]{1,4}){0,2}:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|(?::[a-fA-F\\d]{1,4}){1,4}|:)|
-(?:[a-fA-F\\d]{1,4}:){2}(?:(?::[a-fA-F\\d]{1,4}){0,3}:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|(?::[a-fA-F\\d]{1,4}){1,5}|:)|
-(?:[a-fA-F\\d]{1,4}:){1}(?:(?::[a-fA-F\\d]{1,4}){0,4}:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|(?::[a-fA-F\\d]{1,4}){1,6}|:)|
-(?::(?:(?::[a-fA-F\\d]{1,4}){0,5}:(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)(?:\\.(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]\\d|\\d)){3}|(?::[a-fA-F\\d]{1,4}){1,7}|:))
-)(?:%[0-9a-zA-Z]{1,})?\\]?
-`
-  .replace(/\s*\/\/.*$/gm, "")
-  .replace(/\n/g, "")
-  .trim();
-const IP_V6_REGEX_OBJECT = new RegExp(`^${IP_V6_REGEX}$`);
+var IP_REGEX_LOWERCASE =/(?:^(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}$)|(?:^(?:(?:[a-f\d]{1,4}:){7}(?:[a-f\d]{1,4}|:)|(?:[a-f\d]{1,4}:){6}(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|:[a-f\d]{1,4}|:)|(?:[a-f\d]{1,4}:){5}(?::(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|(?::[a-f\d]{1,4}){1,2}|:)|(?:[a-f\d]{1,4}:){4}(?:(?::[a-f\d]{1,4}){0,1}:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|(?::[a-f\d]{1,4}){1,3}|:)|(?:[a-f\d]{1,4}:){3}(?:(?::[a-f\d]{1,4}){0,2}:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|(?::[a-f\d]{1,4}){1,4}|:)|(?:[a-f\d]{1,4}:){2}(?:(?::[a-f\d]{1,4}){0,3}:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|(?::[a-f\d]{1,4}){1,5}|:)|(?:[a-f\d]{1,4}:){1}(?:(?::[a-f\d]{1,4}){0,4}:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|(?::[a-f\d]{1,4}){1,6}|:)|(?::(?:(?::[a-f\d]{1,4}){0,5}:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)(?:\.(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)){3}|(?::[a-f\d]{1,4}){1,7}|:)))$)/;
 
 /*
  * Parses a Natural number (i.e., non-negative integer) with either the
@@ -19346,7 +19654,6 @@ function parseDate(str) {
 }
 
 function formatDate(date) {
-  validators.validate(validators.isDate(date), date);
   return date.toUTCString();
 }
 
@@ -19356,10 +19663,6 @@ function canonicalDomain(str) {
     return null;
   }
   str = str.trim().replace(/^\./, ""); // S4.1.2.3 & S5.2.3: ignore leading .
-
-  if (IP_V6_REGEX_OBJECT.test(str)) {
-    str = str.replace("[", "").replace("]", "");
-  }
 
   // convert to IDN if any non-ASCII characters
   if (punycode && /[^\u0001-\u007f]/.test(str)) {
@@ -19395,7 +19698,7 @@ function domainMatch(str, domStr, canonicalize) {
   /* " o All of the following [three] conditions hold:" */
 
   /* "* The domain string is a suffix of the string" */
-  const idx = str.lastIndexOf(domStr);
+  const idx = str.indexOf(domStr);
   if (idx <= 0) {
     return false; // it's a non-match (-1) or prefix (0)
   }
@@ -19409,7 +19712,7 @@ function domainMatch(str, domStr, canonicalize) {
 
   /* "  * The last character of the string that is not included in the
    * domain string is a %x2E (".") character." */
-  if (str.substr(idx - 1, 1) !== ".") {
+  if (str.substr(idx-1,1) !== '.') {
     return false; // doesn't align on "."
   }
 
@@ -19453,7 +19756,6 @@ function defaultPath(path) {
 }
 
 function trimTerminator(str) {
-  if (validators.isEmptyString(str)) return str;
   for (let t = 0; t < TERMINATORS.length; t++) {
     const terminatorIdx = str.indexOf(TERMINATORS[t]);
     if (terminatorIdx !== -1) {
@@ -19466,7 +19768,6 @@ function trimTerminator(str) {
 
 function parseCookiePair(cookiePair, looseMode) {
   cookiePair = trimTerminator(cookiePair);
-  validators.validate(validators.isString(cookiePair), cookiePair);
 
   let firstEq = cookiePair.indexOf("=");
   if (looseMode) {
@@ -19506,11 +19807,6 @@ function parse(str, options) {
   if (!options || typeof options !== "object") {
     options = {};
   }
-
-  if (validators.isEmptyString(str) || !validators.isString(str)) {
-    return null;
-  }
-
   str = str.trim();
 
   // We use a regex to parse the "name-value-pair" part of S5.2
@@ -19646,11 +19942,11 @@ function parse(str, options) {
           case "lax":
             c.sameSite = "lax";
             break;
-          case "none":
-            c.sameSite = "none";
-            break;
           default:
-            c.sameSite = undefined;
+            // RFC6265bis-02 S5.3.7 step 1:
+            // "If cookie-av's attribute-value is not a case-insensitive match
+            //  for "Strict" or "Lax", ignore the "cookie-av"."
+            // This effectively sets it to 'none' from the prototype.
             break;
         }
         break;
@@ -19673,7 +19969,6 @@ function parse(str, options) {
  * @returns boolean
  */
 function isSecurePrefixConditionMet(cookie) {
-  validators.validate(validators.isObject(cookie), cookie);
   return !cookie.key.startsWith("__Secure-") || cookie.secure;
 }
 
@@ -19689,7 +19984,6 @@ function isSecurePrefixConditionMet(cookie) {
  * @returns boolean
  */
 function isHostPrefixConditionMet(cookie) {
-  validators.validate(validators.isObject(cookie));
   return (
     !cookie.key.startsWith("__Host-") ||
     (cookie.secure &&
@@ -19711,7 +20005,7 @@ function jsonParse(str) {
 }
 
 function fromJSON(str) {
-  if (!str || validators.isEmptyString(str)) {
+  if (!str) {
     return null;
   }
 
@@ -19757,8 +20051,6 @@ function fromJSON(str) {
  */
 
 function cookieCompare(a, b) {
-  validators.validate(validators.isObject(a), a);
-  validators.validate(validators.isObject(b), b);
   let cmp = 0;
 
   // descending for length: b CMP a
@@ -19786,7 +20078,6 @@ function cookieCompare(a, b) {
 // Gives the permutation of all possible pathMatch()es of a given path. The
 // array is in longest-to-shortest order.  Handy for indexing.
 function permutePath(path) {
-  validators.validate(validators.isString(path));
   if (path === "/") {
     return ["/"];
   }
@@ -19834,14 +20125,13 @@ const cookieDefaults = {
   pathIsDefault: null,
   creation: null,
   lastAccessed: null,
-  sameSite: undefined
+  sameSite: "none"
 };
 
 class Cookie {
   constructor(options = {}) {
-    const customInspectSymbol = getCustomInspectSymbol();
-    if (customInspectSymbol) {
-      this[customInspectSymbol] = this.inspect;
+    if (util.inspect.custom) {
+      this[util.inspect.custom] = this.inspect;
     }
 
     Object.assign(this, cookieDefaults, options);
@@ -20123,13 +20413,9 @@ class CookieJar {
     if (typeof options === "boolean") {
       options = { rejectPublicSuffixes: options };
     }
-    validators.validate(validators.isObject(options), options);
     this.rejectPublicSuffixes = options.rejectPublicSuffixes;
     this.enableLooseMode = !!options.looseMode;
-    this.allowSpecialUseDomain =
-      typeof options.allowSpecialUseDomain === "boolean"
-        ? options.allowSpecialUseDomain
-        : true;
+    this.allowSpecialUseDomain = !!options.allowSpecialUseDomain;
     this.store = store || new MemoryCookieStore();
     this.prefixSecurity = getNormalizedPrefixSecurity(options.prefixSecurity);
     this._cloneSync = syncWrap("clone");
@@ -20143,29 +20429,11 @@ class CookieJar {
   }
 
   setCookie(cookie, url, options, cb) {
-    validators.validate(validators.isNonEmptyString(url), cb, options);
     let err;
-
-    if (validators.isFunction(url)) {
-      cb = url;
-      return cb(new Error("No URL was specified"));
-    }
-
     const context = getCookieContext(url);
-    if (validators.isFunction(options)) {
+    if (typeof options === "function") {
       cb = options;
       options = {};
-    }
-
-    validators.validate(validators.isFunction(cb), cb);
-
-    if (
-      !validators.isNonEmptyString(cookie) &&
-      !validators.isObject(cookie) &&
-      cookie instanceof String &&
-      cookie.length == 0
-    ) {
-      return cb(null);
     }
 
     const host = canonicalDomain(context.hostname);
@@ -20204,11 +20472,8 @@ class CookieJar {
 
     // S5.3 step 5: public suffixes
     if (this.rejectPublicSuffixes && cookie.domain) {
-      const suffix = pubsuffix.getPublicSuffix(cookie.cdomain(), {
-        allowSpecialUseDomain: this.allowSpecialUseDomain,
-        ignoreError: options.ignoreError
-      });
-      if (suffix == null && !IP_V6_REGEX_OBJECT.test(cookie.domain)) {
+      const suffix = pubsuffix.getPublicSuffix(cookie.cdomain());
+      if (suffix == null) {
         // e.g. "com"
         err = new Error("Cookie has domain set to a public suffix");
         return cb(options.ignoreError ? null : err);
@@ -20251,11 +20516,7 @@ class CookieJar {
     }
 
     // 6252bis-02 S5.4 Step 13 & 14:
-    if (
-      cookie.sameSite !== "none" &&
-      cookie.sameSite !== undefined &&
-      sameSiteContext
-    ) {
+    if (cookie.sameSite !== "none" && sameSiteContext) {
       // "If the cookie's "same-site-flag" is not "None", and the cookie
       //  is being set from a context whose "site for cookies" is not an
       //  exact match for request-uri's host's registered domain, then
@@ -20341,14 +20602,11 @@ class CookieJar {
 
   // RFC6365 S5.4
   getCookies(url, options, cb) {
-    validators.validate(validators.isNonEmptyString(url), cb, url);
     const context = getCookieContext(url);
-    if (validators.isFunction(options)) {
+    if (typeof options === "function") {
       cb = options;
       options = {};
     }
-    validators.validate(validators.isObject(options), cb, options);
-    validators.validate(validators.isFunction(cb), cb);
 
     const host = canonicalDomain(context.hostname);
     const path = context.pathname || "/";
@@ -20464,7 +20722,6 @@ class CookieJar {
 
   getCookieString(...args) {
     const cb = args.pop();
-    validators.validate(validators.isFunction(cb), cb);
     const next = function(err, cookies) {
       if (err) {
         cb(err);
@@ -20484,7 +20741,6 @@ class CookieJar {
 
   getSetCookieStrings(...args) {
     const cb = args.pop();
-    validators.validate(validators.isFunction(cb), cb);
     const next = function(err, cookies) {
       if (err) {
         cb(err);
@@ -20502,9 +20758,8 @@ class CookieJar {
   }
 
   serialize(cb) {
-    validators.validate(validators.isFunction(cb), cb);
     let type = this.store.constructor.name;
-    if (validators.isObject(type)) {
+    if (type === "Object") {
       type = null;
     }
 
@@ -20520,9 +20775,6 @@ class CookieJar {
 
       // CookieJar configuration:
       rejectPublicSuffixes: !!this.rejectPublicSuffixes,
-      enableLooseMode: !!this.enableLooseMode,
-      allowSpecialUseDomain: !!this.allowSpecialUseDomain,
-      prefixSecurity: getNormalizedPrefixSecurity(this.prefixSecurity),
 
       // this gets filled from getAllCookies:
       cookies: []
@@ -20625,7 +20877,6 @@ class CookieJar {
   }
 
   removeAllCookies(cb) {
-    validators.validate(validators.isFunction(cb), cb);
     const store = this.store;
 
     // Check that the store implements its own removeAllCookies(). The default
@@ -20679,7 +20930,6 @@ class CookieJar {
       cb = store;
       store = null;
     }
-    validators.validate(validators.isFunction(cb), cb);
 
     let serialized;
     if (typeof strOrObj === "string") {
@@ -20691,12 +20941,7 @@ class CookieJar {
       serialized = strOrObj;
     }
 
-    const jar = new CookieJar(store, {
-      rejectPublicSuffixes: serialized.rejectPublicSuffixes,
-      looseMode: serialized.enableLooseMode,
-      allowSpecialUseDomain: serialized.allowSpecialUseDomain,
-      prefixSecurity: serialized.prefixSecurity
-    });
+    const jar = new CookieJar(store, serialized.rejectPublicSuffixes);
     jar._importCookies(serialized, err => {
       if (err) {
         return cb(err);
@@ -20708,10 +20953,7 @@ class CookieJar {
   static deserializeSync(strOrObj, store) {
     const serialized =
       typeof strOrObj === "string" ? JSON.parse(strOrObj) : strOrObj;
-    const jar = new CookieJar(store, {
-      rejectPublicSuffixes: serialized.rejectPublicSuffixes,
-      looseMode: serialized.enableLooseMode
-    });
+    const jar = new CookieJar(store, serialized.rejectPublicSuffixes);
 
     // catch this mistake early:
     if (!jar.store.synchronous) {
@@ -20780,7 +21022,6 @@ exports.permuteDomain = __nccwpck_require__(5696).permuteDomain;
 exports.permutePath = permutePath;
 exports.canonicalDomain = canonicalDomain;
 exports.PrefixSecurityEnum = PrefixSecurityEnum;
-exports.ParameterError = validators.ParameterError;
 
 
 /***/ }),
@@ -20789,7 +21030,6 @@ exports.ParameterError = validators.ParameterError;
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
-var __webpack_unused_export__;
 /*!
  * Copyright (c) 2015, Salesforce.com, Inc.
  * All rights reserved.
@@ -20821,25 +21061,23 @@ var __webpack_unused_export__;
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-const { fromCallback } = __nccwpck_require__(4605);
+const { fromCallback } = __nccwpck_require__(9046);
 const Store = (__nccwpck_require__(7707)/* .Store */ .y);
 const permuteDomain = (__nccwpck_require__(5696).permuteDomain);
 const pathMatch = (__nccwpck_require__(807)/* .pathMatch */ .U);
-const { getCustomInspectSymbol, getUtilInspect } = __nccwpck_require__(9375);
+const util = __nccwpck_require__(3837);
 
 class MemoryCookieStore extends Store {
   constructor() {
     super();
     this.synchronous = true;
     this.idx = {};
-    const customInspectSymbol = getCustomInspectSymbol();
-    if (customInspectSymbol) {
-      this[customInspectSymbol] = this.inspect;
+    if (util.inspect.custom) {
+      this[util.inspect.custom] = this.inspect;
     }
   }
 
   inspect() {
-    const util = { inspect: getUtilInspect(inspectFallback) };
     return `{ idx: ${util.inspect(this.idx, false, 2)} }`;
   }
 
@@ -20856,7 +21094,7 @@ class MemoryCookieStore extends Store {
     const results = [];
     if (typeof allowSpecialUseDomain === "function") {
       cb = allowSpecialUseDomain;
-      allowSpecialUseDomain = true;
+      allowSpecialUseDomain = false;
     }
     if (!domain) {
       return cb(null, []);
@@ -20978,60 +21216,10 @@ class MemoryCookieStore extends Store {
   "removeAllCookies",
   "getAllCookies"
 ].forEach(name => {
-  MemoryCookieStore.prototype[name] = fromCallback(
-    MemoryCookieStore.prototype[name]
-  );
+  MemoryCookieStore[name] = fromCallback(MemoryCookieStore.prototype[name]);
 });
 
 exports.m = MemoryCookieStore;
-
-function inspectFallback(val) {
-  const domains = Object.keys(val);
-  if (domains.length === 0) {
-    return "{}";
-  }
-  let result = "{\n";
-  Object.keys(val).forEach((domain, i) => {
-    result += formatDomain(domain, val[domain]);
-    if (i < domains.length - 1) {
-      result += ",";
-    }
-    result += "\n";
-  });
-  result += "}";
-  return result;
-}
-
-function formatDomain(domainName, domainValue) {
-  const indent = "  ";
-  let result = `${indent}'${domainName}': {\n`;
-  Object.keys(domainValue).forEach((path, i, paths) => {
-    result += formatPath(path, domainValue[path]);
-    if (i < paths.length - 1) {
-      result += ",";
-    }
-    result += "\n";
-  });
-  result += `${indent}}`;
-  return result;
-}
-
-function formatPath(pathName, pathValue) {
-  const indent = "    ";
-  let result = `${indent}'${pathName}': {\n`;
-  Object.keys(pathValue).forEach((cookieName, i, cookieNames) => {
-    const cookie = pathValue[cookieName];
-    result += `      ${cookieName}: ${cookie.inspect()}`;
-    if (i < cookieNames.length - 1) {
-      result += ",";
-    }
-    result += "\n";
-  });
-  result += `${indent}}`;
-  return result;
-}
-
-__webpack_unused_export__ = inspectFallback;
 
 
 /***/ }),
@@ -21144,22 +21332,27 @@ const pubsuffix = __nccwpck_require__(8292);
 
 // Gives the permutation of all possible domainMatch()es of a given domain. The
 // array is in shortest-to-longest order.  Handy for indexing.
-
+const SPECIAL_USE_DOMAINS = ["local"]; // RFC 6761
 function permuteDomain(domain, allowSpecialUseDomain) {
-  const pubSuf = pubsuffix.getPublicSuffix(domain, {
-    allowSpecialUseDomain: allowSpecialUseDomain
-  });
+  let pubSuf = null;
+  if (allowSpecialUseDomain) {
+    const domainParts = domain.split(".");
+    if (SPECIAL_USE_DOMAINS.includes(domainParts[domainParts.length - 1])) {
+      pubSuf = `${domainParts[domainParts.length - 2]}.${
+        domainParts[domainParts.length - 1]
+      }`;
+    } else {
+      pubSuf = pubsuffix.getPublicSuffix(domain);
+    }
+  } else {
+    pubSuf = pubsuffix.getPublicSuffix(domain);
+  }
 
   if (!pubSuf) {
     return null;
   }
   if (pubSuf == domain) {
     return [domain];
-  }
-
-  // Nuke trailing dot
-  if (domain.slice(-1) == ".") {
-    domain = domain.slice(0, -1);
   }
 
   const prefix = domain.slice(0, -(pubSuf.length + 1)); // ".example.com"
@@ -21215,42 +21408,7 @@ exports.permuteDomain = permuteDomain;
 
 const psl = __nccwpck_require__(9975);
 
-// RFC 6761
-const SPECIAL_USE_DOMAINS = [
-  "local",
-  "example",
-  "invalid",
-  "localhost",
-  "test"
-];
-
-const SPECIAL_TREATMENT_DOMAINS = ["localhost", "invalid"];
-
-function getPublicSuffix(domain, options = {}) {
-  const domainParts = domain.split(".");
-  const topLevelDomain = domainParts[domainParts.length - 1];
-  const allowSpecialUseDomain = !!options.allowSpecialUseDomain;
-  const ignoreError = !!options.ignoreError;
-
-  if (allowSpecialUseDomain && SPECIAL_USE_DOMAINS.includes(topLevelDomain)) {
-    if (domainParts.length > 1) {
-      const secondLevelDomain = domainParts[domainParts.length - 2];
-      // In aforementioned example, the eTLD/pubSuf will be apple.localhost
-      return `${secondLevelDomain}.${topLevelDomain}`;
-    } else if (SPECIAL_TREATMENT_DOMAINS.includes(topLevelDomain)) {
-      // For a single word special use domain, e.g. 'localhost' or 'invalid', per RFC 6761,
-      // "Application software MAY recognize {localhost/invalid} names as special, or
-      // MAY pass them to name resolution APIs as they would for other domain names."
-      return `${topLevelDomain}`;
-    }
-  }
-
-  if (!ignoreError && SPECIAL_USE_DOMAINS.includes(topLevelDomain)) {
-    throw new Error(
-      `Cookie has domain set to the public suffix "${topLevelDomain}" which is a special use domain. To allow this, configure your CookieJar with {allowSpecialUseDomain:true, rejectPublicSuffixes: false}.`
-    );
-  }
-
+function getPublicSuffix(domain) {
   return psl.get(domain);
 }
 
@@ -21343,160 +21501,11 @@ exports.y = Store;
 
 /***/ }),
 
-/***/ 9375:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-function requireUtil() {
-  try {
-    // eslint-disable-next-line no-restricted-modules
-    return __nccwpck_require__(3837);
-  } catch (e) {
-    return null;
-  }
-}
-
-// for v10.12.0+
-function lookupCustomInspectSymbol() {
-  return Symbol.for("nodejs.util.inspect.custom");
-}
-
-// for older node environments
-function tryReadingCustomSymbolFromUtilInspect(options) {
-  const _requireUtil = options.requireUtil || requireUtil;
-  const util = _requireUtil();
-  return util ? util.inspect.custom : null;
-}
-
-exports.getUtilInspect = function getUtilInspect(fallback, options = {}) {
-  const _requireUtil = options.requireUtil || requireUtil;
-  const util = _requireUtil();
-  return function inspect(value, showHidden, depth) {
-    return util ? util.inspect(value, showHidden, depth) : fallback(value);
-  };
-};
-
-exports.getCustomInspectSymbol = function getCustomInspectSymbol(options = {}) {
-  const _lookupCustomInspectSymbol =
-    options.lookupCustomInspectSymbol || lookupCustomInspectSymbol;
-
-  // get custom inspect symbol for node environments
-  return (
-    _lookupCustomInspectSymbol() ||
-    tryReadingCustomSymbolFromUtilInspect(options)
-  );
-};
-
-
-/***/ }),
-
-/***/ 1598:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-/* ************************************************************************************
-Extracted from check-types.js
-https://gitlab.com/philbooth/check-types.js
-
-MIT License
-
-Copyright (c) 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019 Phil Booth
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-************************************************************************************ */
-
-
-/* Validation functions copied from check-types package - https://www.npmjs.com/package/check-types */
-function isFunction(data) {
-  return typeof data === "function";
-}
-
-function isNonEmptyString(data) {
-  return isString(data) && data !== "";
-}
-
-function isDate(data) {
-  return isInstanceStrict(data, Date) && isInteger(data.getTime());
-}
-
-function isEmptyString(data) {
-  return data === "" || (data instanceof String && data.toString() === "");
-}
-
-function isString(data) {
-  return typeof data === "string" || data instanceof String;
-}
-
-function isObject(data) {
-  return toString.call(data) === "[object Object]";
-}
-function isInstanceStrict(data, prototype) {
-  try {
-    return data instanceof prototype;
-  } catch (error) {
-    return false;
-  }
-}
-
-function isInteger(data) {
-  return typeof data === "number" && data % 1 === 0;
-}
-/* End validation functions */
-
-function validate(bool, cb, options) {
-  if (!isFunction(cb)) {
-    options = cb;
-    cb = null;
-  }
-  if (!isObject(options)) options = { Error: "Failed Check" };
-  if (!bool) {
-    if (cb) {
-      cb(new ParameterError(options));
-    } else {
-      throw new ParameterError(options);
-    }
-  }
-}
-
-class ParameterError extends Error {
-  constructor(...params) {
-    super(...params);
-  }
-}
-
-exports.ParameterError = ParameterError;
-exports.isFunction = isFunction;
-exports.isNonEmptyString = isNonEmptyString;
-exports.isDate = isDate;
-exports.isEmptyString = isEmptyString;
-exports.isString = isString;
-exports.isObject = isObject;
-exports.validate = validate;
-
-
-/***/ }),
-
 /***/ 8742:
 /***/ ((module) => {
 
 // generated by genversion
-module.exports = '4.1.2'
+module.exports = '4.0.0'
 
 
 /***/ }),
@@ -21504,7 +21513,7 @@ module.exports = '4.1.2'
 /***/ 2107:
 /***/ ((module) => {
 
-/******************************************************************************
+/*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
 
 Permission to use, copy, modify, and/or distribute this software for any
@@ -21542,7 +21551,6 @@ var __importStar;
 var __importDefault;
 var __classPrivateFieldGet;
 var __classPrivateFieldSet;
-var __classPrivateFieldIn;
 var __createBinding;
 (function (factory) {
     var root = typeof global === "object" ? global : typeof self === "object" ? self : typeof this === "object" ? this : {};
@@ -21659,11 +21667,7 @@ var __createBinding;
 
     __createBinding = Object.create ? (function(o, m, k, k2) {
         if (k2 === undefined) k2 = k;
-        var desc = Object.getOwnPropertyDescriptor(m, k);
-        if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-            desc = { enumerable: true, get: function() { return m[k]; } };
-        }
-        Object.defineProperty(o, k2, desc);
+        Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
     }) : (function(o, m, k, k2) {
         if (k2 === undefined) k2 = k;
         o[k2] = m[k];
@@ -21790,11 +21794,6 @@ var __createBinding;
         return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
     };
 
-    __classPrivateFieldIn = function (state, receiver) {
-        if (receiver === null || (typeof receiver !== "object" && typeof receiver !== "function")) throw new TypeError("Cannot use 'in' operator on non-object");
-        return typeof state === "function" ? receiver === state : state.has(receiver);
-    };
-
     exporter("__extends", __extends);
     exporter("__assign", __assign);
     exporter("__rest", __rest);
@@ -21819,45 +21818,7 @@ var __createBinding;
     exporter("__importDefault", __importDefault);
     exporter("__classPrivateFieldGet", __classPrivateFieldGet);
     exporter("__classPrivateFieldSet", __classPrivateFieldSet);
-    exporter("__classPrivateFieldIn", __classPrivateFieldIn);
 });
-
-
-/***/ }),
-
-/***/ 4605:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-
-exports.fromCallback = function (fn) {
-  return Object.defineProperty(function () {
-    if (typeof arguments[arguments.length - 1] === 'function') fn.apply(this, arguments)
-    else {
-      return new Promise((resolve, reject) => {
-        arguments[arguments.length] = (err, res) => {
-          if (err) return reject(err)
-          resolve(res)
-        }
-        arguments.length++
-        fn.apply(this, arguments)
-      })
-    }
-  }, 'name', { value: fn.name })
-}
-
-exports.fromPromise = function (fn) {
-  return Object.defineProperty(function () {
-    const cb = arguments[arguments.length - 1]
-    if (typeof cb !== 'function') return fn.apply(this, arguments)
-    else {
-      delete arguments[arguments.length - 1]
-      arguments.length--
-      fn.apply(this, arguments).then(r => cb(null, r), cb)
-    }
-  }, 'name', { value: fn.name })
-}
 
 
 /***/ }),
@@ -22517,721 +22478,6 @@ exports["default"] = _default;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 var logger$1 = __nccwpck_require__(3233);
-var abortController = __nccwpck_require__(2557);
-
-// Copyright (c) Microsoft Corporation.
-/**
- * The `@azure/logger` configuration for this package.
- * @internal
- */
-const logger = logger$1.createClientLogger("core-lro");
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-/**
- * The default time interval to wait before sending the next polling request.
- */
-const POLL_INTERVAL_IN_MS = 2000;
-/**
- * The closed set of terminal states.
- */
-const terminalStates = ["succeeded", "canceled", "failed"];
-
-// Copyright (c) Microsoft Corporation.
-/**
- * Deserializes the state
- */
-function deserializeState(serializedState) {
-    try {
-        return JSON.parse(serializedState).state;
-    }
-    catch (e) {
-        throw new Error(`Unable to deserialize input state: ${serializedState}`);
-    }
-}
-function setStateError(inputs) {
-    const { state, stateProxy } = inputs;
-    return (error) => {
-        stateProxy.setError(state, error);
-        stateProxy.setFailed(state);
-        throw error;
-    };
-}
-function processOperationStatus(result) {
-    const { state, stateProxy, status, isDone, processResult, response, setErrorAsResult } = result;
-    switch (status) {
-        case "succeeded": {
-            stateProxy.setSucceeded(state);
-            break;
-        }
-        case "failed": {
-            stateProxy.setError(state, new Error(`The long-running operation has failed`));
-            stateProxy.setFailed(state);
-            break;
-        }
-        case "canceled": {
-            stateProxy.setCanceled(state);
-            break;
-        }
-    }
-    if ((isDone === null || isDone === void 0 ? void 0 : isDone(response, state)) ||
-        (isDone === undefined &&
-            ["succeeded", "canceled"].concat(setErrorAsResult ? [] : ["failed"]).includes(status))) {
-        stateProxy.setResult(state, buildResult({
-            response,
-            state,
-            processResult,
-        }));
-    }
-}
-function buildResult(inputs) {
-    const { processResult, response, state } = inputs;
-    return processResult ? processResult(response, state) : response;
-}
-/**
- * Initiates the long-running operation.
- */
-async function initOperation(inputs) {
-    const { init, stateProxy, processResult, getOperationStatus, withOperationLocation, setErrorAsResult, } = inputs;
-    const { operationLocation, resourceLocation, metadata, response } = await init();
-    if (operationLocation)
-        withOperationLocation === null || withOperationLocation === void 0 ? void 0 : withOperationLocation(operationLocation, false);
-    const config = {
-        metadata,
-        operationLocation,
-        resourceLocation,
-    };
-    logger.verbose(`LRO: Operation description:`, config);
-    const state = stateProxy.initState(config);
-    const status = getOperationStatus({ response, state, operationLocation });
-    processOperationStatus({ state, status, stateProxy, response, setErrorAsResult, processResult });
-    return state;
-}
-async function pollOperationHelper(inputs) {
-    const { poll, state, stateProxy, operationLocation, getOperationStatus, getResourceLocation, options, } = inputs;
-    const response = await poll(operationLocation, options).catch(setStateError({
-        state,
-        stateProxy,
-    }));
-    const status = getOperationStatus(response, state);
-    logger.verbose(`LRO: Status:\n\tPolling from: ${state.config.operationLocation}\n\tOperation status: ${status}\n\tPolling status: ${terminalStates.includes(status) ? "Stopped" : "Running"}`);
-    if (status === "succeeded") {
-        const resourceLocation = getResourceLocation(response, state);
-        if (resourceLocation !== undefined) {
-            return {
-                response: await poll(resourceLocation).catch(setStateError({ state, stateProxy })),
-                status,
-            };
-        }
-    }
-    return { response, status };
-}
-/** Polls the long-running operation. */
-async function pollOperation(inputs) {
-    const { poll, state, stateProxy, options, getOperationStatus, getResourceLocation, getOperationLocation, withOperationLocation, getPollingInterval, processResult, updateState, setDelay, isDone, setErrorAsResult, } = inputs;
-    const { operationLocation } = state.config;
-    if (operationLocation !== undefined) {
-        const { response, status } = await pollOperationHelper({
-            poll,
-            getOperationStatus,
-            state,
-            stateProxy,
-            operationLocation,
-            getResourceLocation,
-            options,
-        });
-        processOperationStatus({
-            status,
-            response,
-            state,
-            stateProxy,
-            isDone,
-            processResult,
-            setErrorAsResult,
-        });
-        if (!terminalStates.includes(status)) {
-            const intervalInMs = getPollingInterval === null || getPollingInterval === void 0 ? void 0 : getPollingInterval(response);
-            if (intervalInMs)
-                setDelay(intervalInMs);
-            const location = getOperationLocation === null || getOperationLocation === void 0 ? void 0 : getOperationLocation(response, state);
-            if (location !== undefined) {
-                const isUpdated = operationLocation !== location;
-                state.config.operationLocation = location;
-                withOperationLocation === null || withOperationLocation === void 0 ? void 0 : withOperationLocation(location, isUpdated);
-            }
-            else
-                withOperationLocation === null || withOperationLocation === void 0 ? void 0 : withOperationLocation(operationLocation, false);
-        }
-        updateState === null || updateState === void 0 ? void 0 : updateState(state, response);
-    }
-}
-
-// Copyright (c) Microsoft Corporation.
-function getOperationLocationPollingUrl(inputs) {
-    const { azureAsyncOperation, operationLocation } = inputs;
-    return operationLocation !== null && operationLocation !== void 0 ? operationLocation : azureAsyncOperation;
-}
-function getLocationHeader(rawResponse) {
-    return rawResponse.headers["location"];
-}
-function getOperationLocationHeader(rawResponse) {
-    return rawResponse.headers["operation-location"];
-}
-function getAzureAsyncOperationHeader(rawResponse) {
-    return rawResponse.headers["azure-asyncoperation"];
-}
-function findResourceLocation(inputs) {
-    const { location, requestMethod, requestPath, resourceLocationConfig } = inputs;
-    switch (requestMethod) {
-        case "PUT": {
-            return requestPath;
-        }
-        case "DELETE": {
-            return undefined;
-        }
-        default: {
-            switch (resourceLocationConfig) {
-                case "azure-async-operation": {
-                    return undefined;
-                }
-                case "original-uri": {
-                    return requestPath;
-                }
-                case "location":
-                default: {
-                    return location;
-                }
-            }
-        }
-    }
-}
-function inferLroMode(inputs) {
-    const { rawResponse, requestMethod, requestPath, resourceLocationConfig } = inputs;
-    const operationLocation = getOperationLocationHeader(rawResponse);
-    const azureAsyncOperation = getAzureAsyncOperationHeader(rawResponse);
-    const pollingUrl = getOperationLocationPollingUrl({ operationLocation, azureAsyncOperation });
-    const location = getLocationHeader(rawResponse);
-    const normalizedRequestMethod = requestMethod === null || requestMethod === void 0 ? void 0 : requestMethod.toLocaleUpperCase();
-    if (pollingUrl !== undefined) {
-        return {
-            mode: "OperationLocation",
-            operationLocation: pollingUrl,
-            resourceLocation: findResourceLocation({
-                requestMethod: normalizedRequestMethod,
-                location,
-                requestPath,
-                resourceLocationConfig,
-            }),
-        };
-    }
-    else if (location !== undefined) {
-        return {
-            mode: "ResourceLocation",
-            operationLocation: location,
-        };
-    }
-    else if (normalizedRequestMethod === "PUT" && requestPath) {
-        return {
-            mode: "Body",
-            operationLocation: requestPath,
-        };
-    }
-    else {
-        return undefined;
-    }
-}
-function transformStatus(inputs) {
-    const { status, statusCode } = inputs;
-    if (typeof status !== "string" && status !== undefined) {
-        throw new Error(`Polling was unsuccessful. Expected status to have a string value or no value but it has instead: ${status}. This doesn't necessarily indicate the operation has failed. Check your Azure subscription or resource status for more information.`);
-    }
-    switch (status === null || status === void 0 ? void 0 : status.toLocaleLowerCase()) {
-        case undefined:
-            return toOperationStatus(statusCode);
-        case "succeeded":
-            return "succeeded";
-        case "failed":
-            return "failed";
-        case "running":
-        case "accepted":
-        case "started":
-        case "canceling":
-        case "cancelling":
-            return "running";
-        case "canceled":
-        case "cancelled":
-            return "canceled";
-        default: {
-            logger.warning(`LRO: unrecognized operation status: ${status}`);
-            return status;
-        }
-    }
-}
-function getStatus(rawResponse) {
-    var _a;
-    const { status } = (_a = rawResponse.body) !== null && _a !== void 0 ? _a : {};
-    return transformStatus({ status, statusCode: rawResponse.statusCode });
-}
-function getProvisioningState(rawResponse) {
-    var _a, _b;
-    const { properties, provisioningState } = (_a = rawResponse.body) !== null && _a !== void 0 ? _a : {};
-    const status = (_b = properties === null || properties === void 0 ? void 0 : properties.provisioningState) !== null && _b !== void 0 ? _b : provisioningState;
-    return transformStatus({ status, statusCode: rawResponse.statusCode });
-}
-function toOperationStatus(statusCode) {
-    if (statusCode === 202) {
-        return "running";
-    }
-    else if (statusCode < 300) {
-        return "succeeded";
-    }
-    else {
-        return "failed";
-    }
-}
-function parseRetryAfter({ rawResponse }) {
-    const retryAfter = rawResponse.headers["retry-after"];
-    if (retryAfter !== undefined) {
-        // Retry-After header value is either in HTTP date format, or in seconds
-        const retryAfterInSeconds = parseInt(retryAfter);
-        return isNaN(retryAfterInSeconds)
-            ? calculatePollingIntervalFromDate(new Date(retryAfter))
-            : retryAfterInSeconds * 1000;
-    }
-    return undefined;
-}
-function calculatePollingIntervalFromDate(retryAfterDate) {
-    const timeNow = Math.floor(new Date().getTime());
-    const retryAfterTime = retryAfterDate.getTime();
-    if (timeNow < retryAfterTime) {
-        return retryAfterTime - timeNow;
-    }
-    return undefined;
-}
-function getStatusFromInitialResponse(inputs) {
-    const { response, state, operationLocation } = inputs;
-    function helper() {
-        var _a;
-        const mode = (_a = state.config.metadata) === null || _a === void 0 ? void 0 : _a["mode"];
-        switch (mode) {
-            case undefined:
-                return toOperationStatus(response.rawResponse.statusCode);
-            case "Body":
-                return getOperationStatus(response, state);
-            default:
-                return "running";
-        }
-    }
-    const status = helper();
-    return status === "running" && operationLocation === undefined ? "succeeded" : status;
-}
-/**
- * Initiates the long-running operation.
- */
-async function initHttpOperation(inputs) {
-    const { stateProxy, resourceLocationConfig, processResult, lro, setErrorAsResult } = inputs;
-    return initOperation({
-        init: async () => {
-            const response = await lro.sendInitialRequest();
-            const config = inferLroMode({
-                rawResponse: response.rawResponse,
-                requestPath: lro.requestPath,
-                requestMethod: lro.requestMethod,
-                resourceLocationConfig,
-            });
-            return Object.assign({ response, operationLocation: config === null || config === void 0 ? void 0 : config.operationLocation, resourceLocation: config === null || config === void 0 ? void 0 : config.resourceLocation }, ((config === null || config === void 0 ? void 0 : config.mode) ? { metadata: { mode: config.mode } } : {}));
-        },
-        stateProxy,
-        processResult: processResult
-            ? ({ flatResponse }, state) => processResult(flatResponse, state)
-            : ({ flatResponse }) => flatResponse,
-        getOperationStatus: getStatusFromInitialResponse,
-        setErrorAsResult,
-    });
-}
-function getOperationLocation({ rawResponse }, state) {
-    var _a;
-    const mode = (_a = state.config.metadata) === null || _a === void 0 ? void 0 : _a["mode"];
-    switch (mode) {
-        case "OperationLocation": {
-            return getOperationLocationPollingUrl({
-                operationLocation: getOperationLocationHeader(rawResponse),
-                azureAsyncOperation: getAzureAsyncOperationHeader(rawResponse),
-            });
-        }
-        case "ResourceLocation": {
-            return getLocationHeader(rawResponse);
-        }
-        case "Body":
-        default: {
-            return undefined;
-        }
-    }
-}
-function getOperationStatus({ rawResponse }, state) {
-    var _a;
-    const mode = (_a = state.config.metadata) === null || _a === void 0 ? void 0 : _a["mode"];
-    switch (mode) {
-        case "OperationLocation": {
-            return getStatus(rawResponse);
-        }
-        case "ResourceLocation": {
-            return toOperationStatus(rawResponse.statusCode);
-        }
-        case "Body": {
-            return getProvisioningState(rawResponse);
-        }
-        default:
-            throw new Error(`Internal error: Unexpected operation mode: ${mode}`);
-    }
-}
-function getResourceLocation({ flatResponse }, state) {
-    if (typeof flatResponse === "object") {
-        const resourceLocation = flatResponse.resourceLocation;
-        if (resourceLocation !== undefined) {
-            state.config.resourceLocation = resourceLocation;
-        }
-    }
-    return state.config.resourceLocation;
-}
-/** Polls the long-running operation. */
-async function pollHttpOperation(inputs) {
-    const { lro, stateProxy, options, processResult, updateState, setDelay, state, setErrorAsResult, } = inputs;
-    return pollOperation({
-        state,
-        stateProxy,
-        setDelay,
-        processResult: processResult
-            ? ({ flatResponse }, inputState) => processResult(flatResponse, inputState)
-            : ({ flatResponse }) => flatResponse,
-        updateState,
-        getPollingInterval: parseRetryAfter,
-        getOperationLocation,
-        getOperationStatus,
-        getResourceLocation,
-        options,
-        /**
-         * The expansion here is intentional because `lro` could be an object that
-         * references an inner this, so we need to preserve a reference to it.
-         */
-        poll: async (location, inputOptions) => lro.sendPollRequest(location, inputOptions),
-        setErrorAsResult,
-    });
-}
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-/**
- * Map an optional value through a function
- * @internal
- */
-const maybemap = (value, f) => value === undefined ? undefined : f(value);
-const INTERRUPTED = new Error("The poller is already stopped");
-/**
- * A promise that delays resolution until a certain amount of time (in milliseconds) has passed, with facilities for
- * robust cancellation.
- *
- * ### Example:
- *
- * ```javascript
- * let toCancel;
- *
- * // Wait 20 seconds, and optionally allow the function to be cancelled.
- * await delayMs(20000, (cancel) => { toCancel = cancel });
- *
- * // ... if `toCancel` is called before the 20 second timer expires, then the delayMs promise will reject.
- * ```
- *
- * @internal
- * @param ms - the number of milliseconds to wait before resolving
- * @param cb - a callback that can provide the caller with a cancellation function
- */
-function delayMs(ms) {
-    let aborted = false;
-    let toReject;
-    return Object.assign(new Promise((resolve, reject) => {
-        let token;
-        toReject = () => {
-            maybemap(token, clearTimeout);
-            reject(INTERRUPTED);
-        };
-        // In the rare case that the operation is _already_ aborted, we will reject instantly. This could happen, for
-        // example, if the user calls the cancellation function immediately without yielding execution.
-        if (aborted) {
-            toReject();
-        }
-        else {
-            token = setTimeout(resolve, ms);
-        }
-    }), {
-        cancel: () => {
-            aborted = true;
-            toReject === null || toReject === void 0 ? void 0 : toReject();
-        },
-    });
-}
-
-// Copyright (c) Microsoft Corporation.
-const createStateProxy$1 = () => ({
-    /**
-     * The state at this point is created to be of type OperationState<TResult>.
-     * It will be updated later to be of type TState when the
-     * customer-provided callback, `updateState`, is called during polling.
-     */
-    initState: (config) => ({ status: "running", config }),
-    setCanceled: (state) => (state.status = "canceled"),
-    setError: (state, error) => (state.error = error),
-    setResult: (state, result) => (state.result = result),
-    setRunning: (state) => (state.status = "running"),
-    setSucceeded: (state) => (state.status = "succeeded"),
-    setFailed: (state) => (state.status = "failed"),
-    getError: (state) => state.error,
-    getResult: (state) => state.result,
-    isCanceled: (state) => state.status === "canceled",
-    isFailed: (state) => state.status === "failed",
-    isRunning: (state) => state.status === "running",
-    isSucceeded: (state) => state.status === "succeeded",
-});
-/**
- * Returns a poller factory.
- */
-function buildCreatePoller(inputs) {
-    const { getOperationLocation, getStatusFromInitialResponse, getStatusFromPollResponse, getResourceLocation, getPollingInterval, resolveOnUnsuccessful, } = inputs;
-    return async ({ init, poll }, options) => {
-        const { processResult, updateState, withOperationLocation: withOperationLocationCallback, intervalInMs = POLL_INTERVAL_IN_MS, restoreFrom, } = options || {};
-        const stateProxy = createStateProxy$1();
-        const withOperationLocation = withOperationLocationCallback
-            ? (() => {
-                let called = false;
-                return (operationLocation, isUpdated) => {
-                    if (isUpdated)
-                        withOperationLocationCallback(operationLocation);
-                    else if (!called)
-                        withOperationLocationCallback(operationLocation);
-                    called = true;
-                };
-            })()
-            : undefined;
-        const state = restoreFrom
-            ? deserializeState(restoreFrom)
-            : await initOperation({
-                init,
-                stateProxy,
-                processResult,
-                getOperationStatus: getStatusFromInitialResponse,
-                withOperationLocation,
-                setErrorAsResult: !resolveOnUnsuccessful,
-            });
-        let resultPromise;
-        let cancelJob;
-        const abortController$1 = new abortController.AbortController();
-        const handlers = new Map();
-        const handleProgressEvents = async () => handlers.forEach((h) => h(state));
-        let currentPollIntervalInMs = intervalInMs;
-        const poller = {
-            getOperationState: () => state,
-            getResult: () => state.result,
-            isDone: () => ["succeeded", "failed", "canceled"].includes(state.status),
-            isStopped: () => resultPromise === undefined,
-            stopPolling: () => {
-                abortController$1.abort();
-                cancelJob === null || cancelJob === void 0 ? void 0 : cancelJob();
-            },
-            toString: () => JSON.stringify({
-                state,
-            }),
-            onProgress: (callback) => {
-                const s = Symbol();
-                handlers.set(s, callback);
-                return () => handlers.delete(s);
-            },
-            pollUntilDone: (pollOptions) => (resultPromise !== null && resultPromise !== void 0 ? resultPromise : (resultPromise = (async () => {
-                const { abortSignal: inputAbortSignal } = pollOptions || {};
-                const { signal: abortSignal } = inputAbortSignal
-                    ? new abortController.AbortController([inputAbortSignal, abortController$1.signal])
-                    : abortController$1;
-                if (!poller.isDone()) {
-                    await poller.poll({ abortSignal });
-                    while (!poller.isDone()) {
-                        const delay = delayMs(currentPollIntervalInMs);
-                        cancelJob = delay.cancel;
-                        await delay;
-                        await poller.poll({ abortSignal });
-                    }
-                }
-                switch (state.status) {
-                    case "succeeded": {
-                        return poller.getResult();
-                    }
-                    case "canceled": {
-                        if (!resolveOnUnsuccessful)
-                            throw new Error("Operation was canceled");
-                        return poller.getResult();
-                    }
-                    case "failed": {
-                        if (!resolveOnUnsuccessful)
-                            throw state.error;
-                        return poller.getResult();
-                    }
-                    case "notStarted":
-                    case "running": {
-                        // Unreachable
-                        throw new Error(`polling completed without succeeding or failing`);
-                    }
-                }
-            })().finally(() => {
-                resultPromise = undefined;
-            }))),
-            async poll(pollOptions) {
-                await pollOperation({
-                    poll,
-                    state,
-                    stateProxy,
-                    getOperationLocation,
-                    withOperationLocation,
-                    getPollingInterval,
-                    getOperationStatus: getStatusFromPollResponse,
-                    getResourceLocation,
-                    processResult,
-                    updateState,
-                    options: pollOptions,
-                    setDelay: (pollIntervalInMs) => {
-                        currentPollIntervalInMs = pollIntervalInMs;
-                    },
-                    setErrorAsResult: !resolveOnUnsuccessful,
-                });
-                await handleProgressEvents();
-                if (state.status === "canceled" && !resolveOnUnsuccessful) {
-                    throw new Error("Operation was canceled");
-                }
-                if (state.status === "failed" && !resolveOnUnsuccessful) {
-                    throw state.error;
-                }
-            },
-        };
-        return poller;
-    };
-}
-
-// Copyright (c) Microsoft Corporation.
-/**
- * Creates a poller that can be used to poll a long-running operation.
- * @param lro - Description of the long-running operation
- * @param options - options to configure the poller
- * @returns an initialized poller
- */
-async function createHttpPoller(lro, options) {
-    const { resourceLocationConfig, intervalInMs, processResult, restoreFrom, updateState, withOperationLocation, resolveOnUnsuccessful = false, } = options || {};
-    return buildCreatePoller({
-        getStatusFromInitialResponse,
-        getStatusFromPollResponse: getOperationStatus,
-        getOperationLocation,
-        getResourceLocation,
-        getPollingInterval: parseRetryAfter,
-        resolveOnUnsuccessful,
-    })({
-        init: async () => {
-            const response = await lro.sendInitialRequest();
-            const config = inferLroMode({
-                rawResponse: response.rawResponse,
-                requestPath: lro.requestPath,
-                requestMethod: lro.requestMethod,
-                resourceLocationConfig,
-            });
-            return Object.assign({ response, operationLocation: config === null || config === void 0 ? void 0 : config.operationLocation, resourceLocation: config === null || config === void 0 ? void 0 : config.resourceLocation }, ((config === null || config === void 0 ? void 0 : config.mode) ? { metadata: { mode: config.mode } } : {}));
-        },
-        poll: lro.sendPollRequest,
-    }, {
-        intervalInMs,
-        withOperationLocation,
-        restoreFrom,
-        updateState,
-        processResult: processResult
-            ? ({ flatResponse }, state) => processResult(flatResponse, state)
-            : ({ flatResponse }) => flatResponse,
-    });
-}
-
-// Copyright (c) Microsoft Corporation.
-const createStateProxy = () => ({
-    initState: (config) => ({ config, isStarted: true }),
-    setCanceled: (state) => (state.isCancelled = true),
-    setError: (state, error) => (state.error = error),
-    setResult: (state, result) => (state.result = result),
-    setRunning: (state) => (state.isStarted = true),
-    setSucceeded: (state) => (state.isCompleted = true),
-    setFailed: () => {
-        /** empty body */
-    },
-    getError: (state) => state.error,
-    getResult: (state) => state.result,
-    isCanceled: (state) => !!state.isCancelled,
-    isFailed: (state) => !!state.error,
-    isRunning: (state) => !!state.isStarted,
-    isSucceeded: (state) => Boolean(state.isCompleted && !state.isCancelled && !state.error),
-});
-class GenericPollOperation {
-    constructor(state, lro, setErrorAsResult, lroResourceLocationConfig, processResult, updateState, isDone) {
-        this.state = state;
-        this.lro = lro;
-        this.setErrorAsResult = setErrorAsResult;
-        this.lroResourceLocationConfig = lroResourceLocationConfig;
-        this.processResult = processResult;
-        this.updateState = updateState;
-        this.isDone = isDone;
-    }
-    setPollerConfig(pollerConfig) {
-        this.pollerConfig = pollerConfig;
-    }
-    async update(options) {
-        var _a;
-        const stateProxy = createStateProxy();
-        if (!this.state.isStarted) {
-            this.state = Object.assign(Object.assign({}, this.state), (await initHttpOperation({
-                lro: this.lro,
-                stateProxy,
-                resourceLocationConfig: this.lroResourceLocationConfig,
-                processResult: this.processResult,
-                setErrorAsResult: this.setErrorAsResult,
-            })));
-        }
-        const updateState = this.updateState;
-        const isDone = this.isDone;
-        if (!this.state.isCompleted && this.state.error === undefined) {
-            await pollHttpOperation({
-                lro: this.lro,
-                state: this.state,
-                stateProxy,
-                processResult: this.processResult,
-                updateState: updateState
-                    ? (state, { rawResponse }) => updateState(state, rawResponse)
-                    : undefined,
-                isDone: isDone
-                    ? ({ flatResponse }, state) => isDone(flatResponse, state)
-                    : undefined,
-                options,
-                setDelay: (intervalInMs) => {
-                    this.pollerConfig.intervalInMs = intervalInMs;
-                },
-                setErrorAsResult: this.setErrorAsResult,
-            });
-        }
-        (_a = options === null || options === void 0 ? void 0 : options.fireProgress) === null || _a === void 0 ? void 0 : _a.call(options, this.state);
-        return this;
-    }
-    async cancel() {
-        logger.error("`cancelOperation` is deprecated because it wasn't implemented");
-        return this;
-    }
-    /**
-     * Serializes the Poller operation.
-     */
-    toString() {
-        return JSON.stringify({
-            state: this.state,
-        });
-    }
-}
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
@@ -23247,8 +22493,8 @@ class PollerStoppedError extends Error {
     }
 }
 /**
- * When the operation is cancelled, the poller will be rejected with an instance
- * of the PollerCancelledError.
+ * When a poller is cancelled through the `cancelOperation` method,
+ * the poller will be rejected with an instance of the PollerCancelledError.
  */
 class PollerCancelledError extends Error {
     constructor(message) {
@@ -23386,8 +22632,6 @@ class Poller {
      * @param operation - Must contain the basic properties of `PollOperation<State, TResult>`.
      */
     constructor(operation) {
-        /** controls whether to throw an error if the operation failed or was canceled. */
-        this.resolveOnUnsuccessful = false;
         this.stopped = true;
         this.pollProgressCallbacks = [];
         this.operation = operation;
@@ -23406,12 +22650,12 @@ class Poller {
      * Starts a loop that will break only if the poller is done
      * or if the poller is stopped.
      */
-    async startPolling(pollOptions = {}) {
+    async startPolling() {
         if (this.stopped) {
             this.stopped = false;
         }
         while (!this.isStopped() && !this.isDone()) {
-            await this.poll(pollOptions);
+            await this.poll();
             await this.delay();
         }
     }
@@ -23424,13 +22668,29 @@ class Poller {
      * @param options - Optional properties passed to the operation's update method.
      */
     async pollOnce(options = {}) {
-        if (!this.isDone()) {
-            this.operation = await this.operation.update({
-                abortSignal: options.abortSignal,
-                fireProgress: this.fireProgress.bind(this),
-            });
+        try {
+            if (!this.isDone()) {
+                this.operation = await this.operation.update({
+                    abortSignal: options.abortSignal,
+                    fireProgress: this.fireProgress.bind(this),
+                });
+                if (this.isDone() && this.resolve) {
+                    // If the poller has finished polling, this means we now have a result.
+                    // However, it can be the case that TResult is instantiated to void, so
+                    // we are not expecting a result anyway. To assert that we might not
+                    // have a result eventually after finishing polling, we cast the result
+                    // to TResult.
+                    this.resolve(this.operation.state.result);
+                }
+            }
         }
-        this.processUpdatedState();
+        catch (e) {
+            this.operation.state.error = e;
+            if (this.reject) {
+                this.reject(e);
+            }
+            throw e;
+        }
     }
     /**
      * fireProgress calls the functions passed in via onProgress the method of the poller.
@@ -23446,10 +22706,14 @@ class Poller {
         }
     }
     /**
-     * Invokes the underlying operation's cancel method.
+     * Invokes the underlying operation's cancel method, and rejects the
+     * pollUntilDone promise.
      */
     async cancelOnce(options = {}) {
         this.operation = await this.operation.cancel(options);
+        if (this.reject) {
+            this.reject(new PollerCancelledError("Poller cancelled"));
+        }
     }
     /**
      * Returns a promise that will resolve once a single polling request finishes.
@@ -23469,41 +22733,13 @@ class Poller {
         }
         return this.pollOncePromise;
     }
-    processUpdatedState() {
-        if (this.operation.state.error) {
-            this.stopped = true;
-            if (!this.resolveOnUnsuccessful) {
-                this.reject(this.operation.state.error);
-                throw this.operation.state.error;
-            }
-        }
-        if (this.operation.state.isCancelled) {
-            this.stopped = true;
-            if (!this.resolveOnUnsuccessful) {
-                const error = new PollerCancelledError("Operation was canceled");
-                this.reject(error);
-                throw error;
-            }
-        }
-        if (this.isDone() && this.resolve) {
-            // If the poller has finished polling, this means we now have a result.
-            // However, it can be the case that TResult is instantiated to void, so
-            // we are not expecting a result anyway. To assert that we might not
-            // have a result eventually after finishing polling, we cast the result
-            // to TResult.
-            this.resolve(this.getResult());
-        }
-    }
     /**
      * Returns a promise that will resolve once the underlying operation is completed.
      */
-    async pollUntilDone(pollOptions = {}) {
+    async pollUntilDone() {
         if (this.stopped) {
-            this.startPolling(pollOptions).catch(this.reject);
+            this.startPolling().catch(this.reject);
         }
-        // This is needed because the state could have been updated by
-        // `cancelOperation`, e.g. the operation is canceled or an error occurred.
-        this.processUpdatedState();
         return this.promise;
     }
     /**
@@ -23552,6 +22788,9 @@ class Poller {
      * @param options - Optional properties passed to the operation's update method.
      */
     cancelOperation(options = {}) {
+        if (!this.stopped) {
+            this.stopped = true;
+        }
         if (!this.cancelPromise) {
             this.cancelPromise = this.cancelOnce(options);
         }
@@ -23631,18 +22870,344 @@ class Poller {
 }
 
 // Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+/**
+ * Detects where the continuation token is and returns it. Notice that azure-asyncoperation
+ * must be checked first before the other location headers because there are scenarios
+ * where both azure-asyncoperation and location could be present in the same response but
+ * azure-asyncoperation should be the one to use for polling.
+ */
+function getPollingUrl(rawResponse, defaultPath) {
+    var _a, _b, _c;
+    return ((_c = (_b = (_a = getAzureAsyncOperation(rawResponse)) !== null && _a !== void 0 ? _a : getOperationLocation(rawResponse)) !== null && _b !== void 0 ? _b : getLocation(rawResponse)) !== null && _c !== void 0 ? _c : defaultPath);
+}
+function getLocation(rawResponse) {
+    return rawResponse.headers["location"];
+}
+function getOperationLocation(rawResponse) {
+    return rawResponse.headers["operation-location"];
+}
+function getAzureAsyncOperation(rawResponse) {
+    return rawResponse.headers["azure-asyncoperation"];
+}
+function findResourceLocation(requestMethod, rawResponse, requestPath) {
+    switch (requestMethod) {
+        case "PUT": {
+            return requestPath;
+        }
+        case "POST":
+        case "PATCH": {
+            return getLocation(rawResponse);
+        }
+        default: {
+            return undefined;
+        }
+    }
+}
+function inferLroMode(requestPath, requestMethod, rawResponse) {
+    if (getAzureAsyncOperation(rawResponse) !== undefined ||
+        getOperationLocation(rawResponse) !== undefined) {
+        return {
+            mode: "Location",
+            resourceLocation: findResourceLocation(requestMethod, rawResponse, requestPath),
+        };
+    }
+    else if (getLocation(rawResponse) !== undefined) {
+        return {
+            mode: "Location",
+        };
+    }
+    else if (["PUT", "PATCH"].includes(requestMethod)) {
+        return {
+            mode: "Body",
+        };
+    }
+    return {};
+}
+class SimpleRestError extends Error {
+    constructor(message, statusCode) {
+        super(message);
+        this.name = "RestError";
+        this.statusCode = statusCode;
+        Object.setPrototypeOf(this, SimpleRestError.prototype);
+    }
+}
+function isUnexpectedInitialResponse(rawResponse) {
+    const code = rawResponse.statusCode;
+    if (![203, 204, 202, 201, 200, 500].includes(code)) {
+        throw new SimpleRestError(`Received unexpected HTTP status code ${code} in the initial response. This may indicate a server issue.`, code);
+    }
+    return false;
+}
+function isUnexpectedPollingResponse(rawResponse) {
+    const code = rawResponse.statusCode;
+    if (![202, 201, 200, 500].includes(code)) {
+        throw new SimpleRestError(`Received unexpected HTTP status code ${code} while polling. This may indicate a server issue.`, code);
+    }
+    return false;
+}
+
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+const successStates = ["succeeded"];
+const failureStates = ["failed", "canceled", "cancelled"];
+
+// Copyright (c) Microsoft Corporation.
+function getProvisioningState(rawResponse) {
+    var _a, _b;
+    const { properties, provisioningState } = (_a = rawResponse.body) !== null && _a !== void 0 ? _a : {};
+    const state = (_b = properties === null || properties === void 0 ? void 0 : properties.provisioningState) !== null && _b !== void 0 ? _b : provisioningState;
+    return typeof state === "string" ? state.toLowerCase() : "succeeded";
+}
+function isBodyPollingDone(rawResponse) {
+    const state = getProvisioningState(rawResponse);
+    if (isUnexpectedPollingResponse(rawResponse) || failureStates.includes(state)) {
+        throw new Error(`The long running operation has failed. The provisioning state: ${state}.`);
+    }
+    return successStates.includes(state);
+}
+/**
+ * Creates a polling strategy based on BodyPolling which uses the provisioning state
+ * from the result to determine the current operation state
+ */
+function processBodyPollingOperationResult(response) {
+    return Object.assign(Object.assign({}, response), { done: isBodyPollingDone(response.rawResponse) });
+}
+
+// Copyright (c) Microsoft Corporation.
+/**
+ * The `@azure/logger` configuration for this package.
+ * @internal
+ */
+const logger = logger$1.createClientLogger("core-lro");
+
+// Copyright (c) Microsoft Corporation.
+function isPollingDone(rawResponse) {
+    var _a;
+    if (isUnexpectedPollingResponse(rawResponse) || rawResponse.statusCode === 202) {
+        return false;
+    }
+    const { status } = (_a = rawResponse.body) !== null && _a !== void 0 ? _a : {};
+    const state = typeof status === "string" ? status.toLowerCase() : "succeeded";
+    if (isUnexpectedPollingResponse(rawResponse) || failureStates.includes(state)) {
+        throw new Error(`The long running operation has failed. The provisioning state: ${state}.`);
+    }
+    return successStates.includes(state);
+}
+/**
+ * Sends a request to the URI of the provisioned resource if needed.
+ */
+async function sendFinalRequest(lro, resourceLocation, lroResourceLocationConfig) {
+    switch (lroResourceLocationConfig) {
+        case "original-uri":
+            return lro.sendPollRequest(lro.requestPath);
+        case "azure-async-operation":
+            return undefined;
+        case "location":
+        default:
+            return lro.sendPollRequest(resourceLocation !== null && resourceLocation !== void 0 ? resourceLocation : lro.requestPath);
+    }
+}
+function processLocationPollingOperationResult(lro, resourceLocation, lroResourceLocationConfig) {
+    return (response) => {
+        if (isPollingDone(response.rawResponse)) {
+            if (resourceLocation === undefined) {
+                return Object.assign(Object.assign({}, response), { done: true });
+            }
+            else {
+                return Object.assign(Object.assign({}, response), { done: false, next: async () => {
+                        const finalResponse = await sendFinalRequest(lro, resourceLocation, lroResourceLocationConfig);
+                        return Object.assign(Object.assign({}, (finalResponse !== null && finalResponse !== void 0 ? finalResponse : response)), { done: true });
+                    } });
+            }
+        }
+        return Object.assign(Object.assign({}, response), { done: false });
+    };
+}
+
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+function processPassthroughOperationResult(response) {
+    return Object.assign(Object.assign({}, response), { done: true });
+}
+
+// Copyright (c) Microsoft Corporation.
+/**
+ * creates a stepping function that maps an LRO state to another.
+ */
+function createGetLroStatusFromResponse(lroPrimitives, config, lroResourceLocationConfig) {
+    switch (config.mode) {
+        case "Location": {
+            return processLocationPollingOperationResult(lroPrimitives, config.resourceLocation, lroResourceLocationConfig);
+        }
+        case "Body": {
+            return processBodyPollingOperationResult;
+        }
+        default: {
+            return processPassthroughOperationResult;
+        }
+    }
+}
+/**
+ * Creates a polling operation.
+ */
+function createPoll(lroPrimitives) {
+    return async (path, pollerConfig, getLroStatusFromResponse) => {
+        const response = await lroPrimitives.sendPollRequest(path);
+        const retryAfter = response.rawResponse.headers["retry-after"];
+        if (retryAfter !== undefined) {
+            // Retry-After header value is either in HTTP date format, or in seconds
+            const retryAfterInSeconds = parseInt(retryAfter);
+            pollerConfig.intervalInMs = isNaN(retryAfterInSeconds)
+                ? calculatePollingIntervalFromDate(new Date(retryAfter), pollerConfig.intervalInMs)
+                : retryAfterInSeconds * 1000;
+        }
+        return getLroStatusFromResponse(response);
+    };
+}
+function calculatePollingIntervalFromDate(retryAfterDate, defaultIntervalInMs) {
+    const timeNow = Math.floor(new Date().getTime());
+    const retryAfterTime = retryAfterDate.getTime();
+    if (timeNow < retryAfterTime) {
+        return retryAfterTime - timeNow;
+    }
+    return defaultIntervalInMs;
+}
+/**
+ * Creates a callback to be used to initialize the polling operation state.
+ * @param state - of the polling operation
+ * @param operationSpec - of the LRO
+ * @param callback - callback to be called when the operation is done
+ * @returns callback that initializes the state of the polling operation
+ */
+function createInitializeState(state, requestPath, requestMethod) {
+    return (response) => {
+        if (isUnexpectedInitialResponse(response.rawResponse))
+            ;
+        state.initialRawResponse = response.rawResponse;
+        state.isStarted = true;
+        state.pollingURL = getPollingUrl(state.initialRawResponse, requestPath);
+        state.config = inferLroMode(requestPath, requestMethod, state.initialRawResponse);
+        /** short circuit polling if body polling is done in the initial request */
+        if (state.config.mode === undefined ||
+            (state.config.mode === "Body" && isBodyPollingDone(state.initialRawResponse))) {
+            state.result = response.flatResponse;
+            state.isCompleted = true;
+        }
+        logger.verbose(`LRO: initial state: ${JSON.stringify(state)}`);
+        return Boolean(state.isCompleted);
+    };
+}
+
+// Copyright (c) Microsoft Corporation.
+class GenericPollOperation {
+    constructor(state, lro, lroResourceLocationConfig, processResult, updateState, isDone) {
+        this.state = state;
+        this.lro = lro;
+        this.lroResourceLocationConfig = lroResourceLocationConfig;
+        this.processResult = processResult;
+        this.updateState = updateState;
+        this.isDone = isDone;
+    }
+    setPollerConfig(pollerConfig) {
+        this.pollerConfig = pollerConfig;
+    }
+    /**
+     * General update function for LROPoller, the general process is as follows
+     * 1. Check initial operation result to determine the strategy to use
+     *  - Strategies: Location, Azure-AsyncOperation, Original Uri
+     * 2. Check if the operation result has a terminal state
+     *  - Terminal state will be determined by each strategy
+     *  2.1 If it is terminal state Check if a final GET request is required, if so
+     *      send final GET request and return result from operation. If no final GET
+     *      is required, just return the result from operation.
+     *      - Determining what to call for final request is responsibility of each strategy
+     *  2.2 If it is not terminal state, call the polling operation and go to step 1
+     *      - Determining what to call for polling is responsibility of each strategy
+     *      - Strategies will always use the latest URI for polling if provided otherwise
+     *        the last known one
+     */
+    async update(options) {
+        var _a, _b, _c;
+        const state = this.state;
+        let lastResponse = undefined;
+        if (!state.isStarted) {
+            const initializeState = createInitializeState(state, this.lro.requestPath, this.lro.requestMethod);
+            lastResponse = await this.lro.sendInitialRequest();
+            initializeState(lastResponse);
+        }
+        if (!state.isCompleted) {
+            if (!this.poll || !this.getLroStatusFromResponse) {
+                if (!state.config) {
+                    throw new Error("Bad state: LRO mode is undefined. Please check if the serialized state is well-formed.");
+                }
+                const isDone = this.isDone;
+                this.getLroStatusFromResponse = isDone
+                    ? (response) => (Object.assign(Object.assign({}, response), { done: isDone(response.flatResponse, this.state) }))
+                    : createGetLroStatusFromResponse(this.lro, state.config, this.lroResourceLocationConfig);
+                this.poll = createPoll(this.lro);
+            }
+            if (!state.pollingURL) {
+                throw new Error("Bad state: polling URL is undefined. Please check if the serialized state is well-formed.");
+            }
+            const currentState = await this.poll(state.pollingURL, this.pollerConfig, this.getLroStatusFromResponse);
+            logger.verbose(`LRO: polling response: ${JSON.stringify(currentState.rawResponse)}`);
+            if (currentState.done) {
+                state.result = this.processResult
+                    ? this.processResult(currentState.flatResponse, state)
+                    : currentState.flatResponse;
+                state.isCompleted = true;
+            }
+            else {
+                this.poll = (_a = currentState.next) !== null && _a !== void 0 ? _a : this.poll;
+                state.pollingURL = getPollingUrl(currentState.rawResponse, state.pollingURL);
+            }
+            lastResponse = currentState;
+        }
+        logger.verbose(`LRO: current state: ${JSON.stringify(state)}`);
+        if (lastResponse) {
+            (_b = this.updateState) === null || _b === void 0 ? void 0 : _b.call(this, state, lastResponse === null || lastResponse === void 0 ? void 0 : lastResponse.rawResponse);
+        }
+        else {
+            logger.error(`LRO: no response was received`);
+        }
+        (_c = options === null || options === void 0 ? void 0 : options.fireProgress) === null || _c === void 0 ? void 0 : _c.call(options, state);
+        return this;
+    }
+    async cancel() {
+        this.state.isCancelled = true;
+        return this;
+    }
+    /**
+     * Serializes the Poller operation.
+     */
+    toString() {
+        return JSON.stringify({
+            state: this.state,
+        });
+    }
+}
+
+// Copyright (c) Microsoft Corporation.
+function deserializeState(serializedState) {
+    try {
+        return JSON.parse(serializedState).state;
+    }
+    catch (e) {
+        throw new Error(`LroEngine: Unable to deserialize state: ${serializedState}`);
+    }
+}
 /**
  * The LRO Engine, a class that performs polling.
  */
 class LroEngine extends Poller {
     constructor(lro, options) {
-        const { intervalInMs = POLL_INTERVAL_IN_MS, resumeFrom, resolveOnUnsuccessful = false, isDone, lroResourceLocationConfig, processResult, updateState, } = options || {};
+        const { intervalInMs = 2000, resumeFrom } = options || {};
         const state = resumeFrom
             ? deserializeState(resumeFrom)
             : {};
-        const operation = new GenericPollOperation(state, lro, !resolveOnUnsuccessful, lroResourceLocationConfig, processResult, updateState, isDone);
+        const operation = new GenericPollOperation(state, lro, options === null || options === void 0 ? void 0 : options.lroResourceLocationConfig, options === null || options === void 0 ? void 0 : options.processResult, options === null || options === void 0 ? void 0 : options.updateState, options === null || options === void 0 ? void 0 : options.isDone);
         super(operation);
-        this.resolveOnUnsuccessful = resolveOnUnsuccessful;
         this.config = { intervalInMs: intervalInMs };
         operation.setPollerConfig(this.config);
     }
@@ -23658,7 +23223,6 @@ exports.LroEngine = LroEngine;
 exports.Poller = Poller;
 exports.PollerCancelledError = PollerCancelledError;
 exports.PollerStoppedError = PollerStoppedError;
-exports.createHttpPoller = createHttpPoller;
 //# sourceMappingURL=index.js.map
 
 
@@ -23672,6 +23236,7 @@ exports.createHttpPoller = createHttpPoller;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 
+__nccwpck_require__(2356);
 var tslib = __nccwpck_require__(6429);
 
 // Copyright (c) Microsoft Corporation.
@@ -23693,18 +23258,14 @@ function getPagedAsyncIterator(pagedResult) {
             return this;
         },
         byPage: (_a = pagedResult === null || pagedResult === void 0 ? void 0 : pagedResult.byPage) !== null && _a !== void 0 ? _a : ((settings) => {
-            const { continuationToken, maxPageSize } = settings !== null && settings !== void 0 ? settings : {};
-            return getPageAsyncIterator(pagedResult, {
-                pageLink: continuationToken,
-                maxPageSize,
-            });
+            return getPageAsyncIterator(pagedResult, settings === null || settings === void 0 ? void 0 : settings.maxPageSize);
         }),
     };
 }
-function getItemAsyncIterator(pagedResult) {
+function getItemAsyncIterator(pagedResult, maxPageSize) {
     return tslib.__asyncGenerator(this, arguments, function* getItemAsyncIterator_1() {
         var e_1, _a;
-        const pages = getPageAsyncIterator(pagedResult);
+        const pages = getPageAsyncIterator(pagedResult, maxPageSize);
         const firstVal = yield tslib.__await(pages.next());
         // if the result does not have an array shape, i.e. TPage = TElement, then we return it as is
         if (!Array.isArray(firstVal.value)) {
@@ -23732,10 +23293,9 @@ function getItemAsyncIterator(pagedResult) {
         }
     });
 }
-function getPageAsyncIterator(pagedResult, options = {}) {
+function getPageAsyncIterator(pagedResult, maxPageSize) {
     return tslib.__asyncGenerator(this, arguments, function* getPageAsyncIterator_1() {
-        const { pageLink, maxPageSize } = options;
-        let response = yield tslib.__await(pagedResult.getPage(pageLink !== null && pageLink !== void 0 ? pageLink : pagedResult.firstPageLink, maxPageSize));
+        let response = yield tslib.__await(pagedResult.getPage(pagedResult.firstPageLink, maxPageSize));
         yield yield tslib.__await(response.page);
         while (response.nextPageLink) {
             response = yield tslib.__await(pagedResult.getPage(response.nextPageLink, maxPageSize));
@@ -23753,7 +23313,7 @@ exports.getPagedAsyncIterator = getPagedAsyncIterator;
 /***/ 6429:
 /***/ ((module) => {
 
-/******************************************************************************
+/*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
 
 Permission to use, copy, modify, and/or distribute this software for any
@@ -23791,7 +23351,6 @@ var __importStar;
 var __importDefault;
 var __classPrivateFieldGet;
 var __classPrivateFieldSet;
-var __classPrivateFieldIn;
 var __createBinding;
 (function (factory) {
     var root = typeof global === "object" ? global : typeof self === "object" ? self : typeof this === "object" ? this : {};
@@ -23908,11 +23467,7 @@ var __createBinding;
 
     __createBinding = Object.create ? (function(o, m, k, k2) {
         if (k2 === undefined) k2 = k;
-        var desc = Object.getOwnPropertyDescriptor(m, k);
-        if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-            desc = { enumerable: true, get: function() { return m[k]; } };
-        }
-        Object.defineProperty(o, k2, desc);
+        Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
     }) : (function(o, m, k, k2) {
         if (k2 === undefined) k2 = k;
         o[k2] = m[k];
@@ -24039,11 +23594,6 @@ var __createBinding;
         return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
     };
 
-    __classPrivateFieldIn = function (state, receiver) {
-        if (receiver === null || (typeof receiver !== "object" && typeof receiver !== "function")) throw new TypeError("Cannot use 'in' operator on non-object");
-        return typeof state === "function" ? receiver === state : state.has(receiver);
-    };
-
     exporter("__extends", __extends);
     exporter("__assign", __assign);
     exporter("__rest", __rest);
@@ -24068,7 +23618,6 @@ var __createBinding;
     exporter("__importDefault", __importDefault);
     exporter("__classPrivateFieldGet", __classPrivateFieldGet);
     exporter("__classPrivateFieldSet", __classPrivateFieldSet);
-    exporter("__classPrivateFieldIn", __classPrivateFieldIn);
 });
 
 
@@ -24296,211 +23845,6 @@ exports.getTracer = getTracer;
 exports.isSpanContextValid = isSpanContextValid;
 exports.setSpan = setSpan;
 exports.setSpanContext = setSpanContext;
-//# sourceMappingURL=index.js.map
-
-
-/***/ }),
-
-/***/ 1333:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-
-var abortController = __nccwpck_require__(2557);
-var crypto = __nccwpck_require__(6113);
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-var _a;
-/**
- * A constant that indicates whether the environment the code is running is Node.JS.
- */
-const isNode = typeof process !== "undefined" && Boolean(process.version) && Boolean((_a = process.versions) === null || _a === void 0 ? void 0 : _a.node);
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-/**
- * Helper TypeGuard that checks if something is defined or not.
- * @param thing - Anything
- */
-function isDefined(thing) {
-    return typeof thing !== "undefined" && thing !== null;
-}
-/**
- * Helper TypeGuard that checks if the input is an object with the specified properties.
- * @param thing - Anything.
- * @param properties - The name of the properties that should appear in the object.
- */
-function isObjectWithProperties(thing, properties) {
-    if (!isDefined(thing) || typeof thing !== "object") {
-        return false;
-    }
-    for (const property of properties) {
-        if (!objectHasProperty(thing, property)) {
-            return false;
-        }
-    }
-    return true;
-}
-/**
- * Helper TypeGuard that checks if the input is an object with the specified property.
- * @param thing - Any object.
- * @param property - The name of the property that should appear in the object.
- */
-function objectHasProperty(thing, property) {
-    return (isDefined(thing) && typeof thing === "object" && property in thing);
-}
-
-// Copyright (c) Microsoft Corporation.
-const StandardAbortMessage = "The operation was aborted.";
-/**
- * A wrapper for setTimeout that resolves a promise after timeInMs milliseconds.
- * @param timeInMs - The number of milliseconds to be delayed.
- * @param options - The options for delay - currently abort options
- * @returns Promise that is resolved after timeInMs
- */
-function delay(timeInMs, options) {
-    return new Promise((resolve, reject) => {
-        let timer = undefined;
-        let onAborted = undefined;
-        const rejectOnAbort = () => {
-            var _a;
-            return reject(new abortController.AbortError((_a = options === null || options === void 0 ? void 0 : options.abortErrorMsg) !== null && _a !== void 0 ? _a : StandardAbortMessage));
-        };
-        const removeListeners = () => {
-            if ((options === null || options === void 0 ? void 0 : options.abortSignal) && onAborted) {
-                options.abortSignal.removeEventListener("abort", onAborted);
-            }
-        };
-        onAborted = () => {
-            if (isDefined(timer)) {
-                clearTimeout(timer);
-            }
-            removeListeners();
-            return rejectOnAbort();
-        };
-        if ((options === null || options === void 0 ? void 0 : options.abortSignal) && options.abortSignal.aborted) {
-            return rejectOnAbort();
-        }
-        timer = setTimeout(() => {
-            removeListeners();
-            resolve();
-        }, timeInMs);
-        if (options === null || options === void 0 ? void 0 : options.abortSignal) {
-            options.abortSignal.addEventListener("abort", onAborted);
-        }
-    });
-}
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-/**
- * Returns a random integer value between a lower and upper bound,
- * inclusive of both bounds.
- * Note that this uses Math.random and isn't secure. If you need to use
- * this for any kind of security purpose, find a better source of random.
- * @param min - The smallest integer value allowed.
- * @param max - The largest integer value allowed.
- */
-function getRandomIntegerInclusive(min, max) {
-    // Make sure inputs are integers.
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    // Pick a random offset from zero to the size of the range.
-    // Since Math.random() can never return 1, we have to make the range one larger
-    // in order to be inclusive of the maximum value after we take the floor.
-    const offset = Math.floor(Math.random() * (max - min + 1));
-    return offset + min;
-}
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-/**
- * Helper to determine when an input is a generic JS object.
- * @returns true when input is an object type that is not null, Array, RegExp, or Date.
- */
-function isObject(input) {
-    return (typeof input === "object" &&
-        input !== null &&
-        !Array.isArray(input) &&
-        !(input instanceof RegExp) &&
-        !(input instanceof Date));
-}
-
-// Copyright (c) Microsoft Corporation.
-/**
- * Typeguard for an error object shape (has name and message)
- * @param e - Something caught by a catch clause.
- */
-function isError(e) {
-    if (isObject(e)) {
-        const hasName = typeof e.name === "string";
-        const hasMessage = typeof e.message === "string";
-        return hasName && hasMessage;
-    }
-    return false;
-}
-/**
- * Given what is thought to be an error object, return the message if possible.
- * If the message is missing, returns a stringified version of the input.
- * @param e - Something thrown from a try block
- * @returns The error message or a string of the input
- */
-function getErrorMessage(e) {
-    if (isError(e)) {
-        return e.message;
-    }
-    else {
-        let stringified;
-        try {
-            if (typeof e === "object" && e) {
-                stringified = JSON.stringify(e);
-            }
-            else {
-                stringified = String(e);
-            }
-        }
-        catch (err) {
-            stringified = "[unable to stringify input]";
-        }
-        return `Unknown error ${stringified}`;
-    }
-}
-
-// Copyright (c) Microsoft Corporation.
-/**
- * Generates a SHA-256 HMAC signature.
- * @param key - The HMAC key represented as a base64 string, used to generate the cryptographic HMAC hash.
- * @param stringToSign - The data to be signed.
- * @param encoding - The textual encoding to use for the returned HMAC digest.
- */
-async function computeSha256Hmac(key, stringToSign, encoding) {
-    const decodedKey = Buffer.from(key, "base64");
-    return crypto.createHmac("sha256", decodedKey).update(stringToSign).digest(encoding);
-}
-/**
- * Generates a SHA-256 hash.
- * @param content - The data to be included in the hash.
- * @param encoding - The textual encoding to use for the returned hash.
- */
-async function computeSha256Hash(content, encoding) {
-    return crypto.createHash("sha256").update(content).digest(encoding);
-}
-
-exports.computeSha256Hash = computeSha256Hash;
-exports.computeSha256Hmac = computeSha256Hmac;
-exports.delay = delay;
-exports.getErrorMessage = getErrorMessage;
-exports.getRandomIntegerInclusive = getRandomIntegerInclusive;
-exports.isDefined = isDefined;
-exports.isError = isError;
-exports.isNode = isNode;
-exports.isObject = isObject;
-exports.isObjectWithProperties = isObjectWithProperties;
-exports.objectHasProperty = objectHasProperty;
 //# sourceMappingURL=index.js.map
 
 
@@ -26422,13 +25766,6 @@ const PageList = {
                             className: "ClearRange"
                         }
                     }
-                }
-            },
-            continuationToken: {
-                serializedName: "NextMarker",
-                xmlName: "NextMarker",
-                type: {
-                    name: "String"
                 }
             }
         }
@@ -33227,7 +32564,7 @@ const timeoutInSeconds = {
 const version = {
     parameterPath: "version",
     mapper: {
-        defaultValue: "2021-08-06",
+        defaultValue: "2021-04-10",
         isConstant: true,
         serializedName: "x-ms-version",
         type: {
@@ -34239,17 +33576,6 @@ const copySourceAuthorization = {
         xmlName: "x-ms-copy-source-authorization",
         type: {
             name: "String"
-        }
-    }
-};
-const copySourceTags = {
-    parameterPath: ["options", "copySourceTags"],
-    mapper: {
-        serializedName: "x-ms-copy-source-tag-option",
-        xmlName: "x-ms-copy-source-tag-option",
-        type: {
-            name: "Enum",
-            allowedValues: ["REPLACE", "COPY"]
         }
     }
 };
@@ -36733,8 +36059,7 @@ const copyFromURLOperationSpec = {
         legalHold1,
         xMsRequiresSync,
         sourceContentMD5,
-        copySourceAuthorization,
-        copySourceTags
+        copySourceAuthorization
     ],
     isXML: true,
     serializer: xmlSerializer$3
@@ -37274,8 +36599,6 @@ const getPageRangesOperationSpec = {
     },
     queryParameters: [
         timeoutInSeconds,
-        marker,
-        maxPageSize,
         snapshot,
         comp20
     ],
@@ -37310,8 +36633,6 @@ const getPageRangesDiffOperationSpec = {
     },
     queryParameters: [
         timeoutInSeconds,
-        marker,
-        maxPageSize,
         snapshot,
         comp20,
         prevsnapshot
@@ -37881,7 +37202,6 @@ const putBlobFromUrlOperationSpec = {
         blobTagsString,
         sourceContentMD5,
         copySourceAuthorization,
-        copySourceTags,
         transactionalContentMD5,
         blobType2,
         copySourceBlobProperties
@@ -38055,8 +37375,8 @@ const logger = logger$1.createClientLogger("storage-blob");
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-const SDK_VERSION = "12.11.0";
-const SERVICE_VERSION = "2021-08-06";
+const SDK_VERSION = "12.9.0";
+const SERVICE_VERSION = "2021-04-10";
 const BLOCK_BLOB_MAX_UPLOAD_BLOB_BYTES = 256 * 1024 * 1024; // 256MB
 const BLOCK_BLOB_MAX_STAGE_BLOCK_BYTES = 4000 * 1024 * 1024; // 4000MB
 const BLOCK_BLOB_MAX_BLOCKS = 50000;
@@ -38249,7 +37569,6 @@ const StorageBlobLoggingAllowedQueryParameters = [
     "snapshot",
 ];
 const BlobUsesCustomerSpecifiedEncryptionMsg = "BlobUsesCustomerSpecifiedEncryption";
-const BlobDoesNotUseCustomerSpecifiedEncryption = "BlobDoesNotUseCustomerSpecifiedEncryption";
 
 // Copyright (c) Microsoft Corporation.
 /**
@@ -38913,207 +38232,82 @@ function ParseBlobName(blobNameInXML) {
         };
     }
 }
-function ParseBlobProperties(blobPropertiesInXML) {
-    const blobProperties = blobPropertiesInXML;
-    if (blobPropertiesInXML["Creation-Time"]) {
-        blobProperties.createdOn = new Date(blobPropertiesInXML["Creation-Time"]);
-        delete blobProperties["Creation-Time"];
-    }
-    if (blobPropertiesInXML["Last-Modified"]) {
-        blobProperties.lastModified = new Date(blobPropertiesInXML["Last-Modified"]);
-        delete blobProperties["Last-Modified"];
-    }
-    if (blobPropertiesInXML["Etag"]) {
-        blobProperties.etag = blobPropertiesInXML["Etag"];
-        delete blobProperties["Etag"];
-    }
-    if (blobPropertiesInXML["Content-Length"]) {
-        blobProperties.contentLength = parseFloat(blobPropertiesInXML["Content-Length"]);
-        delete blobProperties["Content-Length"];
-    }
-    if (blobPropertiesInXML["Content-Type"]) {
-        blobProperties.contentType = blobPropertiesInXML["Content-Type"];
-        delete blobProperties["Content-Type"];
-    }
-    if (blobPropertiesInXML["Content-Encoding"]) {
-        blobProperties.contentEncoding = blobPropertiesInXML["Content-Encoding"];
-        delete blobProperties["Content-Encoding"];
-    }
-    if (blobPropertiesInXML["Content-Language"]) {
-        blobProperties.contentLanguage = blobPropertiesInXML["Content-Language"];
-        delete blobProperties["Content-Language"];
-    }
-    if (blobPropertiesInXML["Content-MD5"]) {
-        blobProperties.contentMD5 = decodeBase64String(blobPropertiesInXML["Content-MD5"]);
-        delete blobProperties["Content-MD5"];
-    }
-    if (blobPropertiesInXML["Content-Disposition"]) {
-        blobProperties.contentDisposition = blobPropertiesInXML["Content-Disposition"];
-        delete blobProperties["Content-Disposition"];
-    }
-    if (blobPropertiesInXML["Cache-Control"]) {
-        blobProperties.cacheControl = blobPropertiesInXML["Cache-Control"];
-        delete blobProperties["Cache-Control"];
-    }
-    if (blobPropertiesInXML["x-ms-blob-sequence-number"]) {
-        blobProperties.blobSequenceNumber = parseFloat(blobPropertiesInXML["x-ms-blob-sequence-number"]);
-        delete blobProperties["x-ms-blob-sequence-number"];
-    }
-    if (blobPropertiesInXML["BlobType"]) {
-        blobProperties.blobType = blobPropertiesInXML["BlobType"];
-        delete blobProperties["BlobType"];
-    }
-    if (blobPropertiesInXML["LeaseStatus"]) {
-        blobProperties.leaseStatus = blobPropertiesInXML["LeaseStatus"];
-        delete blobProperties["LeaseStatus"];
-    }
-    if (blobPropertiesInXML["LeaseState"]) {
-        blobProperties.leaseState = blobPropertiesInXML["LeaseState"];
-        delete blobProperties["LeaseState"];
-    }
-    if (blobPropertiesInXML["LeaseDuration"]) {
-        blobProperties.leaseDuration = blobPropertiesInXML["LeaseDuration"];
-        delete blobProperties["LeaseDuration"];
-    }
-    if (blobPropertiesInXML["CopyId"]) {
-        blobProperties.copyId = blobPropertiesInXML["CopyId"];
-        delete blobProperties["CopyId"];
-    }
-    if (blobPropertiesInXML["CopyStatus"]) {
-        blobProperties.copyStatus = blobPropertiesInXML["CopyStatus"];
-        delete blobProperties["CopyStatus"];
-    }
-    if (blobPropertiesInXML["CopySource"]) {
-        blobProperties.copySource = blobPropertiesInXML["CopySource"];
-        delete blobProperties["CopySource"];
-    }
-    if (blobPropertiesInXML["CopyProgress"]) {
-        blobProperties.copyProgress = blobPropertiesInXML["CopyProgress"];
-        delete blobProperties["CopyProgress"];
-    }
-    if (blobPropertiesInXML["CopyCompletionTime"]) {
-        blobProperties.copyCompletedOn = new Date(blobPropertiesInXML["CopyCompletionTime"]);
-        delete blobProperties["CopyCompletionTime"];
-    }
-    if (blobPropertiesInXML["CopyStatusDescription"]) {
-        blobProperties.copyStatusDescription = blobPropertiesInXML["CopyStatusDescription"];
-        delete blobProperties["CopyStatusDescription"];
-    }
-    if (blobPropertiesInXML["ServerEncrypted"]) {
-        blobProperties.serverEncrypted = ParseBoolean(blobPropertiesInXML["ServerEncrypted"]);
-        delete blobProperties["ServerEncrypted"];
-    }
-    if (blobPropertiesInXML["IncrementalCopy"]) {
-        blobProperties.incrementalCopy = ParseBoolean(blobPropertiesInXML["IncrementalCopy"]);
-        delete blobProperties["IncrementalCopy"];
-    }
-    if (blobPropertiesInXML["DestinationSnapshot"]) {
-        blobProperties.destinationSnapshot = blobPropertiesInXML["DestinationSnapshot"];
-        delete blobProperties["DestinationSnapshot"];
-    }
-    if (blobPropertiesInXML["DeletedTime"]) {
-        blobProperties.deletedOn = new Date(blobPropertiesInXML["DeletedTime"]);
-        delete blobProperties["DeletedTime"];
-    }
-    if (blobPropertiesInXML["RemainingRetentionDays"]) {
-        blobProperties.remainingRetentionDays = parseFloat(blobPropertiesInXML["RemainingRetentionDays"]);
-        delete blobProperties["RemainingRetentionDays"];
-    }
-    if (blobPropertiesInXML["AccessTier"]) {
-        blobProperties.accessTier = blobPropertiesInXML["AccessTier"];
-        delete blobProperties["AccessTier"];
-    }
-    if (blobPropertiesInXML["AccessTierInferred"]) {
-        blobProperties.accessTierInferred = ParseBoolean(blobPropertiesInXML["AccessTierInferred"]);
-        delete blobProperties["AccessTierInferred"];
-    }
-    if (blobPropertiesInXML["ArchiveStatus"]) {
-        blobProperties.archiveStatus = blobPropertiesInXML["ArchiveStatus"];
-        delete blobProperties["ArchiveStatus"];
-    }
-    if (blobPropertiesInXML["CustomerProvidedKeySha256"]) {
-        blobProperties.customerProvidedKeySha256 = blobPropertiesInXML["CustomerProvidedKeySha256"];
-        delete blobProperties["CustomerProvidedKeySha256"];
-    }
-    if (blobPropertiesInXML["EncryptionScope"]) {
-        blobProperties.encryptionScope = blobPropertiesInXML["EncryptionScope"];
-        delete blobProperties["EncryptionScope"];
-    }
-    if (blobPropertiesInXML["AccessTierChangeTime"]) {
-        blobProperties.accessTierChangedOn = new Date(blobPropertiesInXML["AccessTierChangeTime"]);
-        delete blobProperties["AccessTierChangeTime"];
-    }
-    if (blobPropertiesInXML["TagCount"]) {
-        blobProperties.tagCount = parseFloat(blobPropertiesInXML["TagCount"]);
-        delete blobProperties["TagCount"];
-    }
-    if (blobPropertiesInXML["Expiry-Time"]) {
-        blobProperties.expiresOn = new Date(blobPropertiesInXML["Expiry-Time"]);
-        delete blobProperties["Expiry-Time"];
-    }
-    if (blobPropertiesInXML["Sealed"]) {
-        blobProperties.isSealed = ParseBoolean(blobPropertiesInXML["Sealed"]);
-        delete blobProperties["Sealed"];
-    }
-    if (blobPropertiesInXML["RehydratePriority"]) {
-        blobProperties.rehydratePriority = blobPropertiesInXML["RehydratePriority"];
-        delete blobProperties["RehydratePriority"];
-    }
-    if (blobPropertiesInXML["LastAccessTime"]) {
-        blobProperties.lastAccessedOn = new Date(blobPropertiesInXML["LastAccessTime"]);
-        delete blobProperties["LastAccessTime"];
-    }
-    if (blobPropertiesInXML["ImmutabilityPolicyUntilDate"]) {
-        blobProperties.immutabilityPolicyExpiresOn = new Date(blobPropertiesInXML["ImmutabilityPolicyUntilDate"]);
-        delete blobProperties["ImmutabilityPolicyUntilDate"];
-    }
-    if (blobPropertiesInXML["ImmutabilityPolicyMode"]) {
-        blobProperties.immutabilityPolicyMode = blobPropertiesInXML["ImmutabilityPolicyMode"];
-        delete blobProperties["ImmutabilityPolicyMode"];
-    }
-    if (blobPropertiesInXML["LegalHold"]) {
-        blobProperties.legalHold = ParseBoolean(blobPropertiesInXML["LegalHold"]);
-        delete blobProperties["LegalHold"];
-    }
-    return blobProperties;
-}
 function ParseBlobItem(blobInXML) {
-    const blobItem = blobInXML;
-    blobItem.properties = ParseBlobProperties(blobInXML["Properties"]);
-    delete blobItem["Properties"];
-    blobItem.name = ParseBlobName(blobInXML["Name"]);
-    delete blobItem["Name"];
-    blobItem.deleted = ParseBoolean(blobInXML["Deleted"]);
-    delete blobItem["Deleted"];
-    if (blobInXML["Snapshot"]) {
-        blobItem.snapshot = blobInXML["Snapshot"];
-        delete blobItem["Snapshot"];
-    }
-    if (blobInXML["VersionId"]) {
-        blobItem.versionId = blobInXML["VersionId"];
-        delete blobItem["VersionId"];
-    }
-    if (blobInXML["IsCurrentVersion"]) {
-        blobItem.isCurrentVersion = ParseBoolean(blobInXML["IsCurrentVersion"]);
-        delete blobItem["IsCurrentVersion"];
-    }
-    if (blobInXML["Metadata"]) {
-        blobItem.metadata = blobInXML["Metadata"];
-        delete blobItem["Metadata"];
-    }
-    if (blobInXML["Tags"]) {
-        blobItem.blobTags = ParseBlobTags(blobInXML["Tags"]);
-        delete blobItem["Tags"];
-    }
-    if (blobInXML["OrMetadata"]) {
-        blobItem.objectReplicationMetadata = blobInXML["OrMetadata"];
-        delete blobItem["OrMetadata"];
-    }
-    if (blobInXML["HasVersionsOnly"]) {
-        blobItem.hasVersionsOnly = ParseBoolean(blobInXML["HasVersionsOnly"]);
-        delete blobItem["HasVersionsOnly"];
-    }
-    return blobItem;
+    const blobPropertiesInXML = blobInXML["Properties"];
+    const blobProperties = {
+        createdOn: new Date(blobPropertiesInXML["Creation-Time"]),
+        lastModified: new Date(blobPropertiesInXML["Last-Modified"]),
+        etag: blobPropertiesInXML["Etag"],
+        contentLength: blobPropertiesInXML["Content-Length"] === undefined
+            ? undefined
+            : parseFloat(blobPropertiesInXML["Content-Length"]),
+        contentType: blobPropertiesInXML["Content-Type"],
+        contentEncoding: blobPropertiesInXML["Content-Encoding"],
+        contentLanguage: blobPropertiesInXML["Content-Language"],
+        contentMD5: decodeBase64String(blobPropertiesInXML["Content-MD5"]),
+        contentDisposition: blobPropertiesInXML["Content-Disposition"],
+        cacheControl: blobPropertiesInXML["Cache-Control"],
+        blobSequenceNumber: blobPropertiesInXML["x-ms-blob-sequence-number"] === undefined
+            ? undefined
+            : parseFloat(blobPropertiesInXML["x-ms-blob-sequence-number"]),
+        blobType: blobPropertiesInXML["BlobType"],
+        leaseStatus: blobPropertiesInXML["LeaseStatus"],
+        leaseState: blobPropertiesInXML["LeaseState"],
+        leaseDuration: blobPropertiesInXML["LeaseDuration"],
+        copyId: blobPropertiesInXML["CopyId"],
+        copyStatus: blobPropertiesInXML["CopyStatus"],
+        copySource: blobPropertiesInXML["CopySource"],
+        copyProgress: blobPropertiesInXML["CopyProgress"],
+        copyCompletedOn: blobPropertiesInXML["CopyCompletionTime"] === undefined
+            ? undefined
+            : new Date(blobPropertiesInXML["CopyCompletionTime"]),
+        copyStatusDescription: blobPropertiesInXML["CopyStatusDescription"],
+        serverEncrypted: ParseBoolean(blobPropertiesInXML["ServerEncrypted"]),
+        incrementalCopy: ParseBoolean(blobPropertiesInXML["IncrementalCopy"]),
+        destinationSnapshot: blobPropertiesInXML["DestinationSnapshot"],
+        deletedOn: blobPropertiesInXML["DeletedTime"] === undefined
+            ? undefined
+            : new Date(blobPropertiesInXML["DeletedTime"]),
+        remainingRetentionDays: blobPropertiesInXML["RemainingRetentionDays"] === undefined
+            ? undefined
+            : parseFloat(blobPropertiesInXML["RemainingRetentionDays"]),
+        accessTier: blobPropertiesInXML["AccessTier"],
+        accessTierInferred: ParseBoolean(blobPropertiesInXML["AccessTierInferred"]),
+        archiveStatus: blobPropertiesInXML["ArchiveStatus"],
+        customerProvidedKeySha256: blobPropertiesInXML["CustomerProvidedKeySha256"],
+        encryptionScope: blobPropertiesInXML["EncryptionScope"],
+        accessTierChangedOn: blobPropertiesInXML["AccessTierChangeTime"] === undefined
+            ? undefined
+            : new Date(blobPropertiesInXML["AccessTierChangeTime"]),
+        tagCount: blobPropertiesInXML["TagCount"] === undefined
+            ? undefined
+            : parseFloat(blobPropertiesInXML["TagCount"]),
+        expiresOn: blobPropertiesInXML["Expiry-Time"] === undefined
+            ? undefined
+            : new Date(blobPropertiesInXML["Expiry-Time"]),
+        isSealed: ParseBoolean(blobPropertiesInXML["Sealed"]),
+        rehydratePriority: blobPropertiesInXML["RehydratePriority"],
+        lastAccessedOn: blobPropertiesInXML["LastAccessTime"] === undefined
+            ? undefined
+            : new Date(blobPropertiesInXML["LastAccessTime"]),
+        immutabilityPolicyExpiresOn: blobPropertiesInXML["ImmutabilityPolicyUntilDate"] === undefined
+            ? undefined
+            : new Date(blobPropertiesInXML["ImmutabilityPolicyUntilDate"]),
+        immutabilityPolicyMode: blobPropertiesInXML["ImmutabilityPolicyMode"],
+        legalHold: ParseBoolean(blobPropertiesInXML["LegalHold"]),
+    };
+    return {
+        name: ParseBlobName(blobInXML["Name"]),
+        deleted: ParseBoolean(blobInXML["Deleted"]),
+        snapshot: blobInXML["Snapshot"],
+        versionId: blobInXML["VersionId"],
+        isCurrentVersion: ParseBoolean(blobInXML["IsCurrentVersion"]),
+        properties: blobProperties,
+        metadata: blobInXML["Metadata"],
+        blobTags: ParseBlobTags(blobInXML["Tags"]),
+        objectReplicationMetadata: blobInXML["OrMetadata"],
+        hasVersionsOnly: ParseBoolean(blobInXML["HasVersionsOnly"]),
+    };
 }
 function ParseBlobPrefix(blobPrefixInXML) {
     return {
@@ -39166,48 +38360,6 @@ function ProcessBlobPrefixes(blobPrefixesInXML) {
         blobPrefixes.push(ParseBlobPrefix(blobPrefixesInXML));
     }
     return blobPrefixes;
-}
-function* ExtractPageRangeInfoItems(getPageRangesSegment) {
-    let pageRange = [];
-    let clearRange = [];
-    if (getPageRangesSegment.pageRange)
-        pageRange = getPageRangesSegment.pageRange;
-    if (getPageRangesSegment.clearRange)
-        clearRange = getPageRangesSegment.clearRange;
-    let pageRangeIndex = 0;
-    let clearRangeIndex = 0;
-    while (pageRangeIndex < pageRange.length && clearRangeIndex < clearRange.length) {
-        if (pageRange[pageRangeIndex].start < clearRange[clearRangeIndex].start) {
-            yield {
-                start: pageRange[pageRangeIndex].start,
-                end: pageRange[pageRangeIndex].end,
-                isClear: false,
-            };
-            ++pageRangeIndex;
-        }
-        else {
-            yield {
-                start: clearRange[clearRangeIndex].start,
-                end: clearRange[clearRangeIndex].end,
-                isClear: true,
-            };
-            ++clearRangeIndex;
-        }
-    }
-    for (; pageRangeIndex < pageRange.length; ++pageRangeIndex) {
-        yield {
-            start: pageRange[pageRangeIndex].start,
-            end: pageRange[pageRangeIndex].end,
-            isClear: false,
-        };
-    }
-    for (; clearRangeIndex < clearRange.length; ++clearRangeIndex) {
-        yield {
-            start: clearRange[clearRangeIndex].start,
-            end: clearRange[clearRangeIndex].end,
-            isClear: true,
-        };
-    }
 }
 
 // Copyright (c) Microsoft Corporation.
@@ -39626,10 +38778,7 @@ class TelemetryPolicyFactory {
                 userAgentInfo.push(libInfo);
             }
             // e.g. (NODE-VERSION 4.9.1; Windows_NT 10.0.16299)
-            let runtimeInfo = `(NODE-VERSION ${process.version})`;
-            if (os__namespace) {
-                runtimeInfo = `(NODE-VERSION ${process.version}; ${os__namespace.type()} ${os__namespace.release()})`;
-            }
+            const runtimeInfo = `(NODE-VERSION ${process.version}; ${os__namespace.type()} ${os__namespace.release()})`;
             if (userAgentInfo.indexOf(runtimeInfo) === -1) {
                 userAgentInfo.push(runtimeInfo);
             }
@@ -40167,7 +39316,7 @@ class StorageSharedKeyCredential extends Credential {
  * Changes may cause incorrect behavior and will be lost if the code is regenerated.
  */
 const packageName = "azure-storage-blob";
-const packageVersion = "12.11.0";
+const packageVersion = "12.9.0";
 class StorageClientContext extends coreHttp__namespace.ServiceClient {
     /**
      * Initializes a new instance of the StorageClientContext class.
@@ -40193,7 +39342,7 @@ class StorageClientContext extends coreHttp__namespace.ServiceClient {
         // Parameter assignments
         this.url = url;
         // Assigning values to Constant parameters
-        this.version = options.version || "2021-08-06";
+        this.version = options.version || "2021-04-10";
     }
 }
 
@@ -42277,6 +41426,22 @@ const AVRO_SCHEMA_KEY = "avro.schema";
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+function arraysEqual(a, b) {
+    if (a === b)
+        return true;
+    if (a == null || b == null)
+        return false;
+    if (a.length != b.length)
+        return false;
+    for (let i = 0; i < a.length; ++i) {
+        if (a[i] !== b[i])
+            return false;
+    }
+    return true;
+}
+
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 class AvroParser {
     /**
      * Reads a fixed number of bytes from the stream.
@@ -42287,7 +41452,7 @@ class AvroParser {
      */
     static async readFixedBytes(stream, length, options = {}) {
         const bytes = await stream.read(length, { abortSignal: options.abortSignal });
-        if (bytes.length !== length) {
+        if (bytes.length != length) {
             throw new Error("Hit stream end.");
         }
         return bytes;
@@ -42317,7 +41482,6 @@ class AvroParser {
         } while (haveMoreByte && significanceInBit < 28); // bitwise operation only works for 32-bit integers
         if (haveMoreByte) {
             // Switch to float arithmetic
-            // eslint-disable-next-line no-self-assign
             zigZagEncoded = zigZagEncoded;
             significanceInFloat = 268435456; // 2 ** 28.
             do {
@@ -42344,10 +41508,10 @@ class AvroParser {
     }
     static async readBoolean(stream, options = {}) {
         const b = await AvroParser.readByte(stream, options);
-        if (b === 1) {
+        if (b == 1) {
             return true;
         }
-        else if (b === 0) {
+        else if (b == 0) {
             return false;
         }
         else {
@@ -42369,10 +41533,16 @@ class AvroParser {
         if (size < 0) {
             throw new Error("Bytes size was negative.");
         }
-        return stream.read(size, { abortSignal: options.abortSignal });
+        return await stream.read(size, { abortSignal: options.abortSignal });
     }
     static async readString(stream, options = {}) {
         const u8arr = await AvroParser.readBytes(stream, options);
+        // polyfill TextDecoder to be backward compatible with older
+        // nodejs that doesn't expose TextDecoder as a global variable
+        if (typeof TextDecoder === "undefined" && "function" !== "undefined") {
+            global.TextDecoder = (__nccwpck_require__(3837).TextDecoder);
+        }
+        // FUTURE: need TextDecoder polyfill for IE
         const utf8decoder = new TextDecoder();
         return utf8decoder.decode(u8arr);
     }
@@ -42383,8 +41553,8 @@ class AvroParser {
         return { key, value };
     }
     static async readMap(stream, readItemMethod, options = {}) {
-        const readPairMethod = (s, opts = {}) => {
-            return AvroParser.readMapPair(s, readItemMethod, opts);
+        const readPairMethod = async (stream, options = {}) => {
+            return await AvroParser.readMapPair(stream, readItemMethod, options);
         };
         const pairs = await AvroParser.readArray(stream, readPairMethod, options);
         const dict = {};
@@ -42395,7 +41565,7 @@ class AvroParser {
     }
     static async readArray(stream, readItemMethod, options = {}) {
         const items = [];
-        for (let count = await AvroParser.readLong(stream, options); count !== 0; count = await AvroParser.readLong(stream, options)) {
+        for (let count = await AvroParser.readLong(stream, options); count != 0; count = await AvroParser.readLong(stream, options)) {
             if (count < 0) {
                 // Ignore block sizes
                 await AvroParser.readLong(stream, options);
@@ -42418,17 +41588,6 @@ var AvroComplex;
     AvroComplex["UNION"] = "union";
     AvroComplex["FIXED"] = "fixed";
 })(AvroComplex || (AvroComplex = {}));
-var AvroPrimitive;
-(function (AvroPrimitive) {
-    AvroPrimitive["NULL"] = "null";
-    AvroPrimitive["BOOLEAN"] = "boolean";
-    AvroPrimitive["INT"] = "int";
-    AvroPrimitive["LONG"] = "long";
-    AvroPrimitive["FLOAT"] = "float";
-    AvroPrimitive["DOUBLE"] = "double";
-    AvroPrimitive["BYTES"] = "bytes";
-    AvroPrimitive["STRING"] = "string";
-})(AvroPrimitive || (AvroPrimitive = {}));
 class AvroType {
     /**
      * Determines the AvroType from the Avro Schema.
@@ -42468,9 +41627,7 @@ class AvroType {
         try {
             return AvroType.fromStringSchema(type);
         }
-        catch (err) {
-            // eslint-disable-line no-empty
-        }
+        catch (err) { }
         switch (type) {
             case AvroComplex.RECORD:
                 if (schema.aliases) {
@@ -42479,7 +41636,6 @@ class AvroType {
                 if (!schema.name) {
                     throw new Error(`Required attribute 'name' doesn't exist on schema: ${schema}`);
                 }
-                // eslint-disable-next-line no-case-declarations
                 const fields = {};
                 if (!schema.fields) {
                     throw new Error(`Required attribute 'fields' doesn't exist on schema: ${schema}`);
@@ -42508,29 +41664,40 @@ class AvroType {
         }
     }
 }
+var AvroPrimitive;
+(function (AvroPrimitive) {
+    AvroPrimitive["NULL"] = "null";
+    AvroPrimitive["BOOLEAN"] = "boolean";
+    AvroPrimitive["INT"] = "int";
+    AvroPrimitive["LONG"] = "long";
+    AvroPrimitive["FLOAT"] = "float";
+    AvroPrimitive["DOUBLE"] = "double";
+    AvroPrimitive["BYTES"] = "bytes";
+    AvroPrimitive["STRING"] = "string";
+})(AvroPrimitive || (AvroPrimitive = {}));
 class AvroPrimitiveType extends AvroType {
     constructor(primitive) {
         super();
         this._primitive = primitive;
     }
-    read(stream, options = {}) {
+    async read(stream, options = {}) {
         switch (this._primitive) {
             case AvroPrimitive.NULL:
-                return AvroParser.readNull();
+                return await AvroParser.readNull();
             case AvroPrimitive.BOOLEAN:
-                return AvroParser.readBoolean(stream, options);
+                return await AvroParser.readBoolean(stream, options);
             case AvroPrimitive.INT:
-                return AvroParser.readInt(stream, options);
+                return await AvroParser.readInt(stream, options);
             case AvroPrimitive.LONG:
-                return AvroParser.readLong(stream, options);
+                return await AvroParser.readLong(stream, options);
             case AvroPrimitive.FLOAT:
-                return AvroParser.readFloat(stream, options);
+                return await AvroParser.readFloat(stream, options);
             case AvroPrimitive.DOUBLE:
-                return AvroParser.readDouble(stream, options);
+                return await AvroParser.readDouble(stream, options);
             case AvroPrimitive.BYTES:
-                return AvroParser.readBytes(stream, options);
+                return await AvroParser.readBytes(stream, options);
             case AvroPrimitive.STRING:
-                return AvroParser.readString(stream, options);
+                return await AvroParser.readString(stream, options);
             default:
                 throw new Error("Unknown Avro Primitive");
         }
@@ -42553,7 +41720,7 @@ class AvroUnionType extends AvroType {
     }
     async read(stream, options = {}) {
         const typeIndex = await AvroParser.readInt(stream, options);
-        return this._types[typeIndex].read(stream, options);
+        return await this._types[typeIndex].read(stream, options);
     }
 }
 class AvroMapType extends AvroType {
@@ -42561,11 +41728,11 @@ class AvroMapType extends AvroType {
         super();
         this._itemType = itemType;
     }
-    read(stream, options = {}) {
-        const readItemMethod = (s, opts) => {
-            return this._itemType.read(s, opts);
+    async read(stream, options = {}) {
+        const readItemMethod = async (s, options) => {
+            return await this._itemType.read(s, options);
         };
-        return AvroParser.readMap(stream, readItemMethod, options);
+        return await AvroParser.readMap(stream, readItemMethod, options);
     }
 }
 class AvroRecordType extends AvroType {
@@ -42578,29 +41745,12 @@ class AvroRecordType extends AvroType {
         const record = {};
         record["$schema"] = this._name;
         for (const key in this._fields) {
-            if (Object.prototype.hasOwnProperty.call(this._fields, key)) {
+            if (this._fields.hasOwnProperty(key)) {
                 record[key] = await this._fields[key].read(stream, options);
             }
         }
         return record;
     }
-}
-
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-function arraysEqual(a, b) {
-    if (a === b)
-        return true;
-    // eslint-disable-next-line eqeqeq
-    if (a == null || b == null)
-        return false;
-    if (a.length !== b.length)
-        return false;
-    for (let i = 0; i < a.length; ++i) {
-        if (a[i] !== b[i])
-            return false;
-    }
-    return true;
 }
 
 // Copyright (c) Microsoft Corporation.
@@ -42633,7 +41783,7 @@ class AvroReader {
         });
         // Validate codec
         const codec = this._metadata[AVRO_CODEC_KEY];
-        if (!(codec === undefined || codec === null || codec === "null")) {
+        if (!(codec == undefined || codec == "null")) {
             throw new Error("Codecs are not supported");
         }
         // The 16-byte, randomly-generated sync marker for this file.
@@ -42643,7 +41793,7 @@ class AvroReader {
         // Parse the schema
         const schema = JSON.parse(this._metadata[AVRO_SCHEMA_KEY]);
         this._itemType = AvroType.fromSchema(schema);
-        if (this._blockOffset === 0) {
+        if (this._blockOffset == 0) {
             this._blockOffset = this._initialBlockOffset + this._dataStream.position;
         }
         this._itemsRemainingInBlock = await AvroParser.readLong(this._dataStream, {
@@ -42673,7 +41823,7 @@ class AvroReader {
                 }));
                 this._itemsRemainingInBlock--;
                 this._objectIndex++;
-                if (this._itemsRemainingInBlock === 0) {
+                if (this._itemsRemainingInBlock == 0) {
                     const marker = yield tslib.__await(AvroParser.readFixedBytes(this._dataStream, AVRO_SYNC_MARKER_SIZE, {
                         abortSignal: options.abortSignal,
                     }));
@@ -42748,7 +41898,6 @@ class AvroReadableFromStream extends AvroReadable {
         else {
             // register callback to wait for enough data to read
             return new Promise((resolve, reject) => {
-                /* eslint-disable @typescript-eslint/no-use-before-define */
                 const cleanUp = () => {
                     this._readable.removeListener("readable", readableCallback);
                     this._readable.removeListener("error", rejectCallback);
@@ -42759,12 +41908,12 @@ class AvroReadableFromStream extends AvroReadable {
                     }
                 };
                 const readableCallback = () => {
-                    const callbackChunk = this._readable.read(size);
-                    if (callbackChunk) {
-                        this._position += callbackChunk.length;
+                    const chunk = this._readable.read(size);
+                    if (chunk) {
+                        this._position += chunk.length;
                         cleanUp();
-                        // callbackChunk.length maybe less than desired size if the stream ends.
-                        resolve(this.toUint8Array(callbackChunk));
+                        // chunk.length maybe less than desired size if the stream ends.
+                        resolve(this.toUint8Array(chunk));
                     }
                 };
                 const rejectCallback = () => {
@@ -42782,7 +41931,6 @@ class AvroReadableFromStream extends AvroReadable {
                 if (options.abortSignal) {
                     options.abortSignal.addEventListener("abort", abortHandler);
                 }
-                /* eslint-enable @typescript-eslint/no-use-before-define */
             });
         }
     }
@@ -44456,8 +43604,7 @@ class BlobClient extends StorageClient {
                 return false;
             }
             else if (e.statusCode === 409 &&
-                (e.details.errorCode === BlobUsesCustomerSpecifiedEncryptionMsg ||
-                    e.details.errorCode === BlobDoesNotUseCustomerSpecifiedEncryption)) {
+                e.details.errorCode === BlobUsesCustomerSpecifiedEncryptionMsg) {
                 // Expected exception when checking blob existence
                 return true;
             }
@@ -44870,7 +44017,7 @@ class BlobClient extends StorageClient {
                     sourceIfModifiedSince: options.sourceConditions.ifModifiedSince,
                     sourceIfNoneMatch: options.sourceConditions.ifNoneMatch,
                     sourceIfUnmodifiedSince: options.sourceConditions.ifUnmodifiedSince,
-                }, sourceContentMD5: options.sourceContentMD5, copySourceAuthorization: httpAuthorizationToString(options.sourceAuthorization), blobTagsString: toBlobTagsString(options.tags), immutabilityPolicyExpiry: (_b = options.immutabilityPolicy) === null || _b === void 0 ? void 0 : _b.expiriesOn, immutabilityPolicyMode: (_c = options.immutabilityPolicy) === null || _c === void 0 ? void 0 : _c.policyMode, legalHold: options.legalHold, encryptionScope: options.encryptionScope, copySourceTags: options.copySourceTags }, convertTracingToRequestOptionsBase(updatedOptions)));
+                }, sourceContentMD5: options.sourceContentMD5, copySourceAuthorization: httpAuthorizationToString(options.sourceAuthorization), blobTagsString: toBlobTagsString(options.tags), immutabilityPolicyExpiry: (_b = options.immutabilityPolicy) === null || _b === void 0 ? void 0 : _b.expiriesOn, immutabilityPolicyMode: (_c = options.immutabilityPolicy) === null || _c === void 0 ? void 0 : _c.policyMode, legalHold: options.legalHold, encryptionScope: options.encryptionScope }, convertTracingToRequestOptionsBase(updatedOptions)));
         }
         catch (e) {
             span.setStatus({
@@ -45593,13 +44740,12 @@ class BlockBlobClient extends BlobClient {
             if (!coreHttp.isNode) {
                 throw new Error("This operation currently is only supported in Node.js.");
             }
-            ensureCpkIfSpecified(options.customerProvidedKey, this.isHttps);
             const response = await this._blobContext.query(Object.assign({ abortSignal: options.abortSignal, queryRequest: {
                     queryType: "SQL",
                     expression: query,
                     inputSerialization: toQuerySerialization(options.inputTextConfiguration),
                     outputSerialization: toQuerySerialization(options.outputTextConfiguration),
-                }, leaseAccessConditions: options.conditions, modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a = options.conditions) === null || _a === void 0 ? void 0 : _a.tagConditions }), cpkInfo: options.customerProvidedKey }, convertTracingToRequestOptionsBase(updatedOptions)));
+                }, leaseAccessConditions: options.conditions, modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a = options.conditions) === null || _a === void 0 ? void 0 : _a.tagConditions }) }, convertTracingToRequestOptionsBase(updatedOptions)));
             return new BlobQueryResponse(response, {
                 abortSignal: options.abortSignal,
                 onProgress: options.onProgress,
@@ -45695,7 +44841,7 @@ class BlockBlobClient extends BlobClient {
                     sourceIfNoneMatch: (_c = options.sourceConditions) === null || _c === void 0 ? void 0 : _c.ifNoneMatch,
                     sourceIfUnmodifiedSince: (_d = options.sourceConditions) === null || _d === void 0 ? void 0 : _d.ifUnmodifiedSince,
                     sourceIfTags: (_e = options.sourceConditions) === null || _e === void 0 ? void 0 : _e.tagConditions,
-                }, cpkInfo: options.customerProvidedKey, copySourceAuthorization: httpAuthorizationToString(options.sourceAuthorization), tier: toAccessTier(options.tier), blobTagsString: toBlobTagsString(options.tags), copySourceTags: options.copySourceTags }), convertTracingToRequestOptionsBase(updatedOptions)));
+                }, cpkInfo: options.customerProvidedKey, copySourceAuthorization: httpAuthorizationToString(options.sourceAuthorization), tier: toAccessTier(options.tier), blobTagsString: toBlobTagsString(options.tags) }), convertTracingToRequestOptionsBase(updatedOptions)));
         }
         catch (e) {
             span.setStatus({
@@ -46392,183 +45538,6 @@ class PageBlobClient extends BlobClient {
         }
     }
     /**
-     * getPageRangesSegment returns a single segment of page ranges starting from the
-     * specified Marker. Use an empty Marker to start enumeration from the beginning.
-     * After getting a segment, process it, and then call getPageRangesSegment again
-     * (passing the the previously-returned Marker) to get the next segment.
-     * @see https://docs.microsoft.com/rest/api/storageservices/get-page-ranges
-     *
-     * @param offset - Starting byte position of the page ranges.
-     * @param count - Number of bytes to get.
-     * @param marker - A string value that identifies the portion of the list to be returned with the next list operation.
-     * @param options - Options to PageBlob Get Page Ranges Segment operation.
-     */
-    async listPageRangesSegment(offset = 0, count, marker, options = {}) {
-        var _a;
-        const { span, updatedOptions } = createSpan("PageBlobClient-getPageRangesSegment", options);
-        try {
-            return await this.pageBlobContext.getPageRanges(Object.assign({ abortSignal: options.abortSignal, leaseAccessConditions: options.conditions, modifiedAccessConditions: Object.assign(Object.assign({}, options.conditions), { ifTags: (_a = options.conditions) === null || _a === void 0 ? void 0 : _a.tagConditions }), range: rangeToString({ offset, count }), marker: marker, maxPageSize: options.maxPageSize }, convertTracingToRequestOptionsBase(updatedOptions)));
-        }
-        catch (e) {
-            span.setStatus({
-                code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message,
-            });
-            throw e;
-        }
-        finally {
-            span.end();
-        }
-    }
-    /**
-     * Returns an AsyncIterableIterator for {@link PageBlobGetPageRangesResponseModel}
-     *
-     * @param offset - Starting byte position of the page ranges.
-     * @param count - Number of bytes to get.
-     * @param marker - A string value that identifies the portion of
-     *                          the get of page ranges to be returned with the next getting operation. The
-     *                          operation returns the ContinuationToken value within the response body if the
-     *                          getting operation did not return all page ranges remaining within the current page.
-     *                          The ContinuationToken value can be used as the value for
-     *                          the marker parameter in a subsequent call to request the next page of get
-     *                          items. The marker value is opaque to the client.
-     * @param options - Options to List Page Ranges operation.
-     */
-    listPageRangeItemSegments(offset = 0, count, marker, options = {}) {
-        return tslib.__asyncGenerator(this, arguments, function* listPageRangeItemSegments_1() {
-            let getPageRangeItemSegmentsResponse;
-            if (!!marker || marker === undefined) {
-                do {
-                    getPageRangeItemSegmentsResponse = yield tslib.__await(this.listPageRangesSegment(offset, count, marker, options));
-                    marker = getPageRangeItemSegmentsResponse.continuationToken;
-                    yield yield tslib.__await(yield tslib.__await(getPageRangeItemSegmentsResponse));
-                } while (marker);
-            }
-        });
-    }
-    /**
-     * Returns an AsyncIterableIterator of {@link PageRangeInfo} objects
-     *
-     * @param offset - Starting byte position of the page ranges.
-     * @param count - Number of bytes to get.
-     * @param options - Options to List Page Ranges operation.
-     */
-    listPageRangeItems(offset = 0, count, options = {}) {
-        return tslib.__asyncGenerator(this, arguments, function* listPageRangeItems_1() {
-            var e_1, _a;
-            let marker;
-            try {
-                for (var _b = tslib.__asyncValues(this.listPageRangeItemSegments(offset, count, marker, options)), _c; _c = yield tslib.__await(_b.next()), !_c.done;) {
-                    const getPageRangesSegment = _c.value;
-                    yield tslib.__await(yield* tslib.__asyncDelegator(tslib.__asyncValues(ExtractPageRangeInfoItems(getPageRangesSegment))));
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) yield tslib.__await(_a.call(_b));
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-        });
-    }
-    /**
-     * Returns an async iterable iterator to list of page ranges for a page blob.
-     * @see https://docs.microsoft.com/rest/api/storageservices/get-page-ranges
-     *
-     *  .byPage() returns an async iterable iterator to list of page ranges for a page blob.
-     *
-     * Example using `for await` syntax:
-     *
-     * ```js
-     * // Get the pageBlobClient before you run these snippets,
-     * // Can be obtained from `blobServiceClient.getContainerClient("<your-container-name>").getPageBlobClient("<your-blob-name>");`
-     * let i = 1;
-     * for await (const pageRange of pageBlobClient.listPageRanges()) {
-     *   console.log(`Page range ${i++}: ${pageRange.start} - ${pageRange.end}`);
-     * }
-     * ```
-     *
-     * Example using `iter.next()`:
-     *
-     * ```js
-     * let i = 1;
-     * let iter = pageBlobClient.listPageRanges();
-     * let pageRangeItem = await iter.next();
-     * while (!pageRangeItem.done) {
-     *   console.log(`Page range ${i++}: ${pageRangeItem.value.start} - ${pageRangeItem.value.end}, IsClear: ${pageRangeItem.value.isClear}`);
-     *   pageRangeItem = await iter.next();
-     * }
-     * ```
-     *
-     * Example using `byPage()`:
-     *
-     * ```js
-     * // passing optional maxPageSize in the page settings
-     * let i = 1;
-     * for await (const response of pageBlobClient.listPageRanges().byPage({ maxPageSize: 20 })) {
-     *   for (const pageRange of response) {
-     *     console.log(`Page range ${i++}: ${pageRange.start} - ${pageRange.end}`);
-     *   }
-     * }
-     * ```
-     *
-     * Example using paging with a marker:
-     *
-     * ```js
-     * let i = 1;
-     * let iterator = pageBlobClient.listPageRanges().byPage({ maxPageSize: 2 });
-     * let response = (await iterator.next()).value;
-     *
-     * // Prints 2 page ranges
-     * for (const pageRange of response) {
-     *   console.log(`Page range ${i++}: ${pageRange.start} - ${pageRange.end}`);
-     * }
-     *
-     * // Gets next marker
-     * let marker = response.continuationToken;
-     *
-     * // Passing next marker as continuationToken
-     *
-     * iterator = pageBlobClient.listPageRanges().byPage({ continuationToken: marker, maxPageSize: 10 });
-     * response = (await iterator.next()).value;
-     *
-     * // Prints 10 page ranges
-     * for (const blob of response) {
-     *   console.log(`Page range ${i++}: ${pageRange.start} - ${pageRange.end}`);
-     * }
-     * ```
-     * @param offset - Starting byte position of the page ranges.
-     * @param count - Number of bytes to get.
-     * @param options - Options to the Page Blob Get Ranges operation.
-     * @returns An asyncIterableIterator that supports paging.
-     */
-    listPageRanges(offset = 0, count, options = {}) {
-        options.conditions = options.conditions || {};
-        // AsyncIterableIterator to iterate over blobs
-        const iter = this.listPageRangeItems(offset, count, options);
-        return {
-            /**
-             * The next method, part of the iteration protocol
-             */
-            next() {
-                return iter.next();
-            },
-            /**
-             * The connection to the async iterator, part of the iteration protocol
-             */
-            [Symbol.asyncIterator]() {
-                return this;
-            },
-            /**
-             * Return an AsyncIterableIterator that works a page at a time
-             */
-            byPage: (settings = {}) => {
-                return this.listPageRangeItemSegments(offset, count, settings.continuationToken, Object.assign({ maxPageSize: settings.maxPageSize }, options));
-            },
-        };
-    }
-    /**
      * Gets the collection of page ranges that differ between a specified snapshot and this page blob.
      * @see https://docs.microsoft.com/rest/api/storageservices/get-page-ranges
      *
@@ -46597,192 +45566,6 @@ class PageBlobClient extends BlobClient {
         finally {
             span.end();
         }
-    }
-    /**
-     * getPageRangesDiffSegment returns a single segment of page ranges starting from the
-     * specified Marker for difference between previous snapshot and the target page blob.
-     * Use an empty Marker to start enumeration from the beginning.
-     * After getting a segment, process it, and then call getPageRangesDiffSegment again
-     * (passing the the previously-returned Marker) to get the next segment.
-     * @see https://docs.microsoft.com/rest/api/storageservices/get-page-ranges
-     *
-     * @param offset - Starting byte position of the page ranges.
-     * @param count - Number of bytes to get.
-     * @param prevSnapshotOrUrl - Timestamp of snapshot to retrieve the difference or URL of snapshot to retrieve the difference.
-     * @param marker - A string value that identifies the portion of the get to be returned with the next get operation.
-     * @param options - Options to the Page Blob Get Page Ranges Diff operation.
-     */
-    async listPageRangesDiffSegment(offset, count, prevSnapshotOrUrl, marker, options) {
-        var _a;
-        const { span, updatedOptions } = createSpan("PageBlobClient-getPageRangesDiffSegment", options);
-        try {
-            return await this.pageBlobContext.getPageRangesDiff(Object.assign({ abortSignal: options === null || options === void 0 ? void 0 : options.abortSignal, leaseAccessConditions: options === null || options === void 0 ? void 0 : options.conditions, modifiedAccessConditions: Object.assign(Object.assign({}, options === null || options === void 0 ? void 0 : options.conditions), { ifTags: (_a = options === null || options === void 0 ? void 0 : options.conditions) === null || _a === void 0 ? void 0 : _a.tagConditions }), prevsnapshot: prevSnapshotOrUrl, range: rangeToString({
-                    offset: offset,
-                    count: count,
-                }), marker: marker, maxPageSize: options === null || options === void 0 ? void 0 : options.maxPageSize }, convertTracingToRequestOptionsBase(updatedOptions)));
-        }
-        catch (e) {
-            span.setStatus({
-                code: coreTracing.SpanStatusCode.ERROR,
-                message: e.message,
-            });
-            throw e;
-        }
-        finally {
-            span.end();
-        }
-    }
-    /**
-     * Returns an AsyncIterableIterator for {@link PageBlobGetPageRangesDiffResponseModel}
-     *
-     *
-     * @param offset - Starting byte position of the page ranges.
-     * @param count - Number of bytes to get.
-     * @param prevSnapshotOrUrl - Timestamp of snapshot to retrieve the difference or URL of snapshot to retrieve the difference.
-     * @param marker - A string value that identifies the portion of
-     *                          the get of page ranges to be returned with the next getting operation. The
-     *                          operation returns the ContinuationToken value within the response body if the
-     *                          getting operation did not return all page ranges remaining within the current page.
-     *                          The ContinuationToken value can be used as the value for
-     *                          the marker parameter in a subsequent call to request the next page of get
-     *                          items. The marker value is opaque to the client.
-     * @param options - Options to the Page Blob Get Page Ranges Diff operation.
-     */
-    listPageRangeDiffItemSegments(offset, count, prevSnapshotOrUrl, marker, options) {
-        return tslib.__asyncGenerator(this, arguments, function* listPageRangeDiffItemSegments_1() {
-            let getPageRangeItemSegmentsResponse;
-            if (!!marker || marker === undefined) {
-                do {
-                    getPageRangeItemSegmentsResponse = yield tslib.__await(this.listPageRangesDiffSegment(offset, count, prevSnapshotOrUrl, marker, options));
-                    marker = getPageRangeItemSegmentsResponse.continuationToken;
-                    yield yield tslib.__await(yield tslib.__await(getPageRangeItemSegmentsResponse));
-                } while (marker);
-            }
-        });
-    }
-    /**
-     * Returns an AsyncIterableIterator of {@link PageRangeInfo} objects
-     *
-     * @param offset - Starting byte position of the page ranges.
-     * @param count - Number of bytes to get.
-     * @param prevSnapshotOrUrl - Timestamp of snapshot to retrieve the difference or URL of snapshot to retrieve the difference.
-     * @param options - Options to the Page Blob Get Page Ranges Diff operation.
-     */
-    listPageRangeDiffItems(offset, count, prevSnapshotOrUrl, options) {
-        return tslib.__asyncGenerator(this, arguments, function* listPageRangeDiffItems_1() {
-            var e_2, _a;
-            let marker;
-            try {
-                for (var _b = tslib.__asyncValues(this.listPageRangeDiffItemSegments(offset, count, prevSnapshotOrUrl, marker, options)), _c; _c = yield tslib.__await(_b.next()), !_c.done;) {
-                    const getPageRangesSegment = _c.value;
-                    yield tslib.__await(yield* tslib.__asyncDelegator(tslib.__asyncValues(ExtractPageRangeInfoItems(getPageRangesSegment))));
-                }
-            }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) yield tslib.__await(_a.call(_b));
-                }
-                finally { if (e_2) throw e_2.error; }
-            }
-        });
-    }
-    /**
-     * Returns an async iterable iterator to list of page ranges that differ between a specified snapshot and this page blob.
-     * @see https://docs.microsoft.com/rest/api/storageservices/get-page-ranges
-     *
-     *  .byPage() returns an async iterable iterator to list of page ranges that differ between a specified snapshot and this page blob.
-     *
-     * Example using `for await` syntax:
-     *
-     * ```js
-     * // Get the pageBlobClient before you run these snippets,
-     * // Can be obtained from `blobServiceClient.getContainerClient("<your-container-name>").getPageBlobClient("<your-blob-name>");`
-     * let i = 1;
-     * for await (const pageRange of pageBlobClient.listPageRangesDiff()) {
-     *   console.log(`Page range ${i++}: ${pageRange.start} - ${pageRange.end}`);
-     * }
-     * ```
-     *
-     * Example using `iter.next()`:
-     *
-     * ```js
-     * let i = 1;
-     * let iter = pageBlobClient.listPageRangesDiff();
-     * let pageRangeItem = await iter.next();
-     * while (!pageRangeItem.done) {
-     *   console.log(`Page range ${i++}: ${pageRangeItem.value.start} - ${pageRangeItem.value.end}, IsClear: ${pageRangeItem.value.isClear}`);
-     *   pageRangeItem = await iter.next();
-     * }
-     * ```
-     *
-     * Example using `byPage()`:
-     *
-     * ```js
-     * // passing optional maxPageSize in the page settings
-     * let i = 1;
-     * for await (const response of pageBlobClient.listPageRangesDiff().byPage({ maxPageSize: 20 })) {
-     *   for (const pageRange of response) {
-     *     console.log(`Page range ${i++}: ${pageRange.start} - ${pageRange.end}`);
-     *   }
-     * }
-     * ```
-     *
-     * Example using paging with a marker:
-     *
-     * ```js
-     * let i = 1;
-     * let iterator = pageBlobClient.listPageRangesDiff().byPage({ maxPageSize: 2 });
-     * let response = (await iterator.next()).value;
-     *
-     * // Prints 2 page ranges
-     * for (const pageRange of response) {
-     *   console.log(`Page range ${i++}: ${pageRange.start} - ${pageRange.end}`);
-     * }
-     *
-     * // Gets next marker
-     * let marker = response.continuationToken;
-     *
-     * // Passing next marker as continuationToken
-     *
-     * iterator = pageBlobClient.listPageRangesDiff().byPage({ continuationToken: marker, maxPageSize: 10 });
-     * response = (await iterator.next()).value;
-     *
-     * // Prints 10 page ranges
-     * for (const blob of response) {
-     *   console.log(`Page range ${i++}: ${pageRange.start} - ${pageRange.end}`);
-     * }
-     * ```
-     * @param offset - Starting byte position of the page ranges.
-     * @param count - Number of bytes to get.
-     * @param prevSnapshot - Timestamp of snapshot to retrieve the difference.
-     * @param options - Options to the Page Blob Get Ranges operation.
-     * @returns An asyncIterableIterator that supports paging.
-     */
-    listPageRangesDiff(offset, count, prevSnapshot, options = {}) {
-        options.conditions = options.conditions || {};
-        // AsyncIterableIterator to iterate over blobs
-        const iter = this.listPageRangeDiffItems(offset, count, prevSnapshot, Object.assign({}, options));
-        return {
-            /**
-             * The next method, part of the iteration protocol
-             */
-            next() {
-                return iter.next();
-            },
-            /**
-             * The connection to the async iterator, part of the iteration protocol
-             */
-            [Symbol.asyncIterator]() {
-                return this;
-            },
-            /**
-             * Return an AsyncIterableIterator that works a page at a time
-             */
-            byPage: (settings = {}) => {
-                return this.listPageRangeDiffItemSegments(offset, count, prevSnapshot, settings.continuationToken, Object.assign({ maxPageSize: settings.maxPageSize }, options));
-            },
-        };
     }
     /**
      * Gets the collection of page ranges that differ between a specified snapshot and this page blob for managed disks.
@@ -50074,7 +48857,7 @@ exports.newPipeline = newPipeline;
 /***/ 679:
 /***/ ((module) => {
 
-/******************************************************************************
+/*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
 
 Permission to use, copy, modify, and/or distribute this software for any
@@ -50112,7 +48895,6 @@ var __importStar;
 var __importDefault;
 var __classPrivateFieldGet;
 var __classPrivateFieldSet;
-var __classPrivateFieldIn;
 var __createBinding;
 (function (factory) {
     var root = typeof global === "object" ? global : typeof self === "object" ? self : typeof this === "object" ? this : {};
@@ -50229,11 +49011,7 @@ var __createBinding;
 
     __createBinding = Object.create ? (function(o, m, k, k2) {
         if (k2 === undefined) k2 = k;
-        var desc = Object.getOwnPropertyDescriptor(m, k);
-        if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-            desc = { enumerable: true, get: function() { return m[k]; } };
-        }
-        Object.defineProperty(o, k2, desc);
+        Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
     }) : (function(o, m, k, k2) {
         if (k2 === undefined) k2 = k;
         o[k2] = m[k];
@@ -50360,11 +49138,6 @@ var __createBinding;
         return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
     };
 
-    __classPrivateFieldIn = function (state, receiver) {
-        if (receiver === null || (typeof receiver !== "object" && typeof receiver !== "function")) throw new TypeError("Cannot use 'in' operator on non-object");
-        return typeof state === "function" ? receiver === state : state.has(receiver);
-    };
-
     exporter("__extends", __extends);
     exporter("__assign", __assign);
     exporter("__rest", __rest);
@@ -50389,7 +49162,6 @@ var __createBinding;
     exporter("__importDefault", __importDefault);
     exporter("__classPrivateFieldGet", __classPrivateFieldGet);
     exporter("__classPrivateFieldSet", __classPrivateFieldSet);
-    exporter("__classPrivateFieldIn", __classPrivateFieldIn);
 });
 
 
@@ -50732,7 +49504,6 @@ var TraceAPI = /** @class */ (function () {
         this.isSpanContextValid = spancontext_utils_1.isSpanContextValid;
         this.deleteSpan = context_utils_1.deleteSpan;
         this.getSpan = context_utils_1.getSpan;
-        this.getActiveSpan = context_utils_1.getActiveSpan;
         this.getSpanContext = context_utils_1.getSpanContext;
         this.setSpan = context_utils_1.setSpan;
         this.setSpanContext = context_utils_1.setSpanContext;
@@ -51022,31 +49793,6 @@ function baggageEntryMetadataFromString(str) {
 }
 exports.baggageEntryMetadataFromString = baggageEntryMetadataFromString;
 //# sourceMappingURL=utils.js.map
-
-/***/ }),
-
-/***/ 1109:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-/*
- * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-//# sourceMappingURL=Attributes.js.map
 
 /***/ }),
 
@@ -51557,13 +50303,12 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.diag = exports.propagation = exports.trace = exports.context = exports.INVALID_SPAN_CONTEXT = exports.INVALID_TRACEID = exports.INVALID_SPANID = exports.isValidSpanId = exports.isValidTraceId = exports.isSpanContextValid = exports.createTraceState = exports.baggageEntryMetadataFromString = void 0;
+exports.diag = exports.propagation = exports.trace = exports.context = exports.INVALID_SPAN_CONTEXT = exports.INVALID_TRACEID = exports.INVALID_SPANID = exports.isValidSpanId = exports.isValidTraceId = exports.isSpanContextValid = exports.baggageEntryMetadataFromString = void 0;
 __exportStar(__nccwpck_require__(1508), exports);
 var utils_1 = __nccwpck_require__(8136);
 Object.defineProperty(exports, "baggageEntryMetadataFromString", ({ enumerable: true, get: function () { return utils_1.baggageEntryMetadataFromString; } }));
 __exportStar(__nccwpck_require__(4447), exports);
 __exportStar(__nccwpck_require__(2358), exports);
-__exportStar(__nccwpck_require__(1109), exports);
 __exportStar(__nccwpck_require__(1634), exports);
 __exportStar(__nccwpck_require__(865), exports);
 __exportStar(__nccwpck_require__(7492), exports);
@@ -51579,11 +50324,8 @@ __exportStar(__nccwpck_require__(955), exports);
 __exportStar(__nccwpck_require__(8845), exports);
 __exportStar(__nccwpck_require__(6905), exports);
 __exportStar(__nccwpck_require__(8384), exports);
-var utils_2 = __nccwpck_require__(2615);
-Object.defineProperty(exports, "createTraceState", ({ enumerable: true, get: function () { return utils_2.createTraceState; } }));
 __exportStar(__nccwpck_require__(891), exports);
 __exportStar(__nccwpck_require__(3168), exports);
-__exportStar(__nccwpck_require__(1823), exports);
 var spancontext_utils_1 = __nccwpck_require__(9745);
 Object.defineProperty(exports, "isSpanContextValid", ({ enumerable: true, get: function () { return spancontext_utils_1.isSpanContextValid; } }));
 Object.defineProperty(exports, "isValidTraceId", ({ enumerable: true, get: function () { return spancontext_utils_1.isValidTraceId; } }));
@@ -52204,7 +50946,7 @@ var NoopTracer_1 = __nccwpck_require__(7606);
 var NoopTracerProvider = /** @class */ (function () {
     function NoopTracerProvider() {
     }
-    NoopTracerProvider.prototype.getTracer = function (_name, _version, _options) {
+    NoopTracerProvider.prototype.getTracer = function (_name, _version) {
         return new NoopTracer_1.NoopTracer();
     };
     return NoopTracerProvider;
@@ -52242,11 +50984,10 @@ var NOOP_TRACER = new NoopTracer_1.NoopTracer();
  * Proxy tracer provided by the proxy tracer provider
  */
 var ProxyTracer = /** @class */ (function () {
-    function ProxyTracer(_provider, name, version, options) {
+    function ProxyTracer(_provider, name, version) {
         this._provider = _provider;
         this.name = name;
         this.version = version;
-        this.options = options;
     }
     ProxyTracer.prototype.startSpan = function (name, options, context) {
         return this._getTracer().startSpan(name, options, context);
@@ -52263,7 +51004,7 @@ var ProxyTracer = /** @class */ (function () {
         if (this._delegate) {
             return this._delegate;
         }
-        var tracer = this._provider.getDelegateTracer(this.name, this.version, this.options);
+        var tracer = this._provider.getDelegateTracer(this.name, this.version);
         if (!tracer) {
             return NOOP_TRACER;
         }
@@ -52316,9 +51057,9 @@ var ProxyTracerProvider = /** @class */ (function () {
     /**
      * Get a {@link ProxyTracer}
      */
-    ProxyTracerProvider.prototype.getTracer = function (name, version, options) {
+    ProxyTracerProvider.prototype.getTracer = function (name, version) {
         var _a;
-        return ((_a = this.getDelegateTracer(name, version, options)) !== null && _a !== void 0 ? _a : new ProxyTracer_1.ProxyTracer(this, name, version, options));
+        return ((_a = this.getDelegateTracer(name, version)) !== null && _a !== void 0 ? _a : new ProxyTracer_1.ProxyTracer(this, name, version));
     };
     ProxyTracerProvider.prototype.getDelegate = function () {
         var _a;
@@ -52330,9 +51071,9 @@ var ProxyTracerProvider = /** @class */ (function () {
     ProxyTracerProvider.prototype.setDelegate = function (delegate) {
         this._delegate = delegate;
     };
-    ProxyTracerProvider.prototype.getDelegateTracer = function (name, version, options) {
+    ProxyTracerProvider.prototype.getDelegateTracer = function (name, version) {
         var _a;
-        return (_a = this._delegate) === null || _a === void 0 ? void 0 : _a.getTracer(name, version, options);
+        return (_a = this._delegate) === null || _a === void 0 ? void 0 : _a.getTracer(name, version);
     };
     return ProxyTracerProvider;
 }());
@@ -52389,7 +51130,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.SamplingDecision = void 0;
 /**
- * @deprecated use the one declared in @opentelemetry/sdk-trace-base instead.
  * A sampling decision that determines how a {@link Span} will be recorded
  * and collected.
  */
@@ -52486,10 +51226,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getSpanContext = exports.setSpanContext = exports.deleteSpan = exports.setSpan = exports.getActiveSpan = exports.getSpan = void 0;
+exports.getSpanContext = exports.setSpanContext = exports.deleteSpan = exports.setSpan = exports.getSpan = void 0;
 var context_1 = __nccwpck_require__(8242);
 var NonRecordingSpan_1 = __nccwpck_require__(1462);
-var context_2 = __nccwpck_require__(7171);
 /**
  * span key
  */
@@ -52503,13 +51242,6 @@ function getSpan(context) {
     return context.getValue(SPAN_KEY) || undefined;
 }
 exports.getSpan = getSpan;
-/**
- * Gets the span from the current context, if one exists.
- */
-function getActiveSpan() {
-    return getSpan(context_2.ContextAPI.getInstance().active());
-}
-exports.getActiveSpan = getActiveSpan;
 /**
  * Set the span on a context
  *
@@ -52551,202 +51283,6 @@ function getSpanContext(context) {
 }
 exports.getSpanContext = getSpanContext;
 //# sourceMappingURL=context-utils.js.map
-
-/***/ }),
-
-/***/ 2110:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-/*
- * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.TraceStateImpl = void 0;
-var tracestate_validators_1 = __nccwpck_require__(4864);
-var MAX_TRACE_STATE_ITEMS = 32;
-var MAX_TRACE_STATE_LEN = 512;
-var LIST_MEMBERS_SEPARATOR = ',';
-var LIST_MEMBER_KEY_VALUE_SPLITTER = '=';
-/**
- * TraceState must be a class and not a simple object type because of the spec
- * requirement (https://www.w3.org/TR/trace-context/#tracestate-field).
- *
- * Here is the list of allowed mutations:
- * - New key-value pair should be added into the beginning of the list
- * - The value of any key can be updated. Modified keys MUST be moved to the
- * beginning of the list.
- */
-var TraceStateImpl = /** @class */ (function () {
-    function TraceStateImpl(rawTraceState) {
-        this._internalState = new Map();
-        if (rawTraceState)
-            this._parse(rawTraceState);
-    }
-    TraceStateImpl.prototype.set = function (key, value) {
-        // TODO: Benchmark the different approaches(map vs list) and
-        // use the faster one.
-        var traceState = this._clone();
-        if (traceState._internalState.has(key)) {
-            traceState._internalState.delete(key);
-        }
-        traceState._internalState.set(key, value);
-        return traceState;
-    };
-    TraceStateImpl.prototype.unset = function (key) {
-        var traceState = this._clone();
-        traceState._internalState.delete(key);
-        return traceState;
-    };
-    TraceStateImpl.prototype.get = function (key) {
-        return this._internalState.get(key);
-    };
-    TraceStateImpl.prototype.serialize = function () {
-        var _this = this;
-        return this._keys()
-            .reduce(function (agg, key) {
-            agg.push(key + LIST_MEMBER_KEY_VALUE_SPLITTER + _this.get(key));
-            return agg;
-        }, [])
-            .join(LIST_MEMBERS_SEPARATOR);
-    };
-    TraceStateImpl.prototype._parse = function (rawTraceState) {
-        if (rawTraceState.length > MAX_TRACE_STATE_LEN)
-            return;
-        this._internalState = rawTraceState
-            .split(LIST_MEMBERS_SEPARATOR)
-            .reverse() // Store in reverse so new keys (.set(...)) will be placed at the beginning
-            .reduce(function (agg, part) {
-            var listMember = part.trim(); // Optional Whitespace (OWS) handling
-            var i = listMember.indexOf(LIST_MEMBER_KEY_VALUE_SPLITTER);
-            if (i !== -1) {
-                var key = listMember.slice(0, i);
-                var value = listMember.slice(i + 1, part.length);
-                if (tracestate_validators_1.validateKey(key) && tracestate_validators_1.validateValue(value)) {
-                    agg.set(key, value);
-                }
-                else {
-                    // TODO: Consider to add warning log
-                }
-            }
-            return agg;
-        }, new Map());
-        // Because of the reverse() requirement, trunc must be done after map is created
-        if (this._internalState.size > MAX_TRACE_STATE_ITEMS) {
-            this._internalState = new Map(Array.from(this._internalState.entries())
-                .reverse() // Use reverse same as original tracestate parse chain
-                .slice(0, MAX_TRACE_STATE_ITEMS));
-        }
-    };
-    TraceStateImpl.prototype._keys = function () {
-        return Array.from(this._internalState.keys()).reverse();
-    };
-    TraceStateImpl.prototype._clone = function () {
-        var traceState = new TraceStateImpl();
-        traceState._internalState = new Map(this._internalState);
-        return traceState;
-    };
-    return TraceStateImpl;
-}());
-exports.TraceStateImpl = TraceStateImpl;
-//# sourceMappingURL=tracestate-impl.js.map
-
-/***/ }),
-
-/***/ 4864:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-/*
- * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.validateValue = exports.validateKey = void 0;
-var VALID_KEY_CHAR_RANGE = '[_0-9a-z-*/]';
-var VALID_KEY = "[a-z]" + VALID_KEY_CHAR_RANGE + "{0,255}";
-var VALID_VENDOR_KEY = "[a-z0-9]" + VALID_KEY_CHAR_RANGE + "{0,240}@[a-z]" + VALID_KEY_CHAR_RANGE + "{0,13}";
-var VALID_KEY_REGEX = new RegExp("^(?:" + VALID_KEY + "|" + VALID_VENDOR_KEY + ")$");
-var VALID_VALUE_BASE_REGEX = /^[ -~]{0,255}[!-~]$/;
-var INVALID_VALUE_COMMA_EQUAL_REGEX = /,|=/;
-/**
- * Key is opaque string up to 256 characters printable. It MUST begin with a
- * lowercase letter, and can only contain lowercase letters a-z, digits 0-9,
- * underscores _, dashes -, asterisks *, and forward slashes /.
- * For multi-tenant vendor scenarios, an at sign (@) can be used to prefix the
- * vendor name. Vendors SHOULD set the tenant ID at the beginning of the key.
- * see https://www.w3.org/TR/trace-context/#key
- */
-function validateKey(key) {
-    return VALID_KEY_REGEX.test(key);
-}
-exports.validateKey = validateKey;
-/**
- * Value is opaque string up to 256 characters printable ASCII RFC0020
- * characters (i.e., the range 0x20 to 0x7E) except comma , and =.
- */
-function validateValue(value) {
-    return (VALID_VALUE_BASE_REGEX.test(value) &&
-        !INVALID_VALUE_COMMA_EQUAL_REGEX.test(value));
-}
-exports.validateValue = validateValue;
-//# sourceMappingURL=tracestate-validators.js.map
-
-/***/ }),
-
-/***/ 2615:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-/*
- * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createTraceState = void 0;
-var tracestate_impl_1 = __nccwpck_require__(2110);
-function createTraceState(rawTraceState) {
-    return new tracestate_impl_1.TraceStateImpl(rawTraceState);
-}
-exports.createTraceState = createTraceState;
-//# sourceMappingURL=utils.js.map
 
 /***/ }),
 
@@ -53081,31 +51617,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 
 /***/ }),
 
-/***/ 1823:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-/*
- * Copyright The OpenTelemetry Authors
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-//# sourceMappingURL=tracer_options.js.map
-
-/***/ }),
-
 /***/ 891:
 /***/ ((__unused_webpack_module, exports) => {
 
@@ -53154,7 +51665,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.VERSION = void 0;
 // this is autogenerated file, see scripts/version-update.js
-exports.VERSION = '1.2.0';
+exports.VERSION = '1.0.4';
 //# sourceMappingURL=version.js.map
 
 /***/ }),
@@ -59854,626 +58365,6 @@ exports.isValid = function (domain) {
 
 /***/ }),
 
-/***/ 9540:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** Highest positive signed 32-bit float value */
-const maxInt = 2147483647; // aka. 0x7FFFFFFF or 2^31-1
-
-/** Bootstring parameters */
-const base = 36;
-const tMin = 1;
-const tMax = 26;
-const skew = 38;
-const damp = 700;
-const initialBias = 72;
-const initialN = 128; // 0x80
-const delimiter = '-'; // '\x2D'
-
-/** Regular expressions */
-const regexPunycode = /^xn--/;
-const regexNonASCII = /[^\0-\x7E]/; // non-ASCII chars
-const regexSeparators = /[\x2E\u3002\uFF0E\uFF61]/g; // RFC 3490 separators
-
-/** Error messages */
-const errors = {
-	'overflow': 'Overflow: input needs wider integers to process',
-	'not-basic': 'Illegal input >= 0x80 (not a basic code point)',
-	'invalid-input': 'Invalid input'
-};
-
-/** Convenience shortcuts */
-const baseMinusTMin = base - tMin;
-const floor = Math.floor;
-const stringFromCharCode = String.fromCharCode;
-
-/*--------------------------------------------------------------------------*/
-
-/**
- * A generic error utility function.
- * @private
- * @param {String} type The error type.
- * @returns {Error} Throws a `RangeError` with the applicable error message.
- */
-function error(type) {
-	throw new RangeError(errors[type]);
-}
-
-/**
- * A generic `Array#map` utility function.
- * @private
- * @param {Array} array The array to iterate over.
- * @param {Function} callback The function that gets called for every array
- * item.
- * @returns {Array} A new array of values returned by the callback function.
- */
-function map(array, fn) {
-	const result = [];
-	let length = array.length;
-	while (length--) {
-		result[length] = fn(array[length]);
-	}
-	return result;
-}
-
-/**
- * A simple `Array#map`-like wrapper to work with domain name strings or email
- * addresses.
- * @private
- * @param {String} domain The domain name or email address.
- * @param {Function} callback The function that gets called for every
- * character.
- * @returns {Array} A new string of characters returned by the callback
- * function.
- */
-function mapDomain(string, fn) {
-	const parts = string.split('@');
-	let result = '';
-	if (parts.length > 1) {
-		// In email addresses, only the domain name should be punycoded. Leave
-		// the local part (i.e. everything up to `@`) intact.
-		result = parts[0] + '@';
-		string = parts[1];
-	}
-	// Avoid `split(regex)` for IE8 compatibility. See #17.
-	string = string.replace(regexSeparators, '\x2E');
-	const labels = string.split('.');
-	const encoded = map(labels, fn).join('.');
-	return result + encoded;
-}
-
-/**
- * Creates an array containing the numeric code points of each Unicode
- * character in the string. While JavaScript uses UCS-2 internally,
- * this function will convert a pair of surrogate halves (each of which
- * UCS-2 exposes as separate characters) into a single code point,
- * matching UTF-16.
- * @see `punycode.ucs2.encode`
- * @see <https://mathiasbynens.be/notes/javascript-encoding>
- * @memberOf punycode.ucs2
- * @name decode
- * @param {String} string The Unicode input string (UCS-2).
- * @returns {Array} The new array of code points.
- */
-function ucs2decode(string) {
-	const output = [];
-	let counter = 0;
-	const length = string.length;
-	while (counter < length) {
-		const value = string.charCodeAt(counter++);
-		if (value >= 0xD800 && value <= 0xDBFF && counter < length) {
-			// It's a high surrogate, and there is a next character.
-			const extra = string.charCodeAt(counter++);
-			if ((extra & 0xFC00) == 0xDC00) { // Low surrogate.
-				output.push(((value & 0x3FF) << 10) + (extra & 0x3FF) + 0x10000);
-			} else {
-				// It's an unmatched surrogate; only append this code unit, in case the
-				// next code unit is the high surrogate of a surrogate pair.
-				output.push(value);
-				counter--;
-			}
-		} else {
-			output.push(value);
-		}
-	}
-	return output;
-}
-
-/**
- * Creates a string based on an array of numeric code points.
- * @see `punycode.ucs2.decode`
- * @memberOf punycode.ucs2
- * @name encode
- * @param {Array} codePoints The array of numeric code points.
- * @returns {String} The new Unicode string (UCS-2).
- */
-const ucs2encode = array => String.fromCodePoint(...array);
-
-/**
- * Converts a basic code point into a digit/integer.
- * @see `digitToBasic()`
- * @private
- * @param {Number} codePoint The basic numeric code point value.
- * @returns {Number} The numeric value of a basic code point (for use in
- * representing integers) in the range `0` to `base - 1`, or `base` if
- * the code point does not represent a value.
- */
-const basicToDigit = function(codePoint) {
-	if (codePoint - 0x30 < 0x0A) {
-		return codePoint - 0x16;
-	}
-	if (codePoint - 0x41 < 0x1A) {
-		return codePoint - 0x41;
-	}
-	if (codePoint - 0x61 < 0x1A) {
-		return codePoint - 0x61;
-	}
-	return base;
-};
-
-/**
- * Converts a digit/integer into a basic code point.
- * @see `basicToDigit()`
- * @private
- * @param {Number} digit The numeric value of a basic code point.
- * @returns {Number} The basic code point whose value (when used for
- * representing integers) is `digit`, which needs to be in the range
- * `0` to `base - 1`. If `flag` is non-zero, the uppercase form is
- * used; else, the lowercase form is used. The behavior is undefined
- * if `flag` is non-zero and `digit` has no uppercase form.
- */
-const digitToBasic = function(digit, flag) {
-	//  0..25 map to ASCII a..z or A..Z
-	// 26..35 map to ASCII 0..9
-	return digit + 22 + 75 * (digit < 26) - ((flag != 0) << 5);
-};
-
-/**
- * Bias adaptation function as per section 3.4 of RFC 3492.
- * https://tools.ietf.org/html/rfc3492#section-3.4
- * @private
- */
-const adapt = function(delta, numPoints, firstTime) {
-	let k = 0;
-	delta = firstTime ? floor(delta / damp) : delta >> 1;
-	delta += floor(delta / numPoints);
-	for (/* no initialization */; delta > baseMinusTMin * tMax >> 1; k += base) {
-		delta = floor(delta / baseMinusTMin);
-	}
-	return floor(k + (baseMinusTMin + 1) * delta / (delta + skew));
-};
-
-/**
- * Converts a Punycode string of ASCII-only symbols to a string of Unicode
- * symbols.
- * @memberOf punycode
- * @param {String} input The Punycode string of ASCII-only symbols.
- * @returns {String} The resulting string of Unicode symbols.
- */
-const decode = function(input) {
-	// Don't use UCS-2.
-	const output = [];
-	const inputLength = input.length;
-	let i = 0;
-	let n = initialN;
-	let bias = initialBias;
-
-	// Handle the basic code points: let `basic` be the number of input code
-	// points before the last delimiter, or `0` if there is none, then copy
-	// the first basic code points to the output.
-
-	let basic = input.lastIndexOf(delimiter);
-	if (basic < 0) {
-		basic = 0;
-	}
-
-	for (let j = 0; j < basic; ++j) {
-		// if it's not a basic code point
-		if (input.charCodeAt(j) >= 0x80) {
-			error('not-basic');
-		}
-		output.push(input.charCodeAt(j));
-	}
-
-	// Main decoding loop: start just after the last delimiter if any basic code
-	// points were copied; start at the beginning otherwise.
-
-	for (let index = basic > 0 ? basic + 1 : 0; index < inputLength; /* no final expression */) {
-
-		// `index` is the index of the next character to be consumed.
-		// Decode a generalized variable-length integer into `delta`,
-		// which gets added to `i`. The overflow checking is easier
-		// if we increase `i` as we go, then subtract off its starting
-		// value at the end to obtain `delta`.
-		let oldi = i;
-		for (let w = 1, k = base; /* no condition */; k += base) {
-
-			if (index >= inputLength) {
-				error('invalid-input');
-			}
-
-			const digit = basicToDigit(input.charCodeAt(index++));
-
-			if (digit >= base || digit > floor((maxInt - i) / w)) {
-				error('overflow');
-			}
-
-			i += digit * w;
-			const t = k <= bias ? tMin : (k >= bias + tMax ? tMax : k - bias);
-
-			if (digit < t) {
-				break;
-			}
-
-			const baseMinusT = base - t;
-			if (w > floor(maxInt / baseMinusT)) {
-				error('overflow');
-			}
-
-			w *= baseMinusT;
-
-		}
-
-		const out = output.length + 1;
-		bias = adapt(i - oldi, out, oldi == 0);
-
-		// `i` was supposed to wrap around from `out` to `0`,
-		// incrementing `n` each time, so we'll fix that now:
-		if (floor(i / out) > maxInt - n) {
-			error('overflow');
-		}
-
-		n += floor(i / out);
-		i %= out;
-
-		// Insert `n` at position `i` of the output.
-		output.splice(i++, 0, n);
-
-	}
-
-	return String.fromCodePoint(...output);
-};
-
-/**
- * Converts a string of Unicode symbols (e.g. a domain name label) to a
- * Punycode string of ASCII-only symbols.
- * @memberOf punycode
- * @param {String} input The string of Unicode symbols.
- * @returns {String} The resulting Punycode string of ASCII-only symbols.
- */
-const encode = function(input) {
-	const output = [];
-
-	// Convert the input in UCS-2 to an array of Unicode code points.
-	input = ucs2decode(input);
-
-	// Cache the length.
-	let inputLength = input.length;
-
-	// Initialize the state.
-	let n = initialN;
-	let delta = 0;
-	let bias = initialBias;
-
-	// Handle the basic code points.
-	for (const currentValue of input) {
-		if (currentValue < 0x80) {
-			output.push(stringFromCharCode(currentValue));
-		}
-	}
-
-	let basicLength = output.length;
-	let handledCPCount = basicLength;
-
-	// `handledCPCount` is the number of code points that have been handled;
-	// `basicLength` is the number of basic code points.
-
-	// Finish the basic string with a delimiter unless it's empty.
-	if (basicLength) {
-		output.push(delimiter);
-	}
-
-	// Main encoding loop:
-	while (handledCPCount < inputLength) {
-
-		// All non-basic code points < n have been handled already. Find the next
-		// larger one:
-		let m = maxInt;
-		for (const currentValue of input) {
-			if (currentValue >= n && currentValue < m) {
-				m = currentValue;
-			}
-		}
-
-		// Increase `delta` enough to advance the decoder's <n,i> state to <m,0>,
-		// but guard against overflow.
-		const handledCPCountPlusOne = handledCPCount + 1;
-		if (m - n > floor((maxInt - delta) / handledCPCountPlusOne)) {
-			error('overflow');
-		}
-
-		delta += (m - n) * handledCPCountPlusOne;
-		n = m;
-
-		for (const currentValue of input) {
-			if (currentValue < n && ++delta > maxInt) {
-				error('overflow');
-			}
-			if (currentValue == n) {
-				// Represent delta as a generalized variable-length integer.
-				let q = delta;
-				for (let k = base; /* no condition */; k += base) {
-					const t = k <= bias ? tMin : (k >= bias + tMax ? tMax : k - bias);
-					if (q < t) {
-						break;
-					}
-					const qMinusT = q - t;
-					const baseMinusT = base - t;
-					output.push(
-						stringFromCharCode(digitToBasic(t + qMinusT % baseMinusT, 0))
-					);
-					q = floor(qMinusT / baseMinusT);
-				}
-
-				output.push(stringFromCharCode(digitToBasic(q, 0)));
-				bias = adapt(delta, handledCPCountPlusOne, handledCPCount == basicLength);
-				delta = 0;
-				++handledCPCount;
-			}
-		}
-
-		++delta;
-		++n;
-
-	}
-	return output.join('');
-};
-
-/**
- * Converts a Punycode string representing a domain name or an email address
- * to Unicode. Only the Punycoded parts of the input will be converted, i.e.
- * it doesn't matter if you call it on a string that has already been
- * converted to Unicode.
- * @memberOf punycode
- * @param {String} input The Punycoded domain name or email address to
- * convert to Unicode.
- * @returns {String} The Unicode representation of the given Punycode
- * string.
- */
-const toUnicode = function(input) {
-	return mapDomain(input, function(string) {
-		return regexPunycode.test(string)
-			? decode(string.slice(4).toLowerCase())
-			: string;
-	});
-};
-
-/**
- * Converts a Unicode string representing a domain name or an email address to
- * Punycode. Only the non-ASCII parts of the domain name will be converted,
- * i.e. it doesn't matter if you call it with a domain that's already in
- * ASCII.
- * @memberOf punycode
- * @param {String} input The domain name or email address to convert, as a
- * Unicode string.
- * @returns {String} The Punycode representation of the given domain name or
- * email address.
- */
-const toASCII = function(input) {
-	return mapDomain(input, function(string) {
-		return regexNonASCII.test(string)
-			? 'xn--' + encode(string)
-			: string;
-	});
-};
-
-/*--------------------------------------------------------------------------*/
-
-/** Define the public API */
-const punycode = {
-	/**
-	 * A string representing the current Punycode.js version number.
-	 * @memberOf punycode
-	 * @type String
-	 */
-	'version': '2.1.0',
-	/**
-	 * An object of methods to convert from JavaScript's internal character
-	 * representation (UCS-2) to Unicode code points, and back.
-	 * @see <https://mathiasbynens.be/notes/javascript-encoding>
-	 * @memberOf punycode
-	 * @type Object
-	 */
-	'ucs2': {
-		'decode': ucs2decode,
-		'encode': ucs2encode
-	},
-	'decode': decode,
-	'encode': encode,
-	'toASCII': toASCII,
-	'toUnicode': toUnicode
-};
-
-module.exports = punycode;
-
-
-/***/ }),
-
-/***/ 3319:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-
-var has = Object.prototype.hasOwnProperty
-  , undef;
-
-/**
- * Decode a URI encoded string.
- *
- * @param {String} input The URI encoded string.
- * @returns {String|Null} The decoded string.
- * @api private
- */
-function decode(input) {
-  try {
-    return decodeURIComponent(input.replace(/\+/g, ' '));
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * Attempts to encode a given input.
- *
- * @param {String} input The string that needs to be encoded.
- * @returns {String|Null} The encoded string.
- * @api private
- */
-function encode(input) {
-  try {
-    return encodeURIComponent(input);
-  } catch (e) {
-    return null;
-  }
-}
-
-/**
- * Simple query string parser.
- *
- * @param {String} query The query string that needs to be parsed.
- * @returns {Object}
- * @api public
- */
-function querystring(query) {
-  var parser = /([^=?#&]+)=?([^&]*)/g
-    , result = {}
-    , part;
-
-  while (part = parser.exec(query)) {
-    var key = decode(part[1])
-      , value = decode(part[2]);
-
-    //
-    // Prevent overriding of existing properties. This ensures that build-in
-    // methods like `toString` or __proto__ are not overriden by malicious
-    // querystrings.
-    //
-    // In the case if failed decoding, we want to omit the key/value pairs
-    // from the result.
-    //
-    if (key === null || value === null || key in result) continue;
-    result[key] = value;
-  }
-
-  return result;
-}
-
-/**
- * Transform a query string to an object.
- *
- * @param {Object} obj Object that should be transformed.
- * @param {String} prefix Optional prefix.
- * @returns {String}
- * @api public
- */
-function querystringify(obj, prefix) {
-  prefix = prefix || '';
-
-  var pairs = []
-    , value
-    , key;
-
-  //
-  // Optionally prefix with a '?' if needed
-  //
-  if ('string' !== typeof prefix) prefix = '?';
-
-  for (key in obj) {
-    if (has.call(obj, key)) {
-      value = obj[key];
-
-      //
-      // Edge cases where we actually want to encode the value to an empty
-      // string instead of the stringified value.
-      //
-      if (!value && (value === null || value === undef || isNaN(value))) {
-        value = '';
-      }
-
-      key = encode(key);
-      value = encode(value);
-
-      //
-      // If we failed to encode the strings, we should bail out as we don't
-      // want to add invalid strings to the query.
-      //
-      if (key === null || value === null) continue;
-      pairs.push(key +'='+ value);
-    }
-  }
-
-  return pairs.length ? prefix + pairs.join('&') : '';
-}
-
-//
-// Expose the module.
-//
-exports.stringify = querystringify;
-exports.parse = querystring;
-
-
-/***/ }),
-
-/***/ 4742:
-/***/ ((module) => {
-
-"use strict";
-
-
-/**
- * Check if we're required to add a port number.
- *
- * @see https://url.spec.whatwg.org/#default-port
- * @param {Number|String} port Port number we need to check
- * @param {String} protocol Protocol we need to check against.
- * @returns {Boolean} Is it a default port for the given protocol
- * @api private
- */
-module.exports = function required(port, protocol) {
-  protocol = protocol.split(':')[0];
-  port = +port;
-
-  if (!port) return false;
-
-  switch (protocol) {
-    case 'http':
-    case 'ws':
-    return port !== 80;
-
-    case 'https':
-    case 'wss':
-    return port !== 443;
-
-    case 'ftp':
-    return port !== 21;
-
-    case 'gopher':
-    return port !== 70;
-
-    case 'file':
-    return false;
-  }
-
-  return port !== 0;
-};
-
-
-/***/ }),
-
 /***/ 2043:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -64534,599 +62425,35 @@ exports.debug = debug; // for test
 
 /***/ }),
 
-/***/ 5682:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+/***/ 9046:
+/***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
 
-var required = __nccwpck_require__(4742)
-  , qs = __nccwpck_require__(3319)
-  , controlOrWhitespace = /^[\x00-\x20\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+/
-  , CRHTLF = /[\n\r\t]/g
-  , slashes = /^[A-Za-z][A-Za-z0-9+-.]*:\/\//
-  , port = /:\d+$/
-  , protocolre = /^([a-z][a-z0-9.+-]*:)?(\/\/)?([\\/]+)?([\S\s]*)/i
-  , windowsDriveLetter = /^[a-zA-Z]:/;
-
-/**
- * Remove control characters and whitespace from the beginning of a string.
- *
- * @param {Object|String} str String to trim.
- * @returns {String} A new string representing `str` stripped of control
- *     characters and whitespace from its beginning.
- * @public
- */
-function trimLeft(str) {
-  return (str ? str : '').toString().replace(controlOrWhitespace, '');
-}
-
-/**
- * These are the parse rules for the URL parser, it informs the parser
- * about:
- *
- * 0. The char it Needs to parse, if it's a string it should be done using
- *    indexOf, RegExp using exec and NaN means set as current value.
- * 1. The property we should set when parsing this value.
- * 2. Indication if it's backwards or forward parsing, when set as number it's
- *    the value of extra chars that should be split off.
- * 3. Inherit from location if non existing in the parser.
- * 4. `toLowerCase` the resulting value.
- */
-var rules = [
-  ['#', 'hash'],                        // Extract from the back.
-  ['?', 'query'],                       // Extract from the back.
-  function sanitize(address, url) {     // Sanitize what is left of the address
-    return isSpecial(url.protocol) ? address.replace(/\\/g, '/') : address;
-  },
-  ['/', 'pathname'],                    // Extract from the back.
-  ['@', 'auth', 1],                     // Extract from the front.
-  [NaN, 'host', undefined, 1, 1],       // Set left over value.
-  [/:(\d*)$/, 'port', undefined, 1],    // RegExp the back.
-  [NaN, 'hostname', undefined, 1, 1]    // Set left over.
-];
-
-/**
- * These properties should not be copied or inherited from. This is only needed
- * for all non blob URL's as a blob URL does not include a hash, only the
- * origin.
- *
- * @type {Object}
- * @private
- */
-var ignore = { hash: 1, query: 1 };
-
-/**
- * The location object differs when your code is loaded through a normal page,
- * Worker or through a worker using a blob. And with the blobble begins the
- * trouble as the location object will contain the URL of the blob, not the
- * location of the page where our code is loaded in. The actual origin is
- * encoded in the `pathname` so we can thankfully generate a good "default"
- * location from it so we can generate proper relative URL's again.
- *
- * @param {Object|String} loc Optional default location object.
- * @returns {Object} lolcation object.
- * @public
- */
-function lolcation(loc) {
-  var globalVar;
-
-  if (typeof window !== 'undefined') globalVar = window;
-  else if (typeof global !== 'undefined') globalVar = global;
-  else if (typeof self !== 'undefined') globalVar = self;
-  else globalVar = {};
-
-  var location = globalVar.location || {};
-  loc = loc || location;
-
-  var finaldestination = {}
-    , type = typeof loc
-    , key;
-
-  if ('blob:' === loc.protocol) {
-    finaldestination = new Url(unescape(loc.pathname), {});
-  } else if ('string' === type) {
-    finaldestination = new Url(loc, {});
-    for (key in ignore) delete finaldestination[key];
-  } else if ('object' === type) {
-    for (key in loc) {
-      if (key in ignore) continue;
-      finaldestination[key] = loc[key];
-    }
-
-    if (finaldestination.slashes === undefined) {
-      finaldestination.slashes = slashes.test(loc.href);
-    }
-  }
-
-  return finaldestination;
-}
-
-/**
- * Check whether a protocol scheme is special.
- *
- * @param {String} The protocol scheme of the URL
- * @return {Boolean} `true` if the protocol scheme is special, else `false`
- * @private
- */
-function isSpecial(scheme) {
-  return (
-    scheme === 'file:' ||
-    scheme === 'ftp:' ||
-    scheme === 'http:' ||
-    scheme === 'https:' ||
-    scheme === 'ws:' ||
-    scheme === 'wss:'
-  );
-}
-
-/**
- * @typedef ProtocolExtract
- * @type Object
- * @property {String} protocol Protocol matched in the URL, in lowercase.
- * @property {Boolean} slashes `true` if protocol is followed by "//", else `false`.
- * @property {String} rest Rest of the URL that is not part of the protocol.
- */
-
-/**
- * Extract protocol information from a URL with/without double slash ("//").
- *
- * @param {String} address URL we want to extract from.
- * @param {Object} location
- * @return {ProtocolExtract} Extracted information.
- * @private
- */
-function extractProtocol(address, location) {
-  address = trimLeft(address);
-  address = address.replace(CRHTLF, '');
-  location = location || {};
-
-  var match = protocolre.exec(address);
-  var protocol = match[1] ? match[1].toLowerCase() : '';
-  var forwardSlashes = !!match[2];
-  var otherSlashes = !!match[3];
-  var slashesCount = 0;
-  var rest;
-
-  if (forwardSlashes) {
-    if (otherSlashes) {
-      rest = match[2] + match[3] + match[4];
-      slashesCount = match[2].length + match[3].length;
-    } else {
-      rest = match[2] + match[4];
-      slashesCount = match[2].length;
-    }
-  } else {
-    if (otherSlashes) {
-      rest = match[3] + match[4];
-      slashesCount = match[3].length;
-    } else {
-      rest = match[4]
-    }
-  }
-
-  if (protocol === 'file:') {
-    if (slashesCount >= 2) {
-      rest = rest.slice(2);
-    }
-  } else if (isSpecial(protocol)) {
-    rest = match[4];
-  } else if (protocol) {
-    if (forwardSlashes) {
-      rest = rest.slice(2);
-    }
-  } else if (slashesCount >= 2 && isSpecial(location.protocol)) {
-    rest = match[4];
-  }
-
-  return {
-    protocol: protocol,
-    slashes: forwardSlashes || isSpecial(protocol),
-    slashesCount: slashesCount,
-    rest: rest
-  };
-}
-
-/**
- * Resolve a relative URL pathname against a base URL pathname.
- *
- * @param {String} relative Pathname of the relative URL.
- * @param {String} base Pathname of the base URL.
- * @return {String} Resolved pathname.
- * @private
- */
-function resolve(relative, base) {
-  if (relative === '') return base;
-
-  var path = (base || '/').split('/').slice(0, -1).concat(relative.split('/'))
-    , i = path.length
-    , last = path[i - 1]
-    , unshift = false
-    , up = 0;
-
-  while (i--) {
-    if (path[i] === '.') {
-      path.splice(i, 1);
-    } else if (path[i] === '..') {
-      path.splice(i, 1);
-      up++;
-    } else if (up) {
-      if (i === 0) unshift = true;
-      path.splice(i, 1);
-      up--;
-    }
-  }
-
-  if (unshift) path.unshift('');
-  if (last === '.' || last === '..') path.push('');
-
-  return path.join('/');
-}
-
-/**
- * The actual URL instance. Instead of returning an object we've opted-in to
- * create an actual constructor as it's much more memory efficient and
- * faster and it pleases my OCD.
- *
- * It is worth noting that we should not use `URL` as class name to prevent
- * clashes with the global URL instance that got introduced in browsers.
- *
- * @constructor
- * @param {String} address URL we want to parse.
- * @param {Object|String} [location] Location defaults for relative paths.
- * @param {Boolean|Function} [parser] Parser for the query string.
- * @private
- */
-function Url(address, location, parser) {
-  address = trimLeft(address);
-  address = address.replace(CRHTLF, '');
-
-  if (!(this instanceof Url)) {
-    return new Url(address, location, parser);
-  }
-
-  var relative, extracted, parse, instruction, index, key
-    , instructions = rules.slice()
-    , type = typeof location
-    , url = this
-    , i = 0;
-
-  //
-  // The following if statements allows this module two have compatibility with
-  // 2 different API:
-  //
-  // 1. Node.js's `url.parse` api which accepts a URL, boolean as arguments
-  //    where the boolean indicates that the query string should also be parsed.
-  //
-  // 2. The `URL` interface of the browser which accepts a URL, object as
-  //    arguments. The supplied object will be used as default values / fall-back
-  //    for relative paths.
-  //
-  if ('object' !== type && 'string' !== type) {
-    parser = location;
-    location = null;
-  }
-
-  if (parser && 'function' !== typeof parser) parser = qs.parse;
-
-  location = lolcation(location);
-
-  //
-  // Extract protocol information before running the instructions.
-  //
-  extracted = extractProtocol(address || '', location);
-  relative = !extracted.protocol && !extracted.slashes;
-  url.slashes = extracted.slashes || relative && location.slashes;
-  url.protocol = extracted.protocol || location.protocol || '';
-  address = extracted.rest;
-
-  //
-  // When the authority component is absent the URL starts with a path
-  // component.
-  //
-  if (
-    extracted.protocol === 'file:' && (
-      extracted.slashesCount !== 2 || windowsDriveLetter.test(address)) ||
-    (!extracted.slashes &&
-      (extracted.protocol ||
-        extracted.slashesCount < 2 ||
-        !isSpecial(url.protocol)))
-  ) {
-    instructions[3] = [/(.*)/, 'pathname'];
-  }
-
-  for (; i < instructions.length; i++) {
-    instruction = instructions[i];
-
-    if (typeof instruction === 'function') {
-      address = instruction(address, url);
-      continue;
-    }
-
-    parse = instruction[0];
-    key = instruction[1];
-
-    if (parse !== parse) {
-      url[key] = address;
-    } else if ('string' === typeof parse) {
-      index = parse === '@'
-        ? address.lastIndexOf(parse)
-        : address.indexOf(parse);
-
-      if (~index) {
-        if ('number' === typeof instruction[2]) {
-          url[key] = address.slice(0, index);
-          address = address.slice(index + instruction[2]);
-        } else {
-          url[key] = address.slice(index);
-          address = address.slice(0, index);
+exports.fromCallback = function (fn) {
+  return Object.defineProperty(function () {
+    if (typeof arguments[arguments.length - 1] === 'function') fn.apply(this, arguments)
+    else {
+      return new Promise((resolve, reject) => {
+        arguments[arguments.length] = (err, res) => {
+          if (err) return reject(err)
+          resolve(res)
         }
-      }
-    } else if ((index = parse.exec(address))) {
-      url[key] = index[1];
-      address = address.slice(0, index.index);
+        arguments.length++
+        fn.apply(this, arguments)
+      })
     }
-
-    url[key] = url[key] || (
-      relative && instruction[3] ? location[key] || '' : ''
-    );
-
-    //
-    // Hostname, host and protocol should be lowercased so they can be used to
-    // create a proper `origin`.
-    //
-    if (instruction[4]) url[key] = url[key].toLowerCase();
-  }
-
-  //
-  // Also parse the supplied query string in to an object. If we're supplied
-  // with a custom parser as function use that instead of the default build-in
-  // parser.
-  //
-  if (parser) url.query = parser(url.query);
-
-  //
-  // If the URL is relative, resolve the pathname against the base URL.
-  //
-  if (
-      relative
-    && location.slashes
-    && url.pathname.charAt(0) !== '/'
-    && (url.pathname !== '' || location.pathname !== '')
-  ) {
-    url.pathname = resolve(url.pathname, location.pathname);
-  }
-
-  //
-  // Default to a / for pathname if none exists. This normalizes the URL
-  // to always have a /
-  //
-  if (url.pathname.charAt(0) !== '/' && isSpecial(url.protocol)) {
-    url.pathname = '/' + url.pathname;
-  }
-
-  //
-  // We should not add port numbers if they are already the default port number
-  // for a given protocol. As the host also contains the port number we're going
-  // override it with the hostname which contains no port number.
-  //
-  if (!required(url.port, url.protocol)) {
-    url.host = url.hostname;
-    url.port = '';
-  }
-
-  //
-  // Parse down the `auth` for the username and password.
-  //
-  url.username = url.password = '';
-
-  if (url.auth) {
-    index = url.auth.indexOf(':');
-
-    if (~index) {
-      url.username = url.auth.slice(0, index);
-      url.username = encodeURIComponent(decodeURIComponent(url.username));
-
-      url.password = url.auth.slice(index + 1);
-      url.password = encodeURIComponent(decodeURIComponent(url.password))
-    } else {
-      url.username = encodeURIComponent(decodeURIComponent(url.auth));
-    }
-
-    url.auth = url.password ? url.username +':'+ url.password : url.username;
-  }
-
-  url.origin = url.protocol !== 'file:' && isSpecial(url.protocol) && url.host
-    ? url.protocol +'//'+ url.host
-    : 'null';
-
-  //
-  // The href is just the compiled result.
-  //
-  url.href = url.toString();
+  }, 'name', { value: fn.name })
 }
 
-/**
- * This is convenience method for changing properties in the URL instance to
- * insure that they all propagate correctly.
- *
- * @param {String} part          Property we need to adjust.
- * @param {Mixed} value          The newly assigned value.
- * @param {Boolean|Function} fn  When setting the query, it will be the function
- *                               used to parse the query.
- *                               When setting the protocol, double slash will be
- *                               removed from the final url if it is true.
- * @returns {URL} URL instance for chaining.
- * @public
- */
-function set(part, value, fn) {
-  var url = this;
-
-  switch (part) {
-    case 'query':
-      if ('string' === typeof value && value.length) {
-        value = (fn || qs.parse)(value);
-      }
-
-      url[part] = value;
-      break;
-
-    case 'port':
-      url[part] = value;
-
-      if (!required(value, url.protocol)) {
-        url.host = url.hostname;
-        url[part] = '';
-      } else if (value) {
-        url.host = url.hostname +':'+ value;
-      }
-
-      break;
-
-    case 'hostname':
-      url[part] = value;
-
-      if (url.port) value += ':'+ url.port;
-      url.host = value;
-      break;
-
-    case 'host':
-      url[part] = value;
-
-      if (port.test(value)) {
-        value = value.split(':');
-        url.port = value.pop();
-        url.hostname = value.join(':');
-      } else {
-        url.hostname = value;
-        url.port = '';
-      }
-
-      break;
-
-    case 'protocol':
-      url.protocol = value.toLowerCase();
-      url.slashes = !fn;
-      break;
-
-    case 'pathname':
-    case 'hash':
-      if (value) {
-        var char = part === 'pathname' ? '/' : '#';
-        url[part] = value.charAt(0) !== char ? char + value : value;
-      } else {
-        url[part] = value;
-      }
-      break;
-
-    case 'username':
-    case 'password':
-      url[part] = encodeURIComponent(value);
-      break;
-
-    case 'auth':
-      var index = value.indexOf(':');
-
-      if (~index) {
-        url.username = value.slice(0, index);
-        url.username = encodeURIComponent(decodeURIComponent(url.username));
-
-        url.password = value.slice(index + 1);
-        url.password = encodeURIComponent(decodeURIComponent(url.password));
-      } else {
-        url.username = encodeURIComponent(decodeURIComponent(value));
-      }
-  }
-
-  for (var i = 0; i < rules.length; i++) {
-    var ins = rules[i];
-
-    if (ins[4]) url[ins[1]] = url[ins[1]].toLowerCase();
-  }
-
-  url.auth = url.password ? url.username +':'+ url.password : url.username;
-
-  url.origin = url.protocol !== 'file:' && isSpecial(url.protocol) && url.host
-    ? url.protocol +'//'+ url.host
-    : 'null';
-
-  url.href = url.toString();
-
-  return url;
+exports.fromPromise = function (fn) {
+  return Object.defineProperty(function () {
+    const cb = arguments[arguments.length - 1]
+    if (typeof cb !== 'function') return fn.apply(this, arguments)
+    else fn.apply(this, arguments).then(r => cb(null, r), cb)
+  }, 'name', { value: fn.name })
 }
-
-/**
- * Transform the properties back in to a valid and full URL string.
- *
- * @param {Function} stringify Optional query stringify function.
- * @returns {String} Compiled version of the URL.
- * @public
- */
-function toString(stringify) {
-  if (!stringify || 'function' !== typeof stringify) stringify = qs.stringify;
-
-  var query
-    , url = this
-    , host = url.host
-    , protocol = url.protocol;
-
-  if (protocol && protocol.charAt(protocol.length - 1) !== ':') protocol += ':';
-
-  var result =
-    protocol +
-    ((url.protocol && url.slashes) || isSpecial(url.protocol) ? '//' : '');
-
-  if (url.username) {
-    result += url.username;
-    if (url.password) result += ':'+ url.password;
-    result += '@';
-  } else if (url.password) {
-    result += ':'+ url.password;
-    result += '@';
-  } else if (
-    url.protocol !== 'file:' &&
-    isSpecial(url.protocol) &&
-    !host &&
-    url.pathname !== '/'
-  ) {
-    //
-    // Add back the empty userinfo, otherwise the original invalid URL
-    // might be transformed into a valid one with `url.pathname` as host.
-    //
-    result += '@';
-  }
-
-  //
-  // Trailing colon is removed from `url.host` when it is parsed. If it still
-  // ends with a colon, then add back the trailing colon that was removed. This
-  // prevents an invalid URL from being transformed into a valid one.
-  //
-  if (host[host.length - 1] === ':' || (port.test(url.hostname) && !url.port)) {
-    host += ':';
-  }
-
-  result += host + url.pathname;
-
-  query = 'object' === typeof url.query ? stringify(url.query) : url.query;
-  if (query) result += '?' !== query.charAt(0) ? '?'+ query : query;
-
-  if (url.hash) result += url.hash;
-
-  return result;
-}
-
-Url.prototype = { set: set, toString: toString };
-
-//
-// Expose the URL parser and some additional properties that might be useful for
-// others or testing.
-//
-Url.extractProtocol = extractProtocol;
-Url.location = lolcation;
-Url.trimLeft = trimLeft;
-Url.qs = qs;
-
-module.exports = Url;
 
 
 /***/ }),
