@@ -1,6 +1,6 @@
 ---
 name: universalify
-version: 0.1.2
+version: 0.2.0
 type: npm
 summary: Make a callback- or promise-based function support both promises and callbacks.
 homepage: https://github.com/RyanZim/universalify#readme
