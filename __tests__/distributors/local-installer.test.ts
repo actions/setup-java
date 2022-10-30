@@ -189,6 +189,77 @@ describe('setupJava', () => {
     );
   });
 
+  it('java is resolved from toolcache including Contents/Home on MacOS', async () => {
+    const inputs = {
+      version: actualJavaVersion,
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false
+    };
+    const jdkFile = 'not_existing_one';
+    const expected = {
+      version: actualJavaVersion,
+      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture, 'Contents/Home')
+    };
+    let originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', {  
+      value: 'darwin'
+    });    
+
+    spyFsStat = jest.spyOn(fs, 'existsSync');
+    spyFsStat.mockImplementation((file: string) => {
+        return file.endsWith('Contents/Home');
+    });
+
+    mockJavaBase = new LocalDistribution(inputs, jdkFile);
+    await expect(mockJavaBase.setupJava()).resolves.toEqual(expected);
+    expect(spyGetToolcachePath).toHaveBeenCalled();
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved Java ${actualJavaVersion} from tool-cache`);
+    expect(spyCoreInfo).not.toHaveBeenCalledWith(
+      `Java ${inputs.version} was not found in tool-cache. Trying to unpack JDK file...`
+    );
+
+    Object.defineProperty(process, 'platform', {  
+      value: originalPlatform
+    });       
+  });
+
+  it('java is unpacked from jdkfile including Contents/Home on MacOS', async () => {
+    const inputs = {
+      version: '11.0.289',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false
+    };
+    const jdkFile = expectedJdkFile;
+    const expected = {
+      version: '11.0.289',
+      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture, 'Contents/Home')
+    };
+    let originalPlatform = process.platform;
+    Object.defineProperty(process, 'platform', {  
+      value: 'darwin'
+    });    
+    spyFsStat = jest.spyOn(fs, 'existsSync');
+    spyFsStat.mockImplementation((file: string) => {
+        return file.endsWith('Contents/Home');
+    });
+
+    mockJavaBase = new LocalDistribution(inputs, jdkFile);
+    await expect(mockJavaBase.setupJava()).resolves.toEqual(expected);
+    expect(spyTcFindAllVersions).toHaveBeenCalled();
+    expect(spyCoreInfo).not.toHaveBeenCalledWith(
+      `Resolved Java ${actualJavaVersion} from tool-cache`
+    );
+    expect(spyCoreInfo).toHaveBeenCalledWith(`Extracting Java from '${jdkFile}'`);
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      `Java ${inputs.version} was not found in tool-cache. Trying to unpack JDK file...`
+    );
+    Object.defineProperty(process, 'platform', {  
+      value: originalPlatform
+    });          
+  });
+
   it.each([
     [
       { version: '8.0.289', architecture: 'x64', packageType: 'jdk', checkLatest: false },
