@@ -202,13 +202,13 @@ describe('setupJava', () => {
       path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture, 'Contents/Home')
     };
     let originalPlatform = process.platform;
-    Object.defineProperty(process, 'platform', {  
+    Object.defineProperty(process, 'platform', {
       value: 'darwin'
-    });    
+    });
 
     spyFsStat = jest.spyOn(fs, 'existsSync');
     spyFsStat.mockImplementation((file: string) => {
-        return file.endsWith('Contents/Home');
+      return file.endsWith('Contents/Home');
     });
 
     mockJavaBase = new LocalDistribution(inputs, jdkFile);
@@ -219,9 +219,9 @@ describe('setupJava', () => {
       `Java ${inputs.version} was not found in tool-cache. Trying to unpack JDK file...`
     );
 
-    Object.defineProperty(process, 'platform', {  
+    Object.defineProperty(process, 'platform', {
       value: originalPlatform
-    });       
+    });
   });
 
   it('java is unpacked from jdkfile including Contents/Home on MacOS', async () => {
@@ -237,12 +237,12 @@ describe('setupJava', () => {
       path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture, 'Contents/Home')
     };
     let originalPlatform = process.platform;
-    Object.defineProperty(process, 'platform', {  
+    Object.defineProperty(process, 'platform', {
       value: 'darwin'
-    });    
+    });
     spyFsStat = jest.spyOn(fs, 'existsSync');
     spyFsStat.mockImplementation((file: string) => {
-        return file.endsWith('Contents/Home');
+      return file.endsWith('Contents/Home');
     });
 
     mockJavaBase = new LocalDistribution(inputs, jdkFile);
@@ -255,9 +255,9 @@ describe('setupJava', () => {
     expect(spyCoreInfo).toHaveBeenCalledWith(
       `Java ${inputs.version} was not found in tool-cache. Trying to unpack JDK file...`
     );
-    Object.defineProperty(process, 'platform', {  
+    Object.defineProperty(process, 'platform', {
       value: originalPlatform
-    });          
+    });
   });
 
   it.each([
