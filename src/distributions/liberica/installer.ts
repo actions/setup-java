@@ -10,7 +10,7 @@ import path from 'path';
 
 const supportedPlatform = `'linux', 'linux-musl', 'macos', 'solaris', 'windows'`;
 
-const supportedArchitecture = `'x86', 'x64', 'armv7', 'aarch64', 'ppc64le'`;
+const supportedArchitectures = `'x86', 'x64', 'armv7', 'aarch64', 'ppc64le'`;
 
 export class LibericaDistributions extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -112,7 +112,8 @@ export class LibericaDistributions extends JavaBase {
   }
 
   private getArchitectureOptions(): ArchitectureOptions {
-    switch (this.architecture) {
+    const arch = this.distributionArchitecture();
+    switch (arch) {
       case 'x86':
         return { bitness: '32', arch: 'x86' };
       case 'x64':
@@ -125,7 +126,7 @@ export class LibericaDistributions extends JavaBase {
         return { bitness: '64', arch: 'ppc' };
       default:
         throw new Error(
-          `Architecture '${this.architecture}' is not supported. Supported architectures: ${supportedArchitecture}`
+          `Architecture '${this.architecture}' is not supported. Supported architectures: ${supportedArchitectures}`
         );
     }
   }
@@ -155,5 +156,15 @@ export class LibericaDistributions extends JavaBase {
       return `${mainVersion}+${buildVersion}`;
     }
     return mainVersion;
+  }
+
+  protected distributionArchitecture(): string {
+    let arch = super.distributionArchitecture();
+    switch (arch) {
+      case 'arm':
+        return 'armv7';
+      default:
+        return arch;
+    }
   }
 }

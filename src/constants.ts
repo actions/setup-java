@@ -20,3 +20,9 @@ export const INPUT_CACHE = 'cache';
 export const INPUT_JOB_STATUS = 'job-status';
 
 export const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
+
+export const M2_DIR = '.m2';
+export const MVN_SETTINGS_FILE = 'settings.xml';
+export const MVN_TOOLCHAINS_FILE = 'toolchains.xml';
+export const INPUT_MVN_TOOLCHAIN_ID = 'mvn-toolchain-id';
+export const INPUT_MVN_TOOLCHAIN_VENDOR = 'mvn-toolchain-vendor';

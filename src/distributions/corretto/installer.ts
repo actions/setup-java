@@ -68,7 +68,7 @@ export class CorrettoDistribution extends JavaBase {
 
   private async getAvailableVersions(): Promise<ICorrettoAvailableVersions[]> {
     const platform = this.getPlatformOption();
-    const arch = this.architecture;
+    const arch = this.distributionArchitecture();
     const imageType = this.packageType;
 
     if (core.isDebug()) {

@@ -3,6 +3,7 @@ import * as semver from 'semver';
 import { ZuluDistribution } from '../../src/distributions/zulu/installer';
 import { IZuluVersions } from '../../src/distributions/zulu/models';
 import * as utils from '../../src/util';
+import os from 'os';
 
 const manifestData = require('../data/zulu-releases-default.json') as [];
 
@@ -71,6 +72,34 @@ describe('getAvailableVersions', () => {
     expect(spyHttpClient.mock.calls).toHaveLength(1);
     expect(spyHttpClient.mock.calls[0][0]).toBe(buildUrl);
   });
+
+  type DistroArch = {
+    bitness: string;
+    arch: string;
+  };
+  it.each([
+    ['amd64', { bitness: '64', arch: 'x86' }],
+    ['arm64', { bitness: '64', arch: 'arm' }]
+  ])(
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArch: DistroArch) => {
+      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+
+      const distribution = new ZuluDistribution({
+        version: '17',
+        architecture: '', // to get default value
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      distribution['getPlatformOption'] = () => 'macos';
+      const buildUrl = `https://api.azul.com/zulu/download/community/v1.0/bundles/?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=${distroArch.arch}&hw_bitness=${distroArch.bitness}&release_status=ga`;
+
+      await distribution['getAvailableVersions']();
+
+      expect(spyHttpClient.mock.calls).toHaveLength(1);
+      expect(spyHttpClient.mock.calls[0][0]).toBe(buildUrl);
+    }
+  );
 
   it('load available versions', async () => {
     const distribution = new ZuluDistribution({

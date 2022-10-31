@@ -14,9 +14,8 @@ inputs:
     required: false
     default: 'jdk'
   architecture:
-    description: 'The architecture of the package'
+    description: "The architecture of the package (defaults to the action runner's architecture)"
     required: false
-    default: 'x64'
   jdkFile:
     description: 'Path to where the compressed JDK is located'
     required: false
@@ -59,6 +58,15 @@ inputs:
   job-status:
     description: 'Workaround to pass job status to post job step. This variable is not intended for manual setting'
     default: ${{ job.status }}
+  token:
+    description: Used to pull java versions from setup-java. Since there is a default value, token is typically not supplied by the user.
+    default: ${{ github.token }}
+  mvn-toolchain-id:
+    description: 'Name of Maven Toolchain ID if the default name of "${distribution}_${java-version}" is not wanted. See examples of supported syntax in Advanced Usage file'
+    required: false
+  mvn-toolchain-vendor:
+    description: 'Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file'
+    required: false
 outputs:
   distribution:
     description: 'Distribution of Java that has been installed'

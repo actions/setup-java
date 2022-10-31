@@ -1,6 +1,7 @@
 import { LibericaDistributions } from '../../src/distributions/liberica/installer';
 import { ArchitectureOptions, LibericaVersion } from '../../src/distributions/liberica/models';
 import { HttpClient } from '@actions/http-client';
+import os from 'os';
 
 const manifestData = require('../data/liberica.json') as LibericaVersion[];
 
@@ -60,6 +61,39 @@ describe('getAvailableVersions', () => {
     expect(spyHttpClient.mock.calls).toHaveLength(1);
     expect(spyHttpClient.mock.calls[0][0]).toBe(buildUrl);
   });
+
+  type DistroArch = {
+    bitness: string;
+    arch: string;
+  };
+  it.each([
+    ['amd64', { bitness: '64', arch: 'x86' }],
+    ['arm64', { bitness: '64', arch: 'arm' }]
+  ])(
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArch: DistroArch) => {
+      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+
+      const distribution = new LibericaDistributions({
+        version: '17',
+        architecture: '', // to get default value
+        packageType: 'jdk',
+        checkLatest: false
+      });
+
+      const additionalParams =
+        '&installation-type=archive&fields=downloadUrl%2Cversion%2CfeatureVersion%2CinterimVersion%2C' +
+        'updateVersion%2CbuildVersion';
+      distribution['getPlatformOption'] = () => 'macos';
+
+      const buildUrl = `https://api.bell-sw.com/v1/liberica/releases?os=macos&bundle-type=jdk&bitness=${distroArch.bitness}&arch=${distroArch.arch}&build-type=all${additionalParams}`;
+
+      await distribution['getAvailableVersions']();
+
+      expect(spyHttpClient.mock.calls).toHaveLength(1);
+      expect(spyHttpClient.mock.calls[0][0]).toBe(buildUrl);
+    }
+  );
 
   it('load available versions', async () => {
     const distribution = new LibericaDistributions({

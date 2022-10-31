@@ -14,6 +14,7 @@
 - [Publishing using Apache Maven](#Publishing-using-Apache-Maven)
 - [Publishing using Gradle](#Publishing-using-Gradle)
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
+- [Modifying Maven Toolchains](#Modifying-Maven-Toolchains)
 
 See [action.yml](../action.yml) for more details on task inputs.
 
@@ -350,3 +351,100 @@ GitHub Hosted Runners have a tool cache that comes with some Java versions pre-i
 Currently, LTS versions of Adopt OpenJDK (`adopt`) are cached on the GitHub Hosted Runners.
 
 The tools cache gets updated on a weekly basis. For information regarding locally cached versions of Java on GitHub hosted runners, check out [GitHub Actions Virtual Environments](https://github.com/actions/virtual-environments).
+
+## Modifying Maven Toolchains
+The `setup-java` action generates a basic [Maven Toolchains declaration](https://maven.apache.org/guides/mini/guide-using-toolchains.html) for specified Java versions by either creating a minimal toolchains file or extending an existing declaration with the additional JDKs.
+
+### Installing Multiple JDKs With Toolchains
+Subsequent calls to `setup-java` with distinct distribution and version parameters will continue to extend the toolchains declaration and make all specified Java versions available.
+
+```yaml
+steps:
+- uses: actions/setup-java@v3
+  with:
+    distribution: '<distribution>'
+    java-version: |
+      8
+      11
+
+- uses: actions/setup-java@v3
+  with:
+    distribution: '<distribution>'
+    java-version: 15
+```
+
+The result is a Toolchain with entries for JDKs 8, 11 and 15. You can even combine this with custom JDKs of arbitrary versions:
+
+```yaml
+- run: |
+    download_url="https://example.com/java/jdk/6u45-b06/jdk-6u45-linux-x64.tar.gz"
+    wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'jdkfile'
+    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    java-version: '1.6'
+    architecture: x64
+```
+
+This will generate a Toolchains entry with the following values: `version: 1.6`, `vendor: jkdfile`, `id: Oracle_1.6`.
+
+### Modifying The Toolchain Vendor For JDKs
+Each JDK provider will receive a default `vendor` using the `distribution` input value but this can be overridden with the `mvn-toolchain-vendor` parameter as follows.
+
+```yaml
+- run: |
+    download_url="https://example.com/java/jdk/6u45-b06/jdk-6u45-linux-x64.tar.gz"
+    wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'jdkfile'
+    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    java-version: '1.6'
+    architecture: x64
+    mvn-toolchain-vendor: 'Oracle'
+```
+
+This will generate a Toolchains entry with the following values: `version: 1.6`, `vendor: Oracle`, `id: Oracle_1.6`.
+
+In case you install multiple versions of Java at once with multi-line `java-version` input setting the `mvn-toolchain-vendor` still only accepts one value and will use this value for installed JDKs as expected when installing multiple versions of the same `distribution`.
+
+```yaml
+steps:
+- uses: actions/setup-java@v3
+  with:
+    distribution: '<distribution>'
+    java-version: |
+      8
+      11
+    mvn-toolchain-vendor: Eclipse Temurin
+```
+
+### Modifying The Toolchain ID For JDKs
+Each JDK provider will receive a default `id` based on the combination of `distribution` and `java-version` in the format of `distribution_java-version` (e.g. `temurin_11`) but this can be overridden with the `mvn-toolchain-id` parameter as follows.
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'temurin'
+    java-version: '11'
+    mvn-toolchain-id: 'some_other_id'
+- run: java -cp java HelloWorldApp
+```
+
+In case you install multiple versions of Java at once you can use the same syntax as used in `java-versions`. Please note that you have to declare an ID for all Java versions that will be installed or the `mvn-toolchain-id` instruction will be skipped wholesale due to mapping ambiguities.
+
+```yaml
+steps:
+- uses: actions/setup-java@v3
+  with:
+    distribution: '<distribution>'
+    java-version: |
+      8
+      11
+    mvn-toolchain-id: |
+      something_else
+      something_other
+```
