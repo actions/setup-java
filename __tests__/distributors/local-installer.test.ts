@@ -199,7 +199,7 @@ describe('setupJava', () => {
     const jdkFile = 'not_existing_one';
     const expected = {
       version: actualJavaVersion,
-      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture, 'Contents/Home')
+      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture, 'Contents', 'Home')
     };
     let originalPlatform = process.platform;
     Object.defineProperty(process, 'platform', {
@@ -208,7 +208,7 @@ describe('setupJava', () => {
 
     spyFsStat = jest.spyOn(fs, 'existsSync');
     spyFsStat.mockImplementation((file: string) => {
-      return file.endsWith('Contents/Home');
+      return file.endsWith('Home');
     });
 
     mockJavaBase = new LocalDistribution(inputs, jdkFile);
@@ -234,7 +234,7 @@ describe('setupJava', () => {
     const jdkFile = expectedJdkFile;
     const expected = {
       version: '11.0.289',
-      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture, 'Contents/Home')
+      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture, 'Contents', 'Home')
     };
     let originalPlatform = process.platform;
     Object.defineProperty(process, 'platform', {
@@ -242,7 +242,7 @@ describe('setupJava', () => {
     });
     spyFsStat = jest.spyOn(fs, 'existsSync');
     spyFsStat.mockImplementation((file: string) => {
-      return file.endsWith('Contents/Home');
+      return file.endsWith('Home');
     });
 
     mockJavaBase = new LocalDistribution(inputs, jdkFile);
