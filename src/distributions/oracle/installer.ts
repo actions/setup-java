@@ -9,7 +9,7 @@ import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from 
 import { extractJdkFile, getDownloadArchiveExtension } from '../../util';
 import { HttpCodes } from '@actions/http-client';
 
-const ORACLE_DL_BASE = 'https://download.oracle.com/java'
+const ORACLE_DL_BASE = 'https://download.oracle.com/java';
 
 export class OracleDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -55,33 +55,35 @@ export class OracleDistribution extends JavaBase {
       throw new Error('Oracle JDK provides only the `jdk` package type');
     }
 
-    const platform = this.getPlatform()
+    const platform = this.getPlatform();
     const extension = getDownloadArchiveExtension();
     let major;
     let fileUrl;
     if (range.includes('.')) {
-      major = range.split('.')[0]
-      fileUrl = `${ORACLE_DL_BASE}/${major}/archive/jdk-${range}_${platform}-${arch}_bin.${extension}`
+      major = range.split('.')[0];
+      fileUrl = `${ORACLE_DL_BASE}/${major}/archive/jdk-${range}_${platform}-${arch}_bin.${extension}`;
     } else {
-      major = range
-      fileUrl = `${ORACLE_DL_BASE}/${range}/latest/jdk-${range}_${platform}-${arch}_bin.${extension}`
+      major = range;
+      fileUrl = `${ORACLE_DL_BASE}/${range}/latest/jdk-${range}_${platform}-${arch}_bin.${extension}`;
     }
 
     if (parseInt(major) < 17) {
-      throw new Error('Oracle JDK is only supported for JDK 17 and later')
+      throw new Error('Oracle JDK is only supported for JDK 17 and later');
     }
 
-    const response = await this.http.head(fileUrl)
+    const response = await this.http.head(fileUrl);
 
     if (response.message.statusCode === HttpCodes.NotFound) {
-        throw new Error(`Could not find Oracle JDK for SemVer ${range}`);
+      throw new Error(`Could not find Oracle JDK for SemVer ${range}`);
     }
 
     if (response.message.statusCode !== HttpCodes.OK) {
-        throw new Error(`Http request for Oracle JDK failed with status code: ${response.message.statusCode}`);
+      throw new Error(
+        `Http request for Oracle JDK failed with status code: ${response.message.statusCode}`
+      );
     }
 
-    return { url: fileUrl, version: range }
+    return { url: fileUrl, version: range };
   }
 
   private getPlatform(platform: NodeJS.Platform = process.platform): OsVersions {
