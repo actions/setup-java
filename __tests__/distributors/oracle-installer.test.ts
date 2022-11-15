@@ -1,6 +1,7 @@
 import { OracleDistribution } from '../../src/distributions/oracle/installer';
 import os from 'os';
 import * as core from '@actions/core';
+import { getDownloadArchiveExtension } from '../../src/util';
 
 describe('findPackageForDownload', () => {
   let distribution: OracleDistribution;
@@ -47,23 +48,9 @@ describe('findPackageForDownload', () => {
   ])('version is %s -> %s', async (input, expectedVersion, expectedUrl) => {
     const result = await distribution['findPackageForDownload'](input);
     expect(result.version).toBe(expectedVersion);
-    let os: string;
-    let archive: string;
-    switch (process.platform) {
-      case 'darwin':
-        os = 'macos';
-        archive = 'tar.gz';
-        break;
-      case 'win32':
-        os = 'windows';
-        archive = 'zip';
-        break;
-      default:
-        os = process.platform.toString();
-        archive = 'tar.gz';
-        break;
-    }
-    const url = expectedUrl.replace('{{OS_TYPE}}', os).replace('{{ARCHIVE_TYPE}}', archive);
+    const osType = distribution.getPlatform();
+    const archiveType = getDownloadArchiveExtension();
+    const url = expectedUrl.replace('{{OS_TYPE}}', osType).replace('{{ARCHIVE_TYPE}}', archiveType);
     expect(result.url).toBe(url);
   });
 
@@ -84,8 +71,13 @@ describe('findPackageForDownload', () => {
         checkLatest: false
       });
 
+      const osType = distribution.getPlatform();
+      if (osType === 'windows' && distroArch == 'aarch64') {
+        return; // skip, aarch64 is not available for Windows
+      }
+      const archiveType = getDownloadArchiveExtension();
       const result = await distro['findPackageForDownload'](version);
-      const expectedUrl = `https://download.oracle.com/java/17/latest/jdk-17_linux-${distroArch}_bin.tar.gz`;
+      const expectedUrl = `https://download.oracle.com/java/17/latest/jdk-17_${osType}-${distroArch}_bin.${archiveType}`;
 
       expect(result.url).toBe(expectedUrl);
     }

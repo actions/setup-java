@@ -86,12 +86,11 @@ export class OracleDistribution extends JavaBase {
     return { url: fileUrl, version: range };
   }
 
-  private getPlatform(platform: NodeJS.Platform = process.platform): OsVersions {
+  public getPlatform(platform: NodeJS.Platform = process.platform): OsVersions {
     switch (platform) {
       case 'darwin':
         return 'macos';
       case 'win32':
-      case 'cygwin':
         return 'windows';
       case 'linux':
         return 'linux';
