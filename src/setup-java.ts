@@ -1,3 +1,4 @@
+import fs from "fs";
 import * as core from '@actions/core';
 import * as auth from './auth';
 import { getBooleanInput, isCacheFeatureAvailable } from './util';
@@ -11,7 +12,6 @@ import { JavaInstallerOptions } from './distributions/base-models';
 async function run() {
   try {
     const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
-    core.info(versions.join(" "))
     const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, { required: true });
     const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
     const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
@@ -19,6 +19,11 @@ async function run() {
     const cache = core.getInput(constants.INPUT_CACHE);
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
+
+    if (!versions.length) {
+      const contents = fs.readFileSync('.java-version').toString();
+      core.info(contents)
+    }
 
     if (versions.length !== toolchainIds.length) {
       toolchainIds = [];
