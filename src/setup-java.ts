@@ -21,8 +21,10 @@ async function run() {
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
 
     if (!versions.length) {
-      const contents = fs.readFileSync('.java-version').toString();
-      core.info(contents)
+      core.debug("JAVA_VERSION input is empty, looking for .java-version file")
+      const versionFileName = '.java-version'
+      const contents = fs.readFileSync(versionFileName).toString().trim();
+      versions.push(contents)
     }
 
     if (versions.length !== toolchainIds.length) {
