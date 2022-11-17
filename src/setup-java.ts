@@ -10,7 +10,8 @@ import { JavaInstallerOptions } from './distributions/base-models';
 
 async function run() {
   try {
-    const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION, { required: true });
+    const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
+    core.info(versions)
     const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, { required: true });
     const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
     const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
