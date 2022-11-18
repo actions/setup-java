@@ -73,6 +73,7 @@ export class MicrosoftDistributions extends JavaBase {
     // TODO get these dynamically!
     // We will need Microsoft to add an endpoint where we can query for versions.
     const token = core.getInput('token');
+    const auth = !token ? undefined : `token ${token}`;
     const owner = 'actions';
     const repository = 'setup-java';
     const branch = 'main';
@@ -82,7 +83,7 @@ export class MicrosoftDistributions extends JavaBase {
     const fileUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
 
     const headers: OutgoingHttpHeaders = {
-      authorization: token,
+      authorization: auth,
       accept: 'application/vnd.github.VERSION.raw'
     };
 
