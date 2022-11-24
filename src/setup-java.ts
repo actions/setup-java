@@ -21,6 +21,12 @@ async function run() {
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
 
+    core.startGroup('Installed distributions');
+    
+    if (versions.length !== toolchainIds.length) {
+      toolchainIds = [];
+    }
+
     if (!versions.length) {
       core.debug("JAVA_VERSION input is empty, looking for .java-version file")
       const versionFileName = '.java-version'
@@ -29,16 +35,31 @@ async function run() {
       const version = semverRegExp.test(contents) ? RegExp.$1 : "";
       const coercedVer = semver.coerce(version)
       const validVer = semver.valid(coercedVer)
-      core.info(validVer ? validVer as string : "not found")
-      versions.push(contents)
+      if (validVer === null) {
+        throw new Error("No version found")
+      }
+      const stringVersion = validVer as string;
+      try {
+        installVersion(stringVersion)
+      } catch (error) {
+        core.info(`${stringVersion} not found`)
+        throw new Error("some err")
+      }
     }
 
-    if (versions.length !== toolchainIds.length) {
-      toolchainIds = [];
-    }
-
-    core.startGroup('Installed distributions');
     for (const [index, version] of versions.entries()) {
+     await installVersion(version, index)
+    }
+    core.endGroup();
+    const matchersPath = path.join(__dirname, '..', '..', '.github');
+    core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
+
+    await auth.configureAuthentication();
+    if (cache && isCacheFeatureAvailable()) {
+      await restore(cache);
+    }
+
+    async function installVersion(version:string, toolchainId = 0 ) {
       const installerOptions: JavaInstallerOptions = {
         architecture,
         packageType,
@@ -56,7 +77,7 @@ async function run() {
         version,
         distributionName,
         result.path,
-        toolchainIds[index]
+        toolchainIds[toolchainId]
       );
 
       core.info('');
@@ -65,14 +86,6 @@ async function run() {
       core.info(`  Version: ${result.version}`);
       core.info(`  Path: ${result.path}`);
       core.info('');
-    }
-    core.endGroup();
-    const matchersPath = path.join(__dirname, '..', '..', '.github');
-    core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
-
-    await auth.configureAuthentication();
-    if (cache && isCacheFeatureAvailable()) {
-      await restore(cache);
     }
   } catch (error) {
     core.setFailed(error.message);
