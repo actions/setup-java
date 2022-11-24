@@ -8,6 +8,7 @@ import { restore } from './cache';
 import * as path from 'path';
 import { getJavaDistribution } from './distributions/distribution-factory';
 import { JavaInstallerOptions } from './distributions/base-models';
+import * as semver from 'semver';
 
 async function run() {
   try {
@@ -24,6 +25,8 @@ async function run() {
       core.debug("JAVA_VERSION input is empty, looking for .java-version file")
       const versionFileName = '.java-version'
       const contents = fs.readFileSync(versionFileName).toString().trim();
+      const version = semver.valid(contents);
+      core.info(version ? version : "not found")
       versions.push(contents)
     }
 
