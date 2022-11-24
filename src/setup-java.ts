@@ -42,8 +42,15 @@ async function run() {
       try {
         await installVersion(stringVersion)
       } catch (error) {
-        core.info(`${stringVersion} not found`)
-        throw new Error("some err")
+        core.debug(`${error.toString()}`) 
+        try {
+          const majorMinorVersion = getHigherVersion(stringVersion)
+          await installVersion(majorMinorVersion)
+        } catch (error) {
+          core.debug(`${error.toString()}`) 
+          const majorVersion = getHigherVersion(stringVersion)
+          await installVersion(majorVersion)
+        }
       }
     }
 
@@ -86,6 +93,10 @@ async function run() {
       core.info(`  Version: ${result.version}`);
       core.info(`  Path: ${result.path}`);
       core.info('');
+    }
+
+    function getHigherVersion(version: string) {
+      return version.substring(0, version.lastIndexOf("."))
     }
   } catch (error) {
     core.setFailed(error.message);
