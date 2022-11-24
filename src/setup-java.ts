@@ -31,26 +31,20 @@ async function run() {
       core.debug("JAVA_VERSION input is empty, looking for .java-version file")
       const versionFileName = '.java-version'
       const contents = fs.readFileSync(versionFileName).toString().trim();
-      const semverRegExp =  /(\d+\.\d+\.\d+|\d+\.\d+|\d+$)/
-      const version = semverRegExp.test(contents) ? RegExp.$1 : "";
-      const coercedVer = semver.coerce(version)
-      const validVer = semver.valid(coercedVer)
-      if (validVer === null) {
-        throw new Error("No version found")
-      }
-      const stringVersion = validVer as string;
-      try {
-        await installVersion(stringVersion)
-      } catch (error) {
-        core.debug(`${error.toString()}`) 
-        const majorMinorVersion = getHigherVersion(stringVersion)
+      const semverRegExp =  /(\d+\.\d+\.\d+.*ea.*$|\d+\.\d+\.\d+\+\d*$|\d+\.\d+\.\d+|\d+\.\d+|\d+\-ea$|\d+$)/
+      let version = semverRegExp.test(contents) ? RegExp.$1 : "";
+      let installed = false;
+      while (!installed && version != "") {
         try {
-          await installVersion(majorMinorVersion)
+          await installVersion(version)
+          installed = true
         } catch (error) {
-          core.debug(`${error.toString()}`) 
-          const majorVersion = getHigherVersion(majorMinorVersion)
-          await installVersion(majorVersion)
+          core.debug(`${error.toString()}`);
+          version = getHigherVersion(version)
         }
+      }
+      if (!installed) {
+        throw new Error("Сan't install appropriate version from .java-version file")
       }
     }
 
@@ -96,8 +90,9 @@ async function run() {
     }
 
     function getHigherVersion(version: string) {
-      return version.substring(0, version.lastIndexOf("."))
+      return version.split("-")[0] === version ? version.substring(0, version.lastIndexOf(".")) : version.split("-")[0]
     }
+
   } catch (error) {
     core.setFailed(error.message);
   }
