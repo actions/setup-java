@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from 'fs';
 import * as core from '@actions/core';
 import * as auth from './auth';
 import { getBooleanInput, isCacheFeatureAvailable } from './util';
@@ -8,7 +8,6 @@ import { restore } from './cache';
 import * as path from 'path';
 import { getJavaDistribution } from './distributions/distribution-factory';
 import { JavaInstallerOptions } from './distributions/base-models';
-import * as semver from 'semver';
 
 async function run() {
   try {
@@ -28,29 +27,32 @@ async function run() {
     }
 
     if (!versions.length) {
-      core.debug("JAVA_VERSION input is empty, looking for .java-version file")
-      const versionFileName = '.java-version'
-      const contents = fs.readFileSync(versionFileName).toString().trim();
-      const semverRegExp =  /(\d+\.\d+\.\d+.*ea.*$|\d+\.\d+\.\d+\+\d*$|\d+\.\d+\.\d+|\d+\.\d+|\d+\-ea$|\d+$)/
-      let version = semverRegExp.test(contents) ? RegExp.$1 : "";
+      core.debug('JAVA_VERSION input is empty, looking for .java-version file');
+      const versionFileName = '.java-version';
+      const contents = fs
+        .readFileSync(versionFileName)
+        .toString()
+        .trim();
+      const semverRegExp = /(\d+\.\d+\.\d+.*ea.*$|\d+\.\d+\.\d+\+\d*$|\d+\.\d+\.\d+|\d+\.\d+|\d+\-ea$|\d+$)/;
+      let version = semverRegExp.test(contents) ? RegExp.$1 : '';
       let installed = false;
-      while (!installed && version != "") {
+      while (!installed && version != '') {
         try {
-          core.debug(`Trying to install version ${version}`)
-          await installVersion(version)
-          installed = true
+          core.debug(`Trying to install version ${version}`);
+          await installVersion(version);
+          installed = true;
         } catch (error) {
           core.debug(`${error.toString()}`);
-          version = getHigherVersion(version)
+          version = getHigherVersion(version);
         }
       }
       if (!installed) {
-        throw new Error("Сan't install appropriate version from .java-version file")
+        throw new Error("Сan't install appropriate version from .java-version file");
       }
     }
 
     for (const [index, version] of versions.entries()) {
-     await installVersion(version, index)
+      await installVersion(version, index);
     }
     core.endGroup();
     const matchersPath = path.join(__dirname, '..', '..', '.github');
@@ -61,7 +63,7 @@ async function run() {
       await restore(cache);
     }
 
-    async function installVersion(version:string, toolchainId = 0 ) {
+    async function installVersion(version: string, toolchainId = 0) {
       const installerOptions: JavaInstallerOptions = {
         architecture,
         packageType,
@@ -91,9 +93,10 @@ async function run() {
     }
 
     function getHigherVersion(version: string) {
-      return version.split("-")[0] === version ? version.substring(0, version.lastIndexOf(".")) : version.split("-")[0]
+      return version.split('-')[0] === version
+        ? version.substring(0, version.lastIndexOf('.'))
+        : version.split('-')[0];
     }
-
   } catch (error) {
     core.setFailed(error.message);
   }
