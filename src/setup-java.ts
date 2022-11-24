@@ -27,7 +27,9 @@ async function run() {
       const contents = fs.readFileSync(versionFileName).toString().trim();
       const semverRegExp =  /(\d+\.\d+\.\d+|\d+\.\d+|\d+$)/
       const version = semverRegExp.test(contents) ? RegExp.$1 : "";
-      core.info(semver.valid(version) ? semver.valid(version) as string : "not found")
+      const coercedVer = semver.coerce(version)
+      const validVer = semver.valid(coercedVer)
+      core.info(validVer ? validVer as string : "not found")
       versions.push(contents)
     }
 
