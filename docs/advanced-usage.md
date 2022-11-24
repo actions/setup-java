@@ -6,6 +6,7 @@
   - [Liberica](#Liberica)
   - [Microsoft](#Microsoft)
   - [Amazon Corretto](#Amazon-Corretto)
+  - [Oracle](#Oracle)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -80,6 +81,22 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
+### Using Microsoft distribution on GHES
+
+`setup-java` comes pre-installed on the appliance with GHES if Actions is enabled. When dynamically downloading the Microsoft Build of OpenJDK distribution, `setup-java` makes a request to `actions/setup-java` to get available versions on github.com (outside of the appliance). These calls to `actions/setup-java` are made via unauthenticated requests, which are limited to [60 requests per hour per IP](https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting). If more requests are made within the time frame, then you will start to see rate-limit errors during downloading that looks like: `##[error]API rate limit exceeded for...`.
+
+To get a higher rate limit, you can [generate a personal access token on github.com](https://github.com/settings/tokens/new) and pass it as the `token` input for the action:
+
+```yaml
+uses: actions/setup-java@v3
+with:
+  token: ${{ secrets.GH_DOTCOM_TOKEN }}
+  distribution: 'microsoft'
+  java-version: '11'
+```
+
+If the runner is not able to access github.com, any Java versions requested during a workflow run must come from the runner's tool cache. See "[Setting up the tool cache on self-hosted runners without internet access](https://docs.github.com/en/enterprise-server@3.2/admin/github-actions/managing-access-to-actions-from-githubcom/setting-up-the-tool-cache-on-self-hosted-runners-without-internet-access)" for more information.
+
 ### Amazon Corretto
 **NOTE:** Amazon Corretto only supports the major version specification.
 
@@ -90,6 +107,19 @@ steps:
   with:
     distribution: 'corretto'
     java-version: '11'
+- run: java -cp java HelloWorldApp
+```
+
+### Oracle
+**NOTE:** Oracle Java SE Development Kit is only available for version 17 and later.
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'oracle'
+    java-version: '17'
 - run: java -cp java HelloWorldApp
 ```
 
@@ -348,7 +378,7 @@ See the help docs on [Publishing a Package with Gradle](https://help.github.com/
 ## Hosted Tool Cache
 GitHub Hosted Runners have a tool cache that comes with some Java versions pre-installed. This tool cache helps speed up runs and tool setup by not requiring any new downloads. There is an environment variable called `RUNNER_TOOL_CACHE` on each runner that describes the location of this tools cache and this is where you can find the pre-installed versions of Java. `setup-java` works by taking a specific version of Java in this tool cache and adding it to PATH if the version, architecture and distribution match.
 
-Currently, LTS versions of Adopt OpenJDK (`adopt`) are cached on the GitHub Hosted Runners.
+Currently, LTS versions of Eclipse Temurin (`temurin`) are cached on the GitHub Hosted Runners.
 
 The tools cache gets updated on a weekly basis. For information regarding locally cached versions of Java on GitHub hosted runners, check out [GitHub Actions Virtual Environments](https://github.com/actions/virtual-environments).
 

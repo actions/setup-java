@@ -25,6 +25,16 @@ jobs:
         exclude:
         - distribution: microsoft
           version: 8
+        include:
+        - distribution: oracle
+          os: macos-latest
+          version: 17
+        - distribution: oracle
+          os: windows-latest
+          version: 19
+        - distribution: oracle
+          os: ubuntu-latest
+          version: 19
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -51,6 +61,10 @@ jobs:
         - '11.0'
         - '8.0.302'
         - '16.0.2+7'
+        include:
+        - distribution: oracle
+          os: ubuntu-latest
+          version: '19.0.1'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
