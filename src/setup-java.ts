@@ -25,9 +25,9 @@ async function run() {
       core.debug("JAVA_VERSION input is empty, looking for .java-version file")
       const versionFileName = '.java-version'
       const contents = fs.readFileSync(versionFileName).toString().trim();
-      const coercedStr = semver.coerce(contents, { loose: true })
-      const version = semver.valid(coercedStr);
-      core.info(version ? version : "not found")
+      const semverRegExp =  /(\d+\.\d+\.\d+|\d+\.\d+|\d+$)/
+      const version = semverRegExp.test(contents) ? RegExp.$1 : "";
+      core.info(semver.valid(version) ? semver.valid(version) as string : "not found")
       versions.push(contents)
     }
 
