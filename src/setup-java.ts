@@ -22,7 +22,7 @@ async function run() {
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
 
     core.startGroup('Installed distributions');
-    
+
     if (versions.length !== toolchainIds.length) {
       toolchainIds = [];
     }
@@ -40,7 +40,7 @@ async function run() {
       }
       const stringVersion = validVer as string;
       try {
-        installVersion(stringVersion)
+        await installVersion(stringVersion)
       } catch (error) {
         core.info(`${stringVersion} not found`)
         throw new Error("some err")
