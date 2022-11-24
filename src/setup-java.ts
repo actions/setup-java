@@ -43,12 +43,12 @@ async function run() {
         await installVersion(stringVersion)
       } catch (error) {
         core.debug(`${error.toString()}`) 
+        const majorMinorVersion = getHigherVersion(stringVersion)
         try {
-          const majorMinorVersion = getHigherVersion(stringVersion)
           await installVersion(majorMinorVersion)
         } catch (error) {
           core.debug(`${error.toString()}`) 
-          const majorVersion = getHigherVersion(stringVersion)
+          const majorVersion = getHigherVersion(majorMinorVersion)
           await installVersion(majorVersion)
         }
       }
