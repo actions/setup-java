@@ -60,7 +60,7 @@ export class MicrosoftDistributions extends JavaBase {
 
     if (!foundRelease) {
       throw new Error(
-        `Could not find satisfied version for SemVer ${range}. ${manifest
+        `Could not find satisfied version for SemVer ${range}.\nAvailable versions: ${manifest
           .map(item => item.version)
           .join(', ')}`
       );
