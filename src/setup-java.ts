@@ -36,6 +36,7 @@ async function run() {
       let installed = false;
       while (!installed && version != "") {
         try {
+          core.debug(`Trying to install version ${version}`)
           await installVersion(version)
           installed = true
         } catch (error) {
