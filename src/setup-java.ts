@@ -25,7 +25,8 @@ async function run() {
       core.debug("JAVA_VERSION input is empty, looking for .java-version file")
       const versionFileName = '.java-version'
       const contents = fs.readFileSync(versionFileName).toString().trim();
-      const version = semver.valid(contents);
+      const cleanedStr = semver.clean(' = v 2.1.5foo', { loose: true })
+      const version = semver.valid(cleanedStr);
       core.info(version ? version : "not found")
       versions.push(contents)
     }
