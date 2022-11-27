@@ -3,6 +3,7 @@
 [![Main workflow](https://github.com/actions/setup-java/actions/workflows/workflow.yml/badge.svg)](https://github.com/actions/setup-java/actions/workflows/workflow.yml)
 
 The `setup-java` action provides the following functionality for GitHub Actions runners:
+
 - Downloading and setting up a requested version of Java. See [Usage](#Usage) for a list of supported distributions
 - Extracting and caching custom version of Java from a local file
 - Configuring runner for publishing using Apache Maven
@@ -18,49 +19,51 @@ This action allows you to work with Java and Scala projects.
 
 ## V2 vs V1
 
-- V2 supports custom distributions and provides support for Azul Zulu OpenJDK, Eclipse Temurin and AdoptOpenJDK  out of the box. V1 supports only Azul Zulu OpenJDK
+- V2 supports custom distributions and provides support for Azul Zulu OpenJDK, Eclipse Temurin and AdoptOpenJDK out of the box. V1 supports only Azul Zulu OpenJDK
 - V2 requires you to specify distribution along with the version. V1 defaults to Azul Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2
 
 ## Usage
 
-  - `java-version`: _(required)_ The Java version to set up. Takes a whole or [semver](#supported-version-syntax) Java version.
-   
-  - `distribution`: _(required)_ Java [distribution](#supported-distributions).
+- `java-version`: _(required)_ The Java version to set up. Takes a whole or [semver](#supported-version-syntax) Java version.
 
-  - `java-package`: The packaging variant of the choosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
+- `distribution`: _(required)_ Java [distribution](#supported-distributions).
 
-  - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: `x64`.
+- `java-package`: The packaging variant of the chosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
 
-  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM.
+- `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: `x64`.
 
-  - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
+- `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM.
 
-  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predifined package managers. It can be one of "maven", "gradle" or "sbt". 
+- `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
-  #### Maven options
-  The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
+- `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
 
-  - `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists set this to `false`.
+### Maven options
 
-  - `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
+The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
 
-  - `server-username`: Environment variable name for the username for authentication to the Apache Maven repository. Default is GITHUB_ACTOR.
+- `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists set this to `false`.
 
-  - `server-password`: Environment variable name for password or token for authentication to the Apache Maven repository. Default is GITHUB_TOKEN.
+- `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
 
-  - `settings-path`: Maven related setting to point to the diractory where the settings.xml file will be written. Default is ~/.m2.
+- `server-username`: Environment variable name for the username for authentication to the Apache Maven repository. Default is GITHUB_ACTOR.
 
-  - `gpg-private-key`: GPG private key to import. Default is empty string.'
+- `server-password`: Environment variable name for password or token for authentication to the Apache Maven repository. Default is GITHUB_TOKEN.
 
-  - `gpg-passphrase`: description: 'Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
+- `settings-path`: Maven related setting to point to the directory where the settings.xml file will be written. Default is ~/.m2.
 
-  - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
+- `gpg-private-key`: GPG private key to import. Default is empty string.'
 
-  - `mvn-toolchain-vendor`: Name of Maven Toolchain Vendor if the default name of `${distribution}` is not wanted.
+- `gpg-passphrase`: description: 'Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
+
+- `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
+
+- `mvn-toolchain-vendor`: Name of Maven Toolchain Vendor if the default name of `${distribution}` is not wanted.
 
 ### Basic Configuration
 
 #### Eclipse Temurin
+
 ```yaml
 steps:
 - uses: actions/checkout@v3
@@ -72,6 +75,7 @@ steps:
 ```
 
 #### Azul Zulu OpenJDK
+
 ```yaml
 steps:
 - uses: actions/checkout@v3
@@ -83,12 +87,15 @@ steps:
 ```
 
 #### Supported version syntax
+
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
+
 - major versions: `8`, `11`, `16`, `17`
 - more specific versions: `17.0`, `11.0`, `11.0.4`, `8.0.232`, `8.0.282+8`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`, `15.0.0-ea.2`, `15.0.0+2-ea`
 
 #### Supported distributions
+
 Currently, the following distributions are supported:
 | Keyword | Distribution | Official site | License
 |-|-|-|-|
@@ -108,7 +115,9 @@ Currently, the following distributions are supported:
 **NOTE:** For Azul Zulu OpenJDK architectures x64 and arm64 are mapped to x86 / arm with proper hw_bitness.
 
 ### Caching packages dependencies
+
 The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
+
 - gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, and `gradle/*.versions.toml`
 - maven: `**/pom.xml`
 - sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.{scala,sbt}`
@@ -118,6 +127,7 @@ The workflow output `cache-hit` is set to indicate if an exact match was found f
 The cache input is optional, and caching is turned off by default.
 
 #### Caching gradle dependencies
+
 ```yaml
 steps:
 - uses: actions/checkout@v3
@@ -130,6 +140,7 @@ steps:
 ```
 
 #### Caching maven dependencies
+
 ```yaml
 steps:
 - uses: actions/checkout@v3
@@ -143,6 +154,7 @@ steps:
 ```
 
 #### Caching sbt dependencies
+
 ```yaml
 steps:
 - uses: actions/checkout@v3
@@ -163,7 +175,6 @@ If `check-latest` is set to `true`, the action first checks if the cached versio
 
 For Java distributions that are not cached on Hosted images, `check-latest` always behaves as `true` and downloads Java on-flight. Check out [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache) for more details about pre-cached Java versions.  
 
-
 ```yaml
 steps:
 - uses: actions/checkout@v3
@@ -176,6 +187,7 @@ steps:
 ```
 
 ### Testing against different Java versions
+
 ```yaml
 jobs:
   build:
@@ -210,6 +222,7 @@ All versions are added to the PATH. The last version will be used and available 
 ```
 
 ### Using Maven Toolchains
+
 In the example above multiple JDKs are installed for the same job. The result after the last JDK is installed is a Maven Toolchains declaration containing references to all three JDKs. The values for `id`, `version`, and `vendor` of the individual Toolchain entries are the given input values for `distribution` and `java-version` (`vendor` being the combination of `${distribution}_${java-version}`) by default.
 
 ### Advanced Configuration

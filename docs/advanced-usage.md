@@ -1,4 +1,5 @@
 # Usage
+
 - [Selecting a Java distribution](#Selecting-a-Java-distribution)
   - [Eclipse Temurin](#Eclipse-Temurin)
   - [Adopt](#Adopt)
@@ -20,9 +21,11 @@
 See [action.yml](../action.yml) for more details on task inputs.
 
 ## Selecting a Java distribution
+
 Inputs `java-version` and `distribution` are mandatory and needs to be provided. See [Supported distributions](../README.md#Supported-distributions) for a list of available options.
 
 ### Eclipse Temurin
+
 ```yaml
 steps:
 - uses: actions/checkout@v3
@@ -34,6 +37,7 @@ steps:
 ```
 
 ### Adopt
+
 **NOTE:** Adopt OpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` to `temurin` to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 
 ```yaml
@@ -47,6 +51,7 @@ steps:
 ```
 
 ### Zulu
+
 ```yaml
 steps:
 - uses: actions/checkout@v3
@@ -59,6 +64,7 @@ steps:
 ```
 
 ### Liberica
+
 ```yaml
 steps:
 - uses: actions/checkout@v3
@@ -71,6 +77,7 @@ steps:
 ```
 
 ### Microsoft
+
 ```yaml
 steps:
 - uses: actions/checkout@v3
@@ -98,6 +105,7 @@ with:
 If the runner is not able to access github.com, any Java versions requested during a workflow run must come from the runner's tool cache. See "[Setting up the tool cache on self-hosted runners without internet access](https://docs.github.com/en/enterprise-server@3.2/admin/github-actions/managing-access-to-actions-from-githubcom/setting-up-the-tool-cache-on-self-hosted-runners-without-internet-access)" for more information.
 
 ### Amazon Corretto
+
 **NOTE:** Amazon Corretto only supports the major version specification.
 
 ```yaml
@@ -111,6 +119,7 @@ steps:
 ```
 
 ### Oracle
+
 **NOTE:** Oracle Java SE Development Kit is only available for version 17 and later.
 
 ```yaml
@@ -124,6 +133,7 @@ steps:
 ```
 
 ## Installing custom Java package type
+
 ```yaml
 steps:
 - uses: actions/checkout@v3
@@ -134,7 +144,6 @@ steps:
     java-package: jdk # optional (jdk or jre) - defaults to jdk
 - run: java -cp java HelloWorldApp
 ```
-
 
 ## Installing custom Java architecture
 
@@ -150,6 +159,7 @@ steps:
 ```
 
 ## Installing Java from local file
+
 If your use-case requires a custom distribution or a version that is not provided by setup-java, you can download it manually and setup-java will take care of the installation and caching on the VM:
 
 ```yaml
@@ -168,7 +178,9 @@ steps:
 ```
 
 ## Testing against different Java distributions
+
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
+
 ```yaml
 jobs:
   build:
@@ -188,7 +200,8 @@ jobs:
       - run: java -cp java HelloWorldApp
 ```
 
-#### Testing against different platforms
+### Testing against different platforms
+
 ```yaml
 jobs:
   build:
@@ -209,7 +222,9 @@ jobs:
 ```
 
 ## Publishing using Apache Maven
-### Yaml example:
+
+### Yaml example
+
 ```yaml
 jobs:
   build:
@@ -253,6 +268,7 @@ jobs:
 The two `settings.xml` files created from the above example look like the following.
 
 `settings.xml` file created for the first deploy to GitHub Packages
+
 ```xml
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -272,6 +288,7 @@ The two `settings.xml` files created from the above example look like the follow
 ```
 
 `settings.xml` file created for the second deploy to Apache Maven Central
+
 ```xml
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -294,7 +311,7 @@ The two `settings.xml` files created from the above example look like the follow
 
 If you don't want to overwrite the `settings.xml` file, you can set `overwrite-settings: false`
 
-### Extra setup for pom.xml:
+### Extra setup for pom.xml
 
 The Maven GPG Plugin configuration in the pom.xml file should contain the following structure to avoid possible issues like `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`:
 
@@ -307,6 +324,7 @@ The Maven GPG Plugin configuration in the pom.xml file should contain the follow
   </gpgArguments>
 </configuration>
 ```
+
 GPG 2.1 requires `--pinentry-mode` to be set to `loopback` in order to pick up the `gpg.passphrase` value defined in Maven `settings.xml`.
 
 ### GPG
@@ -346,6 +364,7 @@ jobs:
 ```
 
 ## Publishing using Gradle
+
 ```yaml
 jobs:
 
@@ -376,6 +395,7 @@ jobs:
 See the help docs on [Publishing a Package with Gradle](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-gradle-for-use-with-github-packages#example-using-gradle-groovy-for-a-single-package-in-a-repository) for more information on the `build.gradle` configuration file.
 
 ## Hosted Tool Cache
+
 GitHub Hosted Runners have a tool cache that comes with some Java versions pre-installed. This tool cache helps speed up runs and tool setup by not requiring any new downloads. There is an environment variable called `RUNNER_TOOL_CACHE` on each runner that describes the location of this tools cache and this is where you can find the pre-installed versions of Java. `setup-java` works by taking a specific version of Java in this tool cache and adding it to PATH if the version, architecture and distribution match.
 
 Currently, LTS versions of Eclipse Temurin (`temurin`) are cached on the GitHub Hosted Runners.
@@ -383,9 +403,11 @@ Currently, LTS versions of Eclipse Temurin (`temurin`) are cached on the GitHub 
 The tools cache gets updated on a weekly basis. For information regarding locally cached versions of Java on GitHub hosted runners, check out [GitHub Actions Virtual Environments](https://github.com/actions/virtual-environments).
 
 ## Modifying Maven Toolchains
+
 The `setup-java` action generates a basic [Maven Toolchains declaration](https://maven.apache.org/guides/mini/guide-using-toolchains.html) for specified Java versions by either creating a minimal toolchains file or extending an existing declaration with the additional JDKs.
 
 ### Installing Multiple JDKs With Toolchains
+
 Subsequent calls to `setup-java` with distinct distribution and version parameters will continue to extend the toolchains declaration and make all specified Java versions available.
 
 ```yaml
@@ -417,9 +439,10 @@ The result is a Toolchain with entries for JDKs 8, 11 and 15. You can even combi
     architecture: x64
 ```
 
-This will generate a Toolchains entry with the following values: `version: 1.6`, `vendor: jkdfile`, `id: Oracle_1.6`.
+This will generate a Toolchains entry with the following values: `version: 1.6`, `vendor: jdkfile`, `id: Oracle_1.6`.
 
 ### Modifying The Toolchain Vendor For JDKs
+
 Each JDK provider will receive a default `vendor` using the `distribution` input value but this can be overridden with the `mvn-toolchain-vendor` parameter as follows.
 
 ```yaml
@@ -451,6 +474,7 @@ steps:
 ```
 
 ### Modifying The Toolchain ID For JDKs
+
 Each JDK provider will receive a default `id` based on the combination of `distribution` and `java-version` in the format of `distribution_java-version` (e.g. `temurin_11`) but this can be overridden with the `mvn-toolchain-id` parameter as follows.
 
 ```yaml
