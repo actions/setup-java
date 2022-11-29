@@ -33,8 +33,8 @@ async function run() {
         .readFileSync(versionFileName)
         .toString()
         .trim();
-      const semverRegExp = /(\d+\.\d+\.\d+.*ea.*$|\d+\.\d+\.\d+\+\d*$|\d+\.\d+\.\d+|\d+\.\d+|\d+\-ea$|\d+$)/;
-      let version = semverRegExp.test(contents) ? RegExp.$1 : '';
+      const semverRegExp = /(?<version>(?<=(^|\s|\-))(\d+\S*))(\s|$)/;
+      let version = contents.match(semverRegExp)?.groups?.version ? contents.match(semverRegExp)?.groups?.version as string : '';
       let installed = false;
       while (!installed && version != '') {
         try {
