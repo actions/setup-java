@@ -34,7 +34,9 @@ async function run() {
         .toString()
         .trim();
       const semverRegExp = /(?<version>(?<=(^|\s|\-))(\d+\S*))(\s|$)/;
-      let version = contents.match(semverRegExp)?.groups?.version ? contents.match(semverRegExp)?.groups?.version as string : '';
+      let version = contents.match(semverRegExp)?.groups?.version
+        ? (contents.match(semverRegExp)?.groups?.version as string)
+        : '';
       let installed = false;
       while (!installed && version != '') {
         try {
