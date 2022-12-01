@@ -23,7 +23,7 @@ This action allows you to work with Java and Scala projects.
 
 ## Usage
 
-  - `java-version`: The Java version to set up. Takes a whole or [semver](#supported-version-syntax) Java version. If not specified, the action will expect `.java-version` file to be in the repository root. See [more details](docs/advanced-usage.md#Java-version-file) in about `.java-version` file. 
+  - `java-version`: The Java version to set up. Takes a whole or [semver](#supported-version-syntax) Java version. If not specified, the action will expect `.java-version` file to be in the repository root. See more details in [about `.java-version` file](docs/advanced-usage.md#Java-version-file). 
    
   - `distribution`: _(required)_ Java [distribution](#supported-distributions).
 
