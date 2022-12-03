@@ -48,7 +48,7 @@ This action allows you to work with Java and Scala projects.
 
   - `server-password`: Environment variable name for password or token for authentication to the Apache Maven repository. Default is GITHUB_TOKEN.
 
-  - `settings-path`: Maven related setting to point to the diractory where the settings.xml file will be written. Default is ~/.m2.
+  - `settings-path`: Maven related setting to point to the directory where the settings.xml file will be written. Default is ~/.m2.
 
   - `gpg-private-key`: GPG private key to import. Default is empty string.'
 
