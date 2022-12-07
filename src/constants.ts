@@ -1,5 +1,6 @@
 export const MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
 export const INPUT_JAVA_VERSION = 'java-version';
+export const INPUT_JAVA_VERSION_FILE = 'java-version-file';
 export const INPUT_ARCHITECTURE = 'architecture';
 export const INPUT_JAVA_PACKAGE = 'java-package';
 export const INPUT_DISTRIBUTION = 'distribution';
