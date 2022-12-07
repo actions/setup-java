@@ -481,7 +481,7 @@ steps:
 ```
 
 ## Java-version file
-If the `java-version` input is not specified, the action will look for a `.java-version` file at the root of the repository. If the file is found, action will try to install the most suitable version.
+If the `java-version-file` input is specified, the action will try to extract the version from the file and  install the most suitable version.
 Action is able to recognize all variants of the version description according to [jenv](https://github.com/jenv/jenv). 
 Valid entry options:
 ```
