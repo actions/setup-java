@@ -42,7 +42,7 @@ async function run() {
         ? (contents.match(semverRegExp)?.groups?.version as string)
         : '';
       let installed = false;
-      while (!installed && version != '') {
+      while (!installed && version) {
         try {
           core.debug(`Trying to install version ${version}`);
           await installVersion(version);
