@@ -5,7 +5,8 @@ author: 'GitHub'
 inputs:
   java-version:
     description: 'The Java version to set up. Takes a whole or semver Java version. See examples of supported syntax in README file'
-    required: true
+  java-version-file:
+    description: 'The path to the `.java-version` file. See examples of supported syntax in README file'
   distribution:
     description: 'Java distribution. See the list of supported distributions in README file'
     required: true
