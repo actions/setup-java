@@ -28,7 +28,7 @@ async function run() {
     }
 
     if (!versions.length && !versionFile) {
-      throw new Error("Java-version or java-version-file input expected");
+      throw new Error('Java-version or java-version-file input expected');
     }
 
     if (!versions.length) {
