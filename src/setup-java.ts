@@ -8,6 +8,7 @@ import { restore } from './cache';
 import * as path from 'path';
 import { getJavaDistribution } from './distributions/distribution-factory';
 import { JavaInstallerOptions } from './distributions/base-models';
+import * as semver from 'semver';
 
 async function run() {
   try {
@@ -31,34 +32,33 @@ async function run() {
       throw new Error('Java-version or java-version-file input expected');
     }
 
+    const installerInputsOptions: installerInputsOptions = {
+      architecture,
+      packageType,
+      checkLatest,
+      distributionName,
+      jdkFile,
+      toolchainIds
+    };
+
     if (!versions.length) {
       core.debug('Java-version input is empty, looking for java-version-file input');
-      const contents = fs
+      const content = fs
         .readFileSync(versionFile)
         .toString()
         .trim();
-      const semverRegExp = /(?<version>(?<=(^|\s|\-))(\d+\S*))(\s|$)/;
-      let version = contents.match(semverRegExp)?.groups?.version
-        ? (contents.match(semverRegExp)?.groups?.version as string)
-        : '';
-      let installed = false;
-      while (!installed && version) {
-        try {
-          core.debug(`Trying to install version ${version}`);
-          await installVersion(version);
-          installed = true;
-        } catch (error) {
-          core.debug(`${error.toString()}`);
-          version = getHigherVersion(version);
-        }
+      
+      const version = getVersionFromFileContent(content, distributionName)
+
+      if (!version) {
+        throw new Error(`No supported version was found in file ${versionFile}`);
       }
-      if (!installed) {
-        throw new Error("Сan't install appropriate version from .java-version file");
-      }
+      
+      await installVersion(version as string, installerInputsOptions);
     }
 
     for (const [index, version] of versions.entries()) {
-      await installVersion(version, index);
+      await installVersion(version, installerInputsOptions, index);
     }
     core.endGroup();
     const matchersPath = path.join(__dirname, '..', '..', '.github');
@@ -68,44 +68,86 @@ async function run() {
     if (cache && isCacheFeatureAvailable()) {
       await restore(cache);
     }
-
-    async function installVersion(version: string, toolchainId = 0) {
-      const installerOptions: JavaInstallerOptions = {
-        architecture,
-        packageType,
-        version,
-        checkLatest
-      };
-
-      const distribution = getJavaDistribution(distributionName, installerOptions, jdkFile);
-      if (!distribution) {
-        throw new Error(`No supported distribution was found for input ${distributionName}`);
-      }
-
-      const result = await distribution.setupJava();
-      await toolchains.configureToolchains(
-        version,
-        distributionName,
-        result.path,
-        toolchainIds[toolchainId]
-      );
-
-      core.info('');
-      core.info('Java configuration:');
-      core.info(`  Distribution: ${distributionName}`);
-      core.info(`  Version: ${result.version}`);
-      core.info(`  Path: ${result.path}`);
-      core.info('');
-    }
-
-    function getHigherVersion(version: string) {
-      return version.split('-')[0] === version
-        ? version.substring(0, version.lastIndexOf('.'))
-        : version.split('-')[0];
-    }
   } catch (error) {
     core.setFailed(error.message);
   }
 }
 
 run();
+
+async function installVersion(version: string, options: installerInputsOptions, toolchainId = 0) {
+  const {
+    distributionName,
+    jdkFile,
+    architecture,
+    packageType,
+    checkLatest,
+    toolchainIds
+  } = options;
+
+  const installerOptions: JavaInstallerOptions = {
+    architecture,
+    packageType,
+    checkLatest,
+    version
+  };
+
+  const distribution = getJavaDistribution(distributionName, installerOptions, jdkFile);
+  if (!distribution) {
+    throw new Error(`No supported distribution was found for input ${distributionName}`);
+  }
+
+  const result = await distribution.setupJava();
+  await toolchains.configureToolchains(
+    version,
+    distributionName,
+    result.path,
+    toolchainIds[toolchainId]
+  );
+
+  core.info('');
+  core.info('Java configuration:');
+  core.info(`  Distribution: ${distributionName}`);
+  core.info(`  Version: ${result.version}`);
+  core.info(`  Path: ${result.path}`);
+  core.info('');
+}
+
+interface installerInputsOptions {
+  architecture: string;
+  packageType: string;
+  checkLatest: boolean;
+  distributionName: string;
+  jdkFile: string;
+  toolchainIds: Array<string>;
+}
+
+function getVersionFromFileContent(content: string, distributionName: string): string | null {
+  const javaVersionRegExp = /(?<version>(?<=(^|\s|\-))(\d+\S*))(\s|$)/;
+  const fileContent = content.match(javaVersionRegExp)?.groups?.version
+    ? (content.match(javaVersionRegExp)?.groups?.version as string)
+    : '';
+  if (!fileContent) {
+    return null
+  }
+  const tentativeVersion = avoidOldNotation(fileContent);
+
+  let version = semver.validRange(tentativeVersion)
+    ? tentativeVersion
+    : semver.coerce(tentativeVersion);
+
+  if (!version) {
+    return null
+  }
+
+  if (constants.DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(distributionName)) {
+    version = semver.major(version).toString();
+  }
+
+  return version.toString();
+}
+
+// By convention, action expects version 8 in the format `8.*` instead of `1.8`
+function avoidOldNotation(content: string): string {
+  return content.substring(0, 2) === '1.' ? content.substring(2) : content;
+}

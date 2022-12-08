@@ -27,3 +27,5 @@ export const MVN_SETTINGS_FILE = 'settings.xml';
 export const MVN_TOOLCHAINS_FILE = 'toolchains.xml';
 export const INPUT_MVN_TOOLCHAIN_ID = 'mvn-toolchain-id';
 export const INPUT_MVN_TOOLCHAIN_VENDOR = 'mvn-toolchain-vendor';
+
+export const DISTRIBUTIONS_ONLY_MAJOR_VERSION = ['corretto']
