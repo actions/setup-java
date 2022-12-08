@@ -481,18 +481,13 @@ steps:
 ```
 
 ## Java-version file
-If the `java-version-file` input is specified, the action will try to extract the version from the file and  install the most suitable version.
+If the `java-version-file` input is specified, the action will try to extract the version from the file and install it.
 Action is able to recognize all variants of the version description according to [jenv](https://github.com/jenv/jenv). 
 Valid entry options:
 ```
 major versions: 8, 11, 16, 17
-more specific versions: 17.0, 11.0, 11.0.4, 8.0.232, 8.0.282+8
+more specific versions: 1.8.0.2, 17.0, 11.0, 11.0.4, 8.0.232, 8.0.282+8
 early access (EA) versions: 15-ea, 15.0.0-ea, 15.0.0-ea.2, 15.0.0+2-ea
 versions with specified distribution: openjdk64-11.0.2
 ```
 If the file contains multiple versions, only the first one will be recognized.
-If action was able to recognize a version in the file that matches the pattern, then attempts will begin to install the most appropriate version. The logic for installing the appropriate version:
-action will try to install the specified version. If this version is not available for a given distribution, action will try to install a less specific version according to the algorithm. Attempts will continue until a suitable version is installed or the attempt to install a version specifying only with major tag fails.
-Algorithm for selecting the appropriate version:
-If a particular patch specification was present in the version (for example, the early access postfix `-ea*` in `major.minor.patch-ea*` notation), action will try to install the version without it in the format `major.minor.patch`. Next, if the install fails again, action will try to install the `major.minor` version. On failure, action will try to install the `major` version and fail on failure.
-If the version was originally specified not in full format, then the process will be similar, but it will not start from the first step.
