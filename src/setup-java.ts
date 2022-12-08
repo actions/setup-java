@@ -1,7 +1,12 @@
 import fs from 'fs';
 import * as core from '@actions/core';
 import * as auth from './auth';
-import { getBooleanInput, isCacheFeatureAvailable, getVersionFromFileContent, avoidOldNotation } from './util';
+import {
+  getBooleanInput,
+  isCacheFeatureAvailable,
+  getVersionFromFileContent,
+  avoidOldNotation
+} from './util';
 import * as toolchains from './toolchains';
 import * as constants from './constants';
 import { restore } from './cache';
@@ -120,4 +125,3 @@ interface installerInputsOptions {
   jdkFile: string;
   toolchainIds: Array<string>;
 }
-
