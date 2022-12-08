@@ -1,14 +1,13 @@
 import fs from 'fs';
 import * as core from '@actions/core';
 import * as auth from './auth';
-import { getBooleanInput, isCacheFeatureAvailable } from './util';
+import { getBooleanInput, isCacheFeatureAvailable, getVersionFromFileContent, avoidOldNotation } from './util';
 import * as toolchains from './toolchains';
 import * as constants from './constants';
 import { restore } from './cache';
 import * as path from 'path';
 import { getJavaDistribution } from './distributions/distribution-factory';
 import { JavaInstallerOptions } from './distributions/base-models';
-import * as semver from 'semver';
 
 async function run() {
   try {
@@ -122,32 +121,3 @@ interface installerInputsOptions {
   toolchainIds: Array<string>;
 }
 
-function getVersionFromFileContent(content: string, distributionName: string): string | null {
-  const javaVersionRegExp = /(?<version>(?<=(^|\s|\-))(\d+\S*))(\s|$)/;
-  const fileContent = content.match(javaVersionRegExp)?.groups?.version
-    ? (content.match(javaVersionRegExp)?.groups?.version as string)
-    : '';
-  if (!fileContent) {
-    return null;
-  }
-  const tentativeVersion = avoidOldNotation(fileContent);
-
-  let version = semver.validRange(tentativeVersion)
-    ? tentativeVersion
-    : semver.coerce(tentativeVersion);
-
-  if (!version) {
-    return null;
-  }
-
-  if (constants.DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(distributionName)) {
-    version = semver.major(version).toString();
-  }
-
-  return version.toString();
-}
-
-// By convention, action expects version 8 in the format `8.*` instead of `1.8`
-function avoidOldNotation(content: string): string {
-  return content.startsWith('1.') ? content.substring(2) : content;
-}
