@@ -29,7 +29,7 @@ async function run() {
     }
 
     if (!versions.length && !versionFile) {
-      throw new Error('Java-version or java-version-file input expected');
+      throw new Error('java-version or java-version-file input expected');
     }
 
     const installerInputsOptions: installerInputsOptions = {
@@ -42,7 +42,7 @@ async function run() {
     };
 
     if (!versions.length) {
-      core.debug('Java-version input is empty, looking for java-version-file input');
+      core.debug('java-version input is empty, looking for java-version-file input');
       const content = fs
         .readFileSync(versionFile)
         .toString()
