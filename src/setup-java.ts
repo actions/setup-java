@@ -47,13 +47,13 @@ async function run() {
         .readFileSync(versionFile)
         .toString()
         .trim();
-      
-      const version = getVersionFromFileContent(content, distributionName)
+
+      const version = getVersionFromFileContent(content, distributionName);
 
       if (!version) {
         throw new Error(`No supported version was found in file ${versionFile}`);
       }
-      
+
       await installVersion(version as string, installerInputsOptions);
     }
 
@@ -128,7 +128,7 @@ function getVersionFromFileContent(content: string, distributionName: string): s
     ? (content.match(javaVersionRegExp)?.groups?.version as string)
     : '';
   if (!fileContent) {
-    return null
+    return null;
   }
   const tentativeVersion = avoidOldNotation(fileContent);
 
@@ -137,7 +137,7 @@ function getVersionFromFileContent(content: string, distributionName: string): s
     : semver.coerce(tentativeVersion);
 
   if (!version) {
-    return null
+    return null;
   }
 
   if (constants.DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(distributionName)) {
