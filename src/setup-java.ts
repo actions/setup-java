@@ -149,5 +149,5 @@ function getVersionFromFileContent(content: string, distributionName: string): s
 
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
 function avoidOldNotation(content: string): string {
-  return content.substring(0, 2) === '1.' ? content.substring(2) : content;
+  return content.startsWith('1.') ? content.substring(2) : content;
 }
