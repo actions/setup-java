@@ -68624,7 +68624,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.avoidOldNotation = exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
+exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
 const os_1 = __importDefault(__nccwpck_require__(2037));
 const path_1 = __importDefault(__nccwpck_require__(1017));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -68721,7 +68721,7 @@ function isCacheFeatureAvailable() {
 }
 exports.isCacheFeatureAvailable = isCacheFeatureAvailable;
 function getVersionFromFileContent(content, distributionName) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     const javaVersionRegExp = /(?<version>(?<=(^|\s|\-))(\d+\S*))(\s|$)/;
     const fileContent = ((_b = (_a = content.match(javaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version)
         ? (_d = (_c = content.match(javaVersionRegExp)) === null || _c === void 0 ? void 0 : _c.groups) === null || _d === void 0 ? void 0 : _d.version
@@ -68729,15 +68729,17 @@ function getVersionFromFileContent(content, distributionName) {
     if (!fileContent) {
         return null;
     }
+    core.debug(`Version from file '${fileContent}'`);
     const tentativeVersion = avoidOldNotation(fileContent);
-    let version = semver.validRange(tentativeVersion)
-        ? tentativeVersion
-        : semver.coerce(tentativeVersion);
+    const rawVersion = tentativeVersion.split('-')[0];
+    let version = semver.validRange(rawVersion) ? tentativeVersion : semver.coerce(tentativeVersion);
+    core.debug(`Range version from file is '${version}'`);
     if (!version) {
         return null;
     }
     if (constants_1.DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(distributionName)) {
-        version = semver.major(version).toString();
+        const coerceVersion = (_e = semver.coerce(version)) !== null && _e !== void 0 ? _e : version;
+        version = semver.major(coerceVersion).toString();
     }
     return version.toString();
 }
@@ -68746,7 +68748,6 @@ exports.getVersionFromFileContent = getVersionFromFileContent;
 function avoidOldNotation(content) {
     return content.startsWith('1.') ? content.substring(2) : content;
 }
-exports.avoidOldNotation = avoidOldNotation;
 
 
 /***/ }),

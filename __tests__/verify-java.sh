@@ -24,7 +24,7 @@ fi
 ACTUAL_JAVA_VERSION="$(java -version 2>&1)"
 echo "Found java version: $ACTUAL_JAVA_VERSION"
 
-GREP_RESULT=$(echo $ACTUAL_JAVA_VERSION | grep -E "^(openjdk|java) version \"$EXPECTED_JAVA_VERSION")
+GREP_RESULT=$(echo $ACTUAL_JAVA_VERSION | grep "^openjdk version \"$EXPECTED_JAVA_VERSION")
 if [ -z "$GREP_RESULT" ]; then
   echo "::error::Unexpected version"
   echo "Expected version: $EXPECTED_JAVA_VERSION"

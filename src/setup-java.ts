@@ -1,12 +1,7 @@
 import fs from 'fs';
 import * as core from '@actions/core';
 import * as auth from './auth';
-import {
-  getBooleanInput,
-  isCacheFeatureAvailable,
-  getVersionFromFileContent,
-  avoidOldNotation
-} from './util';
+import { getBooleanInput, isCacheFeatureAvailable, getVersionFromFileContent } from './util';
 import * as toolchains from './toolchains';
 import * as constants from './constants';
 import { restore } from './cache';
@@ -53,12 +48,13 @@ async function run() {
         .trim();
 
       const version = getVersionFromFileContent(content, distributionName);
+      core.debug(`Parsed version from file '${version}'`);
 
       if (!version) {
         throw new Error(`No supported version was found in file ${versionFile}`);
       }
 
-      await installVersion(version as string, installerInputsOptions);
+      await installVersion(version, installerInputsOptions);
     }
 
     for (const [index, version] of versions.entries()) {
