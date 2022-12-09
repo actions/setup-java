@@ -23,7 +23,7 @@ This action allows you to work with Java and Scala projects.
 
 ## Usage
 
-  - `java-version`: The Java version to set up. Takes a whole or [semver](#supported-version-syntax) Java version. If not specified, the action will expect `java-version-file` input to be specified.
+  - `java-version`: The Java version that is going to be set up. Takes a whole or [semver](#supported-version-syntax) Java version. If not specified, the action will expect `java-version-file` input to be specified.
 
   - `java-version-file`: The path to the `.java-version` file. See more details in [about `.java-version` file](docs/advanced-usage.md#Java-version-file).
    
