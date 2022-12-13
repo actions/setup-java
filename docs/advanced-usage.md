@@ -15,6 +15,7 @@
 - [Publishing using Gradle](#Publishing-using-Gradle)
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](#Modifying-Maven-Toolchains)
+- [Java-version file](#Java-version-file)
 
 See [action.yml](../action.yml) for more details on task inputs.
 
@@ -464,3 +465,15 @@ steps:
       something_else
       something_other
 ```
+
+## Java-version file
+If the `java-version-file` input is specified, the action will try to extract the version from the file and install it.
+Action is able to recognize all variants of the version description according to [jenv](https://github.com/jenv/jenv). 
+Valid entry options:
+```
+major versions: 8, 11, 16, 17
+more specific versions: 1.8.0.2, 17.0, 11.0, 11.0.4, 8.0.232, 8.0.282+8
+early access (EA) versions: 15-ea, 15.0.0-ea, 15.0.0-ea.2, 15.0.0+2-ea
+versions with specified distribution: openjdk64-11.0.2
+```
+If the file contains multiple versions, only the first one will be recognized.

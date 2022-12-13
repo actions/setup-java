@@ -240,4 +240,99 @@ jobs:
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
 
-  # Only Microsoft provides AArch64. However, GitHub-hosted runners do not support this architecture.
+  setup-java-version-both-version-inputs-presents:
+    name: ${{ matrix.distribution }} version (should be from input) - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['temurin', 'microsoft', 'corretto' ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create .java-version file
+        shell: bash
+        run: echo "8" > .java-version
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version: 11
+          java-version-file: '.java-version'
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
+  setup-java-version-from-file-major-notation:
+    name: ${{ matrix.distribution }} version from file X - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['temurin', 'zulu', 'liberica', 'microsoft', 'corretto' ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create .java-version file
+        shell: bash
+        run: echo "11" > .java-version
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version-file: '.java-version'
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
+  setup-java-version-from-file-major-minor-patch-notation:
+    name: ${{ matrix.distribution }} version from file X.Y.Z - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: [ 'adopt', 'adopt-openj9', 'zulu' ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create .java-version file
+        shell: bash
+        run: echo "11.0.2" > .java-version
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version-file: '.java-version'
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "11.0.2" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
+  setup-java-version-from-file-major-minor-patch-with-dist:
+    name: ${{ matrix.distribution }} version from file 'openjdk64-11.0.2' - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['adopt', 'zulu', 'liberica'  ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create .java-version file
+        shell: bash
+        run: echo "openjdk64-11.0.2" > .java-version
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version-file: '.java-version'
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "11.0.2" "${{ steps.setup-java.outputs.path }}"
+        shell: bash

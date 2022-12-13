@@ -6,7 +6,7 @@ import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
-import { INPUT_JOB_STATUS } from './constants';
+import { INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION } from './constants';
 
 export function getTempDir() {
   let tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
@@ -98,4 +98,42 @@ export function isCacheFeatureAvailable(): boolean {
   }
 
   return true;
+}
+
+export function getVersionFromFileContent(
+  content: string,
+  distributionName: string
+): string | null {
+  const javaVersionRegExp = /(?<version>(?<=(^|\s|\-))(\d+\S*))(\s|$)/;
+  const fileContent = content.match(javaVersionRegExp)?.groups?.version
+    ? (content.match(javaVersionRegExp)?.groups?.version as string)
+    : '';
+  if (!fileContent) {
+    return null;
+  }
+
+  core.debug(`Version from file '${fileContent}'`);
+
+  const tentativeVersion = avoidOldNotation(fileContent);
+  const rawVersion = tentativeVersion.split('-')[0];
+
+  let version = semver.validRange(rawVersion) ? tentativeVersion : semver.coerce(tentativeVersion);
+
+  core.debug(`Range version from file is '${version}'`);
+
+  if (!version) {
+    return null;
+  }
+
+  if (DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(distributionName)) {
+    const coerceVersion = semver.coerce(version) ?? version;
+    version = semver.major(coerceVersion).toString();
+  }
+
+  return version.toString();
+}
+
+// By convention, action expects version 8 in the format `8.*` instead of `1.8`
+function avoidOldNotation(content: string): string {
+  return content.startsWith('1.') ? content.substring(2) : content;
 }
