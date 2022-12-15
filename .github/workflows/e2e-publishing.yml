@@ -1,4 +1,5 @@
 name: Validate publishing functionality
+
 on:
   push:
     branches:
