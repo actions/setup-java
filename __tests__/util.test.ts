@@ -29,14 +29,13 @@ describe('isVersionSatisfies', () => {
 describe('isCacheFeatureAvailable', () => {
   it('isCacheFeatureAvailable disabled on GHES', () => {
     jest.spyOn(cache, 'isFeatureAvailable').mockImplementation(() => false);
+    const infoMock = jest.spyOn(core, 'warning');
+    const message =
+      'Caching is only supported on GHES version >= 3.5. If you are on a version >= 3.5, please check with your GHES admin if the Actions cache service is enabled or not.';
     try {
       process.env['GITHUB_SERVER_URL'] = 'http://example.com';
-      isCacheFeatureAvailable();
-    } catch (error) {
-      expect(error).toHaveProperty(
-        'message',
-        'Caching is only supported on GHES version >= 3.5. If you are on a version >= 3.5, please check with your GHES admin if the Actions cache service is enabled or not.'
-      );
+      expect(isCacheFeatureAvailable()).toBeFalsy();
+      expect(infoMock).toHaveBeenCalledWith(message);
     } finally {
       delete process.env['GITHUB_SERVER_URL'];
     }
