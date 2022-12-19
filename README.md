@@ -31,7 +31,7 @@ This action allows you to work with Java and Scala projects.
 
   - `java-package`: The packaging variant of the choosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
 
-  - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: `x64`.
+  - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
 
   - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM.
 
