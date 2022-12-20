@@ -8,6 +8,8 @@ import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from 
 import { ICorrettoAllAvailableVersions, ICorrettoAvailableVersions } from './models';
 
 export class CorrettoDistribution extends JavaBase {
+  protected remoteMetadataBaseUrl = 'https://corretto.github.io';
+
   constructor(installerOptions: JavaInstallerOptions) {
     super('Corretto', installerOptions);
   }
@@ -75,8 +77,7 @@ export class CorrettoDistribution extends JavaBase {
       console.time('corretto-retrieve-available-versions');
     }
 
-    const availableVersionsUrl =
-      'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
+    const availableVersionsUrl = `${this.baseUrl}/corretto-downloads/latest_links/indexmap_with_checksum.json`;
     const fetchCurrentVersions = await this.http.getJson<ICorrettoAllAvailableVersions>(
       availableVersionsUrl
     );

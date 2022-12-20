@@ -15,6 +15,8 @@ import {
 import os from 'os';
 
 class EmptyJavaBase extends JavaBase {
+  protected remoteMetadataBaseUrl = 'MUST STAY EMPTY';
+  protected remoteBaseUrl = 'MUST STAY EMPTY';
   constructor(installerOptions: JavaInstallerOptions) {
     super('Empty', installerOptions);
   }
@@ -36,6 +38,10 @@ class EmptyJavaBase extends JavaBase {
       version: availableVersion,
       url: `some/random_url/java/${availableVersion}`
     };
+  }
+
+  protected baseUrl(): string {
+    throw new Error('Method already tested in all distribution installers');
   }
 }
 

@@ -68,6 +68,15 @@ inputs:
   mvn-toolchain-vendor:
     description: 'Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file'
     required: false
+  remote-repository-base-url:
+    description: 'The base url to the solution which houses and manages all the artifacts (ex: artifactory, nexus, etc.)'
+    required: false
+  replace-download-link-base-url:
+    description: 'The base url of the download link, extracted from the metadata file, which must be substituted with the remote-repository-base-url. Sometimes you might need to specify the download link context to have a proper download link of the distribution.'
+    required: false
+  download-link-context:
+    description: 'Because the proxying of the artifacts it is higly dependent on the admin doing it, it might be that a context is needed to be postpended to the remote-repository-base-url.'
+    required: false
 outputs:
   distribution:
     description: 'Distribution of Java that has been installed'

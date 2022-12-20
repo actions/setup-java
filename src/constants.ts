@@ -29,3 +29,7 @@ export const INPUT_MVN_TOOLCHAIN_ID = 'mvn-toolchain-id';
 export const INPUT_MVN_TOOLCHAIN_VENDOR = 'mvn-toolchain-vendor';
 
 export const DISTRIBUTIONS_ONLY_MAJOR_VERSION = ['corretto'];
+
+export const REMOTE_REPOSITORY_BASE_URL = 'remote-repository-base-url';
+export const REPLACE_DOWNLOAD_LINK_BASE_URL = 'replace-download-link-base-url';
+export const DOWNLOAD_LINK_CONTEXT = 'download-link-context';

@@ -13,6 +13,7 @@ The `setup-java` action provides the following functionality for GitHub Actions 
 - Caching dependencies managed by Gradle
 - Caching dependencies managed by sbt
 - [Maven Toolchains declaration](https://maven.apache.org/guides/mini/guide-using-toolchains.html) for specified JDK versions
+- support for enterpries that are using a system that is proxying a repository located on a remote server.
 
 This action allows you to work with Java and Scala projects.
 
@@ -59,6 +60,12 @@ This action allows you to work with Java and Scala projects.
   - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
 
   - `mvn-toolchain-vendor`: Name of Maven Toolchain Vendor if the default name of `${distribution}` is not wanted.
+
+  - `remote-repository-base-url`: The base url to the solution which houses and manages all the artifacts (ex: artifactory, nexus, etc.). If `remote-repository-base-url` is specified you also need to specify the `replace-download-link-base-url`.
+
+  - `replace-download-link-base-url`: The base url of the download link, extracted from the metadata file, which must be substituted with the remote-repository-base-url.
+  
+  - `download-link-context`: Because the proxying of the artifacts it is higly dependent on the admin doing it, it might be that a context is needed to be postpended to the remote-repository-base-url.  
 
 ### Basic Configuration
 
@@ -231,6 +238,8 @@ In the example above multiple JDKs are installed for the same job. The result af
 - [Publishing using Gradle](docs/advanced-usage.md#Publishing-using-Gradle)
 - [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](docs/advanced-usage.md#Modifying-Maven-Toolchains)
+- [Modifying Maven Toolchains](docs/advanced-usage.md#Modifying-Maven-Toolchains)
+- [Fetch binaries from the artifact proxy repository](docs/advanced-usage.md#Proxy-repositores)
 
 ## License
 
