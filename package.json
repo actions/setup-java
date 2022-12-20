@@ -8,7 +8,7 @@
     "build": "ncc build -o dist/setup src/setup-java.ts && ncc build -o dist/cleanup src/cleanup-java.ts",
     "format": "prettier --write \"{,!(node_modules)/**/}*.ts\"",
     "format-check": "prettier --check \"{,!(node_modules)/**/}*.ts\"",
-    "lint": "",
+    "lint": "echo \"Fake command that does nothing. It is used in reusable workflows\"",
     "prerelease": "npm run-script build",
     "release": "git add -f dist/setup/index.js dist/cleanup/index.js",
     "test": "jest"
