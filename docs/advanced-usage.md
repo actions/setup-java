@@ -132,7 +132,7 @@ steps:
   with:
     distribution: '<distribution>'
     java-version: '11'
-    architecture: x86 # optional - defaults to x64
+    architecture: x86 # optional - default value derived from the runner machine
 - run: java -cp java HelloWorldApp
 ```
 
