@@ -47,7 +47,7 @@ async function run() {
         .toString()
         .trim();
 
-      const version = getVersionFromFileContent(content, distributionName);
+      const version = getVersionFromFileContent(versionFile, content, distributionName);
       core.debug(`Parsed version from file '${version}'`);
 
       if (!version) {
