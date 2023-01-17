@@ -339,7 +339,7 @@ jobs:
         shell: bash
 
   setup-java-version-from-pom-spring-boot-specification:
-    name: ${{ matrix.distribution }} version from pom.xml 'openjdk64-11.0.2' - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} version from pom.xml - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -384,7 +384,7 @@ jobs:
         shell: bash
 
   setup-java-version-from-pom-maven-compiler-source-specification:
-    name: ${{ matrix.distribution }} version from pom.xml 'openjdk64-11.0.2' - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} version from pom.xml - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -428,7 +428,7 @@ jobs:
         shell: bash
 
   setup-java-version-from-pom-maven-compiler-release-specification:
-    name: ${{ matrix.distribution }} version from pom.xml 'openjdk64-11.0.2' - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} version from pom.xml - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -471,7 +471,7 @@ jobs:
         shell: bash
 
   setup-java-version-from-pom-maven-compiler-configuration-source-specification:
-    name: ${{ matrix.distribution }} version from pom.xml 'openjdk64-11.0.2' - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} version from pom.xml - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -515,7 +515,7 @@ jobs:
         shell: bash
 
   setup-java-version-from-pom-maven-compiler-configuration-release-specification:
-    name: ${{ matrix.distribution }} version from pom.xml 'openjdk64-11.0.2' - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} version from pom.xml - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
