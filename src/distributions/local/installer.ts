@@ -11,6 +11,8 @@ import { extractJdkFile } from '../../util';
 import { MACOS_JAVA_CONTENT_POSTFIX } from '../../constants';
 
 export class LocalDistribution extends JavaBase {
+  protected remoteMetadataBaseUrl = 'MUST STAY EMPTY';
+
   constructor(installerOptions: JavaInstallerOptions, private jdkFile?: string) {
     super('jdkfile', installerOptions);
   }
@@ -67,6 +69,10 @@ export class LocalDistribution extends JavaBase {
   }
 
   protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
+    throw new Error('This method should not be implemented in local file provider');
+  }
+
+  protected baseUrl(): string {
     throw new Error('This method should not be implemented in local file provider');
   }
 

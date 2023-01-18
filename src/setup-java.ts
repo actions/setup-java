@@ -20,6 +20,9 @@ async function run() {
     const cache = core.getInput(constants.INPUT_CACHE);
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
+    let remoteRepositoryBaseUrl = core.getInput(constants.REMOTE_REPOSITORY_BASE_URL);
+    let replaceDownloadLinkBaseUrl = core.getInput(constants.REPLACE_DOWNLOAD_LINK_BASE_URL);
+    let downloadLinkContext = core.getInput(constants.DOWNLOAD_LINK_CONTEXT);
 
     core.startGroup('Installed distributions');
 
@@ -31,13 +34,22 @@ async function run() {
       throw new Error('java-version or java-version-file input expected');
     }
 
+    if (remoteRepositoryBaseUrl && !replaceDownloadLinkBaseUrl) {
+      throw new Error(
+        "You are trying to download binaries through an artifacts proxy. You must set the 'replace-download-link-base-url'. PS: Check if it is necessary to specify 'download-link-context' to generate a valid download link."
+      );
+    }
+
     const installerInputsOptions: installerInputsOptions = {
       architecture,
       packageType,
       checkLatest,
       distributionName,
       jdkFile,
-      toolchainIds
+      toolchainIds,
+      remoteRepositoryBaseUrl,
+      replaceDownloadLinkBaseUrl,
+      downloadLinkContext
     };
 
     if (!versions.length) {
@@ -82,14 +94,20 @@ async function installVersion(version: string, options: installerInputsOptions, 
     architecture,
     packageType,
     checkLatest,
-    toolchainIds
+    toolchainIds,
+    remoteRepositoryBaseUrl,
+    replaceDownloadLinkBaseUrl,
+    downloadLinkContext
   } = options;
 
   const installerOptions: JavaInstallerOptions = {
     architecture,
     packageType,
     checkLatest,
-    version
+    version,
+    remoteRepositoryBaseUrl,
+    replaceDownloadLinkBaseUrl,
+    downloadLinkContext
   };
 
   const distribution = getJavaDistribution(distributionName, installerOptions, jdkFile);
@@ -120,4 +138,7 @@ interface installerInputsOptions {
   distributionName: string;
   jdkFile: string;
   toolchainIds: Array<string>;
+  remoteRepositoryBaseUrl: string;
+  replaceDownloadLinkBaseUrl: string;
+  downloadLinkContext: string;
 }

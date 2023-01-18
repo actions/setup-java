@@ -11,6 +11,8 @@ import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from 
 import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
 
 export class ZuluDistribution extends JavaBase {
+  protected remoteMetadataBaseUrl = 'https://api.azul.com';
+
   constructor(installerOptions: JavaInstallerOptions) {
     super('Zulu', installerOptions);
   }
@@ -107,7 +109,7 @@ export class ZuluDistribution extends JavaBase {
       .filter(Boolean)
       .join('&');
 
-    const availableVersionsUrl = `https://api.azul.com/zulu/download/community/v1.0/bundles/?${requestArguments}`;
+    const availableVersionsUrl = `${this.baseUrl()}/zulu/download/community/v1.0/bundles/?${requestArguments}`;
     if (core.isDebug()) {
       core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
     }

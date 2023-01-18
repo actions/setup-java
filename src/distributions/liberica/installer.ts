@@ -13,6 +13,8 @@ const supportedPlatform = `'linux', 'linux-musl', 'macos', 'solaris', 'windows'`
 const supportedArchitectures = `'x86', 'x64', 'armv7', 'aarch64', 'ppc64le'`;
 
 export class LibericaDistributions extends JavaBase {
+  protected remoteMetadataBaseUrl = 'https://api.bell-sw.com';
+
   constructor(installerOptions: JavaInstallerOptions) {
     super('Liberica', installerOptions);
   }
@@ -100,7 +102,7 @@ export class LibericaDistributions extends JavaBase {
 
     const searchParams = new URLSearchParams(urlOptions).toString();
 
-    return `https://api.bell-sw.com/v1/liberica/releases?${searchParams}`;
+    return `${this.baseUrl()}/v1/liberica/releases?${searchParams}`;
   }
 
   private getBundleType(): string {

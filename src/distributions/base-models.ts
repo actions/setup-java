@@ -3,6 +3,9 @@ export interface JavaInstallerOptions {
   architecture: string;
   packageType: string;
   checkLatest: boolean;
+  remoteRepositoryBaseUrl?: string;
+  replaceDownloadLinkBaseUrl?: string;
+  downloadLinkContext?: string;
 }
 
 export interface JavaInstallerResults {

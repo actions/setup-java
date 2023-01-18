@@ -16,6 +16,8 @@ export enum AdoptImplementation {
 }
 
 export class AdoptDistribution extends JavaBase {
+  protected remoteMetadataBaseUrl = 'https://api.adoptopenjdk.net';
+
   constructor(
     installerOptions: JavaInstallerOptions,
     private readonly jvmImpl: AdoptImplementation
@@ -30,7 +32,7 @@ export class AdoptDistribution extends JavaBase {
       .map(item => {
         return {
           version: item.version_data.semver,
-          url: item.binaries[0].package.link
+          url: this.buildDownloadLink(item.binaries[0].package.link)
         } as JavaDownloadRelease;
       });
 
@@ -116,7 +118,7 @@ export class AdoptDistribution extends JavaBase {
     const availableVersions: IAdoptAvailableVersions[] = [];
     while (true) {
       const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
-      const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
+      const availableVersionsUrl = `${this.baseUrl()}/v3/assets/version/${versionRange}?${requestArguments}`;
       if (core.isDebug() && page_index === 0) {
         // url is identical except page_index so print it once for debug
         core.debug(`Gathering available versions from '${availableVersionsUrl}'`);

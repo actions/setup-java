@@ -16,6 +16,10 @@ export abstract class JavaBase {
   protected packageType: string;
   protected stable: boolean;
   protected checkLatest: boolean;
+  protected remoteRepositoryBaseUrl?: string;
+  protected replaceDownloadLinkBaseUrl?: string;
+  protected downloadLinkContext?: string;
+  protected abstract remoteMetadataBaseUrl: string;
 
   constructor(protected distribution: string, installerOptions: JavaInstallerOptions) {
     this.http = new httpm.HttpClient('actions/setup-java', undefined, {
@@ -29,6 +33,9 @@ export abstract class JavaBase {
     this.architecture = installerOptions.architecture || os.arch();
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
+    this.remoteRepositoryBaseUrl = installerOptions.remoteRepositoryBaseUrl;
+    this.replaceDownloadLinkBaseUrl = installerOptions.replaceDownloadLinkBaseUrl;
+    this.downloadLinkContext = installerOptions.downloadLinkContext;
   }
 
   protected abstract downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults>;
@@ -170,5 +177,32 @@ export abstract class JavaBase {
       default:
         return this.architecture;
     }
+  }
+
+  /**
+   * This is a method used to generate a proper URL which is used to fetch the metadata.json file
+   * which contains all the information about all supported versions and the location where to download the binary.
+   *
+   * @returns the remoteRepositoryBaseUrl specified in the action.yml or the hardcoded remoteMetadataBaseUrl in each concret implementation.
+   */
+  // return
+  protected baseUrl(): string {
+    return this.remoteRepositoryBaseUrl || this.remoteMetadataBaseUrl;
+  }
+
+  /**
+   *
+   * @param url The download link which is specified in the metdata.json file pointing to the location accessible via internet.
+   * @returns An updated download link which uses the private artifacts proxy to download the binnaries.
+   */
+  protected buildDownloadLink(url: string): string {
+    // means that the user wants to use the prox repository
+    if (this.remoteRepositoryBaseUrl && this.replaceDownloadLinkBaseUrl) {
+      return url.replace(
+        this.replaceDownloadLinkBaseUrl,
+        `${this.remoteRepositoryBaseUrl}${this.downloadLinkContext || ''}`
+      );
+    }
+    return url;
   }
 }

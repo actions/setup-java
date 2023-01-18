@@ -9,6 +9,8 @@ import path from 'path';
 import { ITypedResponse } from '@actions/http-client/interfaces';
 
 export class MicrosoftDistributions extends JavaBase {
+  protected remoteMetadataBaseUrl = 'https://api.github.com';
+
   constructor(installerOptions: JavaInstallerOptions) {
     super('Microsoft', installerOptions);
   }
@@ -80,7 +82,7 @@ export class MicrosoftDistributions extends JavaBase {
     const filePath = 'src/distributions/microsoft/microsoft-openjdk-versions.json';
 
     let releases: tc.IToolRelease[] | null = null;
-    const fileUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
+    const fileUrl = `${this.baseUrl()}/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
 
     const headers: OutgoingHttpHeaders = {
       authorization: auth,

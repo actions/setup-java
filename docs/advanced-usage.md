@@ -16,6 +16,7 @@
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](#Modifying-Maven-Toolchains)
 - [Java-version file](#Java-version-file)
+- [Fetch binaries from the artifact proxy repository](#Proxy-repositores)
 
 See [action.yml](../action.yml) for more details on task inputs.
 
@@ -477,3 +478,21 @@ early access (EA) versions: 15-ea, 15.0.0-ea, 15.0.0-ea.2, 15.0.0+2-ea
 versions with specified distribution: openjdk64-11.0.2
 ```
 If the file contains multiple versions, only the first one will be recognized.
+
+
+## Proxy repositores
+
+This example shows the usage of `setup-java` action which downloads all the artifacts from a artifact proxy repository. The assumtion is that the you are proxing the `https://github.com/adoptium`
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'temurin'
+    java-version: '11'
+    remote-repository-base-url: 'https://test.artifactory.com'
+    download-link-context: '/adoptium'
+    replace-download-link-base-url: 'https://github.com/adoptium'
+- run: java -cp java HelloWorldApp
+```
