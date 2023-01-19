@@ -3,23 +3,23 @@
 [![Main workflow](https://github.com/actions/setup-java/actions/workflows/workflow.yml/badge.svg)](https://github.com/actions/setup-java/actions/workflows/workflow.yml)
 
 The `setup-java` action provides the following functionality for GitHub Actions runners:
-- Downloading and setting up a requested version of Java. See [Usage](#Usage) for a list of supported distributions
-- Extracting and caching custom version of Java from a local file
-- Configuring runner for publishing using Apache Maven
-- Configuring runner for publishing using Gradle
-- Configuring runner for using GPG private key
-- Registering problem matchers for error output
-- Caching dependencies managed by Apache Maven
-- Caching dependencies managed by Gradle
-- Caching dependencies managed by sbt
-- [Maven Toolchains declaration](https://maven.apache.org/guides/mini/guide-using-toolchains.html) for specified JDK versions
+- Downloading and setting up a requested version of Java. See [Usage](#Usage) for a list of supported distributions.
+- Extracting and caching custom version of Java from a local file.
+- Configuring runner for publishing using Apache Maven.
+- Configuring runner for publishing using Gradle.
+- Configuring runner for using GPG private key.
+- Registering problem matchers for error output.
+- Caching dependencies managed by Apache Maven.
+- Caching dependencies managed by Gradle.
+- Caching dependencies managed by sbt.
+- [Maven Toolchains declaration](https://maven.apache.org/guides/mini/guide-using-toolchains.html) for specified JDK versions.
 
 This action allows you to work with Java and Scala projects.
 
 ## V2 vs V1
 
-- V2 supports custom distributions and provides support for Azul Zulu OpenJDK, Eclipse Temurin and AdoptOpenJDK  out of the box. V1 supports only Azul Zulu OpenJDK
-- V2 requires you to specify distribution along with the version. V1 defaults to Azul Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2
+- V2 supports custom distributions and provides support for Azul Zulu OpenJDK, Eclipse Temurin and AdoptOpenJDK  out of the box. V1 supports only Azul Zulu OpenJDK.
+- V2 requires you to specify distribution along with the version. V1 defaults to Azul Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2.
 
 ## Usage
 
@@ -37,7 +37,7 @@ This action allows you to work with Java and Scala projects.
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
-  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predifined package managers. It can be one of "maven", "gradle" or "sbt". 
+  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predifined package managers. It can be one of "maven", "gradle" or "sbt".
 
   #### Maven options
   The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
@@ -52,9 +52,9 @@ This action allows you to work with Java and Scala projects.
 
   - `settings-path`: Maven related setting to point to the directory where the settings.xml file will be written. Default is ~/.m2.
 
-  - `gpg-private-key`: GPG private key to import. Default is empty string.'
+  - `gpg-private-key`: GPG private key to import. Default is empty string.
 
-  - `gpg-passphrase`: description: 'Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
+  - `gpg-passphrase`: description: Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
 
   - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
 
@@ -162,7 +162,7 @@ In the basic examples above, the `check-latest` flag defaults to `false`. When s
 
 If `check-latest` is set to `true`, the action first checks if the cached version is the latest one. If the locally cached version is not the most up-to-date, the latest version of Java will be downloaded. Set `check-latest` to `true` if you want the most up-to-date version of Java to always be used. Setting `check-latest` to `true` has performance implications as downloading versions of Java is slower than using cached versions.
 
-For Java distributions that are not cached on Hosted images, `check-latest` always behaves as `true` and downloads Java on-flight. Check out [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache) for more details about pre-cached Java versions.  
+For Java distributions that are not cached on Hosted images, `check-latest` always behaves as `true` and downloads Java on-flight. Check out [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache) for more details about pre-cached Java versions.
 
 
 ```yaml
