@@ -1,6 +1,8 @@
 # Setup Java
 
-[![Main workflow](https://github.com/actions/setup-java/actions/workflows/workflow.yml/badge.svg)](https://github.com/actions/setup-java/actions/workflows/workflow.yml)
+[![Basic validation](https://github.com/actions/setup-java/actions/workflows/basic-validation.yml/badge.svg?branch=main)](https://github.com/actions/setup-java/actions/workflows/basic-validation.yml)
+[![Validate Java e2e](https://github.com/actions/setup-java/actions/workflows/e2e-versions.yml/badge.svg?branch=main)](https://github.com/actions/setup-java/actions/workflows/e2e-versions.yml)
+[![Validate cache](https://github.com/actions/setup-java/actions/workflows/e2e-cache.yml/badge.svg?branch=main)](https://github.com/actions/setup-java/actions/workflows/e2e-cache.yml)
 
 The `setup-java` action provides the following functionality for GitHub Actions runners:
 - Downloading and setting up a requested version of Java. See [Usage](#Usage) for a list of supported distributions.
