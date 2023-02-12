@@ -100,7 +100,7 @@ describe('dependency cache', () => {
         await expect(restore('maven', '')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/pom.xml], make sure you have checked out the target repository`
+          )} matched to [**/pom.xml,.mvn/wrapper/maven-wrapper.properties], make sure you have checked out the target repository`
         );
       });
       it('downloads cache', async () => {
@@ -108,7 +108,9 @@ describe('dependency cache', () => {
 
         await restore('maven', '');
         expect(spyCacheRestore).toHaveBeenCalled();
-        expect(spyGlobHashFiles).toHaveBeenCalledWith('**/pom.xml');
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/pom.xml\n.mvn/wrapper/maven-wrapper.properties'
+        );
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith('maven cache is not found');
       });
