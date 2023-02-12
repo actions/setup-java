@@ -23,9 +23,9 @@ interface PackageManager {
 const supportedPackageManager: PackageManager[] = [
   {
     id: 'maven',
-    path: [join(os.homedir(), '.m2', 'repository')],
+    path: [join(os.homedir(), '.m2', 'repository'), join(os.homedir(), '.m2', 'wrapper', 'dists')],
     // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---maven
-    pattern: ['**/pom.xml']
+    pattern: ['**/pom.xml', '.mvn/wrapper/maven-wrapper.properties']
   },
   {
     id: 'gradle',

@@ -81,7 +81,7 @@ describe('dependency cache', () => {
         await expect(restore('maven')).rejects.toThrowError(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/pom.xml], make sure you have checked out the target repository`
+          )} matched to [**/pom.xml,.mvn/wrapper/maven-wrapper.properties], make sure you have checked out the target repository`
         );
       });
       it('downloads cache', async () => {
