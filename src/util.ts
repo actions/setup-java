@@ -1,12 +1,15 @@
-import os from 'os';
+import os, { version } from 'os';
 import path from 'path';
 import * as fs from 'fs';
 import * as semver from 'semver';
 import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 
+import { create as xmlCreate } from 'xmlbuilder2';
+import { select } from 'xpath';
 import * as tc from '@actions/tool-cache';
 import { INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION } from './constants';
+import { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
 export function getTempDir() {
   let tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
@@ -101,13 +104,23 @@ export function isCacheFeatureAvailable(): boolean {
 }
 
 export function getVersionFromFileContent(
+  fileName: string,
   content: string,
   distributionName: string
 ): string | null {
-  const javaVersionRegExp = /(?<version>(?<=(^|\s|\-))(\d+\S*))(\s|$)/;
-  const fileContent = content.match(javaVersionRegExp)?.groups?.version
-    ? (content.match(javaVersionRegExp)?.groups?.version as string)
-    : '';
+  let fileContent = null;
+
+  core.debug(`Getting version from: '${fileName}'`);
+  if (fileName.includes('.java-version')) {
+    fileContent = parseJavaVersionFile(content);
+  } else if (fileName.includes('pom.xml')) {
+    fileContent = parsePomXmlFile(content);
+  } else {
+    throw new Error(
+      `File ${fileName} not supported, files supported: '.java-version' and 'pom.xml'`
+    );
+  }
+
   if (!fileContent) {
     return null;
   }
@@ -131,6 +144,67 @@ export function getVersionFromFileContent(
   }
 
   return version.toString();
+}
+
+function parseJavaVersionFile(content: string): string | null {
+  const javaVersionRegExp = /(?<version>(?<=(^|\s|\-))(\d+\S*))(\s|$)/;
+  const fileContent = content.match(javaVersionRegExp)?.groups?.version
+    ? (content.match(javaVersionRegExp)?.groups?.version as string)
+    : '';
+  if (!fileContent) {
+    return null;
+  }
+
+  return fileContent;
+}
+
+function parsePomXmlFile(xmlString: string): string | null {
+  const xmlDoc = xmlCreate(xmlString);
+  const versionDefinitionTypes = [getByMavenCompilerSpecification, getBySpringBootSpecification];
+
+  for (var definitionType of versionDefinitionTypes) {
+    var version = definitionType(xmlDoc);
+
+    if (version !== null) {
+      return version;
+    }
+  }
+
+  return null;
+}
+
+function getByMavenCompilerSpecification(xmlDoc: XMLBuilder): string | null {
+  const possibleTags = [
+    '//properties/maven.compiler.source',
+    '//configuration/source',
+    '//properties/maven.compiler.release',
+    '//configuration/release'
+  ];
+
+  for (var tag of possibleTags) {
+    const version = getVersionByTagName(xmlDoc, tag);
+
+    if (version !== null) {
+      return version;
+    }
+  }
+
+  return null;
+}
+
+function getBySpringBootSpecification(xmlDoc: XMLBuilder): string | null {
+  return getVersionByTagName(xmlDoc, '//properties/java.version');
+}
+
+function getVersionByTagName(xmlDoc: XMLBuilder, xpathQuery: string): string | null {
+  const element = select(`string(${xpathQuery})`, xmlDoc.node as any);
+
+  core.debug(`Found: '${element}' using xpath query: '${xpathQuery}'`);
+  if (element == undefined || element.length == 0) {
+    return null;
+  }
+
+  return element.toString();
 }
 
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
