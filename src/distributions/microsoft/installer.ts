@@ -1,19 +1,25 @@
-import { JavaBase } from '../base-installer';
-import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
-import { extractJdkFile, getDownloadArchiveExtension } from '../../util';
+import {JavaBase} from '../base-installer';
+import {
+  JavaDownloadRelease,
+  JavaInstallerOptions,
+  JavaInstallerResults
+} from '../base-models';
+import {extractJdkFile, getDownloadArchiveExtension} from '../../util';
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
-import { OutgoingHttpHeaders } from 'http';
+import {OutgoingHttpHeaders} from 'http';
 import fs from 'fs';
 import path from 'path';
-import { ITypedResponse } from '@actions/http-client/interfaces';
+import {ITypedResponse} from '@actions/http-client/interfaces';
 
 export class MicrosoftDistributions extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('Microsoft', installerOptions);
   }
 
-  protected async downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults> {
+  protected async downloadTool(
+    javaRelease: JavaDownloadRelease
+  ): Promise<JavaInstallerResults> {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
@@ -33,10 +39,12 @@ export class MicrosoftDistributions extends JavaBase {
       this.architecture
     );
 
-    return { version: javaRelease.version, path: javaPath };
+    return {version: javaRelease.version, path: javaPath};
   }
 
-  protected async findPackageForDownload(range: string): Promise<JavaDownloadRelease> {
+  protected async findPackageForDownload(
+    range: string
+  ): Promise<JavaDownloadRelease> {
     const arch = this.distributionArchitecture();
     if (arch !== 'x64' && arch !== 'aarch64') {
       throw new Error(`Unsupported architecture: ${this.architecture}`);
@@ -47,7 +55,9 @@ export class MicrosoftDistributions extends JavaBase {
     }
 
     if (this.packageType !== 'jdk') {
-      throw new Error('Microsoft Build of OpenJDK provides only the `jdk` package type');
+      throw new Error(
+        'Microsoft Build of OpenJDK provides only the `jdk` package type'
+      );
     }
 
     const manifest = await this.getAvailableVersions();
@@ -66,7 +76,10 @@ export class MicrosoftDistributions extends JavaBase {
       );
     }
 
-    return { url: foundRelease.files[0].download_url, version: foundRelease.version };
+    return {
+      url: foundRelease.files[0].download_url,
+      version: foundRelease.version
+    };
   }
 
   private async getAvailableVersions(): Promise<tc.IToolRelease[] | null> {
@@ -77,7 +90,8 @@ export class MicrosoftDistributions extends JavaBase {
     const owner = 'actions';
     const repository = 'setup-java';
     const branch = 'main';
-    const filePath = 'src/distributions/microsoft/microsoft-openjdk-versions.json';
+    const filePath =
+      'src/distributions/microsoft/microsoft-openjdk-versions.json';
 
     let releases: tc.IToolRelease[] | null = null;
     const fileUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;

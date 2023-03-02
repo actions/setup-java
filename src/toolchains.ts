@@ -5,8 +5,8 @@ import * as core from '@actions/core';
 import * as io from '@actions/io';
 import * as constants from './constants';
 
-import { getBooleanInput } from './util';
-import { create as xmlCreate } from 'xmlbuilder2';
+import {getBooleanInput} from './util';
+import {create as xmlCreate} from 'xmlbuilder2';
 
 interface JdkInfo {
   version: string;
@@ -21,11 +21,16 @@ export async function configureToolchains(
   jdkHome: string,
   toolchainId?: string
 ) {
-  const vendor = core.getInput(constants.INPUT_MVN_TOOLCHAIN_VENDOR) || distributionName;
+  const vendor =
+    core.getInput(constants.INPUT_MVN_TOOLCHAIN_VENDOR) || distributionName;
   const id = toolchainId || `${vendor}_${version}`;
   const settingsDirectory =
-    core.getInput(constants.INPUT_SETTINGS_PATH) || path.join(os.homedir(), constants.M2_DIR);
-  const overwriteSettings = getBooleanInput(constants.INPUT_OVERWRITE_SETTINGS, true);
+    core.getInput(constants.INPUT_SETTINGS_PATH) ||
+    path.join(os.homedir(), constants.M2_DIR);
+  const overwriteSettings = getBooleanInput(
+    constants.INPUT_OVERWRITE_SETTINGS,
+    true
+  );
 
   await createToolchainsSettings({
     jdkInfo: {
@@ -54,7 +59,9 @@ export async function createToolchainsSettings({
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
   await io.mkdirP(settingsDirectory);
-  const originalToolchains = await readExistingToolchainsFile(settingsDirectory);
+  const originalToolchains = await readExistingToolchainsFile(
+    settingsDirectory
+  );
   const updatedToolchains = generateToolchainDefinition(
     originalToolchains,
     jdkInfo.version,
@@ -62,7 +69,11 @@ export async function createToolchainsSettings({
     jdkInfo.id,
     jdkInfo.jdkHome
   );
-  await writeToolchainsFileToDisk(settingsDirectory, updatedToolchains, overwriteSettings);
+  await writeToolchainsFileToDisk(
+    settingsDirectory,
+    updatedToolchains,
+    overwriteSettings
+  );
 }
 
 // only exported for testing purposes

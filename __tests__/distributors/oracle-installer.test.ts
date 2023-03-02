@@ -1,7 +1,7 @@
-import { OracleDistribution } from '../../src/distributions/oracle/installer';
+import {OracleDistribution} from '../../src/distributions/oracle/installer';
 import os from 'os';
 import * as core from '@actions/core';
-import { getDownloadArchiveExtension } from '../../src/util';
+import {getDownloadArchiveExtension} from '../../src/util';
 
 describe('findPackageForDownload', () => {
   let distribution: OracleDistribution;
@@ -50,7 +50,9 @@ describe('findPackageForDownload', () => {
     expect(result.version).toBe(expectedVersion);
     const osType = distribution.getPlatform();
     const archiveType = getDownloadArchiveExtension();
-    const url = expectedUrl.replace('{{OS_TYPE}}', osType).replace('{{ARCHIVE_TYPE}}', archiveType);
+    const url = expectedUrl
+      .replace('{{OS_TYPE}}', osType)
+      .replace('{{ARCHIVE_TYPE}}', archiveType);
     expect(result.url).toBe(url);
   });
 

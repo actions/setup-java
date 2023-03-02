@@ -5,17 +5,27 @@ import path from 'path';
 import fs from 'fs';
 import semver from 'semver';
 
-import { JavaBase } from '../base-installer';
-import { IZuluVersions } from './models';
-import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
-import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
+import {JavaBase} from '../base-installer';
+import {IZuluVersions} from './models';
+import {
+  extractJdkFile,
+  getDownloadArchiveExtension,
+  isVersionSatisfies
+} from '../../util';
+import {
+  JavaDownloadRelease,
+  JavaInstallerOptions,
+  JavaInstallerResults
+} from '../base-models';
 
 export class ZuluDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('Zulu', installerOptions);
   }
 
-  protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
+  protected async findPackageForDownload(
+    version: string
+  ): Promise<JavaDownloadRelease> {
     const availableVersionsRaw = await this.getAvailableVersions();
     const availableVersions = availableVersionsRaw.map(item => {
       return {
@@ -42,9 +52,12 @@ export class ZuluDistribution extends JavaBase {
         } as JavaDownloadRelease;
       });
 
-    const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
+    const resolvedFullVersion =
+      satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
     if (!resolvedFullVersion) {
-      const availableOptions = availableVersions.map(item => item.version).join(', ');
+      const availableOptions = availableVersions
+        .map(item => item.version)
+        .join(', ');
       const availableOptionsMessage = availableOptions
         ? `\nAvailable versions: ${availableOptions}`
         : '';
@@ -56,18 +69,18 @@ export class ZuluDistribution extends JavaBase {
     return resolvedFullVersion;
   }
 
-  protected async downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults> {
-    let extractedJavaPath: string;
-
+  protected async downloadTool(
+    javaRelease: JavaDownloadRelease
+  ): Promise<JavaInstallerResults> {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
     const javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
-    let extension = getDownloadArchiveExtension();
+    const extension = getDownloadArchiveExtension();
 
-    extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
+    const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
@@ -79,20 +92,19 @@ export class ZuluDistribution extends JavaBase {
       this.architecture
     );
 
-    return { version: javaRelease.version, path: javaPath };
+    return {version: javaRelease.version, path: javaPath};
   }
 
   private async getAvailableVersions(): Promise<IZuluVersions[]> {
-    const { arch, hw_bitness, abi } = this.getArchitectureOptions();
+    const {arch, hw_bitness, abi} = this.getArchitectureOptions();
     const [bundleType, features] = this.packageType.split('+');
     const platform = this.getPlatformOption();
     const extension = getDownloadArchiveExtension();
     const javafx = features?.includes('fx') ?? false;
     const releaseStatus = this.stable ? 'ga' : 'ea';
 
-    if (core.isDebug()) {
-      console.time('azul-retrieve-available-versions');
-    }
+    const startTime = performance.now();
+
     const requestArguments = [
       `os=${platform}`,
       `ext=${extension}`,
@@ -108,18 +120,23 @@ export class ZuluDistribution extends JavaBase {
       .join('&');
 
     const availableVersionsUrl = `https://api.azul.com/zulu/download/community/v1.0/bundles/?${requestArguments}`;
-    if (core.isDebug()) {
-      core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
-    }
+
+    core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
 
     const availableVersions =
-      (await this.http.getJson<Array<IZuluVersions>>(availableVersionsUrl)).result ?? [];
+      (await this.http.getJson<Array<IZuluVersions>>(availableVersionsUrl))
+        .result ?? [];
 
     if (core.isDebug()) {
+      const resultTime = ((performance.now() - startTime) / 1000).toFixed(1);
       core.startGroup('Print information about available versions');
-      console.timeEnd('azul-retrieve-available-versions');
-      console.log(`Available versions: [${availableVersions.length}]`);
-      console.log(availableVersions.map(item => item.jdk_version.join('.')).join(', '));
+      core.debug(
+        `Retrieving available versions for Azul took: ${resultTime} s`
+      );
+      core.debug(`Available versions: [${availableVersions.length}]`);
+      core.debug(
+        availableVersions.map(item => item.jdk_version.join('.')).join(', ')
+      );
       core.endGroup();
     }
 
@@ -134,14 +151,14 @@ export class ZuluDistribution extends JavaBase {
     const arch = this.distributionArchitecture();
     switch (arch) {
       case 'x64':
-        return { arch: 'x86', hw_bitness: '64', abi: '' };
+        return {arch: 'x86', hw_bitness: '64', abi: ''};
       case 'x86':
-        return { arch: 'x86', hw_bitness: '32', abi: '' };
+        return {arch: 'x86', hw_bitness: '32', abi: ''};
       case 'aarch64':
       case 'arm64':
-        return { arch: 'arm', hw_bitness: '64', abi: '' };
+        return {arch: 'arm', hw_bitness: '64', abi: ''};
       default:
-        return { arch: arch, hw_bitness: '', abi: '' };
+        return {arch: arch, hw_bitness: '', abi: ''};
     }
   }
 

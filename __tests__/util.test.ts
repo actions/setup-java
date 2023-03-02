@@ -1,6 +1,6 @@
 import * as cache from '@actions/cache';
 import * as core from '@actions/core';
-import { isVersionSatisfies, isCacheFeatureAvailable } from '../src/util';
+import {isVersionSatisfies, isCacheFeatureAvailable} from '../src/util';
 
 jest.mock('@actions/cache');
 jest.mock('@actions/core');
@@ -20,10 +20,13 @@ describe('isVersionSatisfies', () => {
     ['2.5.1+3', '2.5.1+2', false],
     ['15.0.0+14', '15.0.0+14.1.202003190635', false],
     ['15.0.0+14.1.202003190635', '15.0.0+14.1.202003190635', true]
-  ])('%s, %s -> %s', (inputRange: string, inputVersion: string, expected: boolean) => {
-    const actual = isVersionSatisfies(inputRange, inputVersion);
-    expect(actual).toBe(expected);
-  });
+  ])(
+    '%s, %s -> %s',
+    (inputRange: string, inputVersion: string, expected: boolean) => {
+      const actual = isVersionSatisfies(inputRange, inputVersion);
+      expect(actual).toBe(expected);
+    }
+  );
 });
 
 describe('isCacheFeatureAvailable', () => {
@@ -44,7 +47,8 @@ describe('isCacheFeatureAvailable', () => {
   it('isCacheFeatureAvailable disabled on dotcom', () => {
     jest.spyOn(cache, 'isFeatureAvailable').mockImplementation(() => false);
     const infoMock = jest.spyOn(core, 'warning');
-    const message = 'The runner was not able to contact the cache service. Caching will be skipped';
+    const message =
+      'The runner was not able to contact the cache service. Caching will be skipped';
     try {
       process.env['GITHUB_SERVER_URL'] = 'http://github.com';
       expect(isCacheFeatureAvailable()).toBe(false);

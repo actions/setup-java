@@ -6,16 +6,18 @@ import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
-import { INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION } from './constants';
+import {INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION} from './constants';
 
 export function getTempDir() {
-  let tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
+  const tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
 
   return tempDirectory;
 }
 
-export function getBooleanInput(inputName: string, defaultValue: boolean = false) {
-  return (core.getInput(inputName) || String(defaultValue)).toUpperCase() === 'TRUE';
+export function getBooleanInput(inputName: string, defaultValue = false) {
+  return (
+    (core.getInput(inputName) || String(defaultValue)).toUpperCase() === 'TRUE'
+  );
 }
 
 export function getVersionFromToolcachePath(toolPath: string) {
@@ -28,7 +30,9 @@ export function getVersionFromToolcachePath(toolPath: string) {
 
 export async function extractJdkFile(toolPath: string, extension?: string) {
   if (!extension) {
-    extension = toolPath.endsWith('.tar.gz') ? 'tar.gz' : path.extname(toolPath);
+    extension = toolPath.endsWith('.tar.gz')
+      ? 'tar.gz'
+      : path.extname(toolPath);
     if (extension.startsWith('.')) {
       extension = extension.substring(1);
     }
@@ -63,7 +67,11 @@ export function isVersionSatisfies(range: string, version: string): boolean {
   return semver.satisfies(version, range);
 }
 
-export function getToolcachePath(toolName: string, version: string, architecture: string) {
+export function getToolcachePath(
+  toolName: string,
+  version: string,
+  architecture: string
+) {
   const toolcacheRoot = process.env['RUNNER_TOOL_CACHE'] ?? '';
   const fullPath = path.join(toolcacheRoot, toolName, version, architecture);
   if (fs.existsSync(fullPath)) {
@@ -80,7 +88,9 @@ export function isJobStatusSuccess() {
 }
 
 export function isGhes(): boolean {
-  const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
+  const ghUrl = new URL(
+    process.env['GITHUB_SERVER_URL'] || 'https://github.com'
+  );
   return ghUrl.hostname.toUpperCase() !== 'GITHUB.COM';
 }
 
@@ -96,7 +106,9 @@ export function isCacheFeatureAvailable(): boolean {
     return false;
   }
 
-  core.warning('The runner was not able to contact the cache service. Caching will be skipped');
+  core.warning(
+    'The runner was not able to contact the cache service. Caching will be skipped'
+  );
   return false;
 }
 
@@ -104,7 +116,7 @@ export function getVersionFromFileContent(
   content: string,
   distributionName: string
 ): string | null {
-  const javaVersionRegExp = /(?<version>(?<=(^|\s|\-))(\d+\S*))(\s|$)/;
+  const javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
   const fileContent = content.match(javaVersionRegExp)?.groups?.version
     ? (content.match(javaVersionRegExp)?.groups?.version as string)
     : '';
@@ -117,7 +129,9 @@ export function getVersionFromFileContent(
   const tentativeVersion = avoidOldNotation(fileContent);
   const rawVersion = tentativeVersion.split('-')[0];
 
-  let version = semver.validRange(rawVersion) ? tentativeVersion : semver.coerce(tentativeVersion);
+  let version = semver.validRange(rawVersion)
+    ? tentativeVersion
+    : semver.coerce(tentativeVersion);
 
   core.debug(`Range version from file is '${version}'`);
 
