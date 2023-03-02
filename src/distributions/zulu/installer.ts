@@ -4,6 +4,7 @@ import * as tc from '@actions/tool-cache';
 import path from 'path';
 import fs from 'fs';
 import semver from 'semver';
+import {performance} from 'perf_hooks';
 
 import {JavaBase} from '../base-installer';
 import {IZuluVersions} from './models';

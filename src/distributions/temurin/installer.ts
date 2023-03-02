@@ -4,6 +4,7 @@ import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
+import {performance} from 'perf_hooks';
 
 import {JavaBase} from '../base-installer';
 import {ITemurinAvailableVersions} from './models';

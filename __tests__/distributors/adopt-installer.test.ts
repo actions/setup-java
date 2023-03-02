@@ -1,5 +1,5 @@
 import {HttpClient} from '@actions/http-client';
-
+import {IAdoptAvailableVersions} from '../../src/distributions/adopt/models';
 import {
   AdoptDistribution,
   AdoptImplementation
@@ -135,12 +135,12 @@ describe('getAvailableVersions', () => {
       .mockReturnValueOnce({
         statusCode: 200,
         headers: {},
-        result: manifestData
+        result: manifestData as any
       })
       .mockReturnValueOnce({
         statusCode: 200,
         headers: {},
-        result: manifestData
+        result: manifestData as any
       })
       .mockReturnValueOnce({
         statusCode: 200,
@@ -242,7 +242,7 @@ describe('findPackageForDownload', () => {
       },
       AdoptImplementation.Hotspot
     );
-    distribution['getAvailableVersions'] = async () => manifestData;
+    distribution['getAvailableVersions'] = async () => manifestData as any;
     const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
   });
@@ -257,7 +257,7 @@ describe('findPackageForDownload', () => {
       },
       AdoptImplementation.Hotspot
     );
-    distribution['getAvailableVersions'] = async () => manifestData;
+    distribution['getAvailableVersions'] = async () => manifestData as any;
     await expect(
       distribution['findPackageForDownload']('9.0.8')
     ).rejects.toThrow(/Could not find satisfied version for SemVer */);
@@ -273,7 +273,7 @@ describe('findPackageForDownload', () => {
       },
       AdoptImplementation.Hotspot
     );
-    distribution['getAvailableVersions'] = async () => manifestData;
+    distribution['getAvailableVersions'] = async () => manifestData as any;
     await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrow(
       /Could not find satisfied version for SemVer */
     );

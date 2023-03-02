@@ -15,6 +15,7 @@ import {ArchitectureOptions, LibericaVersion, OsVersions} from './models';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
+import {performance} from 'perf_hooks';
 
 const supportedPlatform = `'linux', 'linux-musl', 'macos', 'solaris', 'windows'`;
 

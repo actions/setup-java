@@ -2,6 +2,7 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
+import {performance} from 'perf_hooks';
 import {extractJdkFile, getDownloadArchiveExtension} from '../../util';
 import {JavaBase} from '../base-installer';
 import {
