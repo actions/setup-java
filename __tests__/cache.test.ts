@@ -98,7 +98,7 @@ describe('dependency cache', () => {
         await expect(restore('gradle')).rejects.toThrowError(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/*.gradle*,**/gradle-wrapper.properties,buildSrc/**/Versions.kt,buildSrc/**/Dependencies.kt,gradle/*.versions.toml], make sure you have checked out the target repository`
+          )} matched to [**/*.gradle*,**/gradle-wrapper.properties,buildSrc/**/Versions.kt,buildSrc/**/Dependencies.kt,gradle/*.versions.toml,gradle.properties], make sure you have checked out the target repository`
         );
       });
       it('downloads cache based on build.gradle', async () => {
@@ -120,6 +120,14 @@ describe('dependency cache', () => {
       it('downloads cache based on libs.versions.toml', async () => {
         createDirectory(join(workspace, 'gradle'));
         createFile(join(workspace, 'gradle', 'libs.versions.toml'));
+
+        await restore('gradle');
+        expect(spyCacheRestore).toBeCalled();
+        expect(spyWarning).not.toBeCalled();
+        expect(spyInfo).toBeCalledWith('gradle cache is not found');
+      });
+      it('downloads cache based on gradle.properties', async () => {
+        createFile(join(workspace, 'gradle.properties'));
 
         await restore('gradle');
         expect(spyCacheRestore).toBeCalled();
