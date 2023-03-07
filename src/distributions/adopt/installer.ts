@@ -4,7 +4,6 @@ import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
-import {performance} from 'perf_hooks';
 
 import {JavaBase} from '../base-installer';
 import {IAdoptAvailableVersions} from './models';
@@ -111,7 +110,9 @@ export class AdoptDistribution extends JavaBase {
     const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
     const releaseType = this.stable ? 'ga' : 'ea';
 
-    const startTime = performance.now();
+    if (core.isDebug()) {
+      console.time('Retrieving available versions for Adopt took'); // eslint-disable-line no-console
+    }
 
     const baseRequestArguments = [
       `project=jdk`,
@@ -153,11 +154,8 @@ export class AdoptDistribution extends JavaBase {
     }
 
     if (core.isDebug()) {
-      const resultTime = ((performance.now() - startTime) / 1000).toFixed(1);
       core.startGroup('Print information about available versions');
-      core.debug(
-        `Retrieving available versions for Adopt took: ${resultTime} s`
-      );
+      console.timeEnd('Retrieving available versions for Adopt took'); // eslint-disable-line no-console
       core.debug(`Available versions: [${availableVersions.length}]`);
       core.debug(
         availableVersions.map(item => item.version_data.semver).join(', ')

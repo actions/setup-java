@@ -2,7 +2,6 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
-import {performance} from 'perf_hooks';
 import {extractJdkFile, getDownloadArchiveExtension} from '../../util';
 import {JavaBase} from '../base-installer';
 import {
@@ -89,7 +88,9 @@ export class CorrettoDistribution extends JavaBase {
     const arch = this.distributionArchitecture();
     const imageType = this.packageType;
 
-    const startTime = performance.now();
+    if (core.isDebug()) {
+      console.time('Retrieving available versions for Coretto took'); // eslint-disable-line no-console
+    }
 
     const availableVersionsUrl =
       'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
@@ -110,11 +111,8 @@ export class CorrettoDistribution extends JavaBase {
       this.getAvailableVersionsForPlatform(eligibleVersions);
 
     if (core.isDebug()) {
-      const resultTime = ((performance.now() - startTime) / 1000).toFixed(1);
       core.startGroup('Print information about available versions');
-      core.debug(
-        `Retrieving available versions for Coretto took: ${resultTime} s`
-      );
+      console.timeEnd('Retrieving available versions for Coretto took'); // eslint-disable-line no-console
       core.debug(`Available versions: [${availableVersions.length}]`);
       core.debug(
         availableVersions

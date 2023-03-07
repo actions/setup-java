@@ -4,7 +4,6 @@ import * as tc from '@actions/tool-cache';
 import path from 'path';
 import fs from 'fs';
 import semver from 'semver';
-import {performance} from 'perf_hooks';
 
 import {JavaBase} from '../base-installer';
 import {IZuluVersions} from './models';
@@ -104,7 +103,9 @@ export class ZuluDistribution extends JavaBase {
     const javafx = features?.includes('fx') ?? false;
     const releaseStatus = this.stable ? 'ga' : 'ea';
 
-    const startTime = performance.now();
+    if (core.isDebug()) {
+      console.time('Retrieving available versions for Zulu took'); // eslint-disable-line no-console
+    }
 
     const requestArguments = [
       `os=${platform}`,
@@ -129,11 +130,8 @@ export class ZuluDistribution extends JavaBase {
         .result ?? [];
 
     if (core.isDebug()) {
-      const resultTime = ((performance.now() - startTime) / 1000).toFixed(1);
       core.startGroup('Print information about available versions');
-      core.debug(
-        `Retrieving available versions for Azul took: ${resultTime} s`
-      );
+      console.timeEnd('Retrieving available versions for Zulu took'); // eslint-disable-line no-console
       core.debug(`Available versions: [${availableVersions.length}]`);
       core.debug(
         availableVersions.map(item => item.jdk_version.join('.')).join(', ')

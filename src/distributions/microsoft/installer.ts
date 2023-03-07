@@ -103,6 +103,10 @@ export class MicrosoftDistributions extends JavaBase {
 
     let response: ITypedResponse<tc.IToolRelease[]> | null = null;
 
+    if (core.isDebug()) {
+      console.time('Retrieving available versions for Microsoft took'); // eslint-disable-line no-console
+    }
+
     try {
       response = await this.http.getJson<tc.IToolRelease[]>(fileUrl, headers);
       if (!response.result) {
@@ -117,6 +121,14 @@ export class MicrosoftDistributions extends JavaBase {
 
     if (response.result) {
       releases = response.result;
+    }
+
+    if (core.isDebug() && releases) {
+      core.startGroup('Print information about available versions');
+      console.timeEnd('Retrieving available versions for Microsoft took'); // eslint-disable-line no-console
+      core.debug(`Available versions: [${releases.length}]`);
+      core.debug(releases.map(item => item.version).join(', '));
+      core.endGroup();
     }
 
     return releases;
