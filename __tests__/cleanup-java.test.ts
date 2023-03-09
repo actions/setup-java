@@ -1,4 +1,4 @@
-import { run as cleanup } from '../src/cleanup-java';
+import {run as cleanup} from '../src/cleanup-java';
 import * as core from '@actions/core';
 import * as cache from '@actions/cache';
 import * as util from '../src/util';
@@ -38,8 +38,8 @@ describe('cleanup', () => {
       return name === 'cache' ? 'gradle' : '';
     });
     await cleanup();
-    expect(spyCacheSave).toBeCalled();
-    expect(spyWarning).not.toBeCalled();
+    expect(spyCacheSave).toHaveBeenCalled();
+    expect(spyWarning).not.toHaveBeenCalled();
   });
 
   it('does not fail even though the save process throws error', async () => {
@@ -50,7 +50,7 @@ describe('cleanup', () => {
       return name === 'cache' ? 'gradle' : '';
     });
     await cleanup();
-    expect(spyCacheSave).toBeCalled();
+    expect(spyCacheSave).toHaveBeenCalled();
   });
 });
 

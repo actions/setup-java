@@ -1,4 +1,4 @@
-import { MicrosoftDistributions } from '../../src/distributions/microsoft/installer';
+import {MicrosoftDistributions} from '../../src/distributions/microsoft/installer';
 import os from 'os';
 import data from '../../src/distributions/microsoft/microsoft-openjdk-versions.json';
 import * as httpm from '@actions/http-client';
@@ -73,7 +73,9 @@ describe('findPackageForDownload', () => {
         archive = 'tar.gz';
         break;
     }
-    const url = expectedUrl.replace('{{OS_TYPE}}', os).replace('{{ARCHIVE_TYPE}}', archive);
+    const url = expectedUrl
+      .replace('{{OS_TYPE}}', os)
+      .replace('{{ARCHIVE_TYPE}}', archive);
     expect(result.url).toBe(url);
   });
 

@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as core from '@actions/core';
 import * as io from '@actions/io';
 import * as toolchains from '../src/toolchains';
-import { M2_DIR, MVN_TOOLCHAINS_FILE } from '../src/constants';
+import {M2_DIR, MVN_TOOLCHAINS_FILE} from '../src/constants';
 
 const m2Dir = path.join(__dirname, M2_DIR);
 const toolchainsFile = path.join(m2Dir, MVN_TOOLCHAINS_FILE);
@@ -168,7 +168,7 @@ describe('toolchains tests', () => {
   </toolchain>
 </toolchains>`;
 
-    fs.mkdirSync(m2Dir, { recursive: true });
+    fs.mkdirSync(m2Dir, {recursive: true});
     fs.writeFileSync(toolchainsFile, originalFile);
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
@@ -223,7 +223,7 @@ describe('toolchains tests', () => {
         </toolchain>
       </toolchains>`;
 
-    fs.mkdirSync(m2Dir, { recursive: true });
+    fs.mkdirSync(m2Dir, {recursive: true});
     fs.writeFileSync(toolchainsFile, originalFile);
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
@@ -279,14 +279,26 @@ describe('toolchains tests', () => {
     const version = '17';
     const distributionName = 'temurin';
     const id = 'temurin_17';
-    const jdkHome = '/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.1-12/x64';
+    const jdkHome =
+      '/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.1-12/x64';
 
-    await toolchains.configureToolchains(version, distributionName, jdkHome, undefined);
+    await toolchains.configureToolchains(
+      version,
+      distributionName,
+      jdkHome,
+      undefined
+    );
 
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
     expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition('', version, distributionName, id, jdkHome)
+      toolchains.generateToolchainDefinition(
+        '',
+        version,
+        distributionName,
+        id,
+        jdkHome
+      )
     );
   }, 100000);
 });
