@@ -1,21 +1,38 @@
-import { JavaBase } from '../base-installer';
-import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
+import {JavaBase} from '../base-installer';
+import {
+  JavaDownloadRelease,
+  JavaInstallerOptions,
+  JavaInstallerResults
+} from '../base-models';
 import semver from 'semver';
-import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
+import {
+  extractJdkFile,
+  getDownloadArchiveExtension,
+  isVersionSatisfies
+} from '../../util';
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
-import { ISemeruAvailableVersions } from './models';
+import {ISemeruAvailableVersions} from './models';
 
-const supportedArchitectures = ['x64', 'x86', 'ppc64le', 'ppc64', 's390x', 'aarch64'];
+const supportedArchitectures = [
+  'x64',
+  'x86',
+  'ppc64le',
+  'ppc64',
+  's390x',
+  'aarch64'
+];
 
 export class SemeruDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('IBM_Semeru', installerOptions);
   }
 
-  protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
+  protected async findPackageForDownload(
+    version: string
+  ): Promise<JavaDownloadRelease> {
     if (!supportedArchitectures.includes(this.architecture)) {
       throw new Error(
         `Unsupported architecture for IBM Semeru: ${
@@ -25,7 +42,9 @@ export class SemeruDistribution extends JavaBase {
     }
 
     if (!this.stable) {
-      throw new Error('IBM Semeru does not provide builds for early access versions');
+      throw new Error(
+        'IBM Semeru does not provide builds for early access versions'
+      );
     }
 
     if (this.packageType !== 'jdk' && this.packageType !== 'jre') {
@@ -52,9 +71,12 @@ export class SemeruDistribution extends JavaBase {
         return -semver.compareBuild(a.version, b.version);
       });
 
-    const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
+    const resolvedFullVersion =
+      satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
     if (!resolvedFullVersion) {
-      const availableOptions = availableVersionsWithBinaries.map(item => item.version).join(', ');
+      const availableOptions = availableVersionsWithBinaries
+        .map(item => item.version)
+        .join(', ');
       const availableOptionsMessage = availableOptions
         ? `\nAvailable versions: ${availableOptions}`
         : '';
@@ -66,27 +88,34 @@ export class SemeruDistribution extends JavaBase {
     return resolvedFullVersion;
   }
 
-  protected async downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults> {
-    let javaPath: string;
-    let extractedJavaPath: string;
-
+  protected async downloadTool(
+    javaRelease: JavaDownloadRelease
+  ): Promise<JavaInstallerResults> {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
     const javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
-    let extension = getDownloadArchiveExtension();
+    const extension = getDownloadArchiveExtension();
 
-    extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
+    const extractedJavaPath: string = await extractJdkFile(
+      javaArchivePath,
+      extension
+    );
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
     const version = this.getToolcacheVersionName(javaRelease.version);
 
-    javaPath = await tc.cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
+    const javaPath: string = await tc.cacheDir(
+      archivePath,
+      this.toolcacheFolderName,
+      version,
+      this.architecture
+    );
 
-    return { version: javaRelease.version, path: javaPath };
+    return {version: javaRelease.version, path: javaPath};
   }
 
   protected get toolcacheFolderName(): string {
@@ -100,7 +129,7 @@ export class SemeruDistribution extends JavaBase {
     const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
     const releaseType = this.stable ? 'ga' : 'ea';
 
-    console.time('semeru-retrieve-available-versions');
+    console.time('semeru-retrieve-available-versions'); // eslint-disable-line no-console
 
     const baseRequestArguments = [
       `project=jdk`,
@@ -124,7 +153,9 @@ export class SemeruDistribution extends JavaBase {
       const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
       if (core.isDebug() && page_index === 0) {
         // url is identical except page_index so print it once for debug
-        core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+        core.debug(
+          `Gathering available versions from '${availableVersionsUrl}'`
+        );
       }
 
       if (core.isDebug()) {
@@ -133,13 +164,14 @@ export class SemeruDistribution extends JavaBase {
 
       let iTypedResponse = null;
       try {
-        iTypedResponse = await this.http.getJson<ISemeruAvailableVersions[]>(availableVersionsUrl);
+        iTypedResponse = await this.http.getJson<ISemeruAvailableVersions[]>(
+          availableVersionsUrl
+        );
       } catch (element) {
-        console.log('error', element);
+        console.log('error', element); // eslint-disable-line no-console
       }
 
-      // @ts-ignore
-      const paginationPage = iTypedResponse.result;
+      const paginationPage = iTypedResponse!.result;
       if (paginationPage === null || paginationPage.length === 0) {
         // break infinity loop because we have reached end of pagination
         break;
@@ -151,10 +183,12 @@ export class SemeruDistribution extends JavaBase {
 
     if (core.isDebug()) {
       core.startGroup('Print information about available IBM Semeru versions');
-      console.timeEnd('semeru-retrieve-available-versions');
-      console.log(`Available versions: [${availableVersions.length}]`);
-      console.log(availableVersions.map(item => item.version_data.semver).join(', '));
-      console.log(JSON.stringify(availableVersions));
+      console.timeEnd('semeru-retrieve-available-versions'); // eslint-disable-line no-console
+      core.debug(`Available versions: [${availableVersions.length}]`);
+      core.debug(
+        availableVersions.map(item => item.version_data.semver).join(', ')
+      );
+      core.debug(JSON.stringify(availableVersions));
       core.endGroup();
     }
 

@@ -1,9 +1,9 @@
-import { HttpClient } from '@actions/http-client';
+import {HttpClient} from '@actions/http-client';
 
-import { JavaInstallerOptions } from '../../src/distributions/base-models';
-import { SemeruDistribution } from '../../src/distributions/semeru/installer';
+import {JavaInstallerOptions} from '../../src/distributions/base-models';
+import {SemeruDistribution} from '../../src/distributions/semeru/installer';
 
-let manifestData = require('../data/semeru.json') as [];
+import manifestData from '../data/semeru.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
@@ -25,26 +25,47 @@ describe('getAvailableVersions', () => {
 
   it.each([
     [
-      { version: '16', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '16',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       'os=mac&architecture=x64&image_type=jdk&release_type=ga&jvm_impl=openj9&page_size=20&page=0'
     ],
     [
-      { version: '16', architecture: 'x86', packageType: 'jdk', checkLatest: false },
+      {
+        version: '16',
+        architecture: 'x86',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       'os=mac&architecture=x86&image_type=jdk&release_type=ga&jvm_impl=openj9&page_size=20&page=0'
     ],
     [
-      { version: '16', architecture: 'x64', packageType: 'jre', checkLatest: false },
+      {
+        version: '16',
+        architecture: 'x64',
+        packageType: 'jre',
+        checkLatest: false
+      },
       'os=mac&architecture=x64&image_type=jre&release_type=ga&jvm_impl=openj9&page_size=20&page=0'
     ],
     [
-      { version: '16', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '16',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       'os=mac&architecture=x64&image_type=jdk&release_type=ga&jvm_impl=openj9&page_size=20&page=0'
     ]
   ])(
     'build correct url for %s',
     async (installerOptions: JavaInstallerOptions, expectedParameters) => {
       const distribution = new SemeruDistribution(installerOptions);
-      const baseUrl = 'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D';
+      const baseUrl =
+        'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D';
       const expectedUrl = `${baseUrl}?project=jdk&vendor=ibm&heap_size=normal&sort_method=DEFAULT&sort_order=DESC&${expectedParameters}`;
       distribution['getPlatformOption'] = () => 'mac';
 
@@ -116,7 +137,7 @@ describe('findPackageForDownload', () => {
       packageType: 'jdk',
       checkLatest: false
     });
-    distribution['getAvailableVersions'] = async () => manifestData;
+    distribution['getAvailableVersions'] = async () => manifestData as any;
     const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
   });
@@ -128,10 +149,10 @@ describe('findPackageForDownload', () => {
       packageType: 'jdk',
       checkLatest: false
     });
-    distribution['getAvailableVersions'] = async () => manifestData;
-    await expect(distribution['findPackageForDownload']('9.0.8')).rejects.toThrowError(
-      /Could not find satisfied version for SemVer */
-    );
+    distribution['getAvailableVersions'] = async () => manifestData as any;
+    await expect(
+      distribution['findPackageForDownload']('9.0.8')
+    ).rejects.toThrow(/Could not find satisfied version for SemVer */);
   });
 
   it('version is not found', async () => {
@@ -141,8 +162,8 @@ describe('findPackageForDownload', () => {
       packageType: 'jdk',
       checkLatest: false
     });
-    distribution['getAvailableVersions'] = async () => manifestData;
-    await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrowError(
+    distribution['getAvailableVersions'] = async () => manifestData as any;
+    await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrow(
       /Could not find satisfied version for SemVer */
     );
   });
@@ -155,7 +176,7 @@ describe('findPackageForDownload', () => {
       checkLatest: false
     });
     distribution['getAvailableVersions'] = async () => [];
-    await expect(distribution['findPackageForDownload']('8')).rejects.toThrowError(
+    await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
       /Could not find satisfied version for SemVer */
     );
   });
@@ -169,7 +190,7 @@ describe('findPackageForDownload', () => {
         packageType: 'jdk',
         checkLatest: false
       });
-      distribution['getAvailableVersions'] = async () => manifestData;
+      distribution['getAvailableVersions'] = async () => manifestData as any;
       const resolvedVersion = await distribution['findPackageForDownload']('8');
       expect(resolvedVersion.version).not.toBeNull();
     }
@@ -185,7 +206,7 @@ describe('findPackageForDownload', () => {
         checkLatest: false
       });
       distribution['getAvailableVersions'] = async () => [];
-      await expect(distribution['findPackageForDownload']('8')).rejects.toThrowError(
+      await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
         `Unsupported architecture for IBM Semeru: ${arch}, the following are supported: x64, x86, ppc64le, ppc64, s390x, aarch64`
       );
     }
@@ -200,14 +221,26 @@ describe('findPackageForDownload', () => {
         packageType: 'jdk',
         checkLatest: false
       });
-      distribution['getAvailableVersions'] = async () => manifestData;
-      await expect(distribution['findPackageForDownload'](version)).rejects.toThrowError(
+      distribution['getAvailableVersions'] = async () => manifestData as any;
+      await expect(
+        distribution['findPackageForDownload'](version)
+      ).rejects.toThrow(
         'IBM Semeru does not provide builds for early access versions'
       );
     }
   );
 
-  it.each(['jdk+fx', 'jre+fx', 'test', 'test2', 'jdk-fx', 'javafx', 'jdk-javafx', 'ibm', ' '])(
+  it.each([
+    'jdk+fx',
+    'jre+fx',
+    'test',
+    'test2',
+    'jdk-fx',
+    'javafx',
+    'jdk-javafx',
+    'ibm',
+    ' '
+  ])(
     'rejects incorrect `%s` Semeru package type',
     async (packageType: string) => {
       const distribution = new SemeruDistribution({
@@ -216,8 +249,8 @@ describe('findPackageForDownload', () => {
         packageType: packageType,
         checkLatest: false
       });
-      distribution['getAvailableVersions'] = async () => manifestData;
-      await expect(distribution['findPackageForDownload']('8')).rejects.toThrowError(
+      distribution['getAvailableVersions'] = async () => manifestData as any;
+      await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
         'IBM Semeru only provide `jdk` and `jre` package types'
       );
     }
@@ -232,7 +265,7 @@ describe('findPackageForDownload', () => {
         packageType: packageType,
         checkLatest: false
       });
-      distribution['getAvailableVersions'] = async () => manifestData;
+      distribution['getAvailableVersions'] = async () => manifestData as any;
       const resolvedVersion = await distribution['findPackageForDownload']('8');
       await expect(resolvedVersion.version).toMatch(/8[0-9.]+/);
     }
@@ -247,7 +280,7 @@ describe('findPackageForDownload', () => {
           packageType: 'jdk',
           checkLatest: false
         })
-    ).toThrowError(
+    ).toThrow(
       "The string 'jdk-16.0.2+7_openj9-0.27.1' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information"
     );
   });
