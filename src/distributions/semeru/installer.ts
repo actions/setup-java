@@ -129,7 +129,9 @@ export class SemeruDistribution extends JavaBase {
     const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
     const releaseType = this.stable ? 'ga' : 'ea';
 
-    console.time('semeru-retrieve-available-versions'); // eslint-disable-line no-console
+    if (core.isDebug()) {
+      console.time('Retrieving available versions for Semeru took'); // eslint-disable-line no-console
+    }
 
     const baseRequestArguments = [
       `project=jdk`,
@@ -158,20 +160,11 @@ export class SemeruDistribution extends JavaBase {
         );
       }
 
-      if (core.isDebug()) {
-        core.debug('Semeru distribution version URL: ' + availableVersionsUrl);
-      }
-
-      let iTypedResponse = null;
-      try {
-        iTypedResponse = await this.http.getJson<ISemeruAvailableVersions[]>(
+      const paginationPage = (
+        await this.http.getJson<ISemeruAvailableVersions[]>(
           availableVersionsUrl
-        );
-      } catch (element) {
-        console.log('error', element); // eslint-disable-line no-console
-      }
-
-      const paginationPage = iTypedResponse!.result;
+        )
+      ).result;
       if (paginationPage === null || paginationPage.length === 0) {
         // break infinity loop because we have reached end of pagination
         break;
@@ -182,13 +175,12 @@ export class SemeruDistribution extends JavaBase {
     }
 
     if (core.isDebug()) {
-      core.startGroup('Print information about available IBM Semeru versions');
-      console.timeEnd('semeru-retrieve-available-versions'); // eslint-disable-line no-console
+      core.startGroup('Print information about available versions');
+      console.timeEnd('Retrieving available versions for Semeru took'); // eslint-disable-line no-console
       core.debug(`Available versions: [${availableVersions.length}]`);
       core.debug(
         availableVersions.map(item => item.version_data.semver).join(', ')
       );
-      core.debug(JSON.stringify(availableVersions));
       core.endGroup();
     }
 
@@ -196,7 +188,7 @@ export class SemeruDistribution extends JavaBase {
   }
 
   private getPlatformOption(): string {
-    // Adoptium has own platform names so need to map them
+    // Adopt has own platform names so need to map them
     switch (process.platform) {
       case 'darwin':
         return 'mac';

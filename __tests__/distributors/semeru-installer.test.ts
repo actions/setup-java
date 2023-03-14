@@ -82,12 +82,12 @@ describe('getAvailableVersions', () => {
       .mockReturnValueOnce({
         statusCode: 200,
         headers: {},
-        result: manifestData
+        result: manifestData as any
       })
       .mockReturnValueOnce({
         statusCode: 200,
         headers: {},
-        result: manifestData
+        result: manifestData as any
       })
       .mockReturnValueOnce({
         statusCode: 200,

@@ -6,9 +6,9 @@ import {AdoptDistribution, AdoptImplementation} from './adopt/installer';
 import {TemurinDistribution, TemurinImplementation} from './temurin/installer';
 import {LibericaDistributions} from './liberica/installer';
 import {MicrosoftDistributions} from './microsoft/installer';
+import {SemeruDistribution} from './semeru/installer';
 import {CorrettoDistribution} from './corretto/installer';
 import {OracleDistribution} from './oracle/installer';
-import {SemeruDistribution} from './semeru/installer';
 
 enum JavaDistribution {
   Adopt = 'adopt',
