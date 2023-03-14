@@ -5,10 +5,18 @@ import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
 
-import { JavaBase } from '../base-installer';
-import { IAdoptAvailableVersions } from './models';
-import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
-import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
+import {JavaBase} from '../base-installer';
+import {IAdoptAvailableVersions} from './models';
+import {
+  JavaDownloadRelease,
+  JavaInstallerOptions,
+  JavaInstallerResults
+} from '../base-models';
+import {
+  extractJdkFile,
+  getDownloadArchiveExtension,
+  isVersionSatisfies
+} from '../../util';
 
 export enum AdoptImplementation {
   Hotspot = 'Hotspot',
@@ -23,7 +31,9 @@ export class AdoptDistribution extends JavaBase {
     super(`Adopt-${jvmImpl}`, installerOptions);
   }
 
-  protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
+  protected async findPackageForDownload(
+    version: string
+  ): Promise<JavaDownloadRelease> {
     const availableVersionsRaw = await this.getAvailableVersions();
     const availableVersionsWithBinaries = availableVersionsRaw
       .filter(item => item.binaries.length > 0)
@@ -40,9 +50,12 @@ export class AdoptDistribution extends JavaBase {
         return -semver.compareBuild(a.version, b.version);
       });
 
-    const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
+    const resolvedFullVersion =
+      satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
     if (!resolvedFullVersion) {
-      const availableOptions = availableVersionsWithBinaries.map(item => item.version).join(', ');
+      const availableOptions = availableVersionsWithBinaries
+        .map(item => item.version)
+        .join(', ');
       const availableOptionsMessage = availableOptions
         ? `\nAvailable versions: ${availableOptions}`
         : '';
@@ -54,27 +67,31 @@ export class AdoptDistribution extends JavaBase {
     return resolvedFullVersion;
   }
 
-  protected async downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults> {
-    let javaPath: string;
-    let extractedJavaPath: string;
-
+  protected async downloadTool(
+    javaRelease: JavaDownloadRelease
+  ): Promise<JavaInstallerResults> {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
     const javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
-    let extension = getDownloadArchiveExtension();
+    const extension = getDownloadArchiveExtension();
 
-    extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
+    const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
     const version = this.getToolcacheVersionName(javaRelease.version);
 
-    javaPath = await tc.cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
+    const javaPath = await tc.cacheDir(
+      archivePath,
+      this.toolcacheFolderName,
+      version,
+      this.architecture
+    );
 
-    return { version: javaRelease.version, path: javaPath };
+    return {version: javaRelease.version, path: javaPath};
   }
 
   protected get toolcacheFolderName(): string {
@@ -94,7 +111,7 @@ export class AdoptDistribution extends JavaBase {
     const releaseType = this.stable ? 'ga' : 'ea';
 
     if (core.isDebug()) {
-      console.time('adopt-retrieve-available-versions');
+      console.time('Retrieving available versions for Adopt took'); // eslint-disable-line no-console
     }
 
     const baseRequestArguments = [
@@ -119,7 +136,9 @@ export class AdoptDistribution extends JavaBase {
       const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
       if (core.isDebug() && page_index === 0) {
         // url is identical except page_index so print it once for debug
-        core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+        core.debug(
+          `Gathering available versions from '${availableVersionsUrl}'`
+        );
       }
 
       const paginationPage = (
@@ -136,9 +155,11 @@ export class AdoptDistribution extends JavaBase {
 
     if (core.isDebug()) {
       core.startGroup('Print information about available versions');
-      console.timeEnd('adopt-retrieve-available-versions');
-      console.log(`Available versions: [${availableVersions.length}]`);
-      console.log(availableVersions.map(item => item.version_data.semver).join(', '));
+      console.timeEnd('Retrieving available versions for Adopt took'); // eslint-disable-line no-console
+      core.debug(`Available versions: [${availableVersions.length}]`);
+      core.debug(
+        availableVersions.map(item => item.version_data.semver).join(', ')
+      );
       core.endGroup();
     }
 

@@ -6,6 +6,7 @@
   - [Liberica](#Liberica)
   - [Microsoft](#Microsoft)
   - [Amazon Corretto](#Amazon-Corretto)
+  - [Oracle](#Oracle)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -15,6 +16,7 @@
 - [Publishing using Gradle](#Publishing-using-Gradle)
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](#Modifying-Maven-Toolchains)
+- [Java-version file](#Java-version-file)
 
 See [action.yml](../action.yml) for more details on task inputs.
 
@@ -80,6 +82,22 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
+### Using Microsoft distribution on GHES
+
+`setup-java` comes pre-installed on the appliance with GHES if Actions is enabled. When dynamically downloading the Microsoft Build of OpenJDK distribution, `setup-java` makes a request to `actions/setup-java` to get available versions on github.com (outside of the appliance). These calls to `actions/setup-java` are made via unauthenticated requests, which are limited to [60 requests per hour per IP](https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting). If more requests are made within the time frame, then you will start to see rate-limit errors during downloading that looks like: `##[error]API rate limit exceeded for...`.
+
+To get a higher rate limit, you can [generate a personal access token on github.com](https://github.com/settings/tokens/new) and pass it as the `token` input for the action:
+
+```yaml
+uses: actions/setup-java@v3
+with:
+  token: ${{ secrets.GH_DOTCOM_TOKEN }}
+  distribution: 'microsoft'
+  java-version: '11'
+```
+
+If the runner is not able to access github.com, any Java versions requested during a workflow run must come from the runner's tool cache. See "[Setting up the tool cache on self-hosted runners without internet access](https://docs.github.com/en/enterprise-server@3.2/admin/github-actions/managing-access-to-actions-from-githubcom/setting-up-the-tool-cache-on-self-hosted-runners-without-internet-access)" for more information.
+
 ### Amazon Corretto
 **NOTE:** Amazon Corretto only supports the major version specification.
 
@@ -90,6 +108,19 @@ steps:
   with:
     distribution: 'corretto'
     java-version: '11'
+- run: java -cp java HelloWorldApp
+```
+
+### Oracle
+**NOTE:** Oracle Java SE Development Kit is only available for version 17 and later.
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'oracle'
+    java-version: '17'
 - run: java -cp java HelloWorldApp
 ```
 
@@ -115,7 +146,7 @@ steps:
   with:
     distribution: '<distribution>'
     java-version: '11'
-    architecture: x86 # optional - defaults to x64
+    architecture: x86 # optional - default value derived from the runner machine
 - run: java -cp java HelloWorldApp
 ```
 
@@ -348,7 +379,7 @@ See the help docs on [Publishing a Package with Gradle](https://help.github.com/
 ## Hosted Tool Cache
 GitHub Hosted Runners have a tool cache that comes with some Java versions pre-installed. This tool cache helps speed up runs and tool setup by not requiring any new downloads. There is an environment variable called `RUNNER_TOOL_CACHE` on each runner that describes the location of this tools cache and this is where you can find the pre-installed versions of Java. `setup-java` works by taking a specific version of Java in this tool cache and adding it to PATH if the version, architecture and distribution match.
 
-Currently, LTS versions of Adopt OpenJDK (`adopt`) are cached on the GitHub Hosted Runners.
+Currently, LTS versions of Eclipse Temurin (`temurin`) are cached on the GitHub Hosted Runners.
 
 The tools cache gets updated on a weekly basis. For information regarding locally cached versions of Java on GitHub hosted runners, check out [GitHub Actions Virtual Environments](https://github.com/actions/virtual-environments).
 
@@ -448,3 +479,15 @@ steps:
       something_else
       something_other
 ```
+
+## Java-version file
+If the `java-version-file` input is specified, the action will try to extract the version from the file and install it.
+Action is able to recognize all variants of the version description according to [jenv](https://github.com/jenv/jenv). 
+Valid entry options:
+```
+major versions: 8, 11, 16, 17
+more specific versions: 1.8.0.2, 17.0, 11.0, 11.0.4, 8.0.232, 8.0.282+8
+early access (EA) versions: 15-ea, 15.0.0-ea, 15.0.0-ea.2, 15.0.0+2-ea
+versions with specified distribution: openjdk64-11.0.2
+```
+If the file contains multiple versions, only the first one will be recognized.

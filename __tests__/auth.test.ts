@@ -1,11 +1,11 @@
-import io = require('@actions/io');
-import fs = require('fs');
-import path = require('path');
+import * as io from '@actions/io';
 import * as core from '@actions/core';
+import * as fs from 'fs';
+import * as path from 'path';
 import os from 'os';
 
 import * as auth from '../src/auth';
-import { M2_DIR, MVN_SETTINGS_FILE } from '../src/constants';
+import {M2_DIR, MVN_SETTINGS_FILE} from '../src/constants';
 
 const m2Dir = path.join(__dirname, M2_DIR);
 const settingsFile = path.join(m2Dir, MVN_SETTINGS_FILE);
@@ -42,7 +42,13 @@ describe('auth tests', () => {
     const altSettingsFile = path.join(altHome, MVN_SETTINGS_FILE);
     await io.rmRF(altHome); // ensure it doesn't already exist
 
-    await auth.createAuthenticationSettings(id, username, password, altHome, true);
+    await auth.createAuthenticationSettings(
+      id,
+      username,
+      password,
+      altHome,
+      true
+    );
 
     expect(fs.existsSync(m2Dir)).toBe(false);
     expect(fs.existsSync(settingsFile)).toBe(false);
@@ -61,11 +67,19 @@ describe('auth tests', () => {
     const username = 'UNAME';
     const password = 'TOKEN';
 
-    await auth.createAuthenticationSettings(id, username, password, m2Dir, true);
+    await auth.createAuthenticationSettings(
+      id,
+      username,
+      password,
+      m2Dir,
+      true
+    );
 
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
-    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(auth.generate(id, username, password));
+    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
+      auth.generate(id, username, password)
+    );
   }, 100000);
 
   it('creates settings.xml with additional configuration', async () => {
@@ -74,7 +88,14 @@ describe('auth tests', () => {
     const password = 'TOKEN';
     const gpgPassphrase = 'GPG';
 
-    await auth.createAuthenticationSettings(id, username, password, m2Dir, true, gpgPassphrase);
+    await auth.createAuthenticationSettings(
+      id,
+      username,
+      password,
+      m2Dir,
+      true,
+      gpgPassphrase
+    );
 
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
@@ -88,16 +109,24 @@ describe('auth tests', () => {
     const username = 'USERNAME';
     const password = 'PASSWORD';
 
-    fs.mkdirSync(m2Dir, { recursive: true });
+    fs.mkdirSync(m2Dir, {recursive: true});
     fs.writeFileSync(settingsFile, 'FAKE FILE');
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
 
-    await auth.createAuthenticationSettings(id, username, password, m2Dir, true);
+    await auth.createAuthenticationSettings(
+      id,
+      username,
+      password,
+      m2Dir,
+      true
+    );
 
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
-    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(auth.generate(id, username, password));
+    expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
+      auth.generate(id, username, password)
+    );
   }, 100000);
 
   it('does not overwrite existing settings.xml files', async () => {
@@ -105,12 +134,18 @@ describe('auth tests', () => {
     const username = 'USERNAME';
     const password = 'PASSWORD';
 
-    fs.mkdirSync(m2Dir, { recursive: true });
+    fs.mkdirSync(m2Dir, {recursive: true});
     fs.writeFileSync(settingsFile, 'FAKE FILE');
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
 
-    await auth.createAuthenticationSettings(id, username, password, m2Dir, false);
+    await auth.createAuthenticationSettings(
+      id,
+      username,
+      password,
+      m2Dir,
+      false
+    );
 
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
@@ -159,6 +194,8 @@ describe('auth tests', () => {
   </servers>
 </settings>`;
 
-    expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(expectedSettings);
+    expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(
+      expectedSettings
+    );
   });
 });

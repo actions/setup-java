@@ -1,13 +1,14 @@
-import { JavaBase } from './base-installer';
-import { JavaInstallerOptions } from './base-models';
-import { LocalDistribution } from './local/installer';
-import { ZuluDistribution } from './zulu/installer';
-import { AdoptDistribution, AdoptImplementation } from './adopt/installer';
-import { TemurinDistribution, TemurinImplementation } from './temurin/installer';
-import { LibericaDistributions } from './liberica/installer';
-import { MicrosoftDistributions } from './microsoft/installer';
-import { SemeruDistribution } from './semeru/installer';
-import { CorrettoDistribution } from './corretto/installer';
+import {JavaBase} from './base-installer';
+import {JavaInstallerOptions} from './base-models';
+import {LocalDistribution} from './local/installer';
+import {ZuluDistribution} from './zulu/installer';
+import {AdoptDistribution, AdoptImplementation} from './adopt/installer';
+import {TemurinDistribution, TemurinImplementation} from './temurin/installer';
+import {LibericaDistributions} from './liberica/installer';
+import {MicrosoftDistributions} from './microsoft/installer';
+import {CorrettoDistribution} from './corretto/installer';
+import {OracleDistribution} from './oracle/installer';
+import {SemeruDistribution} from './semeru/installer';
 
 enum JavaDistribution {
   Adopt = 'adopt',
@@ -19,7 +20,8 @@ enum JavaDistribution {
   JdkFile = 'jdkfile',
   Microsoft = 'microsoft',
   Semeru = 'semeru',
-  Corretto = 'corretto'
+  Corretto = 'corretto',
+  Oracle = 'oracle'
 }
 
 export function getJavaDistribution(
@@ -32,11 +34,20 @@ export function getJavaDistribution(
       return new LocalDistribution(installerOptions, jdkFile);
     case JavaDistribution.Adopt:
     case JavaDistribution.AdoptHotspot:
-      return new AdoptDistribution(installerOptions, AdoptImplementation.Hotspot);
+      return new AdoptDistribution(
+        installerOptions,
+        AdoptImplementation.Hotspot
+      );
     case JavaDistribution.AdoptOpenJ9:
-      return new AdoptDistribution(installerOptions, AdoptImplementation.OpenJ9);
+      return new AdoptDistribution(
+        installerOptions,
+        AdoptImplementation.OpenJ9
+      );
     case JavaDistribution.Temurin:
-      return new TemurinDistribution(installerOptions, TemurinImplementation.Hotspot);
+      return new TemurinDistribution(
+        installerOptions,
+        TemurinImplementation.Hotspot
+      );
     case JavaDistribution.Zulu:
       return new ZuluDistribution(installerOptions);
     case JavaDistribution.Liberica:
@@ -47,6 +58,8 @@ export function getJavaDistribution(
       return new SemeruDistribution(installerOptions);
     case JavaDistribution.Corretto:
       return new CorrettoDistribution(installerOptions);
+    case JavaDistribution.Oracle:
+      return new OracleDistribution(installerOptions);
     default:
       return null;
   }

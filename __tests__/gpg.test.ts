@@ -1,6 +1,7 @@
-import path = require('path');
-import io = require('@actions/io');
-import exec = require('@actions/exec');
+import * as path from 'path';
+import * as io from '@actions/io';
+import * as exec from '@actions/exec';
+import * as gpg from '../src/gpg';
 
 jest.mock('@actions/exec', () => {
   return {
@@ -10,8 +11,6 @@ jest.mock('@actions/exec', () => {
 
 const tempDir = path.join(__dirname, 'runner', 'temp');
 process.env['RUNNER_TEMP'] = tempDir;
-
-import gpg = require('../src/gpg');
 
 describe('gpg tests', () => {
   beforeEach(async () => {
@@ -33,7 +32,11 @@ describe('gpg tests', () => {
 
       expect(keyId).toBeNull();
 
-      expect(exec.exec).toHaveBeenCalledWith('gpg', expect.anything(), expect.anything());
+      expect(exec.exec).toHaveBeenCalledWith(
+        'gpg',
+        expect.anything(),
+        expect.anything()
+      );
     });
   });
 
@@ -42,7 +45,11 @@ describe('gpg tests', () => {
       const keyId = 'asdfhjkl';
       await gpg.deleteKey(keyId);
 
-      expect(exec.exec).toHaveBeenCalledWith('gpg', expect.anything(), expect.anything());
+      expect(exec.exec).toHaveBeenCalledWith(
+        'gpg',
+        expect.anything(),
+        expect.anything()
+      );
     });
   });
 });

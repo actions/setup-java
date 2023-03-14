@@ -5,7 +5,8 @@ author: 'GitHub'
 inputs:
   java-version:
     description: 'The Java version to set up. Takes a whole or semver Java version. See examples of supported syntax in README file'
-    required: true
+  java-version-file:
+    description: 'The path to the `.java-version` file. See examples of supported syntax in README file'
   distribution:
     description: 'Java distribution. See the list of supported distributions in README file'
     required: true
@@ -59,8 +60,8 @@ inputs:
     description: 'Workaround to pass job status to post job step. This variable is not intended for manual setting'
     default: ${{ job.status }}
   token:
-    description: Used to pull java versions from setup-java. Since there is a default value, token is typically not supplied by the user.
-    default: ${{ github.token }}
+    description: The token used to authenticate when fetching version manifests hosted on github.com, such as for the Microsoft Build of OpenJDK. When running this action on github.com, the default value is sufficient. When running on GHES, you can pass a personal access token for github.com if you are experiencing rate limiting.
+    default: ${{ github.server_url == 'https://github.com' && github.token || '' }}
   mvn-toolchain-id:
     description: 'Name of Maven Toolchain ID if the default name of "${distribution}_${java-version}" is not wanted. See examples of supported syntax in Advanced Usage file'
     required: false
