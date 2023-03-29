@@ -41,9 +41,9 @@ module.exports =
 /******/ 	return startup();
 /******/ })
 /************************************************************************/
-/******/ ({
-
-/***/ 1:
+/******/ ([
+/* 0 */,
+/* 1 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -339,8 +339,27 @@ function copyFile(srcFile, destFile, force) {
 //# sourceMappingURL=io.js.map
 
 /***/ }),
+/* 2 */,
+/* 3 */,
+/* 4 */
+/***/ (function(__unusedmodule, exports) {
 
-/***/ 9:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = '00000000-0000-0000-0000-000000000000';
+exports.default = _default;
+
+/***/ }),
+/* 5 */,
+/* 6 */,
+/* 7 */,
+/* 8 */,
+/* 9 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -933,8 +952,8 @@ class ExecState extends events.EventEmitter {
 //# sourceMappingURL=toolrunner.js.map
 
 /***/ }),
-
-/***/ 11:
+/* 10 */,
+/* 11 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -1025,8 +1044,10 @@ exports.ASCIIAlphanumeric = /[0-9A-Za-z]/;
 //# sourceMappingURL=CodePoints.js.map
 
 /***/ }),
-
-/***/ 15:
+/* 12 */,
+/* 13 */,
+/* 14 */,
+/* 15 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -1047,15 +1068,14 @@ exports.isASCIIByte = isASCIIByte;
 //# sourceMappingURL=Byte.js.map
 
 /***/ }),
-
-/***/ 16:
+/* 16 */
 /***/ (function(module) {
 
 module.exports = require("tls");
 
 /***/ }),
-
-/***/ 18:
+/* 17 */,
+/* 18 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -1103,8 +1123,10 @@ exports.NonDocumentTypeChildNodeImpl = NonDocumentTypeChildNodeImpl;
 //# sourceMappingURL=NonDocumentTypeChildNodeImpl.js.map
 
 /***/ }),
-
-/***/ 22:
+/* 19 */,
+/* 20 */,
+/* 21 */,
+/* 22 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -1833,8 +1855,7 @@ exports.range_getPartiallyContainedNodes = range_getPartiallyContainedNodes;
 //# sourceMappingURL=RangeAlgorithm.js.map
 
 /***/ }),
-
-/***/ 23:
+/* 23 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -1874,8 +1895,94 @@ exports.string = string;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
+/* 24 */,
+/* 25 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 27:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+Object.defineProperty(exports, "v1", {
+  enumerable: true,
+  get: function () {
+    return _v.default;
+  }
+});
+Object.defineProperty(exports, "v3", {
+  enumerable: true,
+  get: function () {
+    return _v2.default;
+  }
+});
+Object.defineProperty(exports, "v4", {
+  enumerable: true,
+  get: function () {
+    return _v3.default;
+  }
+});
+Object.defineProperty(exports, "v5", {
+  enumerable: true,
+  get: function () {
+    return _v4.default;
+  }
+});
+Object.defineProperty(exports, "NIL", {
+  enumerable: true,
+  get: function () {
+    return _nil.default;
+  }
+});
+Object.defineProperty(exports, "version", {
+  enumerable: true,
+  get: function () {
+    return _version.default;
+  }
+});
+Object.defineProperty(exports, "validate", {
+  enumerable: true,
+  get: function () {
+    return _validate.default;
+  }
+});
+Object.defineProperty(exports, "stringify", {
+  enumerable: true,
+  get: function () {
+    return _stringify.default;
+  }
+});
+Object.defineProperty(exports, "parse", {
+  enumerable: true,
+  get: function () {
+    return _parse.default;
+  }
+});
+
+var _v = _interopRequireDefault(__webpack_require__(810));
+
+var _v2 = _interopRequireDefault(__webpack_require__(572));
+
+var _v3 = _interopRequireDefault(__webpack_require__(293));
+
+var _v4 = _interopRequireDefault(__webpack_require__(638));
+
+var _nil = _interopRequireDefault(__webpack_require__(4));
+
+var _version = _interopRequireDefault(__webpack_require__(135));
+
+var _validate = _interopRequireDefault(__webpack_require__(634));
+
+var _stringify = _interopRequireDefault(__webpack_require__(960));
+
+var _parse = _interopRequireDefault(__webpack_require__(204));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/***/ }),
+/* 26 */,
+/* 27 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -1999,8 +2106,12 @@ exports.characterData_substringData = characterData_substringData;
 //# sourceMappingURL=CharacterDataAlgorithm.js.map
 
 /***/ }),
-
-/***/ 33:
+/* 28 */,
+/* 29 */,
+/* 30 */,
+/* 31 */,
+/* 32 */,
+/* 33 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -2608,8 +2719,8 @@ exports.element_insertAdjacent = element_insertAdjacent;
 //# sourceMappingURL=ElementAlgorithm.js.map
 
 /***/ }),
-
-/***/ 35:
+/* 34 */,
+/* 35 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -2867,8 +2978,13 @@ exports.InvalidCharacterError = InvalidCharacterError;
 //# sourceMappingURL=DOMException.js.map
 
 /***/ }),
-
-/***/ 42:
+/* 36 */,
+/* 37 */,
+/* 38 */,
+/* 39 */,
+/* 40 */,
+/* 41 */,
+/* 42 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -3155,8 +3271,7 @@ exports.getValue = getValue;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 43:
+/* 43 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -3244,8 +3359,17 @@ exports.CharacterDataImpl = CharacterDataImpl;
 //# sourceMappingURL=CharacterDataImpl.js.map
 
 /***/ }),
-
-/***/ 54:
+/* 44 */,
+/* 45 */,
+/* 46 */,
+/* 47 */,
+/* 48 */,
+/* 49 */,
+/* 50 */,
+/* 51 */,
+/* 52 */,
+/* 53 */,
+/* 54 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -3312,8 +3436,12 @@ exports.tokenList_serializeSteps = tokenList_serializeSteps;
 //# sourceMappingURL=DOMTokenListAlgorithm.js.map
 
 /***/ }),
-
-/***/ 60:
+/* 55 */,
+/* 56 */,
+/* 57 */,
+/* 58 */,
+/* 59 */,
+/* 60 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -3366,8 +3494,14 @@ exports.parentNode_convertNodesIntoANode = parentNode_convertNodesIntoANode;
 //# sourceMappingURL=ParentNodeAlgorithm.js.map
 
 /***/ }),
-
-/***/ 68:
+/* 61 */,
+/* 62 */,
+/* 63 */,
+/* 64 */,
+/* 65 */,
+/* 66 */,
+/* 67 */,
+/* 68 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -3781,8 +3915,20 @@ exports.utf8Decode = utf8Decode;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 82:
+/* 69 */,
+/* 70 */,
+/* 71 */,
+/* 72 */,
+/* 73 */,
+/* 74 */,
+/* 75 */,
+/* 76 */,
+/* 77 */,
+/* 78 */,
+/* 79 */,
+/* 80 */,
+/* 81 */,
+/* 82 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -3790,6 +3936,7 @@ exports.utf8Decode = utf8Decode;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.toCommandProperties = exports.toCommandValue = void 0;
 /**
  * Sanitizes an input into a string so it can be passed into issueCommand safely
  * @param input input to sanitize into a string
@@ -3804,11 +3951,33 @@ function toCommandValue(input) {
     return JSON.stringify(input);
 }
 exports.toCommandValue = toCommandValue;
+/**
+ *
+ * @param annotationProperties
+ * @returns The command properties to send with the actual annotation command
+ * See IssueCommandProperties: https://github.com/actions/runner/blob/main/src/Runner.Worker/ActionCommandManager.cs#L646
+ */
+function toCommandProperties(annotationProperties) {
+    if (!Object.keys(annotationProperties).length) {
+        return {};
+    }
+    return {
+        title: annotationProperties.title,
+        file: annotationProperties.file,
+        line: annotationProperties.startLine,
+        endLine: annotationProperties.endLine,
+        col: annotationProperties.startColumn,
+        endColumn: annotationProperties.endColumn
+    };
+}
+exports.toCommandProperties = toCommandProperties;
 //# sourceMappingURL=utils.js.map
 
 /***/ }),
-
-/***/ 86:
+/* 83 */,
+/* 84 */,
+/* 85 */,
+/* 86 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -3829,7 +3998,7 @@ const TextImpl_1 = __webpack_require__(820);
 const CDATASectionImpl_1 = __webpack_require__(920);
 const CommentImpl_1 = __webpack_require__(760);
 const ProcessingInstructionImpl_1 = __webpack_require__(619);
-const HTMLCollectionImpl_1 = __webpack_require__(204);
+const HTMLCollectionImpl_1 = __webpack_require__(455);
 const NodeListImpl_1 = __webpack_require__(636);
 const NodeListStaticImpl_1 = __webpack_require__(266);
 const NamedNodeMapImpl_1 = __webpack_require__(88);
@@ -3838,7 +4007,7 @@ const NodeIteratorImpl_1 = __webpack_require__(800);
 const TreeWalkerImpl_1 = __webpack_require__(646);
 const NodeFilterImpl_1 = __webpack_require__(774);
 const MutationRecordImpl_1 = __webpack_require__(730);
-const DOMTokenListImpl_1 = __webpack_require__(742);
+const DOMTokenListImpl_1 = __webpack_require__(321);
 /**
  * Creates a `DOMImplementation`.
  *
@@ -4116,15 +4285,13 @@ exports.create_domTokenList = create_domTokenList;
 //# sourceMappingURL=CreateAlgorithm.js.map
 
 /***/ }),
-
-/***/ 87:
+/* 87 */
 /***/ (function(module) {
 
 module.exports = require("os");
 
 /***/ }),
-
-/***/ 88:
+/* 88 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -4224,8 +4391,8 @@ exports.NamedNodeMapImpl = NamedNodeMapImpl;
 //# sourceMappingURL=NamedNodeMapImpl.js.map
 
 /***/ }),
-
-/***/ 90:
+/* 89 */,
+/* 90 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -4806,8 +4973,8 @@ WebIDLAlgorithm_1.idl_defineConst(RangeImpl.prototype, "END_TO_START", 3);
 //# sourceMappingURL=RangeImpl.js.map
 
 /***/ }),
-
-/***/ 92:
+/* 91 */,
+/* 92 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -4973,26 +5140,513 @@ exports.JSONWriter = JSONWriter;
 //# sourceMappingURL=JSONWriter.js.map
 
 /***/ }),
-
-/***/ 95:
+/* 93 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var MapWriter_1 = __webpack_require__(750);
-exports.MapWriter = MapWriter_1.MapWriter;
-var XMLWriter_1 = __webpack_require__(764);
-exports.XMLWriter = XMLWriter_1.XMLWriter;
-var ObjectWriter_1 = __webpack_require__(419);
-exports.ObjectWriter = ObjectWriter_1.ObjectWriter;
-var JSONWriter_1 = __webpack_require__(92);
-exports.JSONWriter = JSONWriter_1.JSONWriter;
-//# sourceMappingURL=index.js.map
+const CodePoints_1 = __webpack_require__(780);
+const ByteSequence_1 = __webpack_require__(425);
+const Byte_1 = __webpack_require__(15);
+const util_1 = __webpack_require__(42);
+/**
+ * Determines if the string `a` is a code unit prefix of string `b`.
+ *
+ * @param a - a string
+ * @param b - a string
+ */
+function isCodeUnitPrefix(a, b) {
+    /**
+     * 1. Let i be 0.
+     * 2. While true:
+     * 2.1. Let aCodeUnit be the ith code unit of a if i is less than a’s length;
+     * otherwise null.
+     * 2.2. Let bCodeUnit be the ith code unit of b if i is less than b’s length;
+     * otherwise null.
+     * 2.3. If bCodeUnit is null, then return true.
+     * 2.4. Return false if aCodeUnit is different from bCodeUnit.
+     * 2.5. Set i to i + 1.
+     */
+    let i = 0;
+    while (true) {
+        const aCodeUnit = i < a.length ? a.charCodeAt(i) : null;
+        const bCodeUnit = i < b.length ? b.charCodeAt(i) : null;
+        if (aCodeUnit === null)
+            return true;
+        if (aCodeUnit !== bCodeUnit)
+            return false;
+        i++;
+    }
+}
+exports.isCodeUnitPrefix = isCodeUnitPrefix;
+/**
+ * Determines if the string `a` is a code unit less than string `b`.
+ *
+ * @param a - a string
+ * @param b - a string
+ */
+function isCodeUnitLessThan(a, b) {
+    /**
+     * 1. If b is a code unit prefix of a, then return false.
+     * 2. If a is a code unit prefix of b, then return true.
+     * 3. Let n be the smallest index such that the nth code unit of a is
+     * different from the nth code unit of b. (There has to be such an index,
+     * since neither string is a prefix of the other.)
+     * 4. If the nth code unit of a is less than the nth code unit of b, then
+     * return true.
+     * 5. Return false.
+     */
+    if (isCodeUnitPrefix(b, a))
+        return false;
+    if (isCodeUnitPrefix(a, b))
+        return true;
+    for (let i = 0; i < Math.min(a.length, b.length); i++) {
+        const aCodeUnit = a.charCodeAt(i);
+        const bCodeUnit = b.charCodeAt(i);
+        if (aCodeUnit === bCodeUnit)
+            continue;
+        return (aCodeUnit < bCodeUnit);
+    }
+    /* istanbul ignore next */
+    return false;
+}
+exports.isCodeUnitLessThan = isCodeUnitLessThan;
+/**
+ * Isomorphic encodes the given string.
+ *
+ * @param str - a string
+ */
+function isomorphicEncode(str) {
+    /**
+     * 1. Assert: input contains no code points greater than U+00FF.
+     * 2. Return a byte sequence whose length is equal to input’s length and whose
+     * bytes have the same values as input’s code points, in the same order.
+     */
+    const codePoints = Array.from(str);
+    const bytes = new Uint8Array(codePoints.length);
+    let i = 0;
+    for (const codePoint of str) {
+        const byte = codePoint.codePointAt(0);
+        console.assert(byte !== undefined && byte <= 0x00FF, "isomorphicEncode requires string bytes to be less than or equal to 0x00FF.");
+        if (byte !== undefined && byte <= 0x00FF) {
+            bytes[i++] = byte;
+        }
+    }
+    return bytes;
+}
+exports.isomorphicEncode = isomorphicEncode;
+/**
+ * Determines if the given string is An ASCII string.
+ *
+ * @param str - a string
+ */
+function isASCIIString(str) {
+    /**
+     * An ASCII string is a string whose code points are all ASCII code points.
+     */
+    return /^[\u0000-\u007F]*$/.test(str);
+}
+exports.isASCIIString = isASCIIString;
+/**
+ * Converts all uppercase ASCII code points to lowercase.
+ *
+ * @param str - a string
+ */
+function asciiLowercase(str) {
+    /**
+     * To ASCII lowercase a string, replace all ASCII upper alphas in the string
+     * with their corresponding code point in ASCII lower alpha.
+     */
+    let result = "";
+    for (const c of str) {
+        const code = c.codePointAt(0);
+        if (code !== undefined && code >= 0x41 && code <= 0x5A) {
+            result += String.fromCodePoint(code + 0x20);
+        }
+        else {
+            result += c;
+        }
+    }
+    return result;
+}
+exports.asciiLowercase = asciiLowercase;
+/**
+ * Converts all uppercase ASCII code points to uppercase.
+ *
+ * @param str - a string
+ */
+function asciiUppercase(str) {
+    /**
+     * To ASCII uppercase a string, replace all ASCII lower alphas in the string
+     * with their corresponding code point in ASCII upper alpha.
+     */
+    let result = "";
+    for (const c of str) {
+        const code = c.codePointAt(0);
+        if (code !== undefined && code >= 0x61 && code <= 0x7A) {
+            result += String.fromCodePoint(code - 0x20);
+        }
+        else {
+            result += c;
+        }
+    }
+    return result;
+}
+exports.asciiUppercase = asciiUppercase;
+/**
+ * Compares two ASCII strings case-insensitively.
+ *
+ * @param a - a string
+ * @param b - a string
+ */
+function asciiCaseInsensitiveMatch(a, b) {
+    /**
+     * A string A is an ASCII case-insensitive match for a string B, if the ASCII
+     * lowercase of A is the ASCII lowercase of B.
+     */
+    return asciiLowercase(a) === asciiLowercase(b);
+}
+exports.asciiCaseInsensitiveMatch = asciiCaseInsensitiveMatch;
+/**
+ * ASCII encodes a string.
+ *
+ * @param str - a string
+ */
+function asciiEncode(str) {
+    /**
+     * 1. Assert: input is an ASCII string.
+     * 2. Return the isomorphic encoding of input.
+     */
+    console.assert(isASCIIString(str), "asciiEncode requires an ASCII string.");
+    return isomorphicEncode(str);
+}
+exports.asciiEncode = asciiEncode;
+/**
+ * ASCII decodes a byte sequence.
+ *
+ * @param bytes - a byte sequence
+ */
+function asciiDecode(bytes) {
+    /**
+     * 1. Assert: All bytes in input are ASCII bytes.
+     * 2. Return the isomorphic decoding of input.
+     */
+    for (const byte of bytes) {
+        console.assert(Byte_1.isASCIIByte(byte), "asciiDecode requires an ASCII byte sequence.");
+    }
+    return ByteSequence_1.isomorphicDecode(bytes);
+}
+exports.asciiDecode = asciiDecode;
+/**
+ * Strips newline characters from a string.
+ *
+ * @param str - a string
+ */
+function stripNewlines(str) {
+    /**
+     * To strip newlines from a string, remove any U+000A LF and U+000D CR code
+     * points from the string.
+     */
+    return str.replace(/[\n\r]/g, "");
+}
+exports.stripNewlines = stripNewlines;
+/**
+ * Normalizes newline characters in a string by converting consecutive
+ * carriage-return newline characters and also single carriage return characters
+ * into a single newline.
+ *
+ * @param str - a string
+ */
+function normalizeNewlines(str) {
+    /**
+     * To normalize newlines in a string, replace every U+000D CR U+000A LF code
+     * point pair with a single U+000A LF code point, and then replace every
+     * remaining U+000D CR code point with a U+000A LF code point.
+     */
+    return str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+}
+exports.normalizeNewlines = normalizeNewlines;
+/**
+ * Removes leading and trailing whitespace characters from a string.
+ *
+ * @param str - a string
+ */
+function stripLeadingAndTrailingASCIIWhitespace(str) {
+    /**
+     * To strip leading and trailing ASCII whitespace from a string, remove all
+     * ASCII whitespace that are at the start or the end of the string.
+     */
+    return str.replace(/^[\t\n\f\r ]+/, "").replace(/[\t\n\f\r ]+$/, "");
+}
+exports.stripLeadingAndTrailingASCIIWhitespace = stripLeadingAndTrailingASCIIWhitespace;
+/**
+ * Removes consecutive newline characters from a string.
+ *
+ * @param str - a string
+ */
+function stripAndCollapseASCIIWhitespace(str) {
+    /**
+     * To strip and collapse ASCII whitespace in a string, replace any sequence of
+     * one or more consecutive code points that are ASCII whitespace in the string
+     * with a single U+0020 SPACE code point, and then remove any leading and
+     * trailing ASCII whitespace from that string.
+     */
+    return stripLeadingAndTrailingASCIIWhitespace(str.replace(/[\t\n\f\r ]{2,}/g, " "));
+}
+exports.stripAndCollapseASCIIWhitespace = stripAndCollapseASCIIWhitespace;
+/**
+ * Collects a sequence of code points matching a given condition from the input
+ * string.
+ *
+ * @param condition - a condition to match
+ * @param input - a string
+ * @param options - starting position
+ */
+function collectASequenceOfCodePoints(condition, input, options) {
+    /**
+     * 1. Let result be the empty string.
+     * 2. While position doesn’t point past the end of input and the code point at
+     * position within input meets the condition condition:
+     * 2.1. Append that code point to the end of result.
+     * 2.2. Advance position by 1.
+     * 3. Return result.
+     */
+    if (!util_1.isArray(input))
+        return collectASequenceOfCodePoints(condition, Array.from(input), options);
+    let result = "";
+    while (options.position < input.length && !!condition.call(null, input[options.position])) {
+        result += input[options.position];
+        options.position++;
+    }
+    return result;
+}
+exports.collectASequenceOfCodePoints = collectASequenceOfCodePoints;
+/**
+ * Skips over ASCII whitespace.
+ *
+ * @param input - input string
+ * @param options - starting position
+ */
+function skipASCIIWhitespace(input, options) {
+    /**
+     * To skip ASCII whitespace within a string input given a position variable
+     * position, collect a sequence of code points that are ASCII whitespace from
+     * input given position. The collected code points are not used, but position
+     * is still updated.
+     */
+    collectASequenceOfCodePoints(str => CodePoints_1.ASCIIWhiteSpace.test(str), input, options);
+}
+exports.skipASCIIWhitespace = skipASCIIWhitespace;
+/**
+ * Solits a string at the given delimiter.
+ *
+ * @param input - input string
+ * @param delimiter - a delimiter string
+ */
+function strictlySplit(input, delimiter) {
+    /**
+     * 1. Let position be a position variable for input, initially pointing at the
+     * start of input.
+     * 2. Let tokens be a list of strings, initially empty.
+     * 3. Let token be the result of collecting a sequence of code points that are
+     * not equal to delimiter from input, given position.
+     * 4. Append token to tokens.
+     * 5. While position is not past the end of input:
+     * 5.1. Assert: the code point at position within input is delimiter.
+     * 5.2. Advance position by 1.
+     * 5.3. Let token be the result of collecting a sequence of code points that
+     * are not equal to delimiter from input, given position.
+     * 5.4. Append token to tokens.
+     * 6. Return tokens.
+     */
+    if (!util_1.isArray(input))
+        return strictlySplit(Array.from(input), delimiter);
+    const options = { position: 0 };
+    const tokens = [];
+    let token = collectASequenceOfCodePoints(str => delimiter !== str, input, options);
+    tokens.push(token);
+    while (options.position < input.length) {
+        console.assert(input[options.position] === delimiter, "strictlySplit found no delimiter in input string.");
+        options.position++;
+        token = collectASequenceOfCodePoints(str => delimiter !== str, input, options);
+        tokens.push(token);
+    }
+    return tokens;
+}
+exports.strictlySplit = strictlySplit;
+/**
+ * Splits a string on ASCII whitespace.
+ *
+ * @param input - a string
+ */
+function splitAStringOnASCIIWhitespace(input) {
+    /**
+     * 1. Let position be a position variable for input, initially pointing at the
+     * start of input.
+     * 2. Let tokens be a list of strings, initially empty.
+     * 3. Skip ASCII whitespace within input given position.
+     * 4. While position is not past the end of input:
+     * 4.1. Let token be the result of collecting a sequence of code points that
+     * are not ASCII whitespace from input, given position.
+     * 4.2. Append token to tokens.
+     * 4.3. Skip ASCII whitespace within input given position.
+     * 5. Return tokens.
+     */
+    if (!util_1.isArray(input))
+        return splitAStringOnASCIIWhitespace(Array.from(input));
+    const options = { position: 0 };
+    const tokens = [];
+    skipASCIIWhitespace(input, options);
+    while (options.position < input.length) {
+        const token = collectASequenceOfCodePoints(str => !CodePoints_1.ASCIIWhiteSpace.test(str), input, options);
+        tokens.push(token);
+        skipASCIIWhitespace(input, options);
+    }
+    return tokens;
+}
+exports.splitAStringOnASCIIWhitespace = splitAStringOnASCIIWhitespace;
+/**
+ * Splits a string on commas.
+ *
+ * @param input - a string
+ */
+function splitAStringOnCommas(input) {
+    /**
+     * 1. Let position be a position variable for input, initially pointing at the
+     * start of input.
+     * 2. Let tokens be a list of strings, initially empty.
+     * 3. While position is not past the end of input:
+     * 3.1. Let token be the result of collecting a sequence of code points that
+     * are not U+002C (,) from input, given position.
+     * 3.2. Strip leading and trailing ASCII whitespace from token.
+     * 3.3. Append token to tokens.
+     * 3.4. If position is not past the end of input, then:
+     * 3.4.1. Assert: the code point at position within input is U+002C (,).
+     * 3.4.2. Advance position by 1.
+     * 4. Return tokens.
+     */
+    if (!util_1.isArray(input))
+        return splitAStringOnCommas(Array.from(input));
+    const options = { position: 0 };
+    const tokens = [];
+    while (options.position < input.length) {
+        const token = collectASequenceOfCodePoints(str => str !== ',', input, options);
+        tokens.push(stripLeadingAndTrailingASCIIWhitespace(token));
+        if (options.position < input.length) {
+            console.assert(input[options.position] === ',', "splitAStringOnCommas found no delimiter in input string.");
+            options.position++;
+        }
+    }
+    return tokens;
+}
+exports.splitAStringOnCommas = splitAStringOnCommas;
+/**
+ * Concatenates a list of strings with the given separator.
+ *
+ * @param list - a list of strings
+ * @param separator - a separator string
+ */
+function concatenate(list, separator = "") {
+    /**
+     * 1. If list is empty, then return the empty string.
+     * 2. If separator is not given, then set separator to the empty string.
+     * 3. Return a string whose contents are list’s items, in order, separated
+     * from each other by separator.
+     */
+    if (list.length === 0)
+        return "";
+    return list.join(separator);
+}
+exports.concatenate = concatenate;
+//# sourceMappingURL=String.js.map
 
 /***/ }),
+/* 94 */,
+/* 95 */
+/***/ (function(__unusedmodule, exports) {
 
-/***/ 97:
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.checkBypass = exports.getProxyUrl = void 0;
+function getProxyUrl(reqUrl) {
+    const usingSsl = reqUrl.protocol === 'https:';
+    if (checkBypass(reqUrl)) {
+        return undefined;
+    }
+    const proxyVar = (() => {
+        if (usingSsl) {
+            return process.env['https_proxy'] || process.env['HTTPS_PROXY'];
+        }
+        else {
+            return process.env['http_proxy'] || process.env['HTTP_PROXY'];
+        }
+    })();
+    if (proxyVar) {
+        return new URL(proxyVar);
+    }
+    else {
+        return undefined;
+    }
+}
+exports.getProxyUrl = getProxyUrl;
+function checkBypass(reqUrl) {
+    if (!reqUrl.hostname) {
+        return false;
+    }
+    const reqHost = reqUrl.hostname;
+    if (isLoopbackAddress(reqHost)) {
+        return true;
+    }
+    const noProxy = process.env['no_proxy'] || process.env['NO_PROXY'] || '';
+    if (!noProxy) {
+        return false;
+    }
+    // Determine the request port
+    let reqPort;
+    if (reqUrl.port) {
+        reqPort = Number(reqUrl.port);
+    }
+    else if (reqUrl.protocol === 'http:') {
+        reqPort = 80;
+    }
+    else if (reqUrl.protocol === 'https:') {
+        reqPort = 443;
+    }
+    // Format the request hostname and hostname with port
+    const upperReqHosts = [reqUrl.hostname.toUpperCase()];
+    if (typeof reqPort === 'number') {
+        upperReqHosts.push(`${upperReqHosts[0]}:${reqPort}`);
+    }
+    // Compare request host against noproxy
+    for (const upperNoProxyItem of noProxy
+        .split(',')
+        .map(x => x.trim().toUpperCase())
+        .filter(x => x)) {
+        if (upperNoProxyItem === '*' ||
+            upperReqHosts.some(x => x === upperNoProxyItem ||
+                x.endsWith(`.${upperNoProxyItem}`) ||
+                (upperNoProxyItem.startsWith('.') &&
+                    x.endsWith(`${upperNoProxyItem}`)))) {
+            return true;
+        }
+    }
+    return false;
+}
+exports.checkBypass = checkBypass;
+function isLoopbackAddress(host) {
+    const hostLower = host.toLowerCase();
+    return (hostLower === 'localhost' ||
+        hostLower.startsWith('127.') ||
+        hostLower.startsWith('[::1]') ||
+        hostLower.startsWith('[0:0:0:0:0:0:0:1]'));
+}
+//# sourceMappingURL=proxy.js.map
+
+/***/ }),
+/* 96 */,
+/* 97 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -5414,8 +6068,7 @@ exports.concatenate = concatenate;
 //# sourceMappingURL=String.js.map
 
 /***/ }),
-
-/***/ 98:
+/* 98 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -6787,27 +7440,43 @@ XMLSerializerImpl._VoidElementNames = new Set(['area', 'base', 'basefont',
 //# sourceMappingURL=XMLSerializerImpl.js.map
 
 /***/ }),
-
-/***/ 102:
+/* 99 */,
+/* 100 */,
+/* 101 */,
+/* 102 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
 // For internal use, subject to change.
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.prepareKeyValueMessage = exports.issueFileCommand = void 0;
 // We use any as a valid input type
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const fs = __importStar(__webpack_require__(747));
 const os = __importStar(__webpack_require__(87));
+const uuid_1 = __webpack_require__(25);
 const utils_1 = __webpack_require__(82);
-function issueCommand(command, message) {
+function issueFileCommand(command, message) {
     const filePath = process.env[`GITHUB_${command}`];
     if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
@@ -6819,12 +7488,29 @@ function issueCommand(command, message) {
         encoding: 'utf8'
     });
 }
-exports.issueCommand = issueCommand;
+exports.issueFileCommand = issueFileCommand;
+function prepareKeyValueMessage(key, value) {
+    const delimiter = `ghadelimiter_${uuid_1.v4()}`;
+    const convertedValue = utils_1.toCommandValue(value);
+    // These should realistically never happen, but just in case someone finds a
+    // way to exploit uuid generation let's not allow keys or values that contain
+    // the delimiter.
+    if (key.includes(delimiter)) {
+        throw new Error(`Unexpected input: name should not contain the delimiter "${delimiter}"`);
+    }
+    if (convertedValue.includes(delimiter)) {
+        throw new Error(`Unexpected input: value should not contain the delimiter "${delimiter}"`);
+    }
+    return `${key}<<${delimiter}${os.EOL}${convertedValue}${os.EOL}${delimiter}`;
+}
+exports.prepareKeyValueMessage = prepareKeyValueMessage;
 //# sourceMappingURL=file-command.js.map
 
 /***/ }),
-
-/***/ 106:
+/* 103 */,
+/* 104 */,
+/* 105 */,
+/* 106 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -6950,8 +7636,8 @@ exports.eventTarget_removeAllEventListeners = eventTarget_removeAllEventListener
 //# sourceMappingURL=EventTargetAlgorithm.js.map
 
 /***/ }),
-
-/***/ 108:
+/* 107 */,
+/* 108 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -7895,8 +8581,11 @@ exports.event_deactivateAnEventHandler = event_deactivateAnEventHandler;
 //# sourceMappingURL=EventAlgorithm.js.map
 
 /***/ }),
-
-/***/ 113:
+/* 109 */,
+/* 110 */,
+/* 111 */,
+/* 112 */,
+/* 113 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -7932,7 +8621,7 @@ const DOMImpl_1 = __webpack_require__(648);
 exports.dom = DOMImpl_1.dom;
 const DOMImplementationImpl_1 = __webpack_require__(290);
 exports.DOMImplementation = DOMImplementationImpl_1.DOMImplementationImpl;
-const DOMTokenListImpl_1 = __webpack_require__(742);
+const DOMTokenListImpl_1 = __webpack_require__(321);
 exports.DOMTokenList = DOMTokenListImpl_1.DOMTokenListImpl;
 const ElementImpl_1 = __webpack_require__(695);
 exports.Element = ElementImpl_1.ElementImpl;
@@ -7940,7 +8629,7 @@ const EventImpl_1 = __webpack_require__(427);
 exports.Event = EventImpl_1.EventImpl;
 const EventTargetImpl_1 = __webpack_require__(597);
 exports.EventTarget = EventTargetImpl_1.EventTargetImpl;
-const HTMLCollectionImpl_1 = __webpack_require__(204);
+const HTMLCollectionImpl_1 = __webpack_require__(455);
 exports.HTMLCollection = HTMLCollectionImpl_1.HTMLCollectionImpl;
 const MutationObserverImpl_1 = __webpack_require__(175);
 exports.MutationObserver = MutationObserverImpl_1.MutationObserverImpl;
@@ -8004,15 +8693,32 @@ util_1.applyMixin(ElementImpl_1.ElementImpl, SlotableImpl_1.SlotableImpl);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 129:
+/* 114 */,
+/* 115 */,
+/* 116 */,
+/* 117 */,
+/* 118 */,
+/* 119 */,
+/* 120 */,
+/* 121 */,
+/* 122 */,
+/* 123 */,
+/* 124 */,
+/* 125 */,
+/* 126 */,
+/* 127 */,
+/* 128 */,
+/* 129 */
 /***/ (function(module) {
 
 module.exports = require("child_process");
 
 /***/ }),
-
-/***/ 134:
+/* 130 */,
+/* 131 */,
+/* 132 */,
+/* 133 */,
+/* 134 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -8040,8 +8746,120 @@ exports.pop = pop;
 //# sourceMappingURL=Stack.js.map
 
 /***/ }),
+/* 135 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 139:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _validate = _interopRequireDefault(__webpack_require__(634));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function version(uuid) {
+  if (!(0, _validate.default)(uuid)) {
+    throw TypeError('Invalid UUID');
+  }
+
+  return parseInt(uuid.substr(14, 1), 16);
+}
+
+var _default = version;
+exports.default = _default;
+
+/***/ }),
+/* 136 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = _default;
+exports.URL = exports.DNS = void 0;
+
+var _stringify = _interopRequireDefault(__webpack_require__(960));
+
+var _parse = _interopRequireDefault(__webpack_require__(204));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function stringToBytes(str) {
+  str = unescape(encodeURIComponent(str)); // UTF8 escape
+
+  const bytes = [];
+
+  for (let i = 0; i < str.length; ++i) {
+    bytes.push(str.charCodeAt(i));
+  }
+
+  return bytes;
+}
+
+const DNS = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+exports.DNS = DNS;
+const URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
+exports.URL = URL;
+
+function _default(name, version, hashfunc) {
+  function generateUUID(value, namespace, buf, offset) {
+    if (typeof value === 'string') {
+      value = stringToBytes(value);
+    }
+
+    if (typeof namespace === 'string') {
+      namespace = (0, _parse.default)(namespace);
+    }
+
+    if (namespace.length !== 16) {
+      throw TypeError('Namespace must be array-like (16 iterable integer values, 0-255)');
+    } // Compute hash of namespace and value, Per 4.3
+    // Future: Use spread syntax when supported on all platforms, e.g. `bytes =
+    // hashfunc([...namespace, ... value])`
+
+
+    let bytes = new Uint8Array(16 + value.length);
+    bytes.set(namespace);
+    bytes.set(value, namespace.length);
+    bytes = hashfunc(bytes);
+    bytes[6] = bytes[6] & 0x0f | version;
+    bytes[8] = bytes[8] & 0x3f | 0x80;
+
+    if (buf) {
+      offset = offset || 0;
+
+      for (let i = 0; i < 16; ++i) {
+        buf[offset + i] = bytes[i];
+      }
+
+      return buf;
+    }
+
+    return (0, _stringify.default)(bytes);
+  } // Function#name is not settable on some platforms (#270)
+
+
+  try {
+    generateUUID.name = name; // eslint-disable-next-line no-empty
+  } catch (err) {} // For CommonJS default export support
+
+
+  generateUUID.DNS = DNS;
+  generateUUID.URL = URL;
+  return generateUUID;
+}
+
+/***/ }),
+/* 137 */,
+/* 138 */,
+/* 139 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 // Unique ID creation requires a high quality random # generator.  In node.js
@@ -8055,8 +8873,8 @@ module.exports = function nodeRNG() {
 
 
 /***/ }),
-
-/***/ 141:
+/* 140 */,
+/* 141 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -8327,8 +9145,11 @@ exports.debug = debug; // for test
 
 
 /***/ }),
-
-/***/ 146:
+/* 142 */,
+/* 143 */,
+/* 144 */,
+/* 145 */,
+/* 146 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -8407,8 +9228,11 @@ exports.orderedSet_contains = orderedSet_contains;
 //# sourceMappingURL=OrderedSetAlgorithm.js.map
 
 /***/ }),
-
-/***/ 151:
+/* 147 */,
+/* 148 */,
+/* 149 */,
+/* 150 */,
+/* 151 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -8628,8 +9452,9 @@ exports.observer_queueAttributeMutationRecord = observer_queueAttributeMutationR
 //# sourceMappingURL=MutationObserverAlgorithm.js.map
 
 /***/ }),
-
-/***/ 154:
+/* 152 */,
+/* 153 */,
+/* 154 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -8835,8 +9660,14 @@ exports.text_split = text_split;
 //# sourceMappingURL=TextAlgorithm.js.map
 
 /***/ }),
-
-/***/ 162:
+/* 155 */,
+/* 156 */,
+/* 157 */,
+/* 158 */,
+/* 159 */,
+/* 160 */,
+/* 161 */,
+/* 162 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -8865,8 +9696,7 @@ exports.attr_setAnExistingAttributeValue = attr_setAnExistingAttributeValue;
 //# sourceMappingURL=AttrAlgorithm.js.map
 
 /***/ }),
-
-/***/ 163:
+/* 163 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -8902,12 +9732,11 @@ __export(__webpack_require__(464));
 __export(__webpack_require__(873));
 __export(__webpack_require__(705));
 __export(__webpack_require__(495));
-__export(__webpack_require__(442));
+__export(__webpack_require__(576));
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 164:
+/* 164 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -8950,8 +9779,14 @@ exports.CustomEventImpl = CustomEventImpl;
 //# sourceMappingURL=CustomEventImpl.js.map
 
 /***/ }),
-
-/***/ 172:
+/* 165 */,
+/* 166 */,
+/* 167 */,
+/* 168 */,
+/* 169 */,
+/* 170 */,
+/* 171 */,
+/* 172 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -8975,8 +9810,8 @@ var TokenType;
 //# sourceMappingURL=interfaces.js.map
 
 /***/ }),
-
-/***/ 174:
+/* 173 */,
+/* 174 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -9183,8 +10018,7 @@ exports.sortInDescendingOrder = sortInDescendingOrder;
 //# sourceMappingURL=List.js.map
 
 /***/ }),
-
-/***/ 175:
+/* 175 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -9320,8 +10154,11 @@ exports.MutationObserverImpl = MutationObserverImpl;
 //# sourceMappingURL=MutationObserverImpl.js.map
 
 /***/ }),
-
-/***/ 180:
+/* 176 */,
+/* 177 */,
+/* 178 */,
+/* 179 */,
+/* 180 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -9568,8 +10405,9 @@ exports.shadowTree_assignASlot = shadowTree_assignASlot;
 //# sourceMappingURL=ShadowTreeAlgorithm.js.map
 
 /***/ }),
-
-/***/ 183:
+/* 181 */,
+/* 182 */,
+/* 183 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -9597,8 +10435,13 @@ exports.pop = pop;
 //# sourceMappingURL=Stack.js.map
 
 /***/ }),
-
-/***/ 190:
+/* 184 */,
+/* 185 */,
+/* 186 */,
+/* 187 */,
+/* 188 */,
+/* 189 */,
+/* 190 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -9749,170 +10592,83 @@ exports.XMLCBWriter = XMLCBWriter;
 //# sourceMappingURL=XMLCBWriter.js.map
 
 /***/ }),
-
-/***/ 204:
+/* 191 */,
+/* 192 */,
+/* 193 */,
+/* 194 */,
+/* 195 */,
+/* 196 */,
+/* 197 */,
+/* 198 */,
+/* 199 */,
+/* 200 */,
+/* 201 */,
+/* 202 */,
+/* 203 */,
+/* 204 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
-const infra_1 = __webpack_require__(23);
-const algorithm_1 = __webpack_require__(163);
-const util_1 = __webpack_require__(918);
-const util_2 = __webpack_require__(337);
-/**
- * Represents a collection of elements.
- */
-class HTMLCollectionImpl {
-    /**
-     * Initializes a new instance of `HTMLCollection`.
-     *
-     * @param root - root node
-     * @param filter - node filter
-     */
-    constructor(root, filter) {
-        this._live = true;
-        this._root = root;
-        this._filter = filter;
-        return new Proxy(this, this);
-    }
-    /** @inheritdoc */
-    get length() {
-        /**
-         * The length attribute’s getter must return the number of nodes
-         * represented by the collection.
-         */
-        let count = 0;
-        let node = algorithm_1.tree_getFirstDescendantNode(this._root, false, false, (e) => util_1.Guard.isElementNode(e) && this._filter(e));
-        while (node !== null) {
-            count++;
-            node = algorithm_1.tree_getNextDescendantNode(this._root, node, false, false, (e) => util_1.Guard.isElementNode(e) && this._filter(e));
-        }
-        return count;
-    }
-    /** @inheritdoc */
-    item(index) {
-        /**
-         * The item(index) method, when invoked, must return the indexth element
-         * in the collection. If there is no indexth element in the collection,
-         * then the method must return null.
-         */
-        let i = 0;
-        let node = algorithm_1.tree_getFirstDescendantNode(this._root, false, false, (e) => util_1.Guard.isElementNode(e) && this._filter(e));
-        while (node !== null) {
-            if (i === index)
-                return node;
-            else
-                i++;
-            node = algorithm_1.tree_getNextDescendantNode(this._root, node, false, false, (e) => util_1.Guard.isElementNode(e) && this._filter(e));
-        }
-        return null;
-    }
-    /** @inheritdoc */
-    namedItem(key) {
-        /**
-         * 1. If key is the empty string, return null.
-         * 2. Return the first element in the collection for which at least one of
-         * the following is true:
-         * - it has an ID which is key;
-         * - it is in the HTML namespace and has a name attribute whose value is key;
-         * or null if there is no such element.
-         */
-        if (key === '')
-            return null;
-        let ele = algorithm_1.tree_getFirstDescendantNode(this._root, false, false, (e) => util_1.Guard.isElementNode(e) && this._filter(e));
-        while (ele != null) {
-            if (ele._uniqueIdentifier === key) {
-                return ele;
-            }
-            else if (ele._namespace === infra_1.namespace.HTML) {
-                for (let i = 0; i < ele._attributeList.length; i++) {
-                    const attr = ele._attributeList[i];
-                    if (attr._localName === "name" && attr._namespace === null &&
-                        attr._namespacePrefix === null && attr._value === key)
-                        return ele;
-                }
-            }
-            ele = algorithm_1.tree_getNextDescendantNode(this._root, ele, false, false, (e) => util_1.Guard.isElementNode(e) && this._filter(e));
-        }
-        return null;
-    }
-    /** @inheritdoc */
-    [Symbol.iterator]() {
-        const root = this._root;
-        const filter = this._filter;
-        let currentNode = algorithm_1.tree_getFirstDescendantNode(root, false, false, (e) => util_1.Guard.isElementNode(e) && filter(e));
-        return {
-            next() {
-                if (currentNode === null) {
-                    return { done: true, value: null };
-                }
-                else {
-                    const result = { done: false, value: currentNode };
-                    currentNode = algorithm_1.tree_getNextDescendantNode(root, currentNode, false, false, (e) => util_1.Guard.isElementNode(e) && filter(e));
-                    return result;
-                }
-            }
-        };
-    }
-    /**
-     * Implements a proxy get trap to provide array-like access.
-     */
-    get(target, key, receiver) {
-        if (!util_2.isString(key) || HTMLCollectionImpl.reservedNames.indexOf(key) !== -1) {
-            return Reflect.get(target, key, receiver);
-        }
-        const index = Number(key);
-        if (isNaN(index)) {
-            return target.namedItem(key) || undefined;
-        }
-        else {
-            return target.item(index) || undefined;
-        }
-    }
-    /**
-     * Implements a proxy set trap to provide array-like access.
-     */
-    set(target, key, value, receiver) {
-        if (!util_2.isString(key) || HTMLCollectionImpl.reservedNames.indexOf(key) !== -1) {
-            return Reflect.set(target, key, value, receiver);
-        }
-        const index = Number(key);
-        const node = isNaN(index) ?
-            target.namedItem(key) || undefined : target.item(index) || undefined;
-        if (node && node._parent) {
-            algorithm_1.mutation_replace(node, value, node._parent);
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-    /**
-     * Creates a new `HTMLCollection`.
-     *
-     * @param root - root node
-     * @param filter - node filter
-     */
-    static _create(root, filter = (() => true)) {
-        return new HTMLCollectionImpl(root, filter);
-    }
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _validate = _interopRequireDefault(__webpack_require__(634));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function parse(uuid) {
+  if (!(0, _validate.default)(uuid)) {
+    throw TypeError('Invalid UUID');
+  }
+
+  let v;
+  const arr = new Uint8Array(16); // Parse ########-....-....-....-............
+
+  arr[0] = (v = parseInt(uuid.slice(0, 8), 16)) >>> 24;
+  arr[1] = v >>> 16 & 0xff;
+  arr[2] = v >>> 8 & 0xff;
+  arr[3] = v & 0xff; // Parse ........-####-....-....-............
+
+  arr[4] = (v = parseInt(uuid.slice(9, 13), 16)) >>> 8;
+  arr[5] = v & 0xff; // Parse ........-....-####-....-............
+
+  arr[6] = (v = parseInt(uuid.slice(14, 18), 16)) >>> 8;
+  arr[7] = v & 0xff; // Parse ........-....-....-####-............
+
+  arr[8] = (v = parseInt(uuid.slice(19, 23), 16)) >>> 8;
+  arr[9] = v & 0xff; // Parse ........-....-....-....-############
+  // (Use "/" to avoid 32-bit truncation when bit-shifting high-order bytes)
+
+  arr[10] = (v = parseInt(uuid.slice(24, 36), 16)) / 0x10000000000 & 0xff;
+  arr[11] = v / 0x100000000 & 0xff;
+  arr[12] = v >>> 24 & 0xff;
+  arr[13] = v >>> 16 & 0xff;
+  arr[14] = v >>> 8 & 0xff;
+  arr[15] = v & 0xff;
+  return arr;
 }
-exports.HTMLCollectionImpl = HTMLCollectionImpl;
-HTMLCollectionImpl.reservedNames = ['_root', '_live', '_filter', 'length',
-    'item', 'namedItem', 'get', 'set'];
-//# sourceMappingURL=HTMLCollectionImpl.js.map
+
+var _default = parse;
+exports.default = _default;
 
 /***/ }),
-
-/***/ 211:
+/* 205 */,
+/* 206 */,
+/* 207 */,
+/* 208 */,
+/* 209 */,
+/* 210 */,
+/* 211 */
 /***/ (function(module) {
 
 module.exports = require("https");
 
 /***/ }),
-
-/***/ 212:
+/* 212 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -9924,8 +10680,41 @@ exports.DOMParser = DOMParserImpl_1.DOMParserImpl;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 247:
+/* 213 */,
+/* 214 */,
+/* 215 */,
+/* 216 */,
+/* 217 */,
+/* 218 */,
+/* 219 */,
+/* 220 */,
+/* 221 */,
+/* 222 */,
+/* 223 */,
+/* 224 */,
+/* 225 */,
+/* 226 */,
+/* 227 */,
+/* 228 */,
+/* 229 */,
+/* 230 */,
+/* 231 */,
+/* 232 */,
+/* 233 */,
+/* 234 */,
+/* 235 */,
+/* 236 */,
+/* 237 */,
+/* 238 */,
+/* 239 */,
+/* 240 */,
+/* 241 */,
+/* 242 */,
+/* 243 */,
+/* 244 */,
+/* 245 */,
+/* 246 */,
+/* 247 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -9945,8 +10734,11 @@ exports.DocumentOrShadowRootImpl = DocumentOrShadowRootImpl;
 //# sourceMappingURL=DocumentOrShadowRootImpl.js.map
 
 /***/ }),
-
-/***/ 252:
+/* 248 */,
+/* 249 */,
+/* 250 */,
+/* 251 */,
+/* 252 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -9963,8 +10755,9 @@ exports.XMLSerializer = serializer_1.XMLSerializer;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 255:
+/* 253 */,
+/* 254 */,
+/* 255 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -10157,8 +10950,11 @@ function setOptions(doc, options, isFragment) {
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 260:
+/* 256 */,
+/* 257 */,
+/* 258 */,
+/* 259 */,
+/* 260 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -10256,8 +11052,9 @@ exports.StringWalker = StringWalker;
 //# sourceMappingURL=StringWalker.js.map
 
 /***/ }),
-
-/***/ 263:
+/* 261 */,
+/* 262 */,
+/* 263 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -10414,8 +11211,9 @@ exports.isomorphicDecode = isomorphicDecode;
 //# sourceMappingURL=ByteSequence.js.map
 
 /***/ }),
-
-/***/ 266:
+/* 264 */,
+/* 265 */,
+/* 266 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -10579,8 +11377,11 @@ exports.NodeListStaticImpl = NodeListStaticImpl;
 //# sourceMappingURL=NodeListStaticImpl.js.map
 
 /***/ }),
-
-/***/ 271:
+/* 267 */,
+/* 268 */,
+/* 269 */,
+/* 270 */,
+/* 271 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -10615,8 +11416,7 @@ exports.Lazy = Lazy;
 //# sourceMappingURL=Lazy.js.map
 
 /***/ }),
-
-/***/ 272:
+/* 272 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -10727,8 +11527,13 @@ exports.nodeIterator_iteratorList = nodeIterator_iteratorList;
 //# sourceMappingURL=NodeIteratorAlgorithm.js.map
 
 /***/ }),
-
-/***/ 279:
+/* 273 */,
+/* 274 */,
+/* 275 */,
+/* 276 */,
+/* 277 */,
+/* 278 */,
+/* 279 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -10908,8 +11713,7 @@ exports.sortInDescendingOrder = sortInDescendingOrder;
 //# sourceMappingURL=Map.js.map
 
 /***/ }),
-
-/***/ 280:
+/* 280 */
 /***/ (function(module, exports) {
 
 exports = module.exports = SemVer
@@ -12511,8 +13315,12 @@ function coerce (version, options) {
 
 
 /***/ }),
-
-/***/ 286:
+/* 281 */,
+/* 282 */,
+/* 283 */,
+/* 284 */,
+/* 285 */,
+/* 286 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -12549,8 +13357,10 @@ exports.OpaqueOrigin = ["", "", null, null];
 //# sourceMappingURL=interfaces.js.map
 
 /***/ }),
-
-/***/ 290:
+/* 287 */,
+/* 288 */,
+/* 289 */,
+/* 290 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -12703,8 +13513,62 @@ WebIDLAlgorithm_1.idl_defineConst(DOMImplementationImpl.prototype, "_ID", "@oozc
 //# sourceMappingURL=DOMImplementationImpl.js.map
 
 /***/ }),
+/* 291 */,
+/* 292 */,
+/* 293 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 304:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _rng = _interopRequireDefault(__webpack_require__(506));
+
+var _stringify = _interopRequireDefault(__webpack_require__(960));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function v4(options, buf, offset) {
+  options = options || {};
+
+  const rnds = options.random || (options.rng || _rng.default)(); // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+
+
+  rnds[6] = rnds[6] & 0x0f | 0x40;
+  rnds[8] = rnds[8] & 0x3f | 0x80; // Copy bytes to buffer, if provided
+
+  if (buf) {
+    offset = offset || 0;
+
+    for (let i = 0; i < 16; ++i) {
+      buf[offset + i] = rnds[i];
+    }
+
+    return buf;
+  }
+
+  return (0, _stringify.default)(rnds);
+}
+
+var _default = v4;
+exports.default = _default;
+
+/***/ }),
+/* 294 */,
+/* 295 */,
+/* 296 */,
+/* 297 */,
+/* 298 */,
+/* 299 */,
+/* 300 */,
+/* 301 */,
+/* 302 */,
+/* 303 */,
+/* 304 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -12976,8 +13840,9 @@ function updateAnElementID(element, localName, value, namespace) {
 //# sourceMappingURL=DOMAlgorithm.js.map
 
 /***/ }),
-
-/***/ 307:
+/* 305 */,
+/* 306 */,
+/* 307 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -13012,13 +13877,23 @@ const set = __importStar(__webpack_require__(693));
 exports.set = set;
 const stack = __importStar(__webpack_require__(183));
 exports.stack = stack;
-const string = __importStar(__webpack_require__(665));
+const string = __importStar(__webpack_require__(93));
 exports.string = string;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 319:
+/* 308 */,
+/* 309 */,
+/* 310 */,
+/* 311 */,
+/* 312 */,
+/* 313 */,
+/* 314 */,
+/* 315 */,
+/* 316 */,
+/* 317 */,
+/* 318 */,
+/* 319 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -13121,8 +13996,264 @@ exports.FixedSizeSet = FixedSizeSet;
 //# sourceMappingURL=FixedSizeSet.js.map
 
 /***/ }),
+/* 320 */,
+/* 321 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 322:
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const _1 = __webpack_require__(113);
+const DOMException_1 = __webpack_require__(35);
+const infra_1 = __webpack_require__(23);
+const algorithm_1 = __webpack_require__(163);
+/**
+ * Represents a token set.
+ */
+class DOMTokenListImpl {
+    /**
+     * Initializes a new instance of `DOMTokenList`.
+     *
+     * @param element - associated element
+     * @param attribute - associated attribute
+     */
+    constructor(element, attribute) {
+        /**
+         * 1. Let element be associated element.
+         * 2. Let localName be associated attribute’s local name.
+         * 3. Let value be the result of getting an attribute value given element
+         * and localName.
+         * 4. Run the attribute change steps for element, localName, value, value,
+         * and null.
+         */
+        this._element = element;
+        this._attribute = attribute;
+        this._tokenSet = new Set();
+        const localName = attribute._localName;
+        const value = algorithm_1.element_getAnAttributeValue(element, localName);
+        // define a closure to be called when the associated attribute's value changes
+        const thisObj = this;
+        function updateTokenSet(element, localName, oldValue, value, namespace) {
+            /**
+             * 1. If localName is associated attribute’s local name, namespace is null,
+             * and value is null, then empty token set.
+             * 2. Otherwise, if localName is associated attribute’s local name,
+             * namespace is null, then set token set to value, parsed.
+             */
+            if (localName === thisObj._attribute._localName && namespace === null) {
+                if (!value)
+                    thisObj._tokenSet.clear();
+                else
+                    thisObj._tokenSet = algorithm_1.orderedSet_parse(value);
+            }
+        }
+        // add the closure to the associated element's attribute change steps
+        this._element._attributeChangeSteps.push(updateTokenSet);
+        if (_1.dom.features.steps) {
+            algorithm_1.dom_runAttributeChangeSteps(element, localName, value, value, null);
+        }
+    }
+    /** @inheritdoc */
+    get length() {
+        /**
+         * The length attribute' getter must return context object’s token set’s
+         * size.
+         */
+        return this._tokenSet.size;
+    }
+    /** @inheritdoc */
+    item(index) {
+        /**
+         * 1. If index is equal to or greater than context object’s token set’s
+         * size, then return null.
+         * 2. Return context object’s token set[index].
+         */
+        let i = 0;
+        for (const token of this._tokenSet) {
+            if (i === index)
+                return token;
+            i++;
+        }
+        return null;
+    }
+    /** @inheritdoc */
+    contains(token) {
+        /**
+         * The contains(token) method, when invoked, must return true if context
+         * object’s token set[token] exists, and false otherwise.
+         */
+        return this._tokenSet.has(token);
+    }
+    /** @inheritdoc */
+    add(...tokens) {
+        /**
+         * 1. For each token in tokens:
+         * 1.1. If token is the empty string, then throw a "SyntaxError"
+         * DOMException.
+         * 1.2. If token contains any ASCII whitespace, then throw an
+         * "InvalidCharacterError" DOMException.
+         * 2. For each token in tokens, append token to context object’s token set.
+         * 3. Run the update steps.
+         */
+        for (const token of tokens) {
+            if (token === '') {
+                throw new DOMException_1.SyntaxError("Cannot add an empty token.");
+            }
+            else if (infra_1.codePoint.ASCIIWhiteSpace.test(token)) {
+                throw new DOMException_1.InvalidCharacterError("Token cannot contain whitespace.");
+            }
+            else {
+                this._tokenSet.add(token);
+            }
+        }
+        algorithm_1.tokenList_updateSteps(this);
+    }
+    /** @inheritdoc */
+    remove(...tokens) {
+        /**
+         * 1. For each token in tokens:
+         * 1.1. If token is the empty string, then throw a "SyntaxError"
+         * DOMException.
+         * 1.2. If token contains any ASCII whitespace, then throw an
+         * "InvalidCharacterError" DOMException.
+         * 2. For each token in tokens, remove token from context object’s token set.
+         * 3. Run the update steps.
+         */
+        for (const token of tokens) {
+            if (token === '') {
+                throw new DOMException_1.SyntaxError("Cannot remove an empty token.");
+            }
+            else if (infra_1.codePoint.ASCIIWhiteSpace.test(token)) {
+                throw new DOMException_1.InvalidCharacterError("Token cannot contain whitespace.");
+            }
+            else {
+                this._tokenSet.delete(token);
+            }
+        }
+        algorithm_1.tokenList_updateSteps(this);
+    }
+    /** @inheritdoc */
+    toggle(token, force = undefined) {
+        /**
+         * 1. If token is the empty string, then throw a "SyntaxError" DOMException.
+         * 2. If token contains any ASCII whitespace, then throw an
+         * "InvalidCharacterError" DOMException.
+         */
+        if (token === '') {
+            throw new DOMException_1.SyntaxError("Cannot toggle an empty token.");
+        }
+        else if (infra_1.codePoint.ASCIIWhiteSpace.test(token)) {
+            throw new DOMException_1.InvalidCharacterError("Token cannot contain whitespace.");
+        }
+        /**
+         * 3. If context object’s token set[token] exists, then:
+         */
+        if (this._tokenSet.has(token)) {
+            /**
+             * 3.1. If force is either not given or is false, then remove token from
+             * context object’s token set, run the update steps and return false.
+             * 3.2. Return true.
+             */
+            if (force === undefined || force === false) {
+                this._tokenSet.delete(token);
+                algorithm_1.tokenList_updateSteps(this);
+                return false;
+            }
+            return true;
+        }
+        /**
+         * 4. Otherwise, if force not given or is true, append token to context
+         * object’s token set, run the update steps, and return true.
+         */
+        if (force === undefined || force === true) {
+            this._tokenSet.add(token);
+            algorithm_1.tokenList_updateSteps(this);
+            return true;
+        }
+        /**
+         * 5. Return false.
+         */
+        return false;
+    }
+    /** @inheritdoc */
+    replace(token, newToken) {
+        /**
+         * 1. If either token or newToken is the empty string, then throw a
+         * "SyntaxError" DOMException.
+         * 2. If either token or newToken contains any ASCII whitespace, then throw
+         * an "InvalidCharacterError" DOMException.
+         */
+        if (token === '' || newToken === '') {
+            throw new DOMException_1.SyntaxError("Cannot replace an empty token.");
+        }
+        else if (infra_1.codePoint.ASCIIWhiteSpace.test(token) || infra_1.codePoint.ASCIIWhiteSpace.test(newToken)) {
+            throw new DOMException_1.InvalidCharacterError("Token cannot contain whitespace.");
+        }
+        /**
+         * 3. If context object’s token set does not contain token, then return
+         * false.
+         */
+        if (!this._tokenSet.has(token))
+            return false;
+        /**
+         * 4. Replace token in context object’s token set with newToken.
+         * 5. Run the update steps.
+         * 6. Return true.
+         */
+        infra_1.set.replace(this._tokenSet, token, newToken);
+        algorithm_1.tokenList_updateSteps(this);
+        return true;
+    }
+    /** @inheritdoc */
+    supports(token) {
+        /**
+         * 1. Let result be the return value of validation steps called with token.
+         * 2. Return result.
+         */
+        return algorithm_1.tokenList_validationSteps(this, token);
+    }
+    /** @inheritdoc */
+    get value() {
+        /**
+         * The value attribute must return the result of running context object’s
+         * serialize steps.
+         */
+        return algorithm_1.tokenList_serializeSteps(this);
+    }
+    set value(value) {
+        /**
+         * Setting the value attribute must set an attribute value for the
+         * associated element using associated attribute’s local name and the given
+         * value.
+         */
+        algorithm_1.element_setAnAttributeValue(this._element, this._attribute._localName, value);
+    }
+    /**
+     * Returns an iterator for the token set.
+     */
+    [Symbol.iterator]() {
+        const it = this._tokenSet[Symbol.iterator]();
+        return {
+            next() {
+                return it.next();
+            }
+        };
+    }
+    /**
+     * Creates a new `DOMTokenList`.
+     *
+     * @param element - associated element
+     * @param attribute - associated attribute
+     */
+    static _create(element, attribute) {
+        return new DOMTokenListImpl(element, attribute);
+    }
+}
+exports.DOMTokenListImpl = DOMTokenListImpl;
+//# sourceMappingURL=DOMTokenListImpl.js.map
+
+/***/ }),
+/* 322 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -13166,8 +14297,10 @@ exports.isWindows = isWindows;
 
 
 /***/ }),
-
-/***/ 326:
+/* 323 */,
+/* 324 */,
+/* 325 */,
+/* 326 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -13237,8 +14370,39 @@ exports.ObjectCache = ObjectCache;
 //# sourceMappingURL=ObjectCache.js.map
 
 /***/ }),
+/* 327 */,
+/* 328 */,
+/* 329 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 331:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _crypto = _interopRequireDefault(__webpack_require__(417));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function sha1(bytes) {
+  if (Array.isArray(bytes)) {
+    bytes = Buffer.from(bytes);
+  } else if (typeof bytes === 'string') {
+    bytes = Buffer.from(bytes, 'utf8');
+  }
+
+  return _crypto.default.createHash('sha1').update(bytes).digest();
+}
+
+var _default = sha1;
+exports.default = _default;
+
+/***/ }),
+/* 330 */,
+/* 331 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -13327,8 +14491,12 @@ function write(directory, settings) {
 
 
 /***/ }),
-
-/***/ 337:
+/* 332 */,
+/* 333 */,
+/* 334 */,
+/* 335 */,
+/* 336 */,
+/* 337 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -13742,8 +14910,13 @@ exports.utf8Decode = utf8Decode;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 344:
+/* 338 */,
+/* 339 */,
+/* 340 */,
+/* 341 */,
+/* 342 */,
+/* 343 */,
+/* 344 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -13857,8 +15030,9 @@ exports.customElement_lookUpACustomElementDefinition = customElement_lookUpACust
 //# sourceMappingURL=CustomElementAlgorithm.js.map
 
 /***/ }),
-
-/***/ 347:
+/* 345 */,
+/* 346 */,
+/* 347 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -13946,8 +15120,9 @@ exports.forgivingBase64Decode = forgivingBase64Decode;
 //# sourceMappingURL=Base64.js.map
 
 /***/ }),
-
-/***/ 350:
+/* 348 */,
+/* 349 */,
+/* 350 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -14029,15 +15204,139 @@ exports.boundaryPoint_position = boundaryPoint_position;
 //# sourceMappingURL=BoundaryPointAlgorithm.js.map
 
 /***/ }),
-
-/***/ 357:
+/* 351 */,
+/* 352 */,
+/* 353 */,
+/* 354 */,
+/* 355 */,
+/* 356 */,
+/* 357 */
 /***/ (function(module) {
 
 module.exports = require("assert");
 
 /***/ }),
+/* 358 */,
+/* 359 */,
+/* 360 */,
+/* 361 */,
+/* 362 */,
+/* 363 */
+/***/ (function(__unusedmodule, exports) {
 
-/***/ 392:
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PersonalAccessTokenCredentialHandler = exports.BearerCredentialHandler = exports.BasicCredentialHandler = void 0;
+class BasicCredentialHandler {
+    constructor(username, password) {
+        this.username = username;
+        this.password = password;
+    }
+    prepareRequest(options) {
+        if (!options.headers) {
+            throw Error('The request has no headers');
+        }
+        options.headers['Authorization'] = `Basic ${Buffer.from(`${this.username}:${this.password}`).toString('base64')}`;
+    }
+    // This handler cannot handle 401
+    canHandleAuthentication() {
+        return false;
+    }
+    handleAuthentication() {
+        return __awaiter(this, void 0, void 0, function* () {
+            throw new Error('not implemented');
+        });
+    }
+}
+exports.BasicCredentialHandler = BasicCredentialHandler;
+class BearerCredentialHandler {
+    constructor(token) {
+        this.token = token;
+    }
+    // currently implements pre-authorization
+    // TODO: support preAuth = false where it hooks on 401
+    prepareRequest(options) {
+        if (!options.headers) {
+            throw Error('The request has no headers');
+        }
+        options.headers['Authorization'] = `Bearer ${this.token}`;
+    }
+    // This handler cannot handle 401
+    canHandleAuthentication() {
+        return false;
+    }
+    handleAuthentication() {
+        return __awaiter(this, void 0, void 0, function* () {
+            throw new Error('not implemented');
+        });
+    }
+}
+exports.BearerCredentialHandler = BearerCredentialHandler;
+class PersonalAccessTokenCredentialHandler {
+    constructor(token) {
+        this.token = token;
+    }
+    // currently implements pre-authorization
+    // TODO: support preAuth = false where it hooks on 401
+    prepareRequest(options) {
+        if (!options.headers) {
+            throw Error('The request has no headers');
+        }
+        options.headers['Authorization'] = `Basic ${Buffer.from(`PAT:${this.token}`).toString('base64')}`;
+    }
+    // This handler cannot handle 401
+    canHandleAuthentication() {
+        return false;
+    }
+    handleAuthentication() {
+        return __awaiter(this, void 0, void 0, function* () {
+            throw new Error('not implemented');
+        });
+    }
+}
+exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHandler;
+//# sourceMappingURL=auth.js.map
+
+/***/ }),
+/* 364 */,
+/* 365 */,
+/* 366 */,
+/* 367 */,
+/* 368 */,
+/* 369 */,
+/* 370 */,
+/* 371 */,
+/* 372 */,
+/* 373 */,
+/* 374 */,
+/* 375 */,
+/* 376 */,
+/* 377 */,
+/* 378 */,
+/* 379 */,
+/* 380 */,
+/* 381 */,
+/* 382 */,
+/* 383 */,
+/* 384 */,
+/* 385 */,
+/* 386 */,
+/* 387 */,
+/* 388 */,
+/* 389 */,
+/* 390 */,
+/* 391 */,
+/* 392 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -14193,23 +15492,44 @@ exports.NamespacePrefixMap = NamespacePrefixMap;
 //# sourceMappingURL=NamespacePrefixMap.js.map
 
 /***/ }),
-
-/***/ 413:
+/* 393 */,
+/* 394 */,
+/* 395 */,
+/* 396 */,
+/* 397 */,
+/* 398 */,
+/* 399 */,
+/* 400 */,
+/* 401 */,
+/* 402 */,
+/* 403 */,
+/* 404 */,
+/* 405 */,
+/* 406 */,
+/* 407 */,
+/* 408 */,
+/* 409 */,
+/* 410 */,
+/* 411 */,
+/* 412 */,
+/* 413 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 module.exports = __webpack_require__(141);
 
 
 /***/ }),
-
-/***/ 417:
+/* 414 */,
+/* 415 */,
+/* 416 */,
+/* 417 */
 /***/ (function(module) {
 
 module.exports = require("crypto");
 
 /***/ }),
-
-/***/ 419:
+/* 418 */,
+/* 419 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -14630,8 +15950,12 @@ exports.ObjectWriter = ObjectWriter;
 //# sourceMappingURL=ObjectWriter.js.map
 
 /***/ }),
-
-/***/ 425:
+/* 420 */,
+/* 421 */,
+/* 422 */,
+/* 423 */,
+/* 424 */,
+/* 425 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -14788,8 +16112,8 @@ exports.isomorphicDecode = isomorphicDecode;
 //# sourceMappingURL=ByteSequence.js.map
 
 /***/ }),
-
-/***/ 427:
+/* 426 */,
+/* 427 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -15053,8 +16377,8 @@ WebIDLAlgorithm_1.idl_defineConst(EventImpl.prototype, "BUBBLING_PHASE", 3);
 //# sourceMappingURL=EventImpl.js.map
 
 /***/ }),
-
-/***/ 429:
+/* 428 */,
+/* 429 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -15082,20 +16406,33 @@ exports.dequeue = dequeue;
 //# sourceMappingURL=Queue.js.map
 
 /***/ }),
-
-/***/ 431:
+/* 430 */,
+/* 431 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.issue = exports.issueCommand = void 0;
 const os = __importStar(__webpack_require__(87));
 const utils_1 = __webpack_require__(82);
 /**
@@ -15168,8 +16505,16 @@ function escapeProperty(s) {
 //# sourceMappingURL=command.js.map
 
 /***/ }),
-
-/***/ 441:
+/* 432 */,
+/* 433 */,
+/* 434 */,
+/* 435 */,
+/* 436 */,
+/* 437 */,
+/* 438 */,
+/* 439 */,
+/* 440 */,
+/* 441 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -15232,179 +16577,191 @@ exports.CompareCache = CompareCache;
 //# sourceMappingURL=CompareCache.js.map
 
 /***/ }),
-
-/***/ 442:
-/***/ (function(__unusedmodule, exports) {
+/* 442 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var MapWriter_1 = __webpack_require__(750);
+exports.MapWriter = MapWriter_1.MapWriter;
+var XMLWriter_1 = __webpack_require__(764);
+exports.XMLWriter = XMLWriter_1.XMLWriter;
+var ObjectWriter_1 = __webpack_require__(419);
+exports.ObjectWriter = ObjectWriter_1.ObjectWriter;
+var JSONWriter_1 = __webpack_require__(92);
+exports.JSONWriter = JSONWriter_1.JSONWriter;
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 443 */,
+/* 444 */,
+/* 445 */,
+/* 446 */,
+/* 447 */,
+/* 448 */,
+/* 449 */,
+/* 450 */,
+/* 451 */,
+/* 452 */,
+/* 453 */,
+/* 454 */,
+/* 455 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const infra_1 = __webpack_require__(23);
+const algorithm_1 = __webpack_require__(163);
+const util_1 = __webpack_require__(918);
+const util_2 = __webpack_require__(337);
 /**
- * Determines if the given string is valid for a `"Name"` construct.
- *
- * @param name - name string to test
+ * Represents a collection of elements.
  */
-function xml_isName(name) {
-    for (let i = 0; i < name.length; i++) {
-        let n = name.charCodeAt(i);
-        // NameStartChar
-        if ((n >= 97 && n <= 122) || // [a-z]
-            (n >= 65 && n <= 90) || // [A-Z]
-            n === 58 || n === 95 || // ':' or '_'
-            (n >= 0xC0 && n <= 0xD6) ||
-            (n >= 0xD8 && n <= 0xF6) ||
-            (n >= 0xF8 && n <= 0x2FF) ||
-            (n >= 0x370 && n <= 0x37D) ||
-            (n >= 0x37F && n <= 0x1FFF) ||
-            (n >= 0x200C && n <= 0x200D) ||
-            (n >= 0x2070 && n <= 0x218F) ||
-            (n >= 0x2C00 && n <= 0x2FEF) ||
-            (n >= 0x3001 && n <= 0xD7FF) ||
-            (n >= 0xF900 && n <= 0xFDCF) ||
-            (n >= 0xFDF0 && n <= 0xFFFD)) {
-            continue;
+class HTMLCollectionImpl {
+    /**
+     * Initializes a new instance of `HTMLCollection`.
+     *
+     * @param root - root node
+     * @param filter - node filter
+     */
+    constructor(root, filter) {
+        this._live = true;
+        this._root = root;
+        this._filter = filter;
+        return new Proxy(this, this);
+    }
+    /** @inheritdoc */
+    get length() {
+        /**
+         * The length attribute’s getter must return the number of nodes
+         * represented by the collection.
+         */
+        let count = 0;
+        let node = algorithm_1.tree_getFirstDescendantNode(this._root, false, false, (e) => util_1.Guard.isElementNode(e) && this._filter(e));
+        while (node !== null) {
+            count++;
+            node = algorithm_1.tree_getNextDescendantNode(this._root, node, false, false, (e) => util_1.Guard.isElementNode(e) && this._filter(e));
         }
-        else if (i !== 0 &&
-            (n === 45 || n === 46 || // '-' or '.'
-                (n >= 48 && n <= 57) || // [0-9]
-                (n === 0xB7) ||
-                (n >= 0x0300 && n <= 0x036F) ||
-                (n >= 0x203F && n <= 0x2040))) {
-            continue;
-        }
-        if (n >= 0xD800 && n <= 0xDBFF && i < name.length - 1) {
-            const n2 = name.charCodeAt(i + 1);
-            if (n2 >= 0xDC00 && n2 <= 0xDFFF) {
-                n = (n - 0xD800) * 0x400 + n2 - 0xDC00 + 0x10000;
+        return count;
+    }
+    /** @inheritdoc */
+    item(index) {
+        /**
+         * The item(index) method, when invoked, must return the indexth element
+         * in the collection. If there is no indexth element in the collection,
+         * then the method must return null.
+         */
+        let i = 0;
+        let node = algorithm_1.tree_getFirstDescendantNode(this._root, false, false, (e) => util_1.Guard.isElementNode(e) && this._filter(e));
+        while (node !== null) {
+            if (i === index)
+                return node;
+            else
                 i++;
-                if (n >= 0x10000 && n <= 0xEFFFF) {
-                    continue;
+            node = algorithm_1.tree_getNextDescendantNode(this._root, node, false, false, (e) => util_1.Guard.isElementNode(e) && this._filter(e));
+        }
+        return null;
+    }
+    /** @inheritdoc */
+    namedItem(key) {
+        /**
+         * 1. If key is the empty string, return null.
+         * 2. Return the first element in the collection for which at least one of
+         * the following is true:
+         * - it has an ID which is key;
+         * - it is in the HTML namespace and has a name attribute whose value is key;
+         * or null if there is no such element.
+         */
+        if (key === '')
+            return null;
+        let ele = algorithm_1.tree_getFirstDescendantNode(this._root, false, false, (e) => util_1.Guard.isElementNode(e) && this._filter(e));
+        while (ele != null) {
+            if (ele._uniqueIdentifier === key) {
+                return ele;
+            }
+            else if (ele._namespace === infra_1.namespace.HTML) {
+                for (let i = 0; i < ele._attributeList.length; i++) {
+                    const attr = ele._attributeList[i];
+                    if (attr._localName === "name" && attr._namespace === null &&
+                        attr._namespacePrefix === null && attr._value === key)
+                        return ele;
                 }
             }
+            ele = algorithm_1.tree_getNextDescendantNode(this._root, ele, false, false, (e) => util_1.Guard.isElementNode(e) && this._filter(e));
         }
-        return false;
+        return null;
     }
-    return true;
-}
-exports.xml_isName = xml_isName;
-/**
- * Determines if the given string is valid for a `"QName"` construct.
- *
- * @param name - name string to test
- */
-function xml_isQName(name) {
-    let colonFound = false;
-    for (let i = 0; i < name.length; i++) {
-        let n = name.charCodeAt(i);
-        // NameStartChar
-        if ((n >= 97 && n <= 122) || // [a-z]
-            (n >= 65 && n <= 90) || // [A-Z]
-            n === 95 || // '_'
-            (n >= 0xC0 && n <= 0xD6) ||
-            (n >= 0xD8 && n <= 0xF6) ||
-            (n >= 0xF8 && n <= 0x2FF) ||
-            (n >= 0x370 && n <= 0x37D) ||
-            (n >= 0x37F && n <= 0x1FFF) ||
-            (n >= 0x200C && n <= 0x200D) ||
-            (n >= 0x2070 && n <= 0x218F) ||
-            (n >= 0x2C00 && n <= 0x2FEF) ||
-            (n >= 0x3001 && n <= 0xD7FF) ||
-            (n >= 0xF900 && n <= 0xFDCF) ||
-            (n >= 0xFDF0 && n <= 0xFFFD)) {
-            continue;
-        }
-        else if (i !== 0 &&
-            (n === 45 || n === 46 || // '-' or '.'
-                (n >= 48 && n <= 57) || // [0-9]
-                (n === 0xB7) ||
-                (n >= 0x0300 && n <= 0x036F) ||
-                (n >= 0x203F && n <= 0x2040))) {
-            continue;
-        }
-        else if (i !== 0 && n === 58) { // :
-            if (colonFound)
-                return false; // multiple colons in qname
-            if (i === name.length - 1)
-                return false; // colon at the end of qname
-            colonFound = true;
-            continue;
-        }
-        if (n >= 0xD800 && n <= 0xDBFF && i < name.length - 1) {
-            const n2 = name.charCodeAt(i + 1);
-            if (n2 >= 0xDC00 && n2 <= 0xDFFF) {
-                n = (n - 0xD800) * 0x400 + n2 - 0xDC00 + 0x10000;
-                i++;
-                if (n >= 0x10000 && n <= 0xEFFFF) {
-                    continue;
+    /** @inheritdoc */
+    [Symbol.iterator]() {
+        const root = this._root;
+        const filter = this._filter;
+        let currentNode = algorithm_1.tree_getFirstDescendantNode(root, false, false, (e) => util_1.Guard.isElementNode(e) && filter(e));
+        return {
+            next() {
+                if (currentNode === null) {
+                    return { done: true, value: null };
+                }
+                else {
+                    const result = { done: false, value: currentNode };
+                    currentNode = algorithm_1.tree_getNextDescendantNode(root, currentNode, false, false, (e) => util_1.Guard.isElementNode(e) && filter(e));
+                    return result;
                 }
             }
-        }
-        return false;
+        };
     }
-    return true;
-}
-exports.xml_isQName = xml_isQName;
-/**
- * Determines if the given string contains legal characters.
- *
- * @param chars - sequence of characters to test
- */
-function xml_isLegalChar(chars) {
-    for (let i = 0; i < chars.length; i++) {
-        let n = chars.charCodeAt(i);
-        // #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
-        if (n === 0x9 || n === 0xA || n === 0xD ||
-            (n >= 0x20 && n <= 0xD7FF) ||
-            (n >= 0xE000 && n <= 0xFFFD)) {
-            continue;
+    /**
+     * Implements a proxy get trap to provide array-like access.
+     */
+    get(target, key, receiver) {
+        if (!util_2.isString(key) || HTMLCollectionImpl.reservedNames.indexOf(key) !== -1) {
+            return Reflect.get(target, key, receiver);
         }
-        if (n >= 0xD800 && n <= 0xDBFF && i < chars.length - 1) {
-            const n2 = chars.charCodeAt(i + 1);
-            if (n2 >= 0xDC00 && n2 <= 0xDFFF) {
-                n = (n - 0xD800) * 0x400 + n2 - 0xDC00 + 0x10000;
-                i++;
-                if (n >= 0x10000 && n <= 0x10FFFF) {
-                    continue;
-                }
-            }
+        const index = Number(key);
+        if (isNaN(index)) {
+            return target.namedItem(key) || undefined;
         }
-        return false;
+        else {
+            return target.item(index) || undefined;
+        }
     }
-    return true;
-}
-exports.xml_isLegalChar = xml_isLegalChar;
-/**
- * Determines if the given string contains legal characters for a public
- * identifier.
- *
- * @param chars - sequence of characters to test
- */
-function xml_isPubidChar(chars) {
-    for (let i = 0; i < chars.length; i++) {
-        // PubId chars are all in the ASCII range, no need to check surrogates
-        const n = chars.charCodeAt(i);
-        // #x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
-        if ((n >= 97 && n <= 122) || // [a-z]
-            (n >= 65 && n <= 90) || // [A-Z]
-            (n >= 39 && n <= 59) || // ['()*+,-./] | [0-9] | [:;]
-            n === 0x20 || n === 0xD || n === 0xA || // #x20 | #xD | #xA
-            (n >= 35 && n <= 37) || // [#$%]
-            n === 33 || // !
-            n === 61 || n === 63 || n === 64 || n === 95) { // [=?@_]
-            continue;
+    /**
+     * Implements a proxy set trap to provide array-like access.
+     */
+    set(target, key, value, receiver) {
+        if (!util_2.isString(key) || HTMLCollectionImpl.reservedNames.indexOf(key) !== -1) {
+            return Reflect.set(target, key, value, receiver);
+        }
+        const index = Number(key);
+        const node = isNaN(index) ?
+            target.namedItem(key) || undefined : target.item(index) || undefined;
+        if (node && node._parent) {
+            algorithm_1.mutation_replace(node, value, node._parent);
+            return true;
         }
         else {
             return false;
         }
     }
-    return true;
+    /**
+     * Creates a new `HTMLCollection`.
+     *
+     * @param root - root node
+     * @param filter - node filter
+     */
+    static _create(root, filter = (() => true)) {
+        return new HTMLCollectionImpl(root, filter);
+    }
 }
-exports.xml_isPubidChar = xml_isPubidChar;
-//# sourceMappingURL=XMLAlgorithm.js.map
+exports.HTMLCollectionImpl = HTMLCollectionImpl;
+HTMLCollectionImpl.reservedNames = ['_root', '_live', '_filter', 'length',
+    'item', 'namedItem', 'get', 'set'];
+//# sourceMappingURL=HTMLCollectionImpl.js.map
 
 /***/ }),
-
-/***/ 457:
+/* 456 */,
+/* 457 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -15501,8 +16858,11 @@ exports.utf8Decode = utf8Decode;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 462:
+/* 458 */,
+/* 459 */,
+/* 460 */,
+/* 461 */,
+/* 462 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -17009,8 +18369,8 @@ BaseWriter._VoidElementNames = new Set(['area', 'base', 'basefont',
 //# sourceMappingURL=BaseWriter.js.map
 
 /***/ }),
-
-/***/ 464:
+/* 463 */,
+/* 464 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -17078,8 +18438,10 @@ exports.traversal_filter = traversal_filter;
 //# sourceMappingURL=TraversalAlgorithm.js.map
 
 /***/ }),
-
-/***/ 468:
+/* 465 */,
+/* 466 */,
+/* 467 */,
+/* 468 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -17254,12 +18616,31 @@ exports.XMLParserImpl = XMLParserImpl;
 //# sourceMappingURL=XMLParserImpl.js.map
 
 /***/ }),
-
-/***/ 470:
+/* 469 */,
+/* 470 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -17269,19 +18650,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getIDToken = exports.getState = exports.saveState = exports.group = exports.endGroup = exports.startGroup = exports.info = exports.notice = exports.warning = exports.error = exports.debug = exports.isDebug = exports.setFailed = exports.setCommandEcho = exports.setOutput = exports.getBooleanInput = exports.getMultilineInput = exports.getInput = exports.addPath = exports.setSecret = exports.exportVariable = exports.ExitCode = void 0;
 const command_1 = __webpack_require__(431);
 const file_command_1 = __webpack_require__(102);
 const utils_1 = __webpack_require__(82);
 const os = __importStar(__webpack_require__(87));
 const path = __importStar(__webpack_require__(622));
+const oidc_utils_1 = __webpack_require__(742);
 /**
  * The code to exit an action
  */
@@ -17310,13 +18686,9 @@ function exportVariable(name, val) {
     process.env[name] = convertedVal;
     const filePath = process.env['GITHUB_ENV'] || '';
     if (filePath) {
-        const delimiter = '_GitHubActionsFileCommandDelimeter_';
-        const commandValue = `${name}<<${delimiter}${os.EOL}${convertedVal}${os.EOL}${delimiter}`;
-        file_command_1.issueCommand('ENV', commandValue);
+        return file_command_1.issueFileCommand('ENV', file_command_1.prepareKeyValueMessage(name, val));
     }
-    else {
-        command_1.issueCommand('set-env', { name }, convertedVal);
-    }
+    command_1.issueCommand('set-env', { name }, convertedVal);
 }
 exports.exportVariable = exportVariable;
 /**
@@ -17334,7 +18706,7 @@ exports.setSecret = setSecret;
 function addPath(inputPath) {
     const filePath = process.env['GITHUB_PATH'] || '';
     if (filePath) {
-        file_command_1.issueCommand('PATH', inputPath);
+        file_command_1.issueFileCommand('PATH', inputPath);
     }
     else {
         command_1.issueCommand('add-path', {}, inputPath);
@@ -17343,7 +18715,9 @@ function addPath(inputPath) {
 }
 exports.addPath = addPath;
 /**
- * Gets the value of an input.  The value is also trimmed.
+ * Gets the value of an input.
+ * Unless trimWhitespace is set to false in InputOptions, the value is also trimmed.
+ * Returns an empty string if the value is not defined.
  *
  * @param     name     name of the input to get
  * @param     options  optional. See InputOptions.
@@ -17354,9 +18728,52 @@ function getInput(name, options) {
     if (options && options.required && !val) {
         throw new Error(`Input required and not supplied: ${name}`);
     }
+    if (options && options.trimWhitespace === false) {
+        return val;
+    }
     return val.trim();
 }
 exports.getInput = getInput;
+/**
+ * Gets the values of an multiline input.  Each value is also trimmed.
+ *
+ * @param     name     name of the input to get
+ * @param     options  optional. See InputOptions.
+ * @returns   string[]
+ *
+ */
+function getMultilineInput(name, options) {
+    const inputs = getInput(name, options)
+        .split('\n')
+        .filter(x => x !== '');
+    if (options && options.trimWhitespace === false) {
+        return inputs;
+    }
+    return inputs.map(input => input.trim());
+}
+exports.getMultilineInput = getMultilineInput;
+/**
+ * Gets the input value of the boolean type in the YAML 1.2 "core schema" specification.
+ * Support boolean input list: `true | True | TRUE | false | False | FALSE` .
+ * The return value is also in boolean type.
+ * ref: https://yaml.org/spec/1.2/spec.html#id2804923
+ *
+ * @param     name     name of the input to get
+ * @param     options  optional. See InputOptions.
+ * @returns   boolean
+ */
+function getBooleanInput(name, options) {
+    const trueValue = ['true', 'True', 'TRUE'];
+    const falseValue = ['false', 'False', 'FALSE'];
+    const val = getInput(name, options);
+    if (trueValue.includes(val))
+        return true;
+    if (falseValue.includes(val))
+        return false;
+    throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}\n` +
+        `Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
+}
+exports.getBooleanInput = getBooleanInput;
 /**
  * Sets the value of an output.
  *
@@ -17365,7 +18782,12 @@ exports.getInput = getInput;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function setOutput(name, value) {
-    command_1.issueCommand('set-output', { name }, value);
+    const filePath = process.env['GITHUB_OUTPUT'] || '';
+    if (filePath) {
+        return file_command_1.issueFileCommand('OUTPUT', file_command_1.prepareKeyValueMessage(name, value));
+    }
+    process.stdout.write(os.EOL);
+    command_1.issueCommand('set-output', { name }, utils_1.toCommandValue(value));
 }
 exports.setOutput = setOutput;
 /**
@@ -17411,19 +18833,30 @@ exports.debug = debug;
 /**
  * Adds an error issue
  * @param message error issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
  */
-function error(message) {
-    command_1.issue('error', message instanceof Error ? message.toString() : message);
+function error(message, properties = {}) {
+    command_1.issueCommand('error', utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 exports.error = error;
 /**
- * Adds an warning issue
+ * Adds a warning issue
  * @param message warning issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
  */
-function warning(message) {
-    command_1.issue('warning', message instanceof Error ? message.toString() : message);
+function warning(message, properties = {}) {
+    command_1.issueCommand('warning', utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 exports.warning = warning;
+/**
+ * Adds a notice issue
+ * @param message notice issue message. Errors will be converted to string via toString()
+ * @param properties optional properties to add to the annotation.
+ */
+function notice(message, properties = {}) {
+    command_1.issueCommand('notice', utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+}
+exports.notice = notice;
 /**
  * Writes info to log with console.log.
  * @param message info message
@@ -17483,7 +18916,11 @@ exports.group = group;
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function saveState(name, value) {
-    command_1.issueCommand('save-state', { name }, value);
+    const filePath = process.env['GITHUB_STATE'] || '';
+    if (filePath) {
+        return file_command_1.issueFileCommand('STATE', file_command_1.prepareKeyValueMessage(name, value));
+    }
+    command_1.issueCommand('save-state', { name }, utils_1.toCommandValue(value));
 }
 exports.saveState = saveState;
 /**
@@ -17496,11 +18933,38 @@ function getState(name) {
     return process.env[`STATE_${name}`] || '';
 }
 exports.getState = getState;
+function getIDToken(aud) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return yield oidc_utils_1.OidcClient.getIDToken(aud);
+    });
+}
+exports.getIDToken = getIDToken;
+/**
+ * Summary exports
+ */
+var summary_1 = __webpack_require__(665);
+Object.defineProperty(exports, "summary", { enumerable: true, get: function () { return summary_1.summary; } });
+/**
+ * @deprecated use core.summary
+ */
+var summary_2 = __webpack_require__(665);
+Object.defineProperty(exports, "markdownSummary", { enumerable: true, get: function () { return summary_2.markdownSummary; } });
+/**
+ * Path exports
+ */
+var path_utils_1 = __webpack_require__(573);
+Object.defineProperty(exports, "toPosixPath", { enumerable: true, get: function () { return path_utils_1.toPosixPath; } });
+Object.defineProperty(exports, "toWin32Path", { enumerable: true, get: function () { return path_utils_1.toWin32Path; } });
+Object.defineProperty(exports, "toPlatformPath", { enumerable: true, get: function () { return path_utils_1.toPlatformPath; } });
 //# sourceMappingURL=core.js.map
 
 /***/ }),
-
-/***/ 476:
+/* 471 */,
+/* 472 */,
+/* 473 */,
+/* 474 */,
+/* 475 */,
+/* 476 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -17526,8 +18990,9 @@ exports.SlotableImpl = SlotableImpl;
 //# sourceMappingURL=SlotableImpl.js.map
 
 /***/ }),
-
-/***/ 479:
+/* 477 */,
+/* 478 */,
+/* 479 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -18531,8 +19996,10 @@ exports.mutation_remove = mutation_remove;
 //# sourceMappingURL=MutationAlgorithm.js.map
 
 /***/ }),
-
-/***/ 483:
+/* 480 */,
+/* 481 */,
+/* 482 */,
+/* 483 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -18559,8 +20026,9 @@ exports.selectors_scopeMatchASelectorsString = selectors_scopeMatchASelectorsStr
 //# sourceMappingURL=SelectorsAlgorithm.js.map
 
 /***/ }),
-
-/***/ 486:
+/* 484 */,
+/* 485 */,
+/* 486 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -18740,8 +20208,7 @@ exports.sortInDescendingOrder = sortInDescendingOrder;
 //# sourceMappingURL=Map.js.map
 
 /***/ }),
-
-/***/ 487:
+/* 487 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -18775,8 +20242,7 @@ exports.TraverserImpl = TraverserImpl;
 //# sourceMappingURL=TraverserImpl.js.map
 
 /***/ }),
-
-/***/ 488:
+/* 488 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -19192,8 +20658,11 @@ WebIDLAlgorithm_1.idl_defineConst(DocumentImpl.prototype, "_nodeType", interface
 //# sourceMappingURL=DocumentImpl.js.map
 
 /***/ }),
-
-/***/ 493:
+/* 489 */,
+/* 490 */,
+/* 491 */,
+/* 492 */,
+/* 493 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -19322,8 +20791,8 @@ exports.document_adopt = document_adopt;
 //# sourceMappingURL=DocumentAlgorithm.js.map
 
 /***/ }),
-
-/***/ 495:
+/* 494 */,
+/* 495 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -19343,8 +20812,7 @@ exports.idl_defineConst = idl_defineConst;
 //# sourceMappingURL=WebIDLAlgorithm.js.map
 
 /***/ }),
-
-/***/ 496:
+/* 496 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -19639,8 +21107,11 @@ exports.range = range;
 //# sourceMappingURL=Set.js.map
 
 /***/ }),
-
-/***/ 501:
+/* 497 */,
+/* 498 */,
+/* 499 */,
+/* 500 */,
+/* 501 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -19668,8 +21139,46 @@ exports.dequeue = dequeue;
 //# sourceMappingURL=Queue.js.map
 
 /***/ }),
+/* 502 */,
+/* 503 */,
+/* 504 */,
+/* 505 */,
+/* 506 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 512:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = rng;
+
+var _crypto = _interopRequireDefault(__webpack_require__(417));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const rnds8Pool = new Uint8Array(256); // # of random values to pre-allocate
+
+let poolPtr = rnds8Pool.length;
+
+function rng() {
+  if (poolPtr > rnds8Pool.length - 16) {
+    _crypto.default.randomFillSync(rnds8Pool);
+
+    poolPtr = 0;
+  }
+
+  return rnds8Pool.slice(poolPtr, poolPtr += 16);
+}
+
+/***/ }),
+/* 507 */,
+/* 508 */,
+/* 509 */,
+/* 510 */,
+/* 511 */,
+/* 512 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -19697,8 +21206,16 @@ exports.BaseCBWriter = BaseCBWriter;
 //# sourceMappingURL=BaseCBWriter.js.map
 
 /***/ }),
-
-/***/ 522:
+/* 513 */,
+/* 514 */,
+/* 515 */,
+/* 516 */,
+/* 517 */,
+/* 518 */,
+/* 519 */,
+/* 520 */,
+/* 521 */,
+/* 522 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -19805,8 +21322,8 @@ exports.convertAJSONDerivedJavaScriptValueToAnInfraValue = convertAJSONDerivedJa
 //# sourceMappingURL=JSON.js.map
 
 /***/ }),
-
-/***/ 524:
+/* 523 */,
+/* 524 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -19869,8 +21386,28 @@ exports.CompareCache = CompareCache;
 //# sourceMappingURL=CompareCache.js.map
 
 /***/ }),
+/* 525 */
+/***/ (function(__unusedmodule, exports) {
 
-/***/ 533:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
+exports.default = _default;
+
+/***/ }),
+/* 526 */,
+/* 527 */,
+/* 528 */,
+/* 529 */,
+/* 530 */,
+/* 531 */,
+/* 532 */,
+/* 533 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -20351,8 +21888,8 @@ function _evaluateVersions(versions, versionSpec) {
 //# sourceMappingURL=tool-cache.js.map
 
 /***/ }),
-
-/***/ 535:
+/* 534 */,
+/* 535 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -20365,8 +21902,8 @@ exports.XMLBuilderCBImpl = XMLBuilderCBImpl_1.XMLBuilderCBImpl;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 537:
+/* 536 */,
+/* 537 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -20399,8 +21936,8 @@ exports.AbstractRangeImpl = AbstractRangeImpl;
 //# sourceMappingURL=AbstractRangeImpl.js.map
 
 /***/ }),
-
-/***/ 539:
+/* 538 */,
+/* 539 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -20938,8 +22475,8 @@ exports.HttpClient = HttpClient;
 
 
 /***/ }),
-
-/***/ 541:
+/* 540 */,
+/* 541 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -21433,8 +22970,16 @@ exports.node_locateANamespace = node_locateANamespace;
 //# sourceMappingURL=NodeAlgorithm.js.map
 
 /***/ }),
-
-/***/ 551:
+/* 542 */,
+/* 543 */,
+/* 544 */,
+/* 545 */,
+/* 546 */,
+/* 547 */,
+/* 548 */,
+/* 549 */,
+/* 550 */,
+/* 551 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -22124,8 +23669,13 @@ XMLBuilderCBImpl._VoidElementNames = new Set(['area', 'base', 'basefont',
 //# sourceMappingURL=XMLBuilderCBImpl.js.map
 
 /***/ }),
-
-/***/ 558:
+/* 552 */,
+/* 553 */,
+/* 554 */,
+/* 555 */,
+/* 556 */,
+/* 557 */,
+/* 558 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -22192,8 +23742,16 @@ WebIDLAlgorithm_1.idl_defineConst(DocumentTypeImpl.prototype, "_nodeType", inter
 //# sourceMappingURL=DocumentTypeImpl.js.map
 
 /***/ }),
-
-/***/ 568:
+/* 559 */,
+/* 560 */,
+/* 561 */,
+/* 562 */,
+/* 563 */,
+/* 564 */,
+/* 565 */,
+/* 566 */,
+/* 567 */,
+/* 568 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -22263,8 +23821,96 @@ exports.ObjectCache = ObjectCache;
 //# sourceMappingURL=ObjectCache.js.map
 
 /***/ }),
+/* 569 */,
+/* 570 */,
+/* 571 */,
+/* 572 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 574:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _v = _interopRequireDefault(__webpack_require__(136));
+
+var _md = _interopRequireDefault(__webpack_require__(659));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const v3 = (0, _v.default)('v3', 0x30, _md.default);
+var _default = v3;
+exports.default = _default;
+
+/***/ }),
+/* 573 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.toPlatformPath = exports.toWin32Path = exports.toPosixPath = void 0;
+const path = __importStar(__webpack_require__(622));
+/**
+ * toPosixPath converts the given path to the posix form. On Windows, \\ will be
+ * replaced with /.
+ *
+ * @param pth. Path to transform.
+ * @return string Posix path.
+ */
+function toPosixPath(pth) {
+    return pth.replace(/[\\]/g, '/');
+}
+exports.toPosixPath = toPosixPath;
+/**
+ * toWin32Path converts the given path to the win32 form. On Linux, / will be
+ * replaced with \\.
+ *
+ * @param pth. Path to transform.
+ * @return string Win32 path.
+ */
+function toWin32Path(pth) {
+    return pth.replace(/[/]/g, '\\');
+}
+exports.toWin32Path = toWin32Path;
+/**
+ * toPlatformPath converts the given path to a platform-specific path. It does
+ * this by replacing instances of / and \ with the platform-specific path
+ * separator.
+ *
+ * @param pth The path to platformize.
+ * @return string The platform-specific path.
+ */
+function toPlatformPath(pth) {
+    return pth.replace(/[/\\]/g, path.sep);
+}
+exports.toPlatformPath = toPlatformPath;
+//# sourceMappingURL=path-utils.js.map
+
+/***/ }),
+/* 574 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -22298,8 +23944,7 @@ exports.NonElementParentNodeImpl = NonElementParentNodeImpl;
 //# sourceMappingURL=NonElementParentNodeImpl.js.map
 
 /***/ }),
-
-/***/ 575:
+/* 575 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -22360,8 +24005,181 @@ exports.LocalNameSet = LocalNameSet;
 //# sourceMappingURL=LocalNameSet.js.map
 
 /***/ }),
+/* 576 */
+/***/ (function(__unusedmodule, exports) {
 
-/***/ 581:
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * Determines if the given string is valid for a `"Name"` construct.
+ *
+ * @param name - name string to test
+ */
+function xml_isName(name) {
+    for (let i = 0; i < name.length; i++) {
+        let n = name.charCodeAt(i);
+        // NameStartChar
+        if ((n >= 97 && n <= 122) || // [a-z]
+            (n >= 65 && n <= 90) || // [A-Z]
+            n === 58 || n === 95 || // ':' or '_'
+            (n >= 0xC0 && n <= 0xD6) ||
+            (n >= 0xD8 && n <= 0xF6) ||
+            (n >= 0xF8 && n <= 0x2FF) ||
+            (n >= 0x370 && n <= 0x37D) ||
+            (n >= 0x37F && n <= 0x1FFF) ||
+            (n >= 0x200C && n <= 0x200D) ||
+            (n >= 0x2070 && n <= 0x218F) ||
+            (n >= 0x2C00 && n <= 0x2FEF) ||
+            (n >= 0x3001 && n <= 0xD7FF) ||
+            (n >= 0xF900 && n <= 0xFDCF) ||
+            (n >= 0xFDF0 && n <= 0xFFFD)) {
+            continue;
+        }
+        else if (i !== 0 &&
+            (n === 45 || n === 46 || // '-' or '.'
+                (n >= 48 && n <= 57) || // [0-9]
+                (n === 0xB7) ||
+                (n >= 0x0300 && n <= 0x036F) ||
+                (n >= 0x203F && n <= 0x2040))) {
+            continue;
+        }
+        if (n >= 0xD800 && n <= 0xDBFF && i < name.length - 1) {
+            const n2 = name.charCodeAt(i + 1);
+            if (n2 >= 0xDC00 && n2 <= 0xDFFF) {
+                n = (n - 0xD800) * 0x400 + n2 - 0xDC00 + 0x10000;
+                i++;
+                if (n >= 0x10000 && n <= 0xEFFFF) {
+                    continue;
+                }
+            }
+        }
+        return false;
+    }
+    return true;
+}
+exports.xml_isName = xml_isName;
+/**
+ * Determines if the given string is valid for a `"QName"` construct.
+ *
+ * @param name - name string to test
+ */
+function xml_isQName(name) {
+    let colonFound = false;
+    for (let i = 0; i < name.length; i++) {
+        let n = name.charCodeAt(i);
+        // NameStartChar
+        if ((n >= 97 && n <= 122) || // [a-z]
+            (n >= 65 && n <= 90) || // [A-Z]
+            n === 95 || // '_'
+            (n >= 0xC0 && n <= 0xD6) ||
+            (n >= 0xD8 && n <= 0xF6) ||
+            (n >= 0xF8 && n <= 0x2FF) ||
+            (n >= 0x370 && n <= 0x37D) ||
+            (n >= 0x37F && n <= 0x1FFF) ||
+            (n >= 0x200C && n <= 0x200D) ||
+            (n >= 0x2070 && n <= 0x218F) ||
+            (n >= 0x2C00 && n <= 0x2FEF) ||
+            (n >= 0x3001 && n <= 0xD7FF) ||
+            (n >= 0xF900 && n <= 0xFDCF) ||
+            (n >= 0xFDF0 && n <= 0xFFFD)) {
+            continue;
+        }
+        else if (i !== 0 &&
+            (n === 45 || n === 46 || // '-' or '.'
+                (n >= 48 && n <= 57) || // [0-9]
+                (n === 0xB7) ||
+                (n >= 0x0300 && n <= 0x036F) ||
+                (n >= 0x203F && n <= 0x2040))) {
+            continue;
+        }
+        else if (i !== 0 && n === 58) { // :
+            if (colonFound)
+                return false; // multiple colons in qname
+            if (i === name.length - 1)
+                return false; // colon at the end of qname
+            colonFound = true;
+            continue;
+        }
+        if (n >= 0xD800 && n <= 0xDBFF && i < name.length - 1) {
+            const n2 = name.charCodeAt(i + 1);
+            if (n2 >= 0xDC00 && n2 <= 0xDFFF) {
+                n = (n - 0xD800) * 0x400 + n2 - 0xDC00 + 0x10000;
+                i++;
+                if (n >= 0x10000 && n <= 0xEFFFF) {
+                    continue;
+                }
+            }
+        }
+        return false;
+    }
+    return true;
+}
+exports.xml_isQName = xml_isQName;
+/**
+ * Determines if the given string contains legal characters.
+ *
+ * @param chars - sequence of characters to test
+ */
+function xml_isLegalChar(chars) {
+    for (let i = 0; i < chars.length; i++) {
+        let n = chars.charCodeAt(i);
+        // #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
+        if (n === 0x9 || n === 0xA || n === 0xD ||
+            (n >= 0x20 && n <= 0xD7FF) ||
+            (n >= 0xE000 && n <= 0xFFFD)) {
+            continue;
+        }
+        if (n >= 0xD800 && n <= 0xDBFF && i < chars.length - 1) {
+            const n2 = chars.charCodeAt(i + 1);
+            if (n2 >= 0xDC00 && n2 <= 0xDFFF) {
+                n = (n - 0xD800) * 0x400 + n2 - 0xDC00 + 0x10000;
+                i++;
+                if (n >= 0x10000 && n <= 0x10FFFF) {
+                    continue;
+                }
+            }
+        }
+        return false;
+    }
+    return true;
+}
+exports.xml_isLegalChar = xml_isLegalChar;
+/**
+ * Determines if the given string contains legal characters for a public
+ * identifier.
+ *
+ * @param chars - sequence of characters to test
+ */
+function xml_isPubidChar(chars) {
+    for (let i = 0; i < chars.length; i++) {
+        // PubId chars are all in the ASCII range, no need to check surrogates
+        const n = chars.charCodeAt(i);
+        // #x20 | #xD | #xA | [a-zA-Z0-9] | [-'()+,./:=?;!*#@$_%]
+        if ((n >= 97 && n <= 122) || // [a-z]
+            (n >= 65 && n <= 90) || // [A-Z]
+            (n >= 39 && n <= 59) || // ['()*+,-./] | [0-9] | [:;]
+            n === 0x20 || n === 0xD || n === 0xA || // #x20 | #xD | #xA
+            (n >= 35 && n <= 37) || // [#$%]
+            n === 33 || // !
+            n === 61 || n === 63 || n === 64 || n === 95) { // [=?@_]
+            continue;
+        }
+        else {
+            return false;
+        }
+    }
+    return true;
+}
+exports.xml_isPubidChar = xml_isPubidChar;
+//# sourceMappingURL=XMLAlgorithm.js.map
+
+/***/ }),
+/* 577 */,
+/* 578 */,
+/* 579 */,
+/* 580 */,
+/* 581 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -22425,8 +24243,17 @@ exports.ShadowRootImpl = ShadowRootImpl;
 //# sourceMappingURL=ShadowRootImpl.js.map
 
 /***/ }),
-
-/***/ 592:
+/* 582 */,
+/* 583 */,
+/* 584 */,
+/* 585 */,
+/* 586 */,
+/* 587 */,
+/* 588 */,
+/* 589 */,
+/* 590 */,
+/* 591 */,
+/* 592 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -22840,8 +24667,9 @@ exports.utf8Decode = utf8Decode;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 595:
+/* 593 */,
+/* 594 */,
+/* 595 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -22849,7 +24677,7 @@ exports.utf8Decode = utf8Decode;
 Object.defineProperty(exports, "__esModule", { value: true });
 const interfaces_1 = __webpack_require__(625);
 const util_1 = __webpack_require__(592);
-const writers_1 = __webpack_require__(95);
+const writers_1 = __webpack_require__(442);
 const interfaces_2 = __webpack_require__(970);
 const util_2 = __webpack_require__(918);
 const algorithm_1 = __webpack_require__(163);
@@ -23622,8 +25450,8 @@ exports.XMLBuilderImpl = XMLBuilderImpl;
 //# sourceMappingURL=XMLBuilderImpl.js.map
 
 /***/ }),
-
-/***/ 597:
+/* 596 */,
+/* 597 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -23734,15 +25562,23 @@ exports.EventTargetImpl = EventTargetImpl;
 //# sourceMappingURL=EventTargetImpl.js.map
 
 /***/ }),
-
-/***/ 605:
+/* 598 */,
+/* 599 */,
+/* 600 */,
+/* 601 */,
+/* 602 */,
+/* 603 */,
+/* 604 */,
+/* 605 */
 /***/ (function(module) {
 
 module.exports = require("http");
 
 /***/ }),
-
-/***/ 609:
+/* 606 */,
+/* 607 */,
+/* 608 */,
+/* 609 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -23757,15 +25593,21 @@ exports.XLink = "http://www.w3.org/1999/xlink";
 //# sourceMappingURL=Namespace.js.map
 
 /***/ }),
-
-/***/ 614:
+/* 610 */,
+/* 611 */,
+/* 612 */,
+/* 613 */,
+/* 614 */
 /***/ (function(module) {
 
 module.exports = require("events");
 
 /***/ }),
-
-/***/ 619:
+/* 615 */,
+/* 616 */,
+/* 617 */,
+/* 618 */,
+/* 619 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -23810,15 +25652,17 @@ WebIDLAlgorithm_1.idl_defineConst(ProcessingInstructionImpl.prototype, "_nodeTyp
 //# sourceMappingURL=ProcessingInstructionImpl.js.map
 
 /***/ }),
-
-/***/ 622:
+/* 620 */,
+/* 621 */,
+/* 622 */
 /***/ (function(module) {
 
 module.exports = require("path");
 
 /***/ }),
-
-/***/ 625:
+/* 623 */,
+/* 624 */,
+/* 625 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -23898,15 +25742,44 @@ exports.DefaultXMLBuilderCBOptions = {
 //# sourceMappingURL=interfaces.js.map
 
 /***/ }),
-
-/***/ 631:
+/* 626 */,
+/* 627 */,
+/* 628 */,
+/* 629 */,
+/* 630 */,
+/* 631 */
 /***/ (function(module) {
 
 module.exports = require("net");
 
 /***/ }),
+/* 632 */,
+/* 633 */,
+/* 634 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 636:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _regex = _interopRequireDefault(__webpack_require__(525));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function validate(uuid) {
+  return typeof uuid === 'string' && _regex.default.test(uuid);
+}
+
+var _default = validate;
+exports.default = _default;
+
+/***/ }),
+/* 635 */,
+/* 636 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -24080,8 +25953,33 @@ exports.NodeListImpl = NodeListImpl;
 //# sourceMappingURL=NodeListImpl.js.map
 
 /***/ }),
+/* 637 */,
+/* 638 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 642:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _v = _interopRequireDefault(__webpack_require__(136));
+
+var _sha = _interopRequireDefault(__webpack_require__(329));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+const v5 = (0, _v.default)('v5', 0x50, _sha.default);
+var _default = v5;
+exports.default = _default;
+
+/***/ }),
+/* 639 */,
+/* 640 */,
+/* 641 */,
+/* 642 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -24121,8 +26019,10 @@ exports.DOMParserImpl = DOMParserImpl;
 //# sourceMappingURL=DOMParserImpl.js.map
 
 /***/ }),
-
-/***/ 646:
+/* 643 */,
+/* 644 */,
+/* 645 */,
+/* 646 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -24357,8 +26257,8 @@ exports.TreeWalkerImpl = TreeWalkerImpl;
 //# sourceMappingURL=TreeWalkerImpl.js.map
 
 /***/ }),
-
-/***/ 648:
+/* 647 */,
+/* 648 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -24443,8 +26343,15 @@ exports.dom = DOMImpl.instance;
 //# sourceMappingURL=DOMImpl.js.map
 
 /***/ }),
-
-/***/ 657:
+/* 649 */,
+/* 650 */,
+/* 651 */,
+/* 652 */,
+/* 653 */,
+/* 654 */,
+/* 655 */,
+/* 656 */,
+/* 657 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -24651,8 +26558,38 @@ exports.sortInDescendingOrder = sortInDescendingOrder;
 //# sourceMappingURL=List.js.map
 
 /***/ }),
+/* 658 */,
+/* 659 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 661:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _crypto = _interopRequireDefault(__webpack_require__(417));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function md5(bytes) {
+  if (Array.isArray(bytes)) {
+    bytes = Buffer.from(bytes);
+  } else if (typeof bytes === 'string') {
+    bytes = Buffer.from(bytes, 'utf8');
+  }
+
+  return _crypto.default.createHash('md5').update(bytes).digest();
+}
+
+var _default = md5;
+exports.default = _default;
+
+/***/ }),
+/* 660 */,
+/* 661 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -24674,8 +26611,9 @@ exports.XMLDocumentImpl = XMLDocumentImpl;
 //# sourceMappingURL=XMLDocumentImpl.js.map
 
 /***/ }),
-
-/***/ 664:
+/* 662 */,
+/* 663 */,
+/* 664 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -24683,7 +26621,7 @@ exports.XMLDocumentImpl = XMLDocumentImpl;
 Object.defineProperty(exports, "__esModule", { value: true });
 const DOMException_1 = __webpack_require__(35);
 const infra_1 = __webpack_require__(23);
-const XMLAlgorithm_1 = __webpack_require__(442);
+const XMLAlgorithm_1 = __webpack_require__(576);
 /**
  * Validates the given qualified name.
  *
@@ -24766,438 +26704,307 @@ exports.namespace_extractQName = namespace_extractQName;
 //# sourceMappingURL=NamespaceAlgorithm.js.map
 
 /***/ }),
-
-/***/ 665:
+/* 665 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const CodePoints_1 = __webpack_require__(780);
-const ByteSequence_1 = __webpack_require__(425);
-const Byte_1 = __webpack_require__(15);
-const util_1 = __webpack_require__(42);
-/**
- * Determines if the string `a` is a code unit prefix of string `b`.
- *
- * @param a - a string
- * @param b - a string
- */
-function isCodeUnitPrefix(a, b) {
-    /**
-     * 1. Let i be 0.
-     * 2. While true:
-     * 2.1. Let aCodeUnit be the ith code unit of a if i is less than a’s length;
-     * otherwise null.
-     * 2.2. Let bCodeUnit be the ith code unit of b if i is less than b’s length;
-     * otherwise null.
-     * 2.3. If bCodeUnit is null, then return true.
-     * 2.4. Return false if aCodeUnit is different from bCodeUnit.
-     * 2.5. Set i to i + 1.
-     */
-    let i = 0;
-    while (true) {
-        const aCodeUnit = i < a.length ? a.charCodeAt(i) : null;
-        const bCodeUnit = i < b.length ? b.charCodeAt(i) : null;
-        if (aCodeUnit === null)
-            return true;
-        if (aCodeUnit !== bCodeUnit)
-            return false;
-        i++;
+exports.summary = exports.markdownSummary = exports.SUMMARY_DOCS_URL = exports.SUMMARY_ENV_VAR = void 0;
+const os_1 = __webpack_require__(87);
+const fs_1 = __webpack_require__(747);
+const { access, appendFile, writeFile } = fs_1.promises;
+exports.SUMMARY_ENV_VAR = 'GITHUB_STEP_SUMMARY';
+exports.SUMMARY_DOCS_URL = 'https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary';
+class Summary {
+    constructor() {
+        this._buffer = '';
     }
-}
-exports.isCodeUnitPrefix = isCodeUnitPrefix;
-/**
- * Determines if the string `a` is a code unit less than string `b`.
- *
- * @param a - a string
- * @param b - a string
- */
-function isCodeUnitLessThan(a, b) {
     /**
-     * 1. If b is a code unit prefix of a, then return false.
-     * 2. If a is a code unit prefix of b, then return true.
-     * 3. Let n be the smallest index such that the nth code unit of a is
-     * different from the nth code unit of b. (There has to be such an index,
-     * since neither string is a prefix of the other.)
-     * 4. If the nth code unit of a is less than the nth code unit of b, then
-     * return true.
-     * 5. Return false.
+     * Finds the summary file path from the environment, rejects if env var is not found or file does not exist
+     * Also checks r/w permissions.
+     *
+     * @returns step summary file path
      */
-    if (isCodeUnitPrefix(b, a))
-        return false;
-    if (isCodeUnitPrefix(a, b))
-        return true;
-    for (let i = 0; i < Math.min(a.length, b.length); i++) {
-        const aCodeUnit = a.charCodeAt(i);
-        const bCodeUnit = b.charCodeAt(i);
-        if (aCodeUnit === bCodeUnit)
-            continue;
-        return (aCodeUnit < bCodeUnit);
+    filePath() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this._filePath) {
+                return this._filePath;
+            }
+            const pathFromEnv = process.env[exports.SUMMARY_ENV_VAR];
+            if (!pathFromEnv) {
+                throw new Error(`Unable to find environment variable for $${exports.SUMMARY_ENV_VAR}. Check if your runtime environment supports job summaries.`);
+            }
+            try {
+                yield access(pathFromEnv, fs_1.constants.R_OK | fs_1.constants.W_OK);
+            }
+            catch (_a) {
+                throw new Error(`Unable to access summary file: '${pathFromEnv}'. Check if the file has correct read/write permissions.`);
+            }
+            this._filePath = pathFromEnv;
+            return this._filePath;
+        });
     }
-    /* istanbul ignore next */
-    return false;
-}
-exports.isCodeUnitLessThan = isCodeUnitLessThan;
-/**
- * Isomorphic encodes the given string.
- *
- * @param str - a string
- */
-function isomorphicEncode(str) {
     /**
-     * 1. Assert: input contains no code points greater than U+00FF.
-     * 2. Return a byte sequence whose length is equal to input’s length and whose
-     * bytes have the same values as input’s code points, in the same order.
+     * Wraps content in an HTML tag, adding any HTML attributes
+     *
+     * @param {string} tag HTML tag to wrap
+     * @param {string | null} content content within the tag
+     * @param {[attribute: string]: string} attrs key-value list of HTML attributes to add
+     *
+     * @returns {string} content wrapped in HTML element
      */
-    const codePoints = Array.from(str);
-    const bytes = new Uint8Array(codePoints.length);
-    let i = 0;
-    for (const codePoint of str) {
-        const byte = codePoint.codePointAt(0);
-        console.assert(byte !== undefined && byte <= 0x00FF, "isomorphicEncode requires string bytes to be less than or equal to 0x00FF.");
-        if (byte !== undefined && byte <= 0x00FF) {
-            bytes[i++] = byte;
+    wrap(tag, content, attrs = {}) {
+        const htmlAttrs = Object.entries(attrs)
+            .map(([key, value]) => ` ${key}="${value}"`)
+            .join('');
+        if (!content) {
+            return `<${tag}${htmlAttrs}>`;
         }
+        return `<${tag}${htmlAttrs}>${content}</${tag}>`;
     }
-    return bytes;
-}
-exports.isomorphicEncode = isomorphicEncode;
-/**
- * Determines if the given string is An ASCII string.
- *
- * @param str - a string
- */
-function isASCIIString(str) {
     /**
-     * An ASCII string is a string whose code points are all ASCII code points.
+     * Writes text in the buffer to the summary buffer file and empties buffer. Will append by default.
+     *
+     * @param {SummaryWriteOptions} [options] (optional) options for write operation
+     *
+     * @returns {Promise<Summary>} summary instance
      */
-    return /^[\u0000-\u007F]*$/.test(str);
-}
-exports.isASCIIString = isASCIIString;
-/**
- * Converts all uppercase ASCII code points to lowercase.
- *
- * @param str - a string
- */
-function asciiLowercase(str) {
-    /**
-     * To ASCII lowercase a string, replace all ASCII upper alphas in the string
-     * with their corresponding code point in ASCII lower alpha.
-     */
-    let result = "";
-    for (const c of str) {
-        const code = c.codePointAt(0);
-        if (code !== undefined && code >= 0x41 && code <= 0x5A) {
-            result += String.fromCodePoint(code + 0x20);
-        }
-        else {
-            result += c;
-        }
+    write(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const overwrite = !!(options === null || options === void 0 ? void 0 : options.overwrite);
+            const filePath = yield this.filePath();
+            const writeFunc = overwrite ? writeFile : appendFile;
+            yield writeFunc(filePath, this._buffer, { encoding: 'utf8' });
+            return this.emptyBuffer();
+        });
     }
-    return result;
-}
-exports.asciiLowercase = asciiLowercase;
-/**
- * Converts all uppercase ASCII code points to uppercase.
- *
- * @param str - a string
- */
-function asciiUppercase(str) {
     /**
-     * To ASCII uppercase a string, replace all ASCII lower alphas in the string
-     * with their corresponding code point in ASCII upper alpha.
+     * Clears the summary buffer and wipes the summary file
+     *
+     * @returns {Summary} summary instance
      */
-    let result = "";
-    for (const c of str) {
-        const code = c.codePointAt(0);
-        if (code !== undefined && code >= 0x61 && code <= 0x7A) {
-            result += String.fromCodePoint(code - 0x20);
-        }
-        else {
-            result += c;
-        }
+    clear() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.emptyBuffer().write({ overwrite: true });
+        });
     }
-    return result;
-}
-exports.asciiUppercase = asciiUppercase;
-/**
- * Compares two ASCII strings case-insensitively.
- *
- * @param a - a string
- * @param b - a string
- */
-function asciiCaseInsensitiveMatch(a, b) {
     /**
-     * A string A is an ASCII case-insensitive match for a string B, if the ASCII
-     * lowercase of A is the ASCII lowercase of B.
+     * Returns the current summary buffer as a string
+     *
+     * @returns {string} string of summary buffer
      */
-    return asciiLowercase(a) === asciiLowercase(b);
-}
-exports.asciiCaseInsensitiveMatch = asciiCaseInsensitiveMatch;
-/**
- * ASCII encodes a string.
- *
- * @param str - a string
- */
-function asciiEncode(str) {
-    /**
-     * 1. Assert: input is an ASCII string.
-     * 2. Return the isomorphic encoding of input.
-     */
-    console.assert(isASCIIString(str), "asciiEncode requires an ASCII string.");
-    return isomorphicEncode(str);
-}
-exports.asciiEncode = asciiEncode;
-/**
- * ASCII decodes a byte sequence.
- *
- * @param bytes - a byte sequence
- */
-function asciiDecode(bytes) {
-    /**
-     * 1. Assert: All bytes in input are ASCII bytes.
-     * 2. Return the isomorphic decoding of input.
-     */
-    for (const byte of bytes) {
-        console.assert(Byte_1.isASCIIByte(byte), "asciiDecode requires an ASCII byte sequence.");
+    stringify() {
+        return this._buffer;
     }
-    return ByteSequence_1.isomorphicDecode(bytes);
-}
-exports.asciiDecode = asciiDecode;
-/**
- * Strips newline characters from a string.
- *
- * @param str - a string
- */
-function stripNewlines(str) {
     /**
-     * To strip newlines from a string, remove any U+000A LF and U+000D CR code
-     * points from the string.
+     * If the summary buffer is empty
+     *
+     * @returns {boolen} true if the buffer is empty
      */
-    return str.replace(/[\n\r]/g, "");
-}
-exports.stripNewlines = stripNewlines;
-/**
- * Normalizes newline characters in a string by converting consecutive
- * carriage-return newline characters and also single carriage return characters
- * into a single newline.
- *
- * @param str - a string
- */
-function normalizeNewlines(str) {
-    /**
-     * To normalize newlines in a string, replace every U+000D CR U+000A LF code
-     * point pair with a single U+000A LF code point, and then replace every
-     * remaining U+000D CR code point with a U+000A LF code point.
-     */
-    return str.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-}
-exports.normalizeNewlines = normalizeNewlines;
-/**
- * Removes leading and trailing whitespace characters from a string.
- *
- * @param str - a string
- */
-function stripLeadingAndTrailingASCIIWhitespace(str) {
-    /**
-     * To strip leading and trailing ASCII whitespace from a string, remove all
-     * ASCII whitespace that are at the start or the end of the string.
-     */
-    return str.replace(/^[\t\n\f\r ]+/, "").replace(/[\t\n\f\r ]+$/, "");
-}
-exports.stripLeadingAndTrailingASCIIWhitespace = stripLeadingAndTrailingASCIIWhitespace;
-/**
- * Removes consecutive newline characters from a string.
- *
- * @param str - a string
- */
-function stripAndCollapseASCIIWhitespace(str) {
-    /**
-     * To strip and collapse ASCII whitespace in a string, replace any sequence of
-     * one or more consecutive code points that are ASCII whitespace in the string
-     * with a single U+0020 SPACE code point, and then remove any leading and
-     * trailing ASCII whitespace from that string.
-     */
-    return stripLeadingAndTrailingASCIIWhitespace(str.replace(/[\t\n\f\r ]{2,}/g, " "));
-}
-exports.stripAndCollapseASCIIWhitespace = stripAndCollapseASCIIWhitespace;
-/**
- * Collects a sequence of code points matching a given condition from the input
- * string.
- *
- * @param condition - a condition to match
- * @param input - a string
- * @param options - starting position
- */
-function collectASequenceOfCodePoints(condition, input, options) {
-    /**
-     * 1. Let result be the empty string.
-     * 2. While position doesn’t point past the end of input and the code point at
-     * position within input meets the condition condition:
-     * 2.1. Append that code point to the end of result.
-     * 2.2. Advance position by 1.
-     * 3. Return result.
-     */
-    if (!util_1.isArray(input))
-        return collectASequenceOfCodePoints(condition, Array.from(input), options);
-    let result = "";
-    while (options.position < input.length && !!condition.call(null, input[options.position])) {
-        result += input[options.position];
-        options.position++;
+    isEmptyBuffer() {
+        return this._buffer.length === 0;
     }
-    return result;
-}
-exports.collectASequenceOfCodePoints = collectASequenceOfCodePoints;
-/**
- * Skips over ASCII whitespace.
- *
- * @param input - input string
- * @param options - starting position
- */
-function skipASCIIWhitespace(input, options) {
     /**
-     * To skip ASCII whitespace within a string input given a position variable
-     * position, collect a sequence of code points that are ASCII whitespace from
-     * input given position. The collected code points are not used, but position
-     * is still updated.
+     * Resets the summary buffer without writing to summary file
+     *
+     * @returns {Summary} summary instance
      */
-    collectASequenceOfCodePoints(str => CodePoints_1.ASCIIWhiteSpace.test(str), input, options);
-}
-exports.skipASCIIWhitespace = skipASCIIWhitespace;
-/**
- * Solits a string at the given delimiter.
- *
- * @param input - input string
- * @param delimiter - a delimiter string
- */
-function strictlySplit(input, delimiter) {
-    /**
-     * 1. Let position be a position variable for input, initially pointing at the
-     * start of input.
-     * 2. Let tokens be a list of strings, initially empty.
-     * 3. Let token be the result of collecting a sequence of code points that are
-     * not equal to delimiter from input, given position.
-     * 4. Append token to tokens.
-     * 5. While position is not past the end of input:
-     * 5.1. Assert: the code point at position within input is delimiter.
-     * 5.2. Advance position by 1.
-     * 5.3. Let token be the result of collecting a sequence of code points that
-     * are not equal to delimiter from input, given position.
-     * 5.4. Append token to tokens.
-     * 6. Return tokens.
-     */
-    if (!util_1.isArray(input))
-        return strictlySplit(Array.from(input), delimiter);
-    const options = { position: 0 };
-    const tokens = [];
-    let token = collectASequenceOfCodePoints(str => delimiter !== str, input, options);
-    tokens.push(token);
-    while (options.position < input.length) {
-        console.assert(input[options.position] === delimiter, "strictlySplit found no delimiter in input string.");
-        options.position++;
-        token = collectASequenceOfCodePoints(str => delimiter !== str, input, options);
-        tokens.push(token);
+    emptyBuffer() {
+        this._buffer = '';
+        return this;
     }
-    return tokens;
-}
-exports.strictlySplit = strictlySplit;
-/**
- * Splits a string on ASCII whitespace.
- *
- * @param input - a string
- */
-function splitAStringOnASCIIWhitespace(input) {
     /**
-     * 1. Let position be a position variable for input, initially pointing at the
-     * start of input.
-     * 2. Let tokens be a list of strings, initially empty.
-     * 3. Skip ASCII whitespace within input given position.
-     * 4. While position is not past the end of input:
-     * 4.1. Let token be the result of collecting a sequence of code points that
-     * are not ASCII whitespace from input, given position.
-     * 4.2. Append token to tokens.
-     * 4.3. Skip ASCII whitespace within input given position.
-     * 5. Return tokens.
+     * Adds raw text to the summary buffer
+     *
+     * @param {string} text content to add
+     * @param {boolean} [addEOL=false] (optional) append an EOL to the raw text (default: false)
+     *
+     * @returns {Summary} summary instance
      */
-    if (!util_1.isArray(input))
-        return splitAStringOnASCIIWhitespace(Array.from(input));
-    const options = { position: 0 };
-    const tokens = [];
-    skipASCIIWhitespace(input, options);
-    while (options.position < input.length) {
-        const token = collectASequenceOfCodePoints(str => !CodePoints_1.ASCIIWhiteSpace.test(str), input, options);
-        tokens.push(token);
-        skipASCIIWhitespace(input, options);
+    addRaw(text, addEOL = false) {
+        this._buffer += text;
+        return addEOL ? this.addEOL() : this;
     }
-    return tokens;
-}
-exports.splitAStringOnASCIIWhitespace = splitAStringOnASCIIWhitespace;
-/**
- * Splits a string on commas.
- *
- * @param input - a string
- */
-function splitAStringOnCommas(input) {
     /**
-     * 1. Let position be a position variable for input, initially pointing at the
-     * start of input.
-     * 2. Let tokens be a list of strings, initially empty.
-     * 3. While position is not past the end of input:
-     * 3.1. Let token be the result of collecting a sequence of code points that
-     * are not U+002C (,) from input, given position.
-     * 3.2. Strip leading and trailing ASCII whitespace from token.
-     * 3.3. Append token to tokens.
-     * 3.4. If position is not past the end of input, then:
-     * 3.4.1. Assert: the code point at position within input is U+002C (,).
-     * 3.4.2. Advance position by 1.
-     * 4. Return tokens.
+     * Adds the operating system-specific end-of-line marker to the buffer
+     *
+     * @returns {Summary} summary instance
      */
-    if (!util_1.isArray(input))
-        return splitAStringOnCommas(Array.from(input));
-    const options = { position: 0 };
-    const tokens = [];
-    while (options.position < input.length) {
-        const token = collectASequenceOfCodePoints(str => str !== ',', input, options);
-        tokens.push(stripLeadingAndTrailingASCIIWhitespace(token));
-        if (options.position < input.length) {
-            console.assert(input[options.position] === ',', "splitAStringOnCommas found no delimiter in input string.");
-            options.position++;
-        }
+    addEOL() {
+        return this.addRaw(os_1.EOL);
     }
-    return tokens;
-}
-exports.splitAStringOnCommas = splitAStringOnCommas;
-/**
- * Concatenates a list of strings with the given separator.
- *
- * @param list - a list of strings
- * @param separator - a separator string
- */
-function concatenate(list, separator = "") {
     /**
-     * 1. If list is empty, then return the empty string.
-     * 2. If separator is not given, then set separator to the empty string.
-     * 3. Return a string whose contents are list’s items, in order, separated
-     * from each other by separator.
+     * Adds an HTML codeblock to the summary buffer
+     *
+     * @param {string} code content to render within fenced code block
+     * @param {string} lang (optional) language to syntax highlight code
+     *
+     * @returns {Summary} summary instance
      */
-    if (list.length === 0)
-        return "";
-    return list.join(separator);
+    addCodeBlock(code, lang) {
+        const attrs = Object.assign({}, (lang && { lang }));
+        const element = this.wrap('pre', this.wrap('code', code), attrs);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML list to the summary buffer
+     *
+     * @param {string[]} items list of items to render
+     * @param {boolean} [ordered=false] (optional) if the rendered list should be ordered or not (default: false)
+     *
+     * @returns {Summary} summary instance
+     */
+    addList(items, ordered = false) {
+        const tag = ordered ? 'ol' : 'ul';
+        const listItems = items.map(item => this.wrap('li', item)).join('');
+        const element = this.wrap(tag, listItems);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML table to the summary buffer
+     *
+     * @param {SummaryTableCell[]} rows table rows
+     *
+     * @returns {Summary} summary instance
+     */
+    addTable(rows) {
+        const tableBody = rows
+            .map(row => {
+            const cells = row
+                .map(cell => {
+                if (typeof cell === 'string') {
+                    return this.wrap('td', cell);
+                }
+                const { header, data, colspan, rowspan } = cell;
+                const tag = header ? 'th' : 'td';
+                const attrs = Object.assign(Object.assign({}, (colspan && { colspan })), (rowspan && { rowspan }));
+                return this.wrap(tag, data, attrs);
+            })
+                .join('');
+            return this.wrap('tr', cells);
+        })
+            .join('');
+        const element = this.wrap('table', tableBody);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds a collapsable HTML details element to the summary buffer
+     *
+     * @param {string} label text for the closed state
+     * @param {string} content collapsable content
+     *
+     * @returns {Summary} summary instance
+     */
+    addDetails(label, content) {
+        const element = this.wrap('details', this.wrap('summary', label) + content);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML image tag to the summary buffer
+     *
+     * @param {string} src path to the image you to embed
+     * @param {string} alt text description of the image
+     * @param {SummaryImageOptions} options (optional) addition image attributes
+     *
+     * @returns {Summary} summary instance
+     */
+    addImage(src, alt, options) {
+        const { width, height } = options || {};
+        const attrs = Object.assign(Object.assign({}, (width && { width })), (height && { height }));
+        const element = this.wrap('img', null, Object.assign({ src, alt }, attrs));
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML section heading element
+     *
+     * @param {string} text heading text
+     * @param {number | string} [level=1] (optional) the heading level, default: 1
+     *
+     * @returns {Summary} summary instance
+     */
+    addHeading(text, level) {
+        const tag = `h${level}`;
+        const allowedTag = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag)
+            ? tag
+            : 'h1';
+        const element = this.wrap(allowedTag, text);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML thematic break (<hr>) to the summary buffer
+     *
+     * @returns {Summary} summary instance
+     */
+    addSeparator() {
+        const element = this.wrap('hr', null);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML line break (<br>) to the summary buffer
+     *
+     * @returns {Summary} summary instance
+     */
+    addBreak() {
+        const element = this.wrap('br', null);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML blockquote to the summary buffer
+     *
+     * @param {string} text quote text
+     * @param {string} cite (optional) citation url
+     *
+     * @returns {Summary} summary instance
+     */
+    addQuote(text, cite) {
+        const attrs = Object.assign({}, (cite && { cite }));
+        const element = this.wrap('blockquote', text, attrs);
+        return this.addRaw(element).addEOL();
+    }
+    /**
+     * Adds an HTML anchor tag to the summary buffer
+     *
+     * @param {string} text link text/content
+     * @param {string} href hyperlink
+     *
+     * @returns {Summary} summary instance
+     */
+    addLink(text, href) {
+        const element = this.wrap('a', text, { href });
+        return this.addRaw(element).addEOL();
+    }
 }
-exports.concatenate = concatenate;
-//# sourceMappingURL=String.js.map
+const _summary = new Summary();
+/**
+ * @deprecated use `core.summary`
+ */
+exports.markdownSummary = _summary;
+exports.summary = _summary;
+//# sourceMappingURL=summary.js.map
 
 /***/ }),
-
-/***/ 669:
+/* 666 */,
+/* 667 */,
+/* 668 */,
+/* 669 */
 /***/ (function(module) {
 
 module.exports = require("util");
 
 /***/ }),
-
-/***/ 672:
+/* 670 */,
+/* 671 */,
+/* 672 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -25398,8 +27205,20 @@ function isUnixExecutable(stats) {
 //# sourceMappingURL=io-util.js.map
 
 /***/ }),
-
-/***/ 686:
+/* 673 */,
+/* 674 */,
+/* 675 */,
+/* 676 */,
+/* 677 */,
+/* 678 */,
+/* 679 */,
+/* 680 */,
+/* 681 */,
+/* 682 */,
+/* 683 */,
+/* 684 */,
+/* 685 */,
+/* 686 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -25411,8 +27230,8 @@ exports.XMLSerializer = XMLSerializerImpl_1.XMLSerializerImpl;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 688:
+/* 687 */,
+/* 688 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -25450,8 +27269,11 @@ exports.StaticRangeImpl = StaticRangeImpl;
 //# sourceMappingURL=StaticRangeImpl.js.map
 
 /***/ }),
-
-/***/ 693:
+/* 689 */,
+/* 690 */,
+/* 691 */,
+/* 692 */,
+/* 693 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -25746,8 +27568,7 @@ exports.range = range;
 //# sourceMappingURL=Set.js.map
 
 /***/ }),
-
-/***/ 694:
+/* 694 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -25770,8 +27591,7 @@ exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
 
 
 /***/ }),
-
-/***/ 695:
+/* 695 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -26329,8 +28149,10 @@ WebIDLAlgorithm_1.idl_defineConst(ElementImpl.prototype, "_nodeType", interfaces
 //# sourceMappingURL=ElementImpl.js.map
 
 /***/ }),
-
-/***/ 699:
+/* 696 */,
+/* 697 */,
+/* 698 */,
+/* 699 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -26393,8 +28215,11 @@ exports.CompareCache = CompareCache;
 //# sourceMappingURL=CompareCache.js.map
 
 /***/ }),
-
-/***/ 704:
+/* 700 */,
+/* 701 */,
+/* 702 */,
+/* 703 */,
+/* 704 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -26497,8 +28322,7 @@ exports.FixedSizeSet = FixedSizeSet;
 //# sourceMappingURL=FixedSizeSet.js.map
 
 /***/ }),
-
-/***/ 705:
+/* 705 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -26651,8 +28475,11 @@ exports.treeWalker_traverseSiblings = treeWalker_traverseSiblings;
 //# sourceMappingURL=TreeWalkerAlgorithm.js.map
 
 /***/ }),
-
-/***/ 710:
+/* 706 */,
+/* 707 */,
+/* 708 */,
+/* 709 */,
+/* 710 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -26715,8 +28542,18 @@ exports.abort_signalAbort = abort_signalAbort;
 //# sourceMappingURL=AbortAlgorithm.js.map
 
 /***/ }),
-
-/***/ 722:
+/* 711 */,
+/* 712 */,
+/* 713 */,
+/* 714 */,
+/* 715 */,
+/* 716 */,
+/* 717 */,
+/* 718 */,
+/* 719 */,
+/* 720 */,
+/* 721 */,
+/* 722 */
 /***/ (function(module) {
 
 /**
@@ -26748,8 +28585,8 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-
-/***/ 724:
+/* 723 */,
+/* 724 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -27126,8 +28963,12 @@ exports.utf8Decode = utf8Decode;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 730:
+/* 725 */,
+/* 726 */,
+/* 727 */,
+/* 728 */,
+/* 729 */,
+/* 730 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -27212,265 +29053,101 @@ exports.MutationRecordImpl = MutationRecordImpl;
 //# sourceMappingURL=MutationRecordImpl.js.map
 
 /***/ }),
-
-/***/ 742:
+/* 731 */,
+/* 732 */,
+/* 733 */,
+/* 734 */,
+/* 735 */,
+/* 736 */,
+/* 737 */,
+/* 738 */,
+/* 739 */,
+/* 740 */,
+/* 741 */,
+/* 742 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const _1 = __webpack_require__(113);
-const DOMException_1 = __webpack_require__(35);
-const infra_1 = __webpack_require__(23);
-const algorithm_1 = __webpack_require__(163);
-/**
- * Represents a token set.
- */
-class DOMTokenListImpl {
-    /**
-     * Initializes a new instance of `DOMTokenList`.
-     *
-     * @param element - associated element
-     * @param attribute - associated attribute
-     */
-    constructor(element, attribute) {
-        /**
-         * 1. Let element be associated element.
-         * 2. Let localName be associated attribute’s local name.
-         * 3. Let value be the result of getting an attribute value given element
-         * and localName.
-         * 4. Run the attribute change steps for element, localName, value, value,
-         * and null.
-         */
-        this._element = element;
-        this._attribute = attribute;
-        this._tokenSet = new Set();
-        const localName = attribute._localName;
-        const value = algorithm_1.element_getAnAttributeValue(element, localName);
-        // define a closure to be called when the associated attribute's value changes
-        const thisObj = this;
-        function updateTokenSet(element, localName, oldValue, value, namespace) {
-            /**
-             * 1. If localName is associated attribute’s local name, namespace is null,
-             * and value is null, then empty token set.
-             * 2. Otherwise, if localName is associated attribute’s local name,
-             * namespace is null, then set token set to value, parsed.
-             */
-            if (localName === thisObj._attribute._localName && namespace === null) {
-                if (!value)
-                    thisObj._tokenSet.clear();
-                else
-                    thisObj._tokenSet = algorithm_1.orderedSet_parse(value);
-            }
-        }
-        // add the closure to the associated element's attribute change steps
-        this._element._attributeChangeSteps.push(updateTokenSet);
-        if (_1.dom.features.steps) {
-            algorithm_1.dom_runAttributeChangeSteps(element, localName, value, value, null);
-        }
-    }
-    /** @inheritdoc */
-    get length() {
-        /**
-         * The length attribute' getter must return context object’s token set’s
-         * size.
-         */
-        return this._tokenSet.size;
-    }
-    /** @inheritdoc */
-    item(index) {
-        /**
-         * 1. If index is equal to or greater than context object’s token set’s
-         * size, then return null.
-         * 2. Return context object’s token set[index].
-         */
-        let i = 0;
-        for (const token of this._tokenSet) {
-            if (i === index)
-                return token;
-            i++;
-        }
-        return null;
-    }
-    /** @inheritdoc */
-    contains(token) {
-        /**
-         * The contains(token) method, when invoked, must return true if context
-         * object’s token set[token] exists, and false otherwise.
-         */
-        return this._tokenSet.has(token);
-    }
-    /** @inheritdoc */
-    add(...tokens) {
-        /**
-         * 1. For each token in tokens:
-         * 1.1. If token is the empty string, then throw a "SyntaxError"
-         * DOMException.
-         * 1.2. If token contains any ASCII whitespace, then throw an
-         * "InvalidCharacterError" DOMException.
-         * 2. For each token in tokens, append token to context object’s token set.
-         * 3. Run the update steps.
-         */
-        for (const token of tokens) {
-            if (token === '') {
-                throw new DOMException_1.SyntaxError("Cannot add an empty token.");
-            }
-            else if (infra_1.codePoint.ASCIIWhiteSpace.test(token)) {
-                throw new DOMException_1.InvalidCharacterError("Token cannot contain whitespace.");
-            }
-            else {
-                this._tokenSet.add(token);
-            }
-        }
-        algorithm_1.tokenList_updateSteps(this);
-    }
-    /** @inheritdoc */
-    remove(...tokens) {
-        /**
-         * 1. For each token in tokens:
-         * 1.1. If token is the empty string, then throw a "SyntaxError"
-         * DOMException.
-         * 1.2. If token contains any ASCII whitespace, then throw an
-         * "InvalidCharacterError" DOMException.
-         * 2. For each token in tokens, remove token from context object’s token set.
-         * 3. Run the update steps.
-         */
-        for (const token of tokens) {
-            if (token === '') {
-                throw new DOMException_1.SyntaxError("Cannot remove an empty token.");
-            }
-            else if (infra_1.codePoint.ASCIIWhiteSpace.test(token)) {
-                throw new DOMException_1.InvalidCharacterError("Token cannot contain whitespace.");
-            }
-            else {
-                this._tokenSet.delete(token);
-            }
-        }
-        algorithm_1.tokenList_updateSteps(this);
-    }
-    /** @inheritdoc */
-    toggle(token, force = undefined) {
-        /**
-         * 1. If token is the empty string, then throw a "SyntaxError" DOMException.
-         * 2. If token contains any ASCII whitespace, then throw an
-         * "InvalidCharacterError" DOMException.
-         */
-        if (token === '') {
-            throw new DOMException_1.SyntaxError("Cannot toggle an empty token.");
-        }
-        else if (infra_1.codePoint.ASCIIWhiteSpace.test(token)) {
-            throw new DOMException_1.InvalidCharacterError("Token cannot contain whitespace.");
-        }
-        /**
-         * 3. If context object’s token set[token] exists, then:
-         */
-        if (this._tokenSet.has(token)) {
-            /**
-             * 3.1. If force is either not given or is false, then remove token from
-             * context object’s token set, run the update steps and return false.
-             * 3.2. Return true.
-             */
-            if (force === undefined || force === false) {
-                this._tokenSet.delete(token);
-                algorithm_1.tokenList_updateSteps(this);
-                return false;
-            }
-            return true;
-        }
-        /**
-         * 4. Otherwise, if force not given or is true, append token to context
-         * object’s token set, run the update steps, and return true.
-         */
-        if (force === undefined || force === true) {
-            this._tokenSet.add(token);
-            algorithm_1.tokenList_updateSteps(this);
-            return true;
-        }
-        /**
-         * 5. Return false.
-         */
-        return false;
-    }
-    /** @inheritdoc */
-    replace(token, newToken) {
-        /**
-         * 1. If either token or newToken is the empty string, then throw a
-         * "SyntaxError" DOMException.
-         * 2. If either token or newToken contains any ASCII whitespace, then throw
-         * an "InvalidCharacterError" DOMException.
-         */
-        if (token === '' || newToken === '') {
-            throw new DOMException_1.SyntaxError("Cannot replace an empty token.");
-        }
-        else if (infra_1.codePoint.ASCIIWhiteSpace.test(token) || infra_1.codePoint.ASCIIWhiteSpace.test(newToken)) {
-            throw new DOMException_1.InvalidCharacterError("Token cannot contain whitespace.");
-        }
-        /**
-         * 3. If context object’s token set does not contain token, then return
-         * false.
-         */
-        if (!this._tokenSet.has(token))
-            return false;
-        /**
-         * 4. Replace token in context object’s token set with newToken.
-         * 5. Run the update steps.
-         * 6. Return true.
-         */
-        infra_1.set.replace(this._tokenSet, token, newToken);
-        algorithm_1.tokenList_updateSteps(this);
-        return true;
-    }
-    /** @inheritdoc */
-    supports(token) {
-        /**
-         * 1. Let result be the return value of validation steps called with token.
-         * 2. Return result.
-         */
-        return algorithm_1.tokenList_validationSteps(this, token);
-    }
-    /** @inheritdoc */
-    get value() {
-        /**
-         * The value attribute must return the result of running context object’s
-         * serialize steps.
-         */
-        return algorithm_1.tokenList_serializeSteps(this);
-    }
-    set value(value) {
-        /**
-         * Setting the value attribute must set an attribute value for the
-         * associated element using associated attribute’s local name and the given
-         * value.
-         */
-        algorithm_1.element_setAnAttributeValue(this._element, this._attribute._localName, value);
-    }
-    /**
-     * Returns an iterator for the token set.
-     */
-    [Symbol.iterator]() {
-        const it = this._tokenSet[Symbol.iterator]();
-        return {
-            next() {
-                return it.next();
-            }
+exports.OidcClient = void 0;
+const http_client_1 = __webpack_require__(993);
+const auth_1 = __webpack_require__(363);
+const core_1 = __webpack_require__(470);
+class OidcClient {
+    static createHttpClient(allowRetry = true, maxRetry = 10) {
+        const requestOptions = {
+            allowRetries: allowRetry,
+            maxRetries: maxRetry
         };
+        return new http_client_1.HttpClient('actions/oidc-client', [new auth_1.BearerCredentialHandler(OidcClient.getRequestToken())], requestOptions);
     }
-    /**
-     * Creates a new `DOMTokenList`.
-     *
-     * @param element - associated element
-     * @param attribute - associated attribute
-     */
-    static _create(element, attribute) {
-        return new DOMTokenListImpl(element, attribute);
+    static getRequestToken() {
+        const token = process.env['ACTIONS_ID_TOKEN_REQUEST_TOKEN'];
+        if (!token) {
+            throw new Error('Unable to get ACTIONS_ID_TOKEN_REQUEST_TOKEN env variable');
+        }
+        return token;
+    }
+    static getIDTokenUrl() {
+        const runtimeUrl = process.env['ACTIONS_ID_TOKEN_REQUEST_URL'];
+        if (!runtimeUrl) {
+            throw new Error('Unable to get ACTIONS_ID_TOKEN_REQUEST_URL env variable');
+        }
+        return runtimeUrl;
+    }
+    static getCall(id_token_url) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            const httpclient = OidcClient.createHttpClient();
+            const res = yield httpclient
+                .getJson(id_token_url)
+                .catch(error => {
+                throw new Error(`Failed to get ID Token. \n 
+        Error Code : ${error.statusCode}\n 
+        Error Message: ${error.result.message}`);
+            });
+            const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
+            if (!id_token) {
+                throw new Error('Response json body do not have ID Token field');
+            }
+            return id_token;
+        });
+    }
+    static getIDToken(audience) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                // New ID Token is requested from action service
+                let id_token_url = OidcClient.getIDTokenUrl();
+                if (audience) {
+                    const encodedAudience = encodeURIComponent(audience);
+                    id_token_url = `${id_token_url}&audience=${encodedAudience}`;
+                }
+                core_1.debug(`ID token url is ${id_token_url}`);
+                const id_token = yield OidcClient.getCall(id_token_url);
+                core_1.setSecret(id_token);
+                return id_token;
+            }
+            catch (error) {
+                throw new Error(`Error message: ${error.message}`);
+            }
+        });
     }
 }
-exports.DOMTokenListImpl = DOMTokenListImpl;
-//# sourceMappingURL=DOMTokenListImpl.js.map
+exports.OidcClient = OidcClient;
+//# sourceMappingURL=oidc-utils.js.map
 
 /***/ }),
-
-/***/ 743:
+/* 743 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -27575,15 +29252,18 @@ exports.sanitizeInput = sanitizeInput;
 //# sourceMappingURL=dom.js.map
 
 /***/ }),
-
-/***/ 747:
+/* 744 */,
+/* 745 */,
+/* 746 */,
+/* 747 */
 /***/ (function(module) {
 
 module.exports = require("fs");
 
 /***/ }),
-
-/***/ 750:
+/* 748 */,
+/* 749 */,
+/* 750 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -27648,8 +29328,16 @@ exports.MapWriter = MapWriter;
 //# sourceMappingURL=MapWriter.js.map
 
 /***/ }),
-
-/***/ 760:
+/* 751 */,
+/* 752 */,
+/* 753 */,
+/* 754 */,
+/* 755 */,
+/* 756 */,
+/* 757 */,
+/* 758 */,
+/* 759 */,
+/* 760 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -27690,8 +29378,9 @@ WebIDLAlgorithm_1.idl_defineConst(CommentImpl.prototype, "_nodeType", interfaces
 //# sourceMappingURL=CommentImpl.js.map
 
 /***/ }),
-
-/***/ 763:
+/* 761 */,
+/* 762 */,
+/* 763 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -27779,8 +29468,7 @@ exports.forgivingBase64Decode = forgivingBase64Decode;
 //# sourceMappingURL=Base64.js.map
 
 /***/ }),
-
-/***/ 764:
+/* 764 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -27998,8 +29686,16 @@ exports.XMLWriter = XMLWriter;
 //# sourceMappingURL=XMLWriter.js.map
 
 /***/ }),
-
-/***/ 774:
+/* 765 */,
+/* 766 */,
+/* 767 */,
+/* 768 */,
+/* 769 */,
+/* 770 */,
+/* 771 */,
+/* 772 */,
+/* 773 */,
+/* 774 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -28068,8 +29764,12 @@ WebIDLAlgorithm_1.idl_defineConst(NodeFilterImpl.prototype, "SHOW_NOTATION", 0x8
 //# sourceMappingURL=NodeFilterImpl.js.map
 
 /***/ }),
-
-/***/ 780:
+/* 775 */,
+/* 776 */,
+/* 777 */,
+/* 778 */,
+/* 779 */,
+/* 780 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -28160,8 +29860,7 @@ exports.ASCIIAlphanumeric = /[0-9A-Za-z]/;
 //# sourceMappingURL=CodePoints.js.map
 
 /***/ }),
-
-/***/ 781:
+/* 781 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -28318,8 +30017,7 @@ exports.JSONCBWriter = JSONCBWriter;
 //# sourceMappingURL=JSONCBWriter.js.map
 
 /***/ }),
-
-/***/ 782:
+/* 782 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -28340,8 +30038,7 @@ exports.isASCIIByte = isASCIIByte;
 //# sourceMappingURL=Byte.js.map
 
 /***/ }),
-
-/***/ 783:
+/* 783 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -28536,8 +30233,7 @@ exports.Guard = Guard;
 //# sourceMappingURL=Guard.js.map
 
 /***/ }),
-
-/***/ 784:
+/* 784 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -28578,8 +30274,18 @@ exports.AbortSignalImpl = AbortSignalImpl;
 //# sourceMappingURL=AbortSignalImpl.js.map
 
 /***/ }),
-
-/***/ 796:
+/* 785 */,
+/* 786 */,
+/* 787 */,
+/* 788 */,
+/* 789 */,
+/* 790 */,
+/* 791 */,
+/* 792 */,
+/* 793 */,
+/* 794 */,
+/* 795 */,
+/* 796 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -28642,8 +30348,8 @@ WebIDLAlgorithm_1.idl_defineConst(DocumentFragmentImpl.prototype, "_nodeType", i
 //# sourceMappingURL=DocumentFragmentImpl.js.map
 
 /***/ }),
-
-/***/ 798:
+/* 797 */,
+/* 798 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -28678,8 +30384,8 @@ exports.Lazy = Lazy;
 //# sourceMappingURL=Lazy.js.map
 
 /***/ }),
-
-/***/ 800:
+/* 799 */,
+/* 800 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -28747,8 +30453,129 @@ exports.NodeIteratorImpl = NodeIteratorImpl;
 //# sourceMappingURL=NodeIteratorImpl.js.map
 
 /***/ }),
+/* 801 */,
+/* 802 */,
+/* 803 */,
+/* 804 */,
+/* 805 */,
+/* 806 */,
+/* 807 */,
+/* 808 */,
+/* 809 */,
+/* 810 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 811:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _rng = _interopRequireDefault(__webpack_require__(506));
+
+var _stringify = _interopRequireDefault(__webpack_require__(960));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// **`v1()` - Generate time-based UUID**
+//
+// Inspired by https://github.com/LiosK/UUID.js
+// and http://docs.python.org/library/uuid.html
+let _nodeId;
+
+let _clockseq; // Previous uuid creation time
+
+
+let _lastMSecs = 0;
+let _lastNSecs = 0; // See https://github.com/uuidjs/uuid for API details
+
+function v1(options, buf, offset) {
+  let i = buf && offset || 0;
+  const b = buf || new Array(16);
+  options = options || {};
+  let node = options.node || _nodeId;
+  let clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq; // node and clockseq need to be initialized to random values if they're not
+  // specified.  We do this lazily to minimize issues related to insufficient
+  // system entropy.  See #189
+
+  if (node == null || clockseq == null) {
+    const seedBytes = options.random || (options.rng || _rng.default)();
+
+    if (node == null) {
+      // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
+      node = _nodeId = [seedBytes[0] | 0x01, seedBytes[1], seedBytes[2], seedBytes[3], seedBytes[4], seedBytes[5]];
+    }
+
+    if (clockseq == null) {
+      // Per 4.2.2, randomize (14 bit) clockseq
+      clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 0x3fff;
+    }
+  } // UUID timestamps are 100 nano-second units since the Gregorian epoch,
+  // (1582-10-15 00:00).  JSNumbers aren't precise enough for this, so
+  // time is handled internally as 'msecs' (integer milliseconds) and 'nsecs'
+  // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
+
+
+  let msecs = options.msecs !== undefined ? options.msecs : Date.now(); // Per 4.2.1.2, use count of uuid's generated during the current clock
+  // cycle to simulate higher resolution clock
+
+  let nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1; // Time since last uuid creation (in msecs)
+
+  const dt = msecs - _lastMSecs + (nsecs - _lastNSecs) / 10000; // Per 4.2.1.2, Bump clockseq on clock regression
+
+  if (dt < 0 && options.clockseq === undefined) {
+    clockseq = clockseq + 1 & 0x3fff;
+  } // Reset nsecs if clock regresses (new clockseq) or we've moved onto a new
+  // time interval
+
+
+  if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === undefined) {
+    nsecs = 0;
+  } // Per 4.2.1.2 Throw error if too many uuids are requested
+
+
+  if (nsecs >= 10000) {
+    throw new Error("uuid.v1(): Can't create more than 10M uuids/sec");
+  }
+
+  _lastMSecs = msecs;
+  _lastNSecs = nsecs;
+  _clockseq = clockseq; // Per 4.1.4 - Convert from unix epoch to Gregorian epoch
+
+  msecs += 12219292800000; // `time_low`
+
+  const tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+  b[i++] = tl >>> 24 & 0xff;
+  b[i++] = tl >>> 16 & 0xff;
+  b[i++] = tl >>> 8 & 0xff;
+  b[i++] = tl & 0xff; // `time_mid`
+
+  const tmh = msecs / 0x100000000 * 10000 & 0xfffffff;
+  b[i++] = tmh >>> 8 & 0xff;
+  b[i++] = tmh & 0xff; // `time_high_and_version`
+
+  b[i++] = tmh >>> 24 & 0xf | 0x10; // include version
+
+  b[i++] = tmh >>> 16 & 0xff; // `clock_seq_hi_and_reserved` (Per 4.2.2 - include variant)
+
+  b[i++] = clockseq >>> 8 | 0x80; // `clock_seq_low`
+
+  b[i++] = clockseq & 0xff; // `node`
+
+  for (let n = 0; n < 6; ++n) {
+    b[i + n] = node[n];
+  }
+
+  return buf || (0, _stringify.default)(b);
+}
+
+var _default = v1;
+exports.default = _default;
+
+/***/ }),
+/* 811 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -28824,8 +30651,8 @@ run();
 
 
 /***/ }),
-
-/***/ 813:
+/* 812 */,
+/* 813 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -31416,8 +33243,13 @@ exports.asciiSerializationOfAnOrigin = asciiSerializationOfAnOrigin;
 //# sourceMappingURL=URLAlgorithm.js.map
 
 /***/ }),
-
-/***/ 820:
+/* 814 */,
+/* 815 */,
+/* 816 */,
+/* 817 */,
+/* 818 */,
+/* 819 */,
+/* 820 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -31484,8 +33316,12 @@ WebIDLAlgorithm_1.idl_defineConst(TextImpl.prototype, "_nodeType", interfaces_1.
 //# sourceMappingURL=TextImpl.js.map
 
 /***/ }),
-
-/***/ 826:
+/* 821 */,
+/* 822 */,
+/* 823 */,
+/* 824 */,
+/* 825 */,
+/* 826 */
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 var rng = __webpack_require__(139);
@@ -31520,15 +33356,29 @@ module.exports = v4;
 
 
 /***/ }),
-
-/***/ 835:
+/* 827 */,
+/* 828 */,
+/* 829 */,
+/* 830 */,
+/* 831 */,
+/* 832 */,
+/* 833 */,
+/* 834 */,
+/* 835 */
 /***/ (function(module) {
 
 module.exports = require("url");
 
 /***/ }),
-
-/***/ 844:
+/* 836 */,
+/* 837 */,
+/* 838 */,
+/* 839 */,
+/* 840 */,
+/* 841 */,
+/* 842 */,
+/* 843 */,
+/* 844 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -31631,8 +33481,21 @@ exports.FixedSizeSet = FixedSizeSet;
 //# sourceMappingURL=FixedSizeSet.js.map
 
 /***/ }),
-
-/***/ 859:
+/* 845 */,
+/* 846 */,
+/* 847 */,
+/* 848 */,
+/* 849 */,
+/* 850 */,
+/* 851 */,
+/* 852 */,
+/* 853 */,
+/* 854 */,
+/* 855 */,
+/* 856 */,
+/* 857 */,
+/* 858 */,
+/* 859 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -31740,8 +33603,13 @@ exports.convertAJSONDerivedJavaScriptValueToAnInfraValue = convertAJSONDerivedJa
 //# sourceMappingURL=JSON.js.map
 
 /***/ }),
-
-/***/ 866:
+/* 860 */,
+/* 861 */,
+/* 862 */,
+/* 863 */,
+/* 864 */,
+/* 865 */,
+/* 866 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -31821,8 +33689,13 @@ WebIDLAlgorithm_1.idl_defineConst(AttrImpl.prototype, "specified", true);
 //# sourceMappingURL=AttrImpl.js.map
 
 /***/ }),
-
-/***/ 873:
+/* 867 */,
+/* 868 */,
+/* 869 */,
+/* 870 */,
+/* 871 */,
+/* 872 */,
+/* 873 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -32614,8 +34487,12 @@ exports.tree_retarget = tree_retarget;
 //# sourceMappingURL=TreeAlgorithm.js.map
 
 /***/ }),
-
-/***/ 879:
+/* 874 */,
+/* 875 */,
+/* 876 */,
+/* 877 */,
+/* 878 */,
+/* 879 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -32678,8 +34555,11 @@ exports.CompareCache = CompareCache;
 //# sourceMappingURL=CompareCache.js.map
 
 /***/ }),
-
-/***/ 884:
+/* 880 */,
+/* 881 */,
+/* 882 */,
+/* 883 */,
+/* 884 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -32746,8 +34626,11 @@ exports.deleteKey = deleteKey;
 
 
 /***/ }),
-
-/***/ 889:
+/* 885 */,
+/* 886 */,
+/* 887 */,
+/* 888 */,
+/* 889 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -32858,8 +34741,21 @@ exports.ObjectCache = ObjectCache;
 //# sourceMappingURL=ObjectCache.js.map
 
 /***/ }),
-
-/***/ 904:
+/* 890 */,
+/* 891 */,
+/* 892 */,
+/* 893 */,
+/* 894 */,
+/* 895 */,
+/* 896 */,
+/* 897 */,
+/* 898 */,
+/* 899 */,
+/* 900 */,
+/* 901 */,
+/* 902 */,
+/* 903 */,
+/* 904 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -32888,8 +34784,13 @@ exports.Cast = Cast;
 //# sourceMappingURL=Cast.js.map
 
 /***/ }),
-
-/***/ 911:
+/* 905 */,
+/* 906 */,
+/* 907 */,
+/* 908 */,
+/* 909 */,
+/* 910 */,
+/* 911 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -33387,8 +35288,11 @@ exports.XMLStringLexer = XMLStringLexer;
 //# sourceMappingURL=XMLStringLexer.js.map
 
 /***/ }),
-
-/***/ 916:
+/* 912 */,
+/* 913 */,
+/* 914 */,
+/* 915 */,
+/* 916 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -33403,8 +35307,8 @@ exports.XLink = "http://www.w3.org/1999/xlink";
 //# sourceMappingURL=Namespace.js.map
 
 /***/ }),
-
-/***/ 918:
+/* 917 */,
+/* 918 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -33419,8 +35323,8 @@ exports.EmptySet = EmptySet_1.EmptySet;
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-
-/***/ 920:
+/* 919 */,
+/* 920 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -33461,8 +35365,9 @@ WebIDLAlgorithm_1.idl_defineConst(CDATASectionImpl.prototype, "_nodeType", inter
 //# sourceMappingURL=CDATASectionImpl.js.map
 
 /***/ }),
-
-/***/ 923:
+/* 921 */,
+/* 922 */,
+/* 923 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -33740,8 +35645,15 @@ function normalizeVersion(version) {
 
 
 /***/ }),
-
-/***/ 932:
+/* 924 */,
+/* 925 */,
+/* 926 */,
+/* 927 */,
+/* 928 */,
+/* 929 */,
+/* 930 */,
+/* 931 */,
+/* 932 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -33780,8 +35692,8 @@ exports.WindowImpl = WindowImpl;
 //# sourceMappingURL=WindowImpl.js.map
 
 /***/ }),
-
-/***/ 934:
+/* 933 */,
+/* 934 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -33896,8 +35808,7 @@ exports.ParentNodeImpl = ParentNodeImpl;
 //# sourceMappingURL=ParentNodeImpl.js.map
 
 /***/ }),
-
-/***/ 935:
+/* 935 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -34675,8 +36586,9 @@ WebIDLAlgorithm_1.idl_defineConst(NodeImpl.prototype, "DOCUMENT_POSITION_IMPLEME
 //# sourceMappingURL=NodeImpl.js.map
 
 /***/ }),
-
-/***/ 938:
+/* 936 */,
+/* 937 */,
+/* 938 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -34739,8 +36651,15 @@ exports.CompareCache = CompareCache;
 //# sourceMappingURL=CompareCache.js.map
 
 /***/ }),
-
-/***/ 947:
+/* 939 */,
+/* 940 */,
+/* 941 */,
+/* 942 */,
+/* 943 */,
+/* 944 */,
+/* 945 */,
+/* 946 */,
+/* 947 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -34775,8 +36694,9 @@ exports.Lazy = Lazy;
 //# sourceMappingURL=Lazy.js.map
 
 /***/ }),
-
-/***/ 950:
+/* 948 */,
+/* 949 */,
+/* 950 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -34841,8 +36761,68 @@ exports.checkBypass = checkBypass;
 
 
 /***/ }),
+/* 951 */,
+/* 952 */,
+/* 953 */,
+/* 954 */,
+/* 955 */,
+/* 956 */,
+/* 957 */,
+/* 958 */,
+/* 959 */,
+/* 960 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 968:
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _validate = _interopRequireDefault(__webpack_require__(634));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+const byteToHex = [];
+
+for (let i = 0; i < 256; ++i) {
+  byteToHex.push((i + 0x100).toString(16).substr(1));
+}
+
+function stringify(arr, offset = 0) {
+  // Note: Be careful editing this code!  It's been tuned for performance
+  // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
+  const uuid = (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase(); // Consistency check for valid UUID.  If this throws, it's likely due to one
+  // of the following:
+  // - One or more input array values don't map to a hex octet (leading to
+  // "undefined" in the uuid)
+  // - Invalid input values for the RFC `version` or `variant` fields
+
+  if (!(0, _validate.default)(uuid)) {
+    throw TypeError('Stringified UUID is invalid');
+  }
+
+  return uuid;
+}
+
+var _default = stringify;
+exports.default = _default;
+
+/***/ }),
+/* 961 */,
+/* 962 */,
+/* 963 */,
+/* 964 */,
+/* 965 */,
+/* 966 */,
+/* 967 */,
+/* 968 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -34895,8 +36875,8 @@ class EmptySetIterator {
 //# sourceMappingURL=EmptySet.js.map
 
 /***/ }),
-
-/***/ 970:
+/* 969 */,
+/* 970 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -34993,8 +36973,9 @@ var HowToCompare;
 //# sourceMappingURL=interfaces.js.map
 
 /***/ }),
-
-/***/ 973:
+/* 971 */,
+/* 972 */,
+/* 973 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -35105,8 +37086,16 @@ exports.ObjectCache = ObjectCache;
 //# sourceMappingURL=ObjectCache.js.map
 
 /***/ }),
-
-/***/ 983:
+/* 974 */,
+/* 975 */,
+/* 976 */,
+/* 977 */,
+/* 978 */,
+/* 979 */,
+/* 980 */,
+/* 981 */,
+/* 982 */,
+/* 983 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -35262,8 +37251,9 @@ exports.ChildNodeImpl = ChildNodeImpl;
 //# sourceMappingURL=ChildNodeImpl.js.map
 
 /***/ }),
-
-/***/ 986:
+/* 984 */,
+/* 985 */,
+/* 986 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -35306,8 +37296,10 @@ exports.exec = exec;
 //# sourceMappingURL=exec.js.map
 
 /***/ }),
-
-/***/ 990:
+/* 987 */,
+/* 988 */,
+/* 989 */,
+/* 990 */
 /***/ (function(__unusedmodule, exports, __webpack_require__) {
 
 "use strict";
@@ -35340,8 +37332,621 @@ exports.AbortControllerImpl = AbortControllerImpl;
 //# sourceMappingURL=AbortControllerImpl.js.map
 
 /***/ }),
+/* 991 */,
+/* 992 */,
+/* 993 */
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
 
-/***/ 995:
+"use strict";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.HttpClient = exports.isHttps = exports.HttpClientResponse = exports.HttpClientError = exports.getProxyUrl = exports.MediaTypes = exports.Headers = exports.HttpCodes = void 0;
+const http = __importStar(__webpack_require__(605));
+const https = __importStar(__webpack_require__(211));
+const pm = __importStar(__webpack_require__(95));
+const tunnel = __importStar(__webpack_require__(413));
+var HttpCodes;
+(function (HttpCodes) {
+    HttpCodes[HttpCodes["OK"] = 200] = "OK";
+    HttpCodes[HttpCodes["MultipleChoices"] = 300] = "MultipleChoices";
+    HttpCodes[HttpCodes["MovedPermanently"] = 301] = "MovedPermanently";
+    HttpCodes[HttpCodes["ResourceMoved"] = 302] = "ResourceMoved";
+    HttpCodes[HttpCodes["SeeOther"] = 303] = "SeeOther";
+    HttpCodes[HttpCodes["NotModified"] = 304] = "NotModified";
+    HttpCodes[HttpCodes["UseProxy"] = 305] = "UseProxy";
+    HttpCodes[HttpCodes["SwitchProxy"] = 306] = "SwitchProxy";
+    HttpCodes[HttpCodes["TemporaryRedirect"] = 307] = "TemporaryRedirect";
+    HttpCodes[HttpCodes["PermanentRedirect"] = 308] = "PermanentRedirect";
+    HttpCodes[HttpCodes["BadRequest"] = 400] = "BadRequest";
+    HttpCodes[HttpCodes["Unauthorized"] = 401] = "Unauthorized";
+    HttpCodes[HttpCodes["PaymentRequired"] = 402] = "PaymentRequired";
+    HttpCodes[HttpCodes["Forbidden"] = 403] = "Forbidden";
+    HttpCodes[HttpCodes["NotFound"] = 404] = "NotFound";
+    HttpCodes[HttpCodes["MethodNotAllowed"] = 405] = "MethodNotAllowed";
+    HttpCodes[HttpCodes["NotAcceptable"] = 406] = "NotAcceptable";
+    HttpCodes[HttpCodes["ProxyAuthenticationRequired"] = 407] = "ProxyAuthenticationRequired";
+    HttpCodes[HttpCodes["RequestTimeout"] = 408] = "RequestTimeout";
+    HttpCodes[HttpCodes["Conflict"] = 409] = "Conflict";
+    HttpCodes[HttpCodes["Gone"] = 410] = "Gone";
+    HttpCodes[HttpCodes["TooManyRequests"] = 429] = "TooManyRequests";
+    HttpCodes[HttpCodes["InternalServerError"] = 500] = "InternalServerError";
+    HttpCodes[HttpCodes["NotImplemented"] = 501] = "NotImplemented";
+    HttpCodes[HttpCodes["BadGateway"] = 502] = "BadGateway";
+    HttpCodes[HttpCodes["ServiceUnavailable"] = 503] = "ServiceUnavailable";
+    HttpCodes[HttpCodes["GatewayTimeout"] = 504] = "GatewayTimeout";
+})(HttpCodes = exports.HttpCodes || (exports.HttpCodes = {}));
+var Headers;
+(function (Headers) {
+    Headers["Accept"] = "accept";
+    Headers["ContentType"] = "content-type";
+})(Headers = exports.Headers || (exports.Headers = {}));
+var MediaTypes;
+(function (MediaTypes) {
+    MediaTypes["ApplicationJson"] = "application/json";
+})(MediaTypes = exports.MediaTypes || (exports.MediaTypes = {}));
+/**
+ * Returns the proxy URL, depending upon the supplied url and proxy environment variables.
+ * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
+ */
+function getProxyUrl(serverUrl) {
+    const proxyUrl = pm.getProxyUrl(new URL(serverUrl));
+    return proxyUrl ? proxyUrl.href : '';
+}
+exports.getProxyUrl = getProxyUrl;
+const HttpRedirectCodes = [
+    HttpCodes.MovedPermanently,
+    HttpCodes.ResourceMoved,
+    HttpCodes.SeeOther,
+    HttpCodes.TemporaryRedirect,
+    HttpCodes.PermanentRedirect
+];
+const HttpResponseRetryCodes = [
+    HttpCodes.BadGateway,
+    HttpCodes.ServiceUnavailable,
+    HttpCodes.GatewayTimeout
+];
+const RetryableHttpVerbs = ['OPTIONS', 'GET', 'DELETE', 'HEAD'];
+const ExponentialBackoffCeiling = 10;
+const ExponentialBackoffTimeSlice = 5;
+class HttpClientError extends Error {
+    constructor(message, statusCode) {
+        super(message);
+        this.name = 'HttpClientError';
+        this.statusCode = statusCode;
+        Object.setPrototypeOf(this, HttpClientError.prototype);
+    }
+}
+exports.HttpClientError = HttpClientError;
+class HttpClientResponse {
+    constructor(message) {
+        this.message = message;
+    }
+    readBody() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+                let output = Buffer.alloc(0);
+                this.message.on('data', (chunk) => {
+                    output = Buffer.concat([output, chunk]);
+                });
+                this.message.on('end', () => {
+                    resolve(output.toString());
+                });
+            }));
+        });
+    }
+}
+exports.HttpClientResponse = HttpClientResponse;
+function isHttps(requestUrl) {
+    const parsedUrl = new URL(requestUrl);
+    return parsedUrl.protocol === 'https:';
+}
+exports.isHttps = isHttps;
+class HttpClient {
+    constructor(userAgent, handlers, requestOptions) {
+        this._ignoreSslError = false;
+        this._allowRedirects = true;
+        this._allowRedirectDowngrade = false;
+        this._maxRedirects = 50;
+        this._allowRetries = false;
+        this._maxRetries = 1;
+        this._keepAlive = false;
+        this._disposed = false;
+        this.userAgent = userAgent;
+        this.handlers = handlers || [];
+        this.requestOptions = requestOptions;
+        if (requestOptions) {
+            if (requestOptions.ignoreSslError != null) {
+                this._ignoreSslError = requestOptions.ignoreSslError;
+            }
+            this._socketTimeout = requestOptions.socketTimeout;
+            if (requestOptions.allowRedirects != null) {
+                this._allowRedirects = requestOptions.allowRedirects;
+            }
+            if (requestOptions.allowRedirectDowngrade != null) {
+                this._allowRedirectDowngrade = requestOptions.allowRedirectDowngrade;
+            }
+            if (requestOptions.maxRedirects != null) {
+                this._maxRedirects = Math.max(requestOptions.maxRedirects, 0);
+            }
+            if (requestOptions.keepAlive != null) {
+                this._keepAlive = requestOptions.keepAlive;
+            }
+            if (requestOptions.allowRetries != null) {
+                this._allowRetries = requestOptions.allowRetries;
+            }
+            if (requestOptions.maxRetries != null) {
+                this._maxRetries = requestOptions.maxRetries;
+            }
+        }
+    }
+    options(requestUrl, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('OPTIONS', requestUrl, null, additionalHeaders || {});
+        });
+    }
+    get(requestUrl, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('GET', requestUrl, null, additionalHeaders || {});
+        });
+    }
+    del(requestUrl, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('DELETE', requestUrl, null, additionalHeaders || {});
+        });
+    }
+    post(requestUrl, data, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('POST', requestUrl, data, additionalHeaders || {});
+        });
+    }
+    patch(requestUrl, data, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('PATCH', requestUrl, data, additionalHeaders || {});
+        });
+    }
+    put(requestUrl, data, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('PUT', requestUrl, data, additionalHeaders || {});
+        });
+    }
+    head(requestUrl, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request('HEAD', requestUrl, null, additionalHeaders || {});
+        });
+    }
+    sendStream(verb, requestUrl, stream, additionalHeaders) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.request(verb, requestUrl, stream, additionalHeaders);
+        });
+    }
+    /**
+     * Gets a typed object from an endpoint
+     * Be aware that not found returns a null.  Other errors (4xx, 5xx) reject the promise
+     */
+    getJson(requestUrl, additionalHeaders = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
+            const res = yield this.get(requestUrl, additionalHeaders);
+            return this._processResponse(res, this.requestOptions);
+        });
+    }
+    postJson(requestUrl, obj, additionalHeaders = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = JSON.stringify(obj, null, 2);
+            additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
+            additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
+            const res = yield this.post(requestUrl, data, additionalHeaders);
+            return this._processResponse(res, this.requestOptions);
+        });
+    }
+    putJson(requestUrl, obj, additionalHeaders = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = JSON.stringify(obj, null, 2);
+            additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
+            additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
+            const res = yield this.put(requestUrl, data, additionalHeaders);
+            return this._processResponse(res, this.requestOptions);
+        });
+    }
+    patchJson(requestUrl, obj, additionalHeaders = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = JSON.stringify(obj, null, 2);
+            additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
+            additionalHeaders[Headers.ContentType] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.ContentType, MediaTypes.ApplicationJson);
+            const res = yield this.patch(requestUrl, data, additionalHeaders);
+            return this._processResponse(res, this.requestOptions);
+        });
+    }
+    /**
+     * Makes a raw http request.
+     * All other methods such as get, post, patch, and request ultimately call this.
+     * Prefer get, del, post and patch
+     */
+    request(verb, requestUrl, data, headers) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this._disposed) {
+                throw new Error('Client has already been disposed.');
+            }
+            const parsedUrl = new URL(requestUrl);
+            let info = this._prepareRequest(verb, parsedUrl, headers);
+            // Only perform retries on reads since writes may not be idempotent.
+            const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb)
+                ? this._maxRetries + 1
+                : 1;
+            let numTries = 0;
+            let response;
+            do {
+                response = yield this.requestRaw(info, data);
+                // Check if it's an authentication challenge
+                if (response &&
+                    response.message &&
+                    response.message.statusCode === HttpCodes.Unauthorized) {
+                    let authenticationHandler;
+                    for (const handler of this.handlers) {
+                        if (handler.canHandleAuthentication(response)) {
+                            authenticationHandler = handler;
+                            break;
+                        }
+                    }
+                    if (authenticationHandler) {
+                        return authenticationHandler.handleAuthentication(this, info, data);
+                    }
+                    else {
+                        // We have received an unauthorized response but have no handlers to handle it.
+                        // Let the response return to the caller.
+                        return response;
+                    }
+                }
+                let redirectsRemaining = this._maxRedirects;
+                while (response.message.statusCode &&
+                    HttpRedirectCodes.includes(response.message.statusCode) &&
+                    this._allowRedirects &&
+                    redirectsRemaining > 0) {
+                    const redirectUrl = response.message.headers['location'];
+                    if (!redirectUrl) {
+                        // if there's no location to redirect to, we won't
+                        break;
+                    }
+                    const parsedRedirectUrl = new URL(redirectUrl);
+                    if (parsedUrl.protocol === 'https:' &&
+                        parsedUrl.protocol !== parsedRedirectUrl.protocol &&
+                        !this._allowRedirectDowngrade) {
+                        throw new Error('Redirect from HTTPS to HTTP protocol. This downgrade is not allowed for security reasons. If you want to allow this behavior, set the allowRedirectDowngrade option to true.');
+                    }
+                    // we need to finish reading the response before reassigning response
+                    // which will leak the open socket.
+                    yield response.readBody();
+                    // strip authorization header if redirected to a different hostname
+                    if (parsedRedirectUrl.hostname !== parsedUrl.hostname) {
+                        for (const header in headers) {
+                            // header names are case insensitive
+                            if (header.toLowerCase() === 'authorization') {
+                                delete headers[header];
+                            }
+                        }
+                    }
+                    // let's make the request with the new redirectUrl
+                    info = this._prepareRequest(verb, parsedRedirectUrl, headers);
+                    response = yield this.requestRaw(info, data);
+                    redirectsRemaining--;
+                }
+                if (!response.message.statusCode ||
+                    !HttpResponseRetryCodes.includes(response.message.statusCode)) {
+                    // If not a retry code, return immediately instead of retrying
+                    return response;
+                }
+                numTries += 1;
+                if (numTries < maxTries) {
+                    yield response.readBody();
+                    yield this._performExponentialBackoff(numTries);
+                }
+            } while (numTries < maxTries);
+            return response;
+        });
+    }
+    /**
+     * Needs to be called if keepAlive is set to true in request options.
+     */
+    dispose() {
+        if (this._agent) {
+            this._agent.destroy();
+        }
+        this._disposed = true;
+    }
+    /**
+     * Raw request.
+     * @param info
+     * @param data
+     */
+    requestRaw(info, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => {
+                function callbackForResult(err, res) {
+                    if (err) {
+                        reject(err);
+                    }
+                    else if (!res) {
+                        // If `err` is not passed, then `res` must be passed.
+                        reject(new Error('Unknown error'));
+                    }
+                    else {
+                        resolve(res);
+                    }
+                }
+                this.requestRawWithCallback(info, data, callbackForResult);
+            });
+        });
+    }
+    /**
+     * Raw request with callback.
+     * @param info
+     * @param data
+     * @param onResult
+     */
+    requestRawWithCallback(info, data, onResult) {
+        if (typeof data === 'string') {
+            if (!info.options.headers) {
+                info.options.headers = {};
+            }
+            info.options.headers['Content-Length'] = Buffer.byteLength(data, 'utf8');
+        }
+        let callbackCalled = false;
+        function handleResult(err, res) {
+            if (!callbackCalled) {
+                callbackCalled = true;
+                onResult(err, res);
+            }
+        }
+        const req = info.httpModule.request(info.options, (msg) => {
+            const res = new HttpClientResponse(msg);
+            handleResult(undefined, res);
+        });
+        let socket;
+        req.on('socket', sock => {
+            socket = sock;
+        });
+        // If we ever get disconnected, we want the socket to timeout eventually
+        req.setTimeout(this._socketTimeout || 3 * 60000, () => {
+            if (socket) {
+                socket.end();
+            }
+            handleResult(new Error(`Request timeout: ${info.options.path}`));
+        });
+        req.on('error', function (err) {
+            // err has statusCode property
+            // res should have headers
+            handleResult(err);
+        });
+        if (data && typeof data === 'string') {
+            req.write(data, 'utf8');
+        }
+        if (data && typeof data !== 'string') {
+            data.on('close', function () {
+                req.end();
+            });
+            data.pipe(req);
+        }
+        else {
+            req.end();
+        }
+    }
+    /**
+     * Gets an http agent. This function is useful when you need an http agent that handles
+     * routing through a proxy server - depending upon the url and proxy environment variables.
+     * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
+     */
+    getAgent(serverUrl) {
+        const parsedUrl = new URL(serverUrl);
+        return this._getAgent(parsedUrl);
+    }
+    _prepareRequest(method, requestUrl, headers) {
+        const info = {};
+        info.parsedUrl = requestUrl;
+        const usingSsl = info.parsedUrl.protocol === 'https:';
+        info.httpModule = usingSsl ? https : http;
+        const defaultPort = usingSsl ? 443 : 80;
+        info.options = {};
+        info.options.host = info.parsedUrl.hostname;
+        info.options.port = info.parsedUrl.port
+            ? parseInt(info.parsedUrl.port)
+            : defaultPort;
+        info.options.path =
+            (info.parsedUrl.pathname || '') + (info.parsedUrl.search || '');
+        info.options.method = method;
+        info.options.headers = this._mergeHeaders(headers);
+        if (this.userAgent != null) {
+            info.options.headers['user-agent'] = this.userAgent;
+        }
+        info.options.agent = this._getAgent(info.parsedUrl);
+        // gives handlers an opportunity to participate
+        if (this.handlers) {
+            for (const handler of this.handlers) {
+                handler.prepareRequest(info.options);
+            }
+        }
+        return info;
+    }
+    _mergeHeaders(headers) {
+        if (this.requestOptions && this.requestOptions.headers) {
+            return Object.assign({}, lowercaseKeys(this.requestOptions.headers), lowercaseKeys(headers || {}));
+        }
+        return lowercaseKeys(headers || {});
+    }
+    _getExistingOrDefaultHeader(additionalHeaders, header, _default) {
+        let clientHeader;
+        if (this.requestOptions && this.requestOptions.headers) {
+            clientHeader = lowercaseKeys(this.requestOptions.headers)[header];
+        }
+        return additionalHeaders[header] || clientHeader || _default;
+    }
+    _getAgent(parsedUrl) {
+        let agent;
+        const proxyUrl = pm.getProxyUrl(parsedUrl);
+        const useProxy = proxyUrl && proxyUrl.hostname;
+        if (this._keepAlive && useProxy) {
+            agent = this._proxyAgent;
+        }
+        if (this._keepAlive && !useProxy) {
+            agent = this._agent;
+        }
+        // if agent is already assigned use that agent.
+        if (agent) {
+            return agent;
+        }
+        const usingSsl = parsedUrl.protocol === 'https:';
+        let maxSockets = 100;
+        if (this.requestOptions) {
+            maxSockets = this.requestOptions.maxSockets || http.globalAgent.maxSockets;
+        }
+        // This is `useProxy` again, but we need to check `proxyURl` directly for TypeScripts's flow analysis.
+        if (proxyUrl && proxyUrl.hostname) {
+            const agentOptions = {
+                maxSockets,
+                keepAlive: this._keepAlive,
+                proxy: Object.assign(Object.assign({}, ((proxyUrl.username || proxyUrl.password) && {
+                    proxyAuth: `${proxyUrl.username}:${proxyUrl.password}`
+                })), { host: proxyUrl.hostname, port: proxyUrl.port })
+            };
+            let tunnelAgent;
+            const overHttps = proxyUrl.protocol === 'https:';
+            if (usingSsl) {
+                tunnelAgent = overHttps ? tunnel.httpsOverHttps : tunnel.httpsOverHttp;
+            }
+            else {
+                tunnelAgent = overHttps ? tunnel.httpOverHttps : tunnel.httpOverHttp;
+            }
+            agent = tunnelAgent(agentOptions);
+            this._proxyAgent = agent;
+        }
+        // if reusing agent across request and tunneling agent isn't assigned create a new agent
+        if (this._keepAlive && !agent) {
+            const options = { keepAlive: this._keepAlive, maxSockets };
+            agent = usingSsl ? new https.Agent(options) : new http.Agent(options);
+            this._agent = agent;
+        }
+        // if not using private agent and tunnel agent isn't setup then use global agent
+        if (!agent) {
+            agent = usingSsl ? https.globalAgent : http.globalAgent;
+        }
+        if (usingSsl && this._ignoreSslError) {
+            // we don't want to set NODE_TLS_REJECT_UNAUTHORIZED=0 since that will affect request for entire process
+            // http.RequestOptions doesn't expose a way to modify RequestOptions.agent.options
+            // we have to cast it to any and change it directly
+            agent.options = Object.assign(agent.options || {}, {
+                rejectUnauthorized: false
+            });
+        }
+        return agent;
+    }
+    _performExponentialBackoff(retryNumber) {
+        return __awaiter(this, void 0, void 0, function* () {
+            retryNumber = Math.min(ExponentialBackoffCeiling, retryNumber);
+            const ms = ExponentialBackoffTimeSlice * Math.pow(2, retryNumber);
+            return new Promise(resolve => setTimeout(() => resolve(), ms));
+        });
+    }
+    _processResponse(res, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+                const statusCode = res.message.statusCode || 0;
+                const response = {
+                    statusCode,
+                    result: null,
+                    headers: {}
+                };
+                // not found leads to null obj returned
+                if (statusCode === HttpCodes.NotFound) {
+                    resolve(response);
+                }
+                // get the result from the body
+                function dateTimeDeserializer(key, value) {
+                    if (typeof value === 'string') {
+                        const a = new Date(value);
+                        if (!isNaN(a.valueOf())) {
+                            return a;
+                        }
+                    }
+                    return value;
+                }
+                let obj;
+                let contents;
+                try {
+                    contents = yield res.readBody();
+                    if (contents && contents.length > 0) {
+                        if (options && options.deserializeDates) {
+                            obj = JSON.parse(contents, dateTimeDeserializer);
+                        }
+                        else {
+                            obj = JSON.parse(contents);
+                        }
+                        response.result = obj;
+                    }
+                    response.headers = res.message.headers;
+                }
+                catch (err) {
+                    // Invalid resource (contents not json);  leaving result obj null
+                }
+                // note that 3xx redirects are handled by the http layer.
+                if (statusCode > 299) {
+                    let msg;
+                    // if exception/error in body, attempt to get better error
+                    if (obj && obj.message) {
+                        msg = obj.message;
+                    }
+                    else if (contents && contents.length > 0) {
+                        // it may be the case that the exception is in the body message as string
+                        msg = contents;
+                    }
+                    else {
+                        msg = `Failed request: (${statusCode})`;
+                    }
+                    const err = new HttpClientError(msg, statusCode);
+                    err.result = response.result;
+                    reject(err);
+                }
+                else {
+                    resolve(response);
+                }
+            }));
+        });
+    }
+}
+exports.HttpClient = HttpClient;
+const lowercaseKeys = (obj) => Object.keys(obj).reduce((c, k) => ((c[k.toLowerCase()] = obj[k]), c), {});
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+/* 994 */,
+/* 995 */
 /***/ (function(__unusedmodule, exports) {
 
 "use strict";
@@ -35452,5 +38057,4 @@ exports.ObjectCache = ObjectCache;
 //# sourceMappingURL=ObjectCache.js.map
 
 /***/ })
-
-/******/ });
+/******/ ]);
