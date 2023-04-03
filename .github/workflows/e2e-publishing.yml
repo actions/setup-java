@@ -1,4 +1,5 @@
 name: Validate publishing functionality
+
 on:
   push:
     branches:
@@ -85,7 +86,7 @@ jobs:
           if ($content -notlike '*maven*') {
             throw "settings.xml file is not overwritten"
           }
-  
+
   test-publishing-skip-overwrite:
     name: settings.xml is not overwritten if flag is false
     runs-on: ${{ matrix.os }}
