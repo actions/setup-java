@@ -224,9 +224,15 @@ describe('setupJava', () => {
     const jdkFile = 'not_existing_one';
     const expected = {
       version: actualJavaVersion,
-      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture, 'Contents', 'Home')
+      path: path.join(
+        'Java_jdkfile_jdk',
+        inputs.version,
+        inputs.architecture,
+        'Contents',
+        'Home'
+      )
     };
-    let originalPlatform = process.platform;
+    const originalPlatform = process.platform;
     Object.defineProperty(process, 'platform', {
       value: 'darwin'
     });
@@ -239,7 +245,9 @@ describe('setupJava', () => {
     mockJavaBase = new LocalDistribution(inputs, jdkFile);
     await expect(mockJavaBase.setupJava()).resolves.toEqual(expected);
     expect(spyGetToolcachePath).toHaveBeenCalled();
-    expect(spyCoreInfo).toHaveBeenCalledWith(`Resolved Java ${actualJavaVersion} from tool-cache`);
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      `Resolved Java ${actualJavaVersion} from tool-cache`
+    );
     expect(spyCoreInfo).not.toHaveBeenCalledWith(
       `Java ${inputs.version} was not found in tool-cache. Trying to unpack JDK file...`
     );
@@ -259,9 +267,15 @@ describe('setupJava', () => {
     const jdkFile = expectedJdkFile;
     const expected = {
       version: '11.0.289',
-      path: path.join('Java_jdkfile_jdk', inputs.version, inputs.architecture, 'Contents', 'Home')
+      path: path.join(
+        'Java_jdkfile_jdk',
+        inputs.version,
+        inputs.architecture,
+        'Contents',
+        'Home'
+      )
     };
-    let originalPlatform = process.platform;
+    const originalPlatform = process.platform;
     Object.defineProperty(process, 'platform', {
       value: 'darwin'
     });
@@ -276,7 +290,9 @@ describe('setupJava', () => {
     expect(spyCoreInfo).not.toHaveBeenCalledWith(
       `Resolved Java ${actualJavaVersion} from tool-cache`
     );
-    expect(spyCoreInfo).toHaveBeenCalledWith(`Extracting Java from '${jdkFile}'`);
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      `Extracting Java from '${jdkFile}'`
+    );
     expect(spyCoreInfo).toHaveBeenCalledWith(
       `Java ${inputs.version} was not found in tool-cache. Trying to unpack JDK file...`
     );

@@ -47,7 +47,7 @@ export class LocalDistribution extends JavaBase {
       const archivePath = path.join(extractedJavaPath, archiveName);
       const javaVersion = this.version;
 
-      let javaPath = await tc.cacheDir(
+      const javaPath = await tc.cacheDir(
         archivePath,
         this.toolcacheFolderName,
         this.getToolcacheVersionName(javaVersion),
@@ -61,7 +61,10 @@ export class LocalDistribution extends JavaBase {
     }
 
     // JDK folder may contain postfix "Contents/Home" on macOS
-    const macOSPostfixPath = path.join(foundJava.path, MACOS_JAVA_CONTENT_POSTFIX);
+    const macOSPostfixPath = path.join(
+      foundJava.path,
+      MACOS_JAVA_CONTENT_POSTFIX
+    );
     if (process.platform === 'darwin' && fs.existsSync(macOSPostfixPath)) {
       foundJava.path = macOSPostfixPath;
     }
