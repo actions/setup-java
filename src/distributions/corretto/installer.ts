@@ -62,7 +62,7 @@ export class CorrettoDistribution extends JavaBase {
       .filter(item => item.version == version)
       .map(item => {
         return {
-          version: item.correttoVersion,
+          version: this.convertVersionToSemver(item.correttoVersion),
           url: item.downloadLink
         } as JavaDownloadRelease;
       });
@@ -178,5 +178,16 @@ export class CorrettoDistribution extends JavaBase {
       throw Error(`Could not parse corretto version from ${resource}`);
     }
     return match[1];
+  }
+
+  private convertVersionToSemver(version: string) {
+    const versionArray = version.split('.');
+    const mainVersion = versionArray.slice(0, 3).join('.');
+    if (versionArray.length > 3) {
+      // intentionally ignore more than 4 numbers because it is invalid semver
+      return `${mainVersion}+${versionArray.slice(3).join('.')}`;
+    }
+
+    return mainVersion;
   }
 }
