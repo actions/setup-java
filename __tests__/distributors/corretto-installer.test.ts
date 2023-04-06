@@ -241,3 +241,22 @@ describe('getAvailableVersions', () => {
     spyGetDownloadArchiveExtension.mockReturnValue(mockedExtension);
   };
 });
+
+describe('convertVersionToSemver', () => {
+  it.each([
+    ['12', '12'],
+    ['12.0', '12.0'],
+    ['12.0.2', '12.0.2'],
+    ['12.0.2+1', '12.0.2+1'],
+    ['12.0.2.1.0', '12.0.2+1.0']
+  ])('%s -> %s', (input: string, expected: string) => {
+    const distribution = new CorrettoDistribution({
+      version: '12',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    const actual = distribution['convertVersionToSemver'](input);
+    expect(actual).toBe(expected);
+  });
+});

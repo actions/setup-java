@@ -181,10 +181,10 @@ export class CorrettoDistribution extends JavaBase {
   }
 
   private convertVersionToSemver(version: string) {
+    // corretto uses 5 digit semver-like notation e.g. 17.0.6.10.1
     const versionArray = version.split('.');
     const mainVersion = versionArray.slice(0, 3).join('.');
     if (versionArray.length > 3) {
-      // intentionally ignore more than 4 numbers because it is invalid semver
       return `${mainVersion}+${versionArray.slice(3).join('.')}`;
     }
 
