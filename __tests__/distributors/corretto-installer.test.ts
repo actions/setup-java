@@ -247,7 +247,7 @@ describe('convertVersionToSemver', () => {
     ['12', '12'],
     ['12.0', '12.0'],
     ['12.0.2', '12.0.2'],
-    ['12.0.2+1', '12.0.2+1'],
+    ['12.0.2.1', '12.0.2+1'],
     ['12.0.2.1.0', '12.0.2+1.0']
   ])('%s -> %s', (input: string, expected: string) => {
     const distribution = new CorrettoDistribution({
