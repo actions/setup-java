@@ -68785,7 +68785,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
+exports.convertVersionToSemver = exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
 const os_1 = __importDefault(__nccwpck_require__(2037));
 const path_1 = __importDefault(__nccwpck_require__(1017));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -68912,6 +68912,16 @@ exports.getVersionFromFileContent = getVersionFromFileContent;
 function avoidOldNotation(content) {
     return content.startsWith('1.') ? content.substring(2) : content;
 }
+function convertVersionToSemver(version) {
+    // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1)
+    const versionArray = Array.isArray(version) ? version : version.split('.');
+    const mainVersion = versionArray.slice(0, 3).join('.');
+    if (versionArray.length > 3) {
+        return `${mainVersion}+${versionArray.slice(3).join('.')}`;
+    }
+    return mainVersion;
+}
+exports.convertVersionToSemver = convertVersionToSemver;
 
 
 /***/ }),

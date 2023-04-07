@@ -2,7 +2,11 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
-import {extractJdkFile, getDownloadArchiveExtension} from '../../util';
+import {
+  extractJdkFile,
+  getDownloadArchiveExtension,
+  convertVersionToSemver
+} from '../../util';
 import {JavaBase} from '../base-installer';
 import {
   JavaDownloadRelease,
@@ -62,7 +66,7 @@ export class CorrettoDistribution extends JavaBase {
       .filter(item => item.version == version)
       .map(item => {
         return {
-          version: this.convertVersionToSemver(item.correttoVersion),
+          version: convertVersionToSemver(item.correttoVersion),
           url: item.downloadLink
         } as JavaDownloadRelease;
       });
@@ -178,16 +182,5 @@ export class CorrettoDistribution extends JavaBase {
       throw Error(`Could not parse corretto version from ${resource}`);
     }
     return match[1];
-  }
-
-  private convertVersionToSemver(version: string) {
-    // corretto uses semver-like notation e.g. 17.0.6.10.1
-    const versionArray = version.split('.');
-    const mainVersion = versionArray.slice(0, 3).join('.');
-    if (versionArray.length > 3) {
-      return `${mainVersion}+${versionArray.slice(3).join('.')}`;
-    }
-
-    return mainVersion;
   }
 }
