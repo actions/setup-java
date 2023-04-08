@@ -485,3 +485,4 @@ It is able to parse the following files as `java-version-file`:
   - Maven compiler plugin
     - Setting the [source](https://maven.apache.org/plugins/maven-compiler-plugin/examples/set-compiler-source-and-target.html).
     - Setting the [release](https://maven.apache.org/plugins/maven-compiler-plugin/examples/set-compiler-release.html).
+    - **Note:** Since we are using a RegExp to find the java version, it doesn't grab the values from the tags `source` or `release` on `maven-compiler-plugin`.

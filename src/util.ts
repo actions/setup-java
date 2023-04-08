@@ -1,15 +1,12 @@
-import os, { version } from 'os';
+import os from 'os';
 import path from 'path';
 import * as fs from 'fs';
 import * as semver from 'semver';
 import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 
-import { create as xmlCreate } from 'xmlbuilder2';
-import { select } from 'xpath';
 import * as tc from '@actions/tool-cache';
 import { INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION } from './constants';
-import { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
 export function getTempDir() {
   let tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
@@ -158,12 +155,11 @@ function parseJavaVersionFile(content: string): string | null {
   return fileContent;
 }
 
-function parsePomXmlFile(xmlString: string): string | null {
-  const xmlDoc = xmlCreate(xmlString);
+function parsePomXmlFile(xmlFile: string): string | null {
   const versionDefinitionTypes = [getByMavenCompilerSpecification, getBySpringBootSpecification];
 
   for (var definitionType of versionDefinitionTypes) {
-    var version = definitionType(xmlDoc);
+    var version = definitionType(xmlFile);
 
     if (version !== null) {
       return version;
@@ -173,16 +169,14 @@ function parsePomXmlFile(xmlString: string): string | null {
   return null;
 }
 
-function getByMavenCompilerSpecification(xmlDoc: XMLBuilder): string | null {
-  const possibleTags = [
-    '//properties/maven.compiler.source',
-    '//configuration/source',
-    '//properties/maven.compiler.release',
-    '//configuration/release'
+function getByMavenCompilerSpecification(xmlFile: string): string | null {
+  const possibleTagsRegex = [
+    '<maven\.compiler\.source>(.*?)<\/maven\.compiler\.source>',
+    '<maven.compiler.release>(.*?)<\/maven.compiler.release>',
   ];
 
-  for (var tag of possibleTags) {
-    const version = getVersionByTagName(xmlDoc, tag);
+  for (var tag of possibleTagsRegex) {
+    const version = getVersionByTagName(xmlFile, tag);
 
     if (version !== null) {
       return version;
@@ -192,19 +186,20 @@ function getByMavenCompilerSpecification(xmlDoc: XMLBuilder): string | null {
   return null;
 }
 
-function getBySpringBootSpecification(xmlDoc: XMLBuilder): string | null {
-  return getVersionByTagName(xmlDoc, '//properties/java.version');
+function getBySpringBootSpecification(xmlFile: string): string | null {
+  return getVersionByTagName(xmlFile, '<java.version>(.*?)<\/java.version>');
 }
 
-function getVersionByTagName(xmlDoc: XMLBuilder, xpathQuery: string): string | null {
-  const element = select(`string(${xpathQuery})`, xmlDoc.node as any);
+function getVersionByTagName(xmlFile: string, regex: string): string | null {
+  const match = xmlFile.match(new RegExp(regex));
 
-  core.debug(`Found: '${element}' using xpath query: '${xpathQuery}'`);
-  if (element == undefined || element.length == 0) {
+  if (match) {
+    core.debug(`Found java version: '${match[1]}' using regex: '${regex}'`);
+    return match[1];
+  } else {
     return null;
   }
 
-  return element.toString();
 }
 
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`

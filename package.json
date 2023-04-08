@@ -33,8 +33,7 @@
     "@actions/io": "^1.0.2",
     "@actions/tool-cache": "^1.6.1",
     "semver": "^7.3.4",
-    "xmlbuilder2": "^2.4.0",
-    "xpath": "0.0.32"
+    "xmlbuilder2": "^2.4.0"
   },
   "devDependencies": {
     "@types/jest": "^27.0.2",
