@@ -10,6 +10,7 @@ import {IZuluVersions} from './models';
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
+  convertVersionToSemver,
   isVersionSatisfies
 } from '../../util';
 import {
@@ -29,9 +30,9 @@ export class ZuluDistribution extends JavaBase {
     const availableVersionsRaw = await this.getAvailableVersions();
     const availableVersions = availableVersionsRaw.map(item => {
       return {
-        version: this.convertVersionToSemver(item.jdk_version),
+        version: convertVersionToSemver(item.jdk_version),
         url: item.url,
-        zuluVersion: this.convertVersionToSemver(item.zulu_version)
+        zuluVersion: convertVersionToSemver(item.zulu_version)
       };
     });
 
@@ -171,16 +172,5 @@ export class ZuluDistribution extends JavaBase {
       default:
         return process.platform;
     }
-  }
-
-  // Azul API returns jdk_version as array of digits like [11, 0, 2, 1]
-  private convertVersionToSemver(version_array: number[]) {
-    const mainVersion = version_array.slice(0, 3).join('.');
-    if (version_array.length > 3) {
-      // intentionally ignore more than 4 numbers because it is invalid semver
-      return `${mainVersion}+${version_array[3]}`;
-    }
-
-    return mainVersion;
   }
 }

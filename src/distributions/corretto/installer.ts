@@ -2,7 +2,11 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
-import {extractJdkFile, getDownloadArchiveExtension} from '../../util';
+import {
+  extractJdkFile,
+  getDownloadArchiveExtension,
+  convertVersionToSemver
+} from '../../util';
 import {JavaBase} from '../base-installer';
 import {
   JavaDownloadRelease,
@@ -62,7 +66,7 @@ export class CorrettoDistribution extends JavaBase {
       .filter(item => item.version == version)
       .map(item => {
         return {
-          version: item.correttoVersion,
+          version: convertVersionToSemver(item.correttoVersion),
           url: item.downloadLink
         } as JavaDownloadRelease;
       });
