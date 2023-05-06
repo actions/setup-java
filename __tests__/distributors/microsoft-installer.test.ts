@@ -30,29 +30,14 @@ describe('findPackageForDownload', () => {
 
   it.each([
     [
-      '17.0.1',
-      '17.0.1+12.1',
-      'https://aka.ms/download-jdk/microsoft-jdk-17.0.1.12.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
-    ],
-    [
       '17.x',
-      '17.0.3',
-      'https://aka.ms/download-jdk/microsoft-jdk-17.0.3-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+      '17.0.7',
+      'https://aka.ms/download-jdk/microsoft-jdk-17.0.7-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ],
     [
-      '16.0.x',
-      '16.0.2+7.1',
-      'https://aka.ms/download-jdk/microsoft-jdk-16.0.2.7.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
-    ],
-    [
-      '11.0.13',
-      '11.0.13+8.1',
-      'https://aka.ms/download-jdk/microsoft-jdk-11.0.13.8.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
-    ],
-    [
-      '11.0.15',
-      '11.0.15',
-      'https://aka.ms/download-jdk/microsoft-jdk-11.0.15-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+      '11.x',
+      '11.0.19',
+      'https://aka.ms/download-jdk/microsoft-jdk-11.0.19-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ]
   ])('version is %s -> %s', async (input, expectedVersion, expectedUrl) => {
     const result = await distribution['findPackageForDownload'](input);
@@ -97,7 +82,7 @@ describe('findPackageForDownload', () => {
       });
 
       const result = await distro['findPackageForDownload'](version);
-      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.3-linux-${distroArch}.tar.gz`;
+      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.7-linux-${distroArch}.tar.gz`;
 
       expect(result.url).toBe(expectedUrl);
     }
