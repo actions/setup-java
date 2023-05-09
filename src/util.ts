@@ -151,3 +151,13 @@ export function getVersionFromFileContent(
 function avoidOldNotation(content: string): string {
   return content.startsWith('1.') ? content.substring(2) : content;
 }
+
+export function convertVersionToSemver(version: number[] | string) {
+  // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1)
+  const versionArray = Array.isArray(version) ? version : version.split('.');
+  const mainVersion = versionArray.slice(0, 3).join('.');
+  if (versionArray.length > 3) {
+    return `${mainVersion}+${versionArray.slice(3).join('.')}`;
+  }
+  return mainVersion;
+}

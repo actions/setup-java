@@ -56,7 +56,8 @@ const supportedPackageManager: PackageManager[] = [
     pattern: [
       '**/*.sbt',
       '**/project/build.properties',
-      '**/project/**.{scala,sbt}'
+      '**/project/**.scala',
+      '**/project/**.sbt'
     ]
   }
 ];

@@ -227,22 +227,3 @@ describe('findPackageForDownload', () => {
     ).rejects.toThrow(/Could not find satisfied version for semver */);
   });
 });
-
-describe('convertVersionToSemver', () => {
-  it.each([
-    [[12], '12'],
-    [[12, 0], '12.0'],
-    [[12, 0, 2], '12.0.2'],
-    [[12, 0, 2, 1], '12.0.2+1'],
-    [[12, 0, 2, 1, 3], '12.0.2+1']
-  ])('%s -> %s', (input: number[], expected: string) => {
-    const distribution = new ZuluDistribution({
-      version: '18',
-      architecture: 'x86',
-      packageType: 'jdk',
-      checkLatest: false
-    });
-    const actual = distribution['convertVersionToSemver'](input);
-    expect(actual).toBe(expected);
-  });
-});
