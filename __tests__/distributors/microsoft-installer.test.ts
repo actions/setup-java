@@ -30,9 +30,29 @@ describe('findPackageForDownload', () => {
 
   it.each([
     [
+      '17.0.1',
+      '17.0.1+12.1',
+      'https://aka.ms/download-jdk/microsoft-jdk-17.0.1.12.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+    ],
+    [
       '17.x',
       '17.0.7',
       'https://aka.ms/download-jdk/microsoft-jdk-17.0.7-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+    ],
+    [
+      '16.0.x',
+      '16.0.2+7.1',
+      'https://aka.ms/download-jdk/microsoft-jdk-16.0.2.7.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+    ],
+    [
+      '11.0.13',
+      '11.0.13+8.1',
+      'https://aka.ms/download-jdk/microsoft-jdk-11.0.13.8.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+    ],
+    [
+      '11.0.15',
+      '11.0.15',
+      'https://aka.ms/download-jdk/microsoft-jdk-11.0.15-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ],
     [
       '11.x',
