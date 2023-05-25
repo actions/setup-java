@@ -1,14 +1,84 @@
-{
-    "problemMatcher": [
-        {
-            "owner": "java",
-            "pattern": [
-                {
-                    "regexp": "^Exception in thread \"(.*)\" (.*): (.*)$",
-                    "code": 2,
-                    "message": 3
-                }
-            ]
-        }
-    ]
-}
+<!DOCTYPE html>
+<html lang="en">
+<html>
+  <head>
+    <title>Rathana Phone Shop1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google-site-verification" content="6o3mfq88FPLGRnIKr5-LYJCU0HEBlaS37S48w34IWe0" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    </head>
+   <body>
+   <h1>contact of your website</h1>
+<style>
+      /* Style your website here */
+      body {
+        font-family: 'Roboto', sans-serif;
+        font-size: 16px;
+        color: 116x41dp.png"       
+        line-height: 1.4;
+        margin: 0;
+        padding: 0;
+      }
+      header {
+        background-color: #FF8098FF>        
+       color: #fff;
+        padding: 20px;
+        text-align: center;
+      }
+      footer {
+        background-color: #333;
+        color: #ffffff;
+        padding: 20px;
+        text-align: center;
+      }
+      nav {
+        background-color: #f2f2f2;
+        padding: 10px;
+        text-align: center;
+      }
+      nav a {
+        color: #333;
+        text-decoration: none;
+        padding: 10px;
+      }
+      nav a:hover {
+        background-color: wm #8098ff;       
+        color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Rathana Phone Store1</h1>
+    </header>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">About</a>
+      <a href="#">Phones</a>
+      <a href="#">Accessories</a>
+      <a href="#">Contact</a>
+    </nav>
+    <main>
+      <h2>Welcome to Rathana Phone Shop1</h2>
+      <p>We offer a wide selection of the latest smartphones and accessories from all the major brands. Our knowledgeable staff can help you find the perfect device to fit your needs and budget.</p>
+      <h3>Featured Products</h3>
+      <ul>
+        <li>Samsung Galaxy S21</li>
+        <li>Apple iPhone 12 Pro</li>
+        <li>OnePlus 9 Pro</li>
+        <li>teblet </li>
+      </ul>
+      <h3>Contact km</h3>
+      <p>Visit us at:</p>
+      <p>123 Main St.</p>
+      <p>Anytown, Phnom Penh </p>
+      <p>Phone: (085883923)</p>
+      <p>Email: info@rathanaphone29@gmail.com</p>
+    </main>
+    <footer>
+      <p>&copy; 2023 Rathana Phone Store. All rights reserved.</p>
+    </footer>
+  </body>
+</html>
+```
+
