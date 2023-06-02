@@ -1,117 +1,121 @@
-# Ignore list
+@google.Search
 <html>
-<head>
-<script type="text/javascript" src="/script/utils.js" charset="UTF-8"> </script>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<script type="text/javascript">  
-function getURLParameter(name) {
-   return decodeURI(
-    (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,''])[1]
-  };
-}
-function findDestination() {
-  var translations, lang;
-  var userLang = (getURLParameter("lang") || window.navigator.userLanguage || window.navigator.language).substring(0,2);
-  if (userLang == 'km')
-    userLang = 'km-ph';
-var hash = window.location.hash
-switch (hash) {
-    case "#tutorial":
-    case "#tutorial_class":
-        translations = ["en","de","fr","it","es"]; 
-        lang = translations.indexOf(userLang) > -1 ? userLang : "en";
-        return "http://" + window.location.host + "/" + lang + "/tutorial_class/introduction.html"
-    case "#paypal":
-        return "https://www.paypal.com/
-    case "#flattr":
-        return "https://flattr.com/thing/70123469956/My-Expenses-GPL-licenced-Android-Expense-Tracking-App";
-    case "#news":
-        return "https://plus.google.com/ googlee9c9e70123469956.html
-    case "#changelog":
-        hash = "#versionlist";
-        break;
-     case "#privacy":
-     hash = "#imprint";
-     break
-  }
-  translations = ["en","de","fr","it","es","tr","vi","ar","hu","ca","zh-tw","pt","pl","cs","ru","ro","ja","ms","hr","eu","da","bg","el","iw",];
-  lang = translations.indexOf(userLang) > -1 ? userLang : "en";
-  return "https://" + window.location.host + "/" + lang + hash;
-}
-  window.location.replace(findDestination());
-</script>
-</head>
-<body>
-<noscript>
-<ul>
-     <li><a href="ar">مصروفاتي</a></li>
-
-    <li><a href="bg">Моите разходи</a></li>
-
-    <li><a href="ca">Les Meves Despeses</a></li>
-
-    <li><a href="cs">Moje výdaje</a></li>
-
-    <li><a href="da">Mine udgifter</a></li>
-
-    <li><a href="de">Meine Ausgaben</a></li>
-
-    <li><a href="el">Έξοδα μου</a></li>
-
-    <li><a href="en">My Expenses</a></li>
-
-    <li><a href="es">Mis gastos</a></li>
-
-    <li><a href="eu">Nire gastuak</a></li>
-
-    <li><a href="fr">Mes dépenses</a></li>
-
-    <li><a href="hr">Moji troškovi</a></li>
-
-    <li><a href="hu">Kiadásaim</a></li>
-
-    <li><a href="it">Le mie spese</a></li>
-
-    <li><a href="iw">ההוצאות שלי</a></li>
-
-    <li><a href="ja">マイ エクスペンス</a></li>
-
-    <li><a href="kn">ಮೈ ಎಕ್ಸಪೆನ್ಸಸ್</a></li>
-
-    <li><a href="ko">내 지출</a></li>
-
-    <li><a href="ms">Perbelanjaan Saya</a></li>
-
-    <li><a href="nl">Mijn Uitgaven</a></li>
-
-    <li><a href="pl">Moje Wydatki</a></li>
-
-    <li><a href="pt">Minhas despesas</a></li>
-
-    <li><a href="ro">Cheltuielile Mele</a></li>
-
-    <li><a href="ru">Мои расходы</a></li>
-
-    <li><a href="ta">எனது செலவுகள்</a></li>
-
-    <li><a href="te">నా ఖర్చులు</a></li>
-
-    <li><a href="tr">Harcamalarım</a></li>
-
-    <li><a href="uk">Мої Витрати</a></li>
-
-    <li><a href="vi">Chi Tiêu Của Tôi</a></li>
-
-    <li><a href="zh-cn">开支助手</a></li>
-
-    <li><a href="kh"Khmer</a></li>
-
-</ul>
-</noscript> 
-</body>
-
-
-     
+  <head>
+     ("hello the world ")    
+     <meta charset="utf-8">
+     <title>Rathana Phone Shop1</title>
+     <meta name="google-site-verification" content="6o3mfq88FPLGRnIKr5-LYJCU0HEBlaS37S48w34IWe0" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+     /* Style your website here */
+      body {
+         <link rel="stylesheet" href="css/custom.css"> 
+   </head> 
+   <body> 
+     <div class="top-bar"> 
+       <div class="bar-left"> 
+         <div class="menu"> 
+           <a href="">About</a> 
+           <a href="">Shop</a> 
+         </div> 
+       </div> 
+       <div class="bar-right"> 
+         <div class="menu"> 
+           <a href="">Gmail</a> 
+           <a href="">Images</a> 
+         </div> 
+         <a href="" class="app-toggle"> 
+           <i class="fa fa-ellipsis-h"></i> 
+         </a> 
+         <a href="" class="profile-trigger"> 
+           <img src="images/profile.jpg"> 
+         </a> 
+       </div> 
+     </div> 
+     <div class="content"> 
+       <div class="search-wrapper"> 
+         <a href="" class="search-logo">
+           <img src="images/logo-Rathana phone shop1-"> 
+         </a> 
+         <div class="search-bar"> 
+           <div class="search-icon"> 
+             <i class="fa fa-search"></i> 
+           </div> 
+           <input type="text"> 
+           <div class="search-icon right"> 
+             <i class="fa fa-microphone"></i> 
+           </div> 
+         </div>
+        </a> 
+         <div class="search-bar"> 
+           <div class="search-icon"> 
+             <i class="fa fa-search"></i> 
+           </div> 
+           <input type="text"> 
+           <div class="search-icon right"> 
+             <i class="fa fa-microphone"></i> 
+           </div> 
+         </div> 
+         <div class="search-buttons"> 
+           <a href="">Rathana phone Shop1 Search</a> 
+           <a href="">I'm Feeling Lucky</a> 
+         </div>
+         <p class="search-info"> 
+           This is a search bar. <a href="">Random Link</a> 
+        </p> 
+      </div> 
+    </div> 
+    <div class="bottom-bar"> 
+       <div class="bar-left"> 
+         <div class="menu"> 
+          <a href="">Advertising</a> 
+          <a href="">Business</a> 
+          <a href="">How Search Works</a> 
+         </div> 
+       </div>
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Rathana Phone Shop1</h1>
+    </header>
+    <nav>
+       <a href="#">Home</a>
+       <a href="#">About</a>
+       <a href="#">Phones</a>
+       <a href="#">Accessories</a>
+       <a href="#">Contact</a>
+     </nav>
+     <main>
+      <h2>Welcome to Rathana Phone Shop1</h2>
+      <p>We offer a wide selection of the latest smartphones and accessories from all the major brands. Our knowledgeable staff can help you find the  perfect device to fit your needs and budget.</p>
+      <h3>Featured Products</h3>
+      <ul>
+        <h3>Contact km</h3>
+      <p>Visit us at:</p>
+      <p>home14 St5 Sangkat Dangkor.</p>
+      <p>Anytown, Phnom Penh </p>
+      <p>Phone: (085883923) </p>
+      <p>Email: info@rathanaphone29@gmail.com</p>
+    </main>
+    <footer>
+      <p>&copy; 2023 Rathana Phone Shop1 All rights reserved.</p>
+        <li>Apple iPhone 12 Pro</li>
+        <li>OnePlus 9 Pro</li>
+      </ul>
+         </div> 
+       </div> 
+       <div class="bar-right"> 
+         <div class="menu"> 
+           <a href="">pulled</a> 
+           <a href="">Terms</a> 
+           <a href="">Settings</a> 
+         </div> 
+       </div> 
+     </div> 
+   </body> 
+ </html>
 
 
 
