@@ -65,15 +65,8 @@ export class OracleDistribution extends JavaBase {
 
     const platform = this.getPlatform();
     const extension = getDownloadArchiveExtension();
-    let major;
-    let fileUrl;
-    if (range.includes('.')) {
-      major = range.split('.')[0];
-      fileUrl = `${ORACLE_DL_BASE}/${major}/archive/jdk-${range}_${platform}-${arch}_bin.${extension}`;
-    } else {
-      major = range;
-      fileUrl = `${ORACLE_DL_BASE}/${range}/latest/jdk-${range}_${platform}-${arch}_bin.${extension}`;
-    }
+    const major = range.includes('.') ? range.split('.')[0] : range;
+    const fileUrl = `${ORACLE_DL_BASE}/${major}/archive/jdk-${range}_${platform}-${arch}_bin.${extension}`;
 
     if (parseInt(major) < 17) {
       throw new Error('Oracle JDK is only supported for JDK 17 and later');

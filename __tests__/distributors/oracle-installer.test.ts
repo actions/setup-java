@@ -25,7 +25,7 @@ describe('findPackageForDownload', () => {
     [
       '20',
       '20',
-      'https://download.oracle.com/java/20/latest/jdk-20_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
+      'https://download.oracle.com/java/20/archive/jdk-20_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
     ],
     [
       '20.0.1',
@@ -35,7 +35,7 @@ describe('findPackageForDownload', () => {
     [
       '17',
       '17',
-      'https://download.oracle.com/java/17/latest/jdk-17_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
+      'https://download.oracle.com/java/17/archive/jdk-17_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
     ],
     [
       '17.0.1',
@@ -43,7 +43,7 @@ describe('findPackageForDownload', () => {
       'https://download.oracle.com/java/17/archive/jdk-17.0.1_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
     ]
   ])('version is %s -> %s', async (input, expectedVersion, expectedUrl) => {
-    /* Needed only for this particular test because /latest/ urls tend to change */
+    /* Needed only for this particular test because some urls might change */
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'head');
     spyHttpClient.mockReturnValue(
       Promise.resolve({
@@ -89,7 +89,7 @@ describe('findPackageForDownload', () => {
       }
       const archiveType = getDownloadArchiveExtension();
       const result = await distro['findPackageForDownload'](version);
-      const expectedUrl = `https://download.oracle.com/java/17/latest/jdk-17_${osType}-${distroArch}_bin.${archiveType}`;
+      const expectedUrl = `https://download.oracle.com/java/17/archive/jdk-17_${osType}-${distroArch}_bin.${archiveType}`;
 
       expect(result.url).toBe(expectedUrl);
     }
@@ -101,9 +101,6 @@ describe('findPackageForDownload', () => {
     );
     await expect(distribution['findPackageForDownload']('11')).rejects.toThrow(
       /Oracle JDK is only supported for JDK 17 and later/
-    );
-    await expect(distribution['findPackageForDownload']('18')).rejects.toThrow(
-      /Could not find Oracle JDK for SemVer */
     );
   });
 });
