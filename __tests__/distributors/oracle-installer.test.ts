@@ -2,10 +2,12 @@ import {OracleDistribution} from '../../src/distributions/oracle/installer';
 import os from 'os';
 import * as core from '@actions/core';
 import {getDownloadArchiveExtension} from '../../src/util';
+import {HttpClient} from '@actions/http-client';
 
 describe('findPackageForDownload', () => {
   let distribution: OracleDistribution;
   let spyDebug: jest.SpyInstance;
+  let spyHttpClient: jest.SpyInstance;
 
   beforeEach(() => {
     distribution = new OracleDistribution({
@@ -41,7 +43,20 @@ describe('findPackageForDownload', () => {
       'https://download.oracle.com/java/17/archive/jdk-17.0.1_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
     ]
   ])('version is %s -> %s', async (input, expectedVersion, expectedUrl) => {
+    /* Needed only for this particular test because /latest/ urls tend to change */
+    spyHttpClient = jest.spyOn(HttpClient.prototype, 'head');
+    spyHttpClient.mockReturnValue(
+      Promise.resolve({
+        message: {
+          statusCode: 200
+        }
+      })
+    );
+
     const result = await distribution['findPackageForDownload'](input);
+
+    jest.restoreAllMocks();
+
     expect(result.version).toBe(expectedVersion);
     const osType = distribution.getPlatform();
     const archiveType = getDownloadArchiveExtension();

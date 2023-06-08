@@ -1,6 +1,6 @@
 import {MicrosoftDistributions} from '../../src/distributions/microsoft/installer';
 import os from 'os';
-import data from '../../src/distributions/microsoft/microsoft-openjdk-versions.json';
+import data from '../data/microsoft.json';
 import * as httpm from '@actions/http-client';
 import * as core from '@actions/core';
 
