@@ -31,7 +31,7 @@ jobs:
             'semeru',
             'corretto'
           ] # internally 'adopt-hotspot' is the same as 'adopt'
-        version: ['8', '11', '16']
+        version: ['8', '11', '17']
         exclude:
           - distribution: microsoft
             version: 8
@@ -41,10 +41,10 @@ jobs:
             version: 17
           - distribution: oracle
             os: windows-latest
-            version: 19
+            version: 20
           - distribution: oracle
             os: ubuntu-latest
-            version: 19
+            version: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -70,11 +70,11 @@ jobs:
         version:
           - '11.0'
           - '8.0.302'
-          - '16.0.2+7'
+          - '17.0.7+7'
         include:
           - distribution: oracle
             os: ubuntu-latest
-            version: '19.0.1'
+            version: '20.0.1'
     steps:
       - name: Checkout
         uses: actions/checkout@v3

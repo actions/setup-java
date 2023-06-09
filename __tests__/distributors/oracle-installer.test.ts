@@ -2,10 +2,12 @@ import {OracleDistribution} from '../../src/distributions/oracle/installer';
 import os from 'os';
 import * as core from '@actions/core';
 import {getDownloadArchiveExtension} from '../../src/util';
+import {HttpClient} from '@actions/http-client';
 
 describe('findPackageForDownload', () => {
   let distribution: OracleDistribution;
   let spyDebug: jest.SpyInstance;
+  let spyHttpClient: jest.SpyInstance;
 
   beforeEach(() => {
     distribution = new OracleDistribution({
@@ -21,19 +23,14 @@ describe('findPackageForDownload', () => {
 
   it.each([
     [
-      '19',
-      '19',
-      'https://download.oracle.com/java/19/latest/jdk-19_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
+      '20',
+      '20',
+      'https://download.oracle.com/java/20/latest/jdk-20_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
     ],
     [
-      '19.0.1',
-      '19.0.1',
-      'https://download.oracle.com/java/19/archive/jdk-19.0.1_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
-    ],
-    [
-      '18.0.2.1',
-      '18.0.2.1',
-      'https://download.oracle.com/java/18/archive/jdk-18.0.2.1_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
+      '20.0.1',
+      '20.0.1',
+      'https://download.oracle.com/java/20/archive/jdk-20.0.1_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
     ],
     [
       '17',
@@ -46,7 +43,20 @@ describe('findPackageForDownload', () => {
       'https://download.oracle.com/java/17/archive/jdk-17.0.1_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
     ]
   ])('version is %s -> %s', async (input, expectedVersion, expectedUrl) => {
+    /* Needed only for this particular test because /latest/ urls tend to change */
+    spyHttpClient = jest.spyOn(HttpClient.prototype, 'head');
+    spyHttpClient.mockReturnValue(
+      Promise.resolve({
+        message: {
+          statusCode: 200
+        }
+      })
+    );
+
     const result = await distribution['findPackageForDownload'](input);
+
+    jest.restoreAllMocks();
+
     expect(result.version).toBe(expectedVersion);
     const osType = distribution.getPlatform();
     const archiveType = getDownloadArchiveExtension();
