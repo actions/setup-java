@@ -168,13 +168,14 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
-If your use-case reuires a custom distribution or a version that is not provided by setup-java and always install the latest version during runtime, then you can use below code to auto download the latest JDK, determine the semver needed for the setup-java and setup-java will take care of the installation and caching on the VM:
+If your use-case reuires a custom distribution (in the example alpine-linux is used) or a version that is not provided by setup-java and always install the latest version during runtime, then you can use below code to auto download the latest JDK, determine the semver needed for the setup-java and setup-java will take care of the installation and caching on the VM:
 
 ```yaml
    steps:
       - name: fetch latest temurin JDK
         id: fetch_latest_jdk
         run: |
+          major_version={{ env.JAVA_VERSION }} # Example 8 or 11 or 17
           cd $RUNNER_TEMP
           response=$(curl -s "https://api.github.com/repos/adoptium/temurin${major_version}-binaries/releases")
           latest_jdk_download_url=$(echo "$response" | jq -r '.[0].assets[] | select(.name | contains("jdk_x64_alpine-linux") and endswith(".tar.gz")) | .browser_download_url')
