@@ -168,7 +168,7 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
-If your use-case reuires a custom distribution (in the example alpine-linux is used) or a version that is not provided by setup-java and always install the latest version during runtime, then you can use below code to auto download the latest JDK, determine the semver needed for the setup-java and setup-java will take care of the installation and caching on the VM:
+If your use-case requires a custom distribution (in the example, alpine-linux is used) or a version that is not provided by setup-java and you want to always install the latest version during runtime, then you can use the following code to auto-download the latest JDK, determine the semver needed for setup-java, and setup-java will take care of the installation and caching on the VM:
 
 ```yaml
    steps:
