@@ -66513,7 +66513,8 @@ const supportedPackageManager = [
             '**/gradle-wrapper.properties',
             'buildSrc/**/Versions.kt',
             'buildSrc/**/Dependencies.kt',
-            'gradle/*.versions.toml'
+            'gradle/*.versions.toml',
+            'gradle.properties'
         ]
     },
     {
