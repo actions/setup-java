@@ -5,7 +5,8 @@ author: 'GitHub'
 inputs:
   java-version:
     description: 'The Java version to set up. Takes a whole or semver Java version. See examples of supported syntax in README file'
-    required: true
+  java-version-file:
+    description: 'The path to the `.java-version` file. See examples of supported syntax in README file'
   distribution:
     description: 'Java distribution. See the list of supported distributions in README file'
     required: true
@@ -14,9 +15,8 @@ inputs:
     required: false
     default: 'jdk'
   architecture:
-    description: 'The architecture of the package'
+    description: "The architecture of the package (defaults to the action runner's architecture)"
     required: false
-    default: 'x64'
   jdkFile:
     description: 'Path to where the compressed JDK is located'
     required: false
@@ -54,11 +54,20 @@ inputs:
        $GPG_PASSPHRASE.'
     required: false
   cache:
-    description: 'Name of the build platform to cache dependencies. It can be "maven" or "gradle".'
+    description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle" or "sbt".'
     required: false
   job-status:
     description: 'Workaround to pass job status to post job step. This variable is not intended for manual setting'
     default: ${{ job.status }}
+  token:
+    description: The token used to authenticate when fetching version manifests hosted on github.com, such as for the Microsoft Build of OpenJDK. When running this action on github.com, the default value is sufficient. When running on GHES, you can pass a personal access token for github.com if you are experiencing rate limiting.
+    default: ${{ github.server_url == 'https://github.com' && github.token || '' }}
+  mvn-toolchain-id:
+    description: 'Name of Maven Toolchain ID if the default name of "${distribution}_${java-version}" is not wanted. See examples of supported syntax in Advanced Usage file'
+    required: false
+  mvn-toolchain-vendor:
+    description: 'Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file'
+    required: false
 outputs:
   distribution:
     description: 'Distribution of Java that has been installed'
@@ -66,7 +75,9 @@ outputs:
     description: 'Actual version of the java environment that has been installed'
   path:
     description: 'Path to where the java environment has been installed (same as $JAVA_HOME)'
+  cache-hit:
+    description: 'A boolean value to indicate an exact match was found for the primary key'
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/setup/index.js'
   post: 'dist/cleanup/index.js'

@@ -3,6 +3,10 @@
   - [Eclipse Temurin](#Eclipse-Temurin)
   - [Adopt](#Adopt)
   - [Zulu](#Zulu)
+  - [Liberica](#Liberica)
+  - [Microsoft](#Microsoft)
+  - [Amazon Corretto](#Amazon-Corretto)
+  - [Oracle](#Oracle)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -11,6 +15,8 @@
 - [Publishing using Apache Maven](#Publishing-using-Apache-Maven)
 - [Publishing using Gradle](#Publishing-using-Gradle)
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
+- [Modifying Maven Toolchains](#Modifying-Maven-Toolchains)
+- [Java-version file](#Java-version-file)
 
 See [action.yml](../action.yml) for more details on task inputs.
 
@@ -20,8 +26,8 @@ Inputs `java-version` and `distribution` are mandatory and needs to be provided.
 ### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
     java-version: '11'
@@ -33,8 +39,8 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'adopt-hotspot'
     java-version: '11'
@@ -44,8 +50,8 @@ steps:
 ### Zulu
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'zulu'
     java-version: '11'
@@ -56,8 +62,8 @@ steps:
 ### Liberica
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'liberica'
     java-version: '11'
@@ -68,19 +74,61 @@ steps:
 ### Microsoft
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: 'microsoft'
     java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
 
+### Using Microsoft distribution on GHES
+
+`setup-java` comes pre-installed on the appliance with GHES if Actions is enabled. When dynamically downloading the Microsoft Build of OpenJDK distribution, `setup-java` makes a request to `actions/setup-java` to get available versions on github.com (outside of the appliance). These calls to `actions/setup-java` are made via unauthenticated requests, which are limited to [60 requests per hour per IP](https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limiting). If more requests are made within the time frame, then you will start to see rate-limit errors during downloading that looks like: `##[error]API rate limit exceeded for...`.
+
+To get a higher rate limit, you can [generate a personal access token on github.com](https://github.com/settings/tokens/new) and pass it as the `token` input for the action:
+
+```yaml
+uses: actions/setup-java@v3
+with:
+  token: ${{ secrets.GH_DOTCOM_TOKEN }}
+  distribution: 'microsoft'
+  java-version: '11'
+```
+
+If the runner is not able to access github.com, any Java versions requested during a workflow run must come from the runner's tool cache. See "[Setting up the tool cache on self-hosted runners without internet access](https://docs.github.com/en/enterprise-server@3.2/admin/github-actions/managing-access-to-actions-from-githubcom/setting-up-the-tool-cache-on-self-hosted-runners-without-internet-access)" for more information.
+
+### Amazon Corretto
+**NOTE:** Amazon Corretto only supports the major version specification.
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'corretto'
+    java-version: '11'
+- run: java -cp java HelloWorldApp
+```
+
+### Oracle
+**NOTE:** Oracle Java SE Development Kit is only available for version 17 and later.
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'oracle'
+    java-version: '17'
+- run: java -cp java HelloWorldApp
+```
+
 ## Installing custom Java package type
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: '<distribution>'
     java-version: '11'
@@ -93,12 +141,12 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v2
-- uses: actions/setup-java@v2
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
   with:
     distribution: '<distribution>'
     java-version: '11'
-    architecture: x86 # optional - defaults to x64
+    architecture: x86 # optional - default value derived from the runner machine
 - run: java -cp java HelloWorldApp
 ```
 
@@ -110,7 +158,7 @@ steps:
 - run: |
     download_url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz"
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v2
+- uses: actions/setup-java@v3
   with:
     distribution: 'jdkfile'
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
@@ -118,6 +166,31 @@ steps:
     architecture: x64
     
 - run: java -cp java HelloWorldApp
+```
+
+If your use-case requires a custom distribution (in the example, alpine-linux is used) or a version that is not provided by setup-java and you want to always install the latest version during runtime, then you can use the following code to auto-download the latest JDK, determine the semver needed for setup-java, and setup-java will take care of the installation and caching on the VM:
+
+```yaml
+   steps:
+      - name: fetch latest temurin JDK
+        id: fetch_latest_jdk
+        run: |
+          major_version={{ env.JAVA_VERSION }} # Example 8 or 11 or 17
+          cd $RUNNER_TEMP
+          response=$(curl -s "https://api.github.com/repos/adoptium/temurin${major_version}-binaries/releases")
+          latest_jdk_download_url=$(echo "$response" | jq -r '.[0].assets[] | select(.name | contains("jdk_x64_alpine-linux") and endswith(".tar.gz")) | .browser_download_url')
+          curl -Ls "$latest_jdk_download_url" -o java_package.tar.gz
+          latest_jdk_json_url=$(jdk_download_url "$response" | jq -r '.[0].assets[] | select(.name | contains("jdk_x64_alpine-linux") and endswith(".tar.gz.json")) | .browser_download_url')
+          latest_semver_version=$(curl -sL $latest_jdk_json_url | jq -r 'version.semver')
+          echo "java_version=$latest_semver_version" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'jdkfile'
+          jdkFile: ${{ runner.temp }}/java_package.tar.gz
+          java-version: {{ steps.fetch_latest_jdk.outputs.java_version }}
+          architecture: x64
+       - run: java -cp java HelloWorldApp
 ```
 
 ## Testing against different Java distributions
@@ -132,9 +205,9 @@ jobs:
         java: [ '8', '11' ]
     name: Java ${{ matrix.Java }} (${{ matrix.distribution }}) sample
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
@@ -152,9 +225,9 @@ jobs:
         os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
     name: Java ${{ matrix.Java }} (${{ matrix.os }}) sample
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
@@ -169,9 +242,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up JDK 11
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -185,7 +258,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
 
     - name: Set up Apache Maven Central
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with: # running setup-java again overwrites the settings.xml
         distribution: 'temurin'
         java-version: '11'
@@ -280,9 +353,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up JDK 11 for Shared Runner
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -306,10 +379,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up JDK 11
-      uses: actions/setup-java@v2
+      uses: actions/setup-java@v3
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -331,6 +404,115 @@ See the help docs on [Publishing a Package with Gradle](https://help.github.com/
 ## Hosted Tool Cache
 GitHub Hosted Runners have a tool cache that comes with some Java versions pre-installed. This tool cache helps speed up runs and tool setup by not requiring any new downloads. There is an environment variable called `RUNNER_TOOL_CACHE` on each runner that describes the location of this tools cache and this is where you can find the pre-installed versions of Java. `setup-java` works by taking a specific version of Java in this tool cache and adding it to PATH if the version, architecture and distribution match.
 
-Currently, LTS versions of Adopt OpenJDK (`adopt`) are cached on the GitHub Hosted Runners.
+Currently, LTS versions of Eclipse Temurin (`temurin`) are cached on the GitHub Hosted Runners.
 
 The tools cache gets updated on a weekly basis. For information regarding locally cached versions of Java on GitHub hosted runners, check out [GitHub Actions Virtual Environments](https://github.com/actions/virtual-environments).
+
+## Modifying Maven Toolchains
+The `setup-java` action generates a basic [Maven Toolchains declaration](https://maven.apache.org/guides/mini/guide-using-toolchains.html) for specified Java versions by either creating a minimal toolchains file or extending an existing declaration with the additional JDKs.
+
+### Installing Multiple JDKs With Toolchains
+Subsequent calls to `setup-java` with distinct distribution and version parameters will continue to extend the toolchains declaration and make all specified Java versions available.
+
+```yaml
+steps:
+- uses: actions/setup-java@v3
+  with:
+    distribution: '<distribution>'
+    java-version: |
+      8
+      11
+
+- uses: actions/setup-java@v3
+  with:
+    distribution: '<distribution>'
+    java-version: 15
+```
+
+The result is a Toolchain with entries for JDKs 8, 11 and 15. You can even combine this with custom JDKs of arbitrary versions:
+
+```yaml
+- run: |
+    download_url="https://example.com/java/jdk/6u45-b06/jdk-6u45-linux-x64.tar.gz"
+    wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'jdkfile'
+    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    java-version: '1.6'
+    architecture: x64
+```
+
+This will generate a Toolchains entry with the following values: `version: 1.6`, `vendor: jkdfile`, `id: Oracle_1.6`.
+
+### Modifying The Toolchain Vendor For JDKs
+Each JDK provider will receive a default `vendor` using the `distribution` input value but this can be overridden with the `mvn-toolchain-vendor` parameter as follows.
+
+```yaml
+- run: |
+    download_url="https://example.com/java/jdk/6u45-b06/jdk-6u45-linux-x64.tar.gz"
+    wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'jdkfile'
+    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    java-version: '1.6'
+    architecture: x64
+    mvn-toolchain-vendor: 'Oracle'
+```
+
+This will generate a Toolchains entry with the following values: `version: 1.6`, `vendor: Oracle`, `id: Oracle_1.6`.
+
+In case you install multiple versions of Java at once with multi-line `java-version` input setting the `mvn-toolchain-vendor` still only accepts one value and will use this value for installed JDKs as expected when installing multiple versions of the same `distribution`.
+
+```yaml
+steps:
+- uses: actions/setup-java@v3
+  with:
+    distribution: '<distribution>'
+    java-version: |
+      8
+      11
+    mvn-toolchain-vendor: Eclipse Temurin
+```
+
+### Modifying The Toolchain ID For JDKs
+Each JDK provider will receive a default `id` based on the combination of `distribution` and `java-version` in the format of `distribution_java-version` (e.g. `temurin_11`) but this can be overridden with the `mvn-toolchain-id` parameter as follows.
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'temurin'
+    java-version: '11'
+    mvn-toolchain-id: 'some_other_id'
+- run: java -cp java HelloWorldApp
+```
+
+In case you install multiple versions of Java at once you can use the same syntax as used in `java-versions`. Please note that you have to declare an ID for all Java versions that will be installed or the `mvn-toolchain-id` instruction will be skipped wholesale due to mapping ambiguities.
+
+```yaml
+steps:
+- uses: actions/setup-java@v3
+  with:
+    distribution: '<distribution>'
+    java-version: |
+      8
+      11
+    mvn-toolchain-id: |
+      something_else
+      something_other
+```
+
+## Java-version file
+If the `java-version-file` input is specified, the action will try to extract the version from the file and install it.
+Action is able to recognize all variants of the version description according to [jenv](https://github.com/jenv/jenv). 
+Valid entry options:
+```
+major versions: 8, 11, 16, 17
+more specific versions: 1.8.0.2, 17.0, 11.0, 11.0.4, 8.0.232, 8.0.282+8
+early access (EA) versions: 15-ea, 15.0.0-ea, 15.0.0-ea.2, 15.0.0+2-ea
+versions with specified distribution: openjdk64-11.0.2
+```
+If the file contains multiple versions, only the first one will be recognized.

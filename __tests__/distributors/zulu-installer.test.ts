@@ -1,10 +1,11 @@
-import { HttpClient } from '@actions/http-client';
+import {HttpClient} from '@actions/http-client';
 import * as semver from 'semver';
-import { ZuluDistribution } from '../../src/distributions/zulu/installer';
-import { IZuluVersions } from '../../src/distributions/zulu/models';
+import {ZuluDistribution} from '../../src/distributions/zulu/installer';
+import {IZuluVersions} from '../../src/distributions/zulu/models';
 import * as utils from '../../src/util';
+import os from 'os';
 
-const manifestData = require('../data/zulu-releases-default.json') as [];
+import manifestData from '../data/zulu-releases-default.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
@@ -18,7 +19,10 @@ describe('getAvailableVersions', () => {
       result: manifestData as IZuluVersions[]
     });
 
-    spyUtilGetDownloadArchiveExtension = jest.spyOn(utils, 'getDownloadArchiveExtension');
+    spyUtilGetDownloadArchiveExtension = jest.spyOn(
+      utils,
+      'getDownloadArchiveExtension'
+    );
     spyUtilGetDownloadArchiveExtension.mockReturnValue('tar.gz');
   });
 
@@ -30,28 +34,76 @@ describe('getAvailableVersions', () => {
 
   it.each([
     [
-      { version: '11', architecture: 'x86', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11',
+        architecture: 'x86',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=x86&hw_bitness=32&release_status=ga'
     ],
     [
-      { version: '11-ea', architecture: 'x86', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11-ea',
+        architecture: 'x86',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=x86&hw_bitness=32&release_status=ea'
     ],
     [
-      { version: '8', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '8',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=x86&hw_bitness=64&release_status=ga'
     ],
     [
-      { version: '8', architecture: 'x64', packageType: 'jre', checkLatest: false },
+      {
+        version: '8',
+        architecture: 'x64',
+        packageType: 'jre',
+        checkLatest: false
+      },
       '?os=macos&ext=tar.gz&bundle_type=jre&javafx=false&arch=x86&hw_bitness=64&release_status=ga'
     ],
     [
-      { version: '8', architecture: 'x64', packageType: 'jdk+fx', checkLatest: false },
+      {
+        version: '8',
+        architecture: 'x64',
+        packageType: 'jdk+fx',
+        checkLatest: false
+      },
       '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=true&arch=x86&hw_bitness=64&release_status=ga&features=fx'
     ],
     [
-      { version: '8', architecture: 'x64', packageType: 'jre+fx', checkLatest: false },
+      {
+        version: '8',
+        architecture: 'x64',
+        packageType: 'jre+fx',
+        checkLatest: false
+      },
       '?os=macos&ext=tar.gz&bundle_type=jre&javafx=true&arch=x86&hw_bitness=64&release_status=ga&features=fx'
+    ],
+    [
+      {
+        version: '11',
+        architecture: 'arm64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
+      '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=arm&hw_bitness=64&release_status=ga'
+    ],
+    [
+      {
+        version: '11',
+        architecture: 'arm',
+        packageType: 'jdk',
+        checkLatest: false
+      },
+      '?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=arm&hw_bitness=&release_status=ga'
     ]
   ])('build correct url for %s -> %s', async (input, parsedUrl) => {
     const distribution = new ZuluDistribution(input);
@@ -63,6 +115,34 @@ describe('getAvailableVersions', () => {
     expect(spyHttpClient.mock.calls).toHaveLength(1);
     expect(spyHttpClient.mock.calls[0][0]).toBe(buildUrl);
   });
+
+  type DistroArch = {
+    bitness: string;
+    arch: string;
+  };
+  it.each([
+    ['amd64', {bitness: '64', arch: 'x86'}],
+    ['arm64', {bitness: '64', arch: 'arm'}]
+  ])(
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArch: DistroArch) => {
+      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+
+      const distribution = new ZuluDistribution({
+        version: '17',
+        architecture: '', // to get default value
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      distribution['getPlatformOption'] = () => 'macos';
+      const buildUrl = `https://api.azul.com/zulu/download/community/v1.0/bundles/?os=macos&ext=tar.gz&bundle_type=jdk&javafx=false&arch=${distroArch.arch}&hw_bitness=${distroArch.bitness}&release_status=ga`;
+
+      await distribution['getAvailableVersions']();
+
+      expect(spyHttpClient.mock.calls).toHaveLength(1);
+      expect(spyHttpClient.mock.calls[0][0]).toBe(buildUrl);
+    }
+  );
 
   it('load available versions', async () => {
     const distribution = new ZuluDistribution({
@@ -78,10 +158,10 @@ describe('getAvailableVersions', () => {
 
 describe('getArchitectureOptions', () => {
   it.each([
-    [{ architecture: 'x64' }, { arch: 'x86', hw_bitness: '64', abi: '' }],
-    [{ architecture: 'x86' }, { arch: 'x86', hw_bitness: '32', abi: '' }],
-    [{ architecture: 'x32' }, { arch: 'x32', hw_bitness: '', abi: '' }],
-    [{ architecture: 'arm' }, { arch: 'arm', hw_bitness: '', abi: '' }]
+    [{architecture: 'x64'}, {arch: 'x86', hw_bitness: '64', abi: ''}],
+    [{architecture: 'x86'}, {arch: 'x86', hw_bitness: '32', abi: ''}],
+    [{architecture: 'x32'}, {arch: 'x32', hw_bitness: '', abi: ''}],
+    [{architecture: 'arm'}, {arch: 'arm', hw_bitness: '', abi: ''}]
   ])('%s -> %s', (input, expected) => {
     const distribution = new ZuluDistribution({
       version: '11',
@@ -102,7 +182,7 @@ describe('findPackageForDownload', () => {
     ['15', '15.0.2+7'],
     ['9.0.0', '9.0.0+0'],
     ['9.0', '9.0.1+0'],
-    ['8.0.262', '8.0.262+19'], // validate correct choise between [8.0.262.17, 8.0.262.19, 8.0.262.18]
+    ['8.0.262', '8.0.262+19'], // validate correct choice between [8.0.262.17, 8.0.262.19, 8.0.262.18]
     ['8.0.262+17', '8.0.262+17'],
     ['15.0.1+8', '15.0.1+8'],
     ['15.0.1+9', '15.0.1+9']
@@ -114,7 +194,9 @@ describe('findPackageForDownload', () => {
       checkLatest: false
     });
     distribution['getAvailableVersions'] = async () => manifestData;
-    const result = await distribution['findPackageForDownload'](distribution['version']);
+    const result = await distribution['findPackageForDownload'](
+      distribution['version']
+    );
     expect(result.version).toBe(expected);
   });
 
@@ -139,27 +221,9 @@ describe('findPackageForDownload', () => {
       packageType: 'jdk',
       checkLatest: false
     });
+    distribution['getAvailableVersions'] = async () => manifestData;
     await expect(
       distribution['findPackageForDownload'](distribution['version'])
-    ).rejects.toThrowError(/Could not find satisfied version for semver */);
-  });
-});
-
-describe('convertVersionToSemver', () => {
-  it.each([
-    [[12], '12'],
-    [[12, 0], '12.0'],
-    [[12, 0, 2], '12.0.2'],
-    [[12, 0, 2, 1], '12.0.2+1'],
-    [[12, 0, 2, 1, 3], '12.0.2+1']
-  ])('%s -> %s', (input: number[], expected: string) => {
-    const distribution = new ZuluDistribution({
-      version: '18',
-      architecture: 'x86',
-      packageType: 'jdk',
-      checkLatest: false
-    });
-    const actual = distribution['convertVersionToSemver'](input);
-    expect(actual).toBe(expected);
+    ).rejects.toThrow(/Could not find satisfied version for semver */);
   });
 });

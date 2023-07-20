@@ -2,19 +2,22 @@ import os from 'os';
 import path from 'path';
 import * as fs from 'fs';
 import * as semver from 'semver';
+import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
-import { INPUT_JOB_STATUS } from './constants';
+import {INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION} from './constants';
 
 export function getTempDir() {
-  let tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
+  const tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
 
   return tempDirectory;
 }
 
-export function getBooleanInput(inputName: string, defaultValue: boolean = false) {
-  return (core.getInput(inputName) || String(defaultValue)).toUpperCase() === 'TRUE';
+export function getBooleanInput(inputName: string, defaultValue = false) {
+  return (
+    (core.getInput(inputName) || String(defaultValue)).toUpperCase() === 'TRUE'
+  );
 }
 
 export function getVersionFromToolcachePath(toolPath: string) {
@@ -27,7 +30,9 @@ export function getVersionFromToolcachePath(toolPath: string) {
 
 export async function extractJdkFile(toolPath: string, extension?: string) {
   if (!extension) {
-    extension = toolPath.endsWith('.tar.gz') ? 'tar.gz' : path.extname(toolPath);
+    extension = toolPath.endsWith('.tar.gz')
+      ? 'tar.gz'
+      : path.extname(toolPath);
     if (extension.startsWith('.')) {
       extension = extension.substring(1);
     }
@@ -62,7 +67,11 @@ export function isVersionSatisfies(range: string, version: string): boolean {
   return semver.satisfies(version, range);
 }
 
-export function getToolcachePath(toolName: string, version: string, architecture: string) {
+export function getToolcachePath(
+  toolName: string,
+  version: string,
+  architecture: string
+) {
   const toolcacheRoot = process.env['RUNNER_TOOL_CACHE'] ?? '';
   const fullPath = path.join(toolcacheRoot, toolName, version, architecture);
   if (fs.existsSync(fullPath)) {
@@ -76,4 +85,79 @@ export function isJobStatusSuccess() {
   const jobStatus = core.getInput(INPUT_JOB_STATUS);
 
   return jobStatus === 'success';
+}
+
+export function isGhes(): boolean {
+  const ghUrl = new URL(
+    process.env['GITHUB_SERVER_URL'] || 'https://github.com'
+  );
+  return ghUrl.hostname.toUpperCase() !== 'GITHUB.COM';
+}
+
+export function isCacheFeatureAvailable(): boolean {
+  if (cache.isFeatureAvailable()) {
+    return true;
+  }
+
+  if (isGhes()) {
+    core.warning(
+      'Caching is only supported on GHES version >= 3.5. If you are on a version >= 3.5, please check with your GHES admin if the Actions cache service is enabled or not.'
+    );
+    return false;
+  }
+
+  core.warning(
+    'The runner was not able to contact the cache service. Caching will be skipped'
+  );
+  return false;
+}
+
+export function getVersionFromFileContent(
+  content: string,
+  distributionName: string
+): string | null {
+  const javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+  const fileContent = content.match(javaVersionRegExp)?.groups?.version
+    ? (content.match(javaVersionRegExp)?.groups?.version as string)
+    : '';
+  if (!fileContent) {
+    return null;
+  }
+
+  core.debug(`Version from file '${fileContent}'`);
+
+  const tentativeVersion = avoidOldNotation(fileContent);
+  const rawVersion = tentativeVersion.split('-')[0];
+
+  let version = semver.validRange(rawVersion)
+    ? tentativeVersion
+    : semver.coerce(tentativeVersion);
+
+  core.debug(`Range version from file is '${version}'`);
+
+  if (!version) {
+    return null;
+  }
+
+  if (DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(distributionName)) {
+    const coerceVersion = semver.coerce(version) ?? version;
+    version = semver.major(coerceVersion).toString();
+  }
+
+  return version.toString();
+}
+
+// By convention, action expects version 8 in the format `8.*` instead of `1.8`
+function avoidOldNotation(content: string): string {
+  return content.startsWith('1.') ? content.substring(2) : content;
+}
+
+export function convertVersionToSemver(version: number[] | string) {
+  // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1)
+  const versionArray = Array.isArray(version) ? version : version.split('.');
+  const mainVersion = versionArray.slice(0, 3).join('.');
+  if (versionArray.length > 3) {
+    return `${mainVersion}+${versionArray.slice(3).join('.')}`;
+  }
+  return mainVersion;
 }

@@ -5,23 +5,25 @@ import * as io from '@actions/io';
 import * as fs from 'fs';
 import * as os from 'os';
 
-import { create as xmlCreate } from 'xmlbuilder2';
+import {create as xmlCreate} from 'xmlbuilder2';
 import * as constants from './constants';
 import * as gpg from './gpg';
-import { getBooleanInput } from './util';
-
-export const M2_DIR = '.m2';
-export const SETTINGS_FILE = 'settings.xml';
+import {getBooleanInput} from './util';
 
 export async function configureAuthentication() {
   const id = core.getInput(constants.INPUT_SERVER_ID);
   const username = core.getInput(constants.INPUT_SERVER_USERNAME);
   const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
   const settingsDirectory =
-    core.getInput(constants.INPUT_SETTINGS_PATH) || path.join(os.homedir(), M2_DIR);
-  const overwriteSettings = getBooleanInput(constants.INPUT_OVERWRITE_SETTINGS, true);
+    core.getInput(constants.INPUT_SETTINGS_PATH) ||
+    path.join(os.homedir(), constants.M2_DIR);
+  const overwriteSettings = getBooleanInput(
+    constants.INPUT_OVERWRITE_SETTINGS,
+    true
+  );
   const gpgPrivateKey =
-    core.getInput(constants.INPUT_GPG_PRIVATE_KEY) || constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
+    core.getInput(constants.INPUT_GPG_PRIVATE_KEY) ||
+    constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
   const gpgPassphrase =
     core.getInput(constants.INPUT_GPG_PASSPHRASE) ||
     (gpgPrivateKey ? constants.INPUT_DEFAULT_GPG_PASSPHRASE : undefined);
@@ -54,7 +56,7 @@ export async function createAuthenticationSettings(
   overwriteSettings: boolean,
   gpgPassphrase: string | undefined = undefined
 ) {
-  core.info(`Creating ${SETTINGS_FILE} with server-id: ${id}`);
+  core.info(`Creating ${constants.MVN_SETTINGS_FILE} with server-id: ${id}`);
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
   await io.mkdirP(settingsDirectory);
@@ -72,7 +74,7 @@ export function generate(
   password: string,
   gpgPassphrase?: string | undefined
 ) {
-  const xmlObj: { [key: string]: any } = {
+  const xmlObj: {[key: string]: any} = {
     settings: {
       '@xmlns': 'http://maven.apache.org/SETTINGS/1.0.0',
       '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
@@ -105,8 +107,12 @@ export function generate(
   });
 }
 
-async function write(directory: string, settings: string, overwriteSettings: boolean) {
-  const location = path.join(directory, SETTINGS_FILE);
+async function write(
+  directory: string,
+  settings: string,
+  overwriteSettings: boolean
+) {
+  const location = path.join(directory, constants.MVN_SETTINGS_FILE);
   const settingsExists = fs.existsSync(location);
   if (settingsExists && overwriteSettings) {
     core.info(`Overwriting existing file ${location}`);

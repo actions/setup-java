@@ -1,19 +1,25 @@
-import { JavaBase } from '../base-installer';
-import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
-import semver from 'semver';
-import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
+import {JavaBase} from '../base-installer';
+import {
+  JavaDownloadRelease,
+  JavaInstallerOptions,
+  JavaInstallerResults
+} from '../base-models';
+import {extractJdkFile, getDownloadArchiveExtension} from '../../util';
 import * as core from '@actions/core';
-import { MicrosoftVersion, PlatformOptions } from './models';
 import * as tc from '@actions/tool-cache';
+import {OutgoingHttpHeaders} from 'http';
 import fs from 'fs';
 import path from 'path';
+import {ITypedResponse} from '@actions/http-client/interfaces';
 
 export class MicrosoftDistributions extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('Microsoft', installerOptions);
   }
 
-  protected async downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults> {
+  protected async downloadTool(
+    javaRelease: JavaDownloadRelease
+  ): Promise<JavaInstallerResults> {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
@@ -33,11 +39,14 @@ export class MicrosoftDistributions extends JavaBase {
       this.architecture
     );
 
-    return { version: javaRelease.version, path: javaPath };
+    return {version: javaRelease.version, path: javaPath};
   }
 
-  protected async findPackageForDownload(range: string): Promise<JavaDownloadRelease> {
-    if (this.architecture !== 'x64' && this.architecture !== 'aarch64') {
+  protected async findPackageForDownload(
+    range: string
+  ): Promise<JavaDownloadRelease> {
+    const arch = this.distributionArchitecture();
+    if (arch !== 'x64' && arch !== 'aarch64') {
       throw new Error(`Unsupported architecture: ${this.architecture}`);
     }
 
@@ -46,79 +55,82 @@ export class MicrosoftDistributions extends JavaBase {
     }
 
     if (this.packageType !== 'jdk') {
-      throw new Error('Microsoft Build of OpenJDK provides only the `jdk` package type');
-    }
-
-    const availableVersionsRaw = await this.getAvailableVersions();
-
-    const opts = this.getPlatformOption();
-    const availableVersions = availableVersionsRaw.map(item => ({
-      url: `https://aka.ms/download-jdk/microsoft-jdk-${item.version.join('.')}-${opts.os}-${
-        this.architecture
-      }.${opts.archive}`,
-      version: this.convertVersionToSemver(item)
-    }));
-
-    const satisfiedVersion = availableVersions
-      .filter(item => isVersionSatisfies(range, item.version))
-      .sort((a, b) => -semver.compareBuild(a.version, b.version))[0];
-
-    if (!satisfiedVersion) {
-      const availableOptions = availableVersions.map(item => item.version).join(', ');
-      const availableOptionsMessage = availableOptions
-        ? `\nAvailable versions: ${availableOptions}`
-        : '';
       throw new Error(
-        `Could not find satisfied version for SemVer ${range}. ${availableOptionsMessage}`
+        'Microsoft Build of OpenJDK provides only the `jdk` package type'
       );
     }
 
-    return satisfiedVersion;
+    const manifest = await this.getAvailableVersions();
+
+    if (!manifest) {
+      throw new Error('Could not load manifest for Microsoft Build of OpenJDK');
+    }
+
+    const foundRelease = await tc.findFromManifest(range, true, manifest, arch);
+
+    if (!foundRelease) {
+      throw new Error(
+        `Could not find satisfied version for SemVer ${range}.\nAvailable versions: ${manifest
+          .map(item => item.version)
+          .join(', ')}`
+      );
+    }
+
+    return {
+      url: foundRelease.files[0].download_url,
+      version: foundRelease.version
+    };
   }
 
-  private async getAvailableVersions(): Promise<MicrosoftVersion[]> {
+  private async getAvailableVersions(): Promise<tc.IToolRelease[] | null> {
     // TODO get these dynamically!
     // We will need Microsoft to add an endpoint where we can query for versions.
-    const jdkVersions = [
-      {
-        version: [17, 0, 1, 12, 1]
-      },
-      {
-        version: [16, 0, 2, 7, 1]
+    const token = core.getInput('token');
+    const auth = !token ? undefined : `token ${token}`;
+    const owner = 'actions';
+    const repository = 'setup-java';
+    const branch = 'main';
+    const filePath =
+      'src/distributions/microsoft/microsoft-openjdk-versions.json';
+
+    let releases: tc.IToolRelease[] | null = null;
+    const fileUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
+
+    const headers: OutgoingHttpHeaders = {
+      authorization: auth,
+      accept: 'application/vnd.github.VERSION.raw'
+    };
+
+    let response: ITypedResponse<tc.IToolRelease[]> | null = null;
+
+    if (core.isDebug()) {
+      console.time('Retrieving available versions for Microsoft took'); // eslint-disable-line no-console
+    }
+
+    try {
+      response = await this.http.getJson<tc.IToolRelease[]>(fileUrl, headers);
+      if (!response.result) {
+        return null;
       }
-    ];
-
-    // M1 is only supported for Java 16 & 17
-    if (process.platform !== 'darwin' || this.architecture !== 'aarch64') {
-      jdkVersions.push({
-        version: [11, 0, 13, 8, 1]
-      });
+    } catch (err) {
+      core.debug(
+        `Http request for microsoft-openjdk-versions.json failed with status code: ${response?.statusCode}`
+      );
+      return null;
     }
 
-    return jdkVersions;
-  }
-
-  private getPlatformOption(
-    platform: NodeJS.Platform = process.platform /* for testing */
-  ): PlatformOptions {
-    switch (platform) {
-      case 'darwin':
-        return { archive: 'tar.gz', os: 'macos' };
-      case 'win32':
-        return { archive: 'zip', os: 'windows' };
-      case 'linux':
-        return { archive: 'tar.gz', os: 'linux' };
-      default:
-        throw new Error(
-          `Platform '${platform}' is not supported. Supported platforms: 'darwin', 'linux', 'win32'`
-        );
+    if (response.result) {
+      releases = response.result;
     }
-  }
 
-  private convertVersionToSemver(version: MicrosoftVersion): string {
-    const major = version.version[0];
-    const minor = version.version[1];
-    const patch = version.version[2];
-    return `${major}.${minor}.${patch}`;
+    if (core.isDebug() && releases) {
+      core.startGroup('Print information about available versions');
+      console.timeEnd('Retrieving available versions for Microsoft took'); // eslint-disable-line no-console
+      core.debug(`Available versions: [${releases.length}]`);
+      core.debug(releases.map(item => item.version).join(', '));
+      core.endGroup();
+    }
+
+    return releases;
   }
 }

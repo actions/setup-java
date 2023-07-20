@@ -94,3 +94,6 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 .vscode/
+
+# IntelliJ / WebStorm
+/.idea/

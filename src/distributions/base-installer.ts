@@ -4,9 +4,14 @@ import * as fs from 'fs';
 import semver from 'semver';
 import path from 'path';
 import * as httpm from '@actions/http-client';
-import { getToolcachePath, getVersionFromToolcachePath, isVersionSatisfies } from '../util';
-import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from './base-models';
-import { MACOS_JAVA_CONTENT_POSTFIX } from '../constants';
+import {getToolcachePath, isVersionSatisfies} from '../util';
+import {
+  JavaDownloadRelease,
+  JavaInstallerOptions,
+  JavaInstallerResults
+} from './base-models';
+import {MACOS_JAVA_CONTENT_POSTFIX} from '../constants';
+import os from 'os';
 
 export abstract class JavaBase {
   protected http: httpm.HttpClient;
@@ -16,22 +21,29 @@ export abstract class JavaBase {
   protected stable: boolean;
   protected checkLatest: boolean;
 
-  constructor(protected distribution: string, installerOptions: JavaInstallerOptions) {
+  constructor(
+    protected distribution: string,
+    installerOptions: JavaInstallerOptions
+  ) {
     this.http = new httpm.HttpClient('actions/setup-java', undefined, {
       allowRetries: true,
       maxRetries: 3
     });
 
-    ({ version: this.version, stable: this.stable } = this.normalizeVersion(
+    ({version: this.version, stable: this.stable} = this.normalizeVersion(
       installerOptions.version
     ));
-    this.architecture = installerOptions.architecture;
+    this.architecture = installerOptions.architecture || os.arch();
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
   }
 
-  protected abstract downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults>;
-  protected abstract findPackageForDownload(range: string): Promise<JavaDownloadRelease>;
+  protected abstract downloadTool(
+    javaRelease: JavaDownloadRelease
+  ): Promise<JavaInstallerResults>;
+  protected abstract findPackageForDownload(
+    range: string
+  ): Promise<JavaDownloadRelease>;
 
   public async setupJava(): Promise<JavaInstallerResults> {
     let foundJava = this.findInToolcache();
@@ -51,7 +63,10 @@ export abstract class JavaBase {
     }
 
     // JDK folder may contain postfix "Contents/Home" on macOS
-    const macOSPostfixPath = path.join(foundJava.path, MACOS_JAVA_CONTENT_POSTFIX);
+    const macOSPostfixPath = path.join(
+      foundJava.path,
+      MACOS_JAVA_CONTENT_POSTFIX
+    );
     if (process.platform === 'darwin' && fs.existsSync(macOSPostfixPath)) {
       foundJava.path = macOSPostfixPath;
     }
@@ -95,7 +110,12 @@ export abstract class JavaBase {
             // so replace "/hostedtoolcache/Java/11.0.3-4/x64" to "/hostedtoolcache/Java/11.0.3+4/x64" when retrieves  to cache
             // related issue: https://github.com/actions/virtual-environments/issues/3014
             .replace('-', '+'),
-          path: getToolcachePath(this.toolcacheFolderName, item, this.architecture) || '',
+          path:
+            getToolcachePath(
+              this.toolcacheFolderName,
+              item,
+              this.architecture
+            ) || '',
           stable: !item.includes('-ea')
         };
       })
@@ -142,10 +162,35 @@ export abstract class JavaBase {
   }
 
   protected setJavaDefault(version: string, toolPath: string) {
+    const majorVersion = version.split('.')[0];
     core.exportVariable('JAVA_HOME', toolPath);
     core.addPath(path.join(toolPath, 'bin'));
     core.setOutput('distribution', this.distribution);
     core.setOutput('path', toolPath);
     core.setOutput('version', version);
+    core.exportVariable(
+      `JAVA_HOME_${majorVersion}_${this.architecture.toUpperCase()}`,
+      toolPath
+    );
+  }
+
+  protected distributionArchitecture(): string {
+    // default mappings of config architectures to distribution architectures
+    // override if a distribution uses any different names; see liberica for an example
+
+    // node's os.arch() - which this defaults to - can return any of:
+    // 'arm', 'arm64', 'ia32', 'mips', 'mipsel', 'ppc', 'ppc64', 's390', 's390x', and 'x64'
+    // so we need to map these to java distribution architectures
+    // 'amd64' is included here too b/c it's a common alias for 'x64' people might use explicitly
+    switch (this.architecture) {
+      case 'amd64':
+        return 'x64';
+      case 'ia32':
+        return 'x86';
+      case 'arm64':
+        return 'aarch64';
+      default:
+        return this.architecture;
+    }
   }
 }

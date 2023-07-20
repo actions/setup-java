@@ -3,15 +3,21 @@ import * as core from '@actions/core';
 
 import fs from 'fs';
 import path from 'path';
-import semver from 'semver';
 
-import { JavaBase } from '../base-installer';
-import { JavaInstallerOptions, JavaDownloadRelease, JavaInstallerResults } from '../base-models';
-import { extractJdkFile } from '../../util';
-import { MACOS_JAVA_CONTENT_POSTFIX } from '../../constants';
+import {JavaBase} from '../base-installer';
+import {
+  JavaInstallerOptions,
+  JavaDownloadRelease,
+  JavaInstallerResults
+} from '../base-models';
+import {extractJdkFile} from '../../util';
+import {MACOS_JAVA_CONTENT_POSTFIX} from '../../constants';
 
 export class LocalDistribution extends JavaBase {
-  constructor(installerOptions: JavaInstallerOptions, private jdkFile?: string) {
+  constructor(
+    installerOptions: JavaInstallerOptions,
+    private jdkFile?: string
+  ) {
     super('jdkfile', installerOptions);
   }
 
@@ -21,7 +27,9 @@ export class LocalDistribution extends JavaBase {
     if (foundJava) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
-      core.info(`Java ${this.version} was not found in tool-cache. Trying to unpack JDK file...`);
+      core.info(
+        `Java ${this.version} was not found in tool-cache. Trying to unpack JDK file...`
+      );
       if (!this.jdkFile) {
         throw new Error("'jdkFile' is not specified");
       }
@@ -39,25 +47,26 @@ export class LocalDistribution extends JavaBase {
       const archivePath = path.join(extractedJavaPath, archiveName);
       const javaVersion = this.version;
 
-      let javaPath = await tc.cacheDir(
+      const javaPath = await tc.cacheDir(
         archivePath,
         this.toolcacheFolderName,
         this.getToolcacheVersionName(javaVersion),
         this.architecture
       );
 
-      // for different Java distributions, postfix can exist or not so need to check both cases
-      if (
-        process.platform === 'darwin' &&
-        fs.existsSync(path.join(javaPath, MACOS_JAVA_CONTENT_POSTFIX))
-      ) {
-        javaPath = path.join(javaPath, MACOS_JAVA_CONTENT_POSTFIX);
-      }
-
       foundJava = {
         version: javaVersion,
         path: javaPath
       };
+    }
+
+    // JDK folder may contain postfix "Contents/Home" on macOS
+    const macOSPostfixPath = path.join(
+      foundJava.path,
+      MACOS_JAVA_CONTENT_POSTFIX
+    );
+    if (process.platform === 'darwin' && fs.existsSync(macOSPostfixPath)) {
+      foundJava.path = macOSPostfixPath;
     }
 
     core.info(`Setting Java ${foundJava.version} as default`);
@@ -66,11 +75,19 @@ export class LocalDistribution extends JavaBase {
     return foundJava;
   }
 
-  protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
-    throw new Error('This method should not be implemented in local file provider');
+  protected async findPackageForDownload(
+    version: string // eslint-disable-line @typescript-eslint/no-unused-vars
+  ): Promise<JavaDownloadRelease> {
+    throw new Error(
+      'This method should not be implemented in local file provider'
+    );
   }
 
-  protected async downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults> {
-    throw new Error('This method should not be implemented in local file provider');
+  protected async downloadTool(
+    javaRelease: JavaDownloadRelease // eslint-disable-line @typescript-eslint/no-unused-vars
+  ): Promise<JavaInstallerResults> {
+    throw new Error(
+      'This method should not be implemented in local file provider'
+    );
   }
 }
