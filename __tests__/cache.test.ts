@@ -102,7 +102,7 @@ describe('dependency cache', () => {
         await expect(restore('gradle')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/*.gradle*,**/gradle-wrapper.properties,buildSrc/**/Versions.kt,buildSrc/**/Dependencies.kt,gradle/*.versions.toml], make sure you have checked out the target repository`
+          )} matched to [**/*.gradle*,**/gradle-wrapper.properties,buildSrc/**/Versions.kt,buildSrc/**/Dependencies.kt,gradle/*.versions.toml,**/versions.properties], make sure you have checked out the target repository`
         );
       });
       it('downloads cache based on build.gradle', async () => {
@@ -178,6 +178,14 @@ describe('dependency cache', () => {
 
         expect(firstCall).not.toBe(thirdCall);
       });
+    });
+    it('downloads cache based on versions.properties', async () => {
+      createFile(join(workspace, 'versions.properties'));
+
+      await restore('gradle');
+      expect(spyCacheRestore).toHaveBeenCalled();
+      expect(spyWarning).not.toHaveBeenCalled();
+      expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
     });
   });
   describe('save', () => {
@@ -327,6 +335,17 @@ describe('dependency cache', () => {
         createStateForSuccessfulRestore();
 
         await save('sbt');
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith(
+          expect.stringMatching(/^Cache saved with the key:.*/)
+        );
+      });
+      it('uploads cache based on versions.properties', async () => {
+        createFile(join(workspace, 'versions.properties'));
+        createStateForSuccessfulRestore();
+
+        await save('gradle');
         expect(spyCacheSave).toHaveBeenCalled();
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith(
