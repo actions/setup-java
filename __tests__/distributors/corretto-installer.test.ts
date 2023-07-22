@@ -1,12 +1,12 @@
-import { HttpClient } from '@actions/http-client';
-import { JavaInstallerOptions } from '../../src/distributions/base-models';
+import {HttpClient} from '@actions/http-client';
+import {JavaInstallerOptions} from '../../src/distributions/base-models';
 
-import { CorrettoDistribution } from '../../src/distributions/corretto/installer';
+import {CorrettoDistribution} from '../../src/distributions/corretto/installer';
 import * as util from '../../src/util';
 import os from 'os';
-import { isGeneratorFunction } from 'util/types';
+import {isGeneratorFunction} from 'util/types';
 
-const manifestData = require('../data/corretto.json') as [];
+import manifestData from '../data/corretto.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
@@ -19,7 +19,10 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: manifestData
     });
-    spyGetDownloadArchiveExtension = jest.spyOn(util, 'getDownloadArchiveExtension');
+    spyGetDownloadArchiveExtension = jest.spyOn(
+      util,
+      'getDownloadArchiveExtension'
+    );
   });
 
   afterEach(() => {
@@ -44,16 +47,66 @@ describe('getAvailableVersions', () => {
     });
 
     it.each([
-      [{ version: '16', architecture: 'x64', packageType: 'jdk', checkLatest: false }, 'macos', 6],
-      [{ version: '16', architecture: 'x86', packageType: 'jdk', checkLatest: false }, 'macos', 0],
-      [{ version: '16', architecture: 'x64', packageType: 'jre', checkLatest: false }, 'macos', 0],
-      [{ version: '16', architecture: 'x64', packageType: 'jdk', checkLatest: false }, 'linux', 6],
       [
-        { version: '18', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+        {
+          version: '16',
+          architecture: 'x64',
+          packageType: 'jdk',
+          checkLatest: false
+        },
+        'macos',
+        6
+      ],
+      [
+        {
+          version: '16',
+          architecture: 'x86',
+          packageType: 'jdk',
+          checkLatest: false
+        },
+        'macos',
+        0
+      ],
+      [
+        {
+          version: '16',
+          architecture: 'x64',
+          packageType: 'jre',
+          checkLatest: false
+        },
+        'macos',
+        0
+      ],
+      [
+        {
+          version: '16',
+          architecture: 'x64',
+          packageType: 'jdk',
+          checkLatest: false
+        },
+        'linux',
+        6
+      ],
+      [
+        {
+          version: '18',
+          architecture: 'x64',
+          packageType: 'jdk',
+          checkLatest: false
+        },
         'windows',
         6
       ],
-      [{ version: '18', architecture: 'x64', packageType: 'jre', checkLatest: false }, 'windows', 1]
+      [
+        {
+          version: '18',
+          architecture: 'x64',
+          packageType: 'jre',
+          checkLatest: false
+        },
+        'windows',
+        1
+      ]
     ])(
       'fetch expected amount of available versions for %s',
       async (
@@ -66,7 +119,9 @@ describe('getAvailableVersions', () => {
 
         const availableVersions = await distribution['getAvailableVersions']();
         expect(availableVersions).not.toBeNull();
-        expect(availableVersions.length).toBe(expectedAmountOfAvailableVersions);
+        expect(availableVersions.length).toBe(
+          expectedAmountOfAvailableVersions
+        );
       }
     );
   });
@@ -95,7 +150,9 @@ describe('getAvailableVersions', () => {
       });
       mockPlatform(distribution, platform);
 
-      const availableVersion = await distribution['findPackageForDownload'](version);
+      const availableVersion = await distribution['findPackageForDownload'](
+        version
+      );
       expect(availableVersion).not.toBeNull();
       expect(availableVersion.url).toBe(expectedLink);
     });
@@ -110,9 +167,9 @@ describe('getAvailableVersions', () => {
       });
       mockPlatform(distribution, 'linux');
 
-      await expect(distribution['findPackageForDownload'](version)).rejects.toThrowError(
-        'Early access versions are not supported'
-      );
+      await expect(
+        distribution['findPackageForDownload'](version)
+      ).rejects.toThrow('Early access versions are not supported');
     });
 
     it('with non major version expect to throw not supported error', async () => {
@@ -125,9 +182,9 @@ describe('getAvailableVersions', () => {
       });
       mockPlatform(distribution, 'linux');
 
-      await expect(distribution['findPackageForDownload'](version)).rejects.toThrowError(
-        'Only major versions are supported'
-      );
+      await expect(
+        distribution['findPackageForDownload'](version)
+      ).rejects.toThrow('Only major versions are supported');
     });
 
     it('with unfound version throw could not find error', async () => {
@@ -140,9 +197,9 @@ describe('getAvailableVersions', () => {
       });
       mockPlatform(distribution, 'linux');
 
-      await expect(distribution['findPackageForDownload'](version)).rejects.toThrowError(
-        "Could not find satisfied version for SemVer '4'"
-      );
+      await expect(
+        distribution['findPackageForDownload'](version)
+      ).rejects.toThrow("Could not find satisfied version for SemVer '4'");
     });
 
     it.each([
@@ -166,14 +223,19 @@ describe('getAvailableVersions', () => {
 
         const expectedLink = `https://corretto.aws/downloads/resources/17.0.2.8.1/amazon-corretto-17.0.2.8.1-macosx-${distroArch}.tar.gz`;
 
-        const availableVersion = await distribution['findPackageForDownload'](version);
+        const availableVersion = await distribution['findPackageForDownload'](
+          version
+        );
         expect(availableVersion).not.toBeNull();
         expect(availableVersion.url).toBe(expectedLink);
       }
     );
   });
 
-  const mockPlatform = (distribution: CorrettoDistribution, platform: string) => {
+  const mockPlatform = (
+    distribution: CorrettoDistribution,
+    platform: string
+  ) => {
     distribution['getPlatformOption'] = () => platform;
     const mockedExtension = platform === 'windows' ? 'zip' : 'tar.gz';
     spyGetDownloadArchiveExtension.mockReturnValue(mockedExtension);

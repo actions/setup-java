@@ -1,38 +1,56 @@
-import * as core from '@actions/core';
-import * as tc from '@actions/tool-cache';
-
-import fs from 'fs';
-import path from 'path';
-import semver from 'semver';
-
 import {JavaBase} from '../base-installer';
-import {ITemurinAvailableVersions} from './models';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
 } from '../base-models';
+import semver from 'semver';
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
   isVersionSatisfies
 } from '../../util';
+import * as core from '@actions/core';
+import * as tc from '@actions/tool-cache';
+import fs from 'fs';
+import path from 'path';
+import {ISemeruAvailableVersions} from './models';
 
-export enum TemurinImplementation {
-  Hotspot = 'Hotspot'
-}
+const supportedArchitectures = [
+  'x64',
+  'x86',
+  'ppc64le',
+  'ppc64',
+  's390x',
+  'aarch64'
+];
 
-export class TemurinDistribution extends JavaBase {
-  constructor(
-    installerOptions: JavaInstallerOptions,
-    private readonly jvmImpl: TemurinImplementation
-  ) {
-    super(`Temurin-${jvmImpl}`, installerOptions);
+export class SemeruDistribution extends JavaBase {
+  constructor(installerOptions: JavaInstallerOptions) {
+    super('IBM_Semeru', installerOptions);
   }
 
   protected async findPackageForDownload(
     version: string
   ): Promise<JavaDownloadRelease> {
+    if (!supportedArchitectures.includes(this.architecture)) {
+      throw new Error(
+        `Unsupported architecture for IBM Semeru: ${
+          this.architecture
+        }, the following are supported: ${supportedArchitectures.join(', ')}`
+      );
+    }
+
+    if (!this.stable) {
+      throw new Error(
+        'IBM Semeru does not provide builds for early access versions'
+      );
+    }
+
+    if (this.packageType !== 'jdk' && this.packageType !== 'jre') {
+      throw new Error('IBM Semeru only provide `jdk` and `jre` package types');
+    }
+
     const availableVersionsRaw = await this.getAvailableVersions();
     const availableVersionsWithBinaries = availableVersionsRaw
       .filter(item => item.binaries.length > 0)
@@ -81,13 +99,16 @@ export class TemurinDistribution extends JavaBase {
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
 
-    const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
+    const extractedJavaPath: string = await extractJdkFile(
+      javaArchivePath,
+      extension
+    );
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
     const version = this.getToolcacheVersionName(javaRelease.version);
 
-    const javaPath = await tc.cacheDir(
+    const javaPath: string = await tc.cacheDir(
       archivePath,
       this.toolcacheFolderName,
       version,
@@ -101,20 +122,20 @@ export class TemurinDistribution extends JavaBase {
     return super.toolcacheFolderName;
   }
 
-  private async getAvailableVersions(): Promise<ITemurinAvailableVersions[]> {
+  public async getAvailableVersions(): Promise<ISemeruAvailableVersions[]> {
     const platform = this.getPlatformOption();
-    const arch = this.distributionArchitecture();
+    const arch = this.architecture;
     const imageType = this.packageType;
     const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
     const releaseType = this.stable ? 'ga' : 'ea';
 
     if (core.isDebug()) {
-      console.time('Retrieving available versions for Temurin took'); // eslint-disable-line no-console
+      console.time('Retrieving available versions for Semeru took'); // eslint-disable-line no-console
     }
 
     const baseRequestArguments = [
       `project=jdk`,
-      'vendor=adoptium',
+      'vendor=ibm',
       `heap_size=normal`,
       'sort_method=DEFAULT',
       'sort_order=DESC',
@@ -122,16 +143,16 @@ export class TemurinDistribution extends JavaBase {
       `architecture=${arch}`,
       `image_type=${imageType}`,
       `release_type=${releaseType}`,
-      `jvm_impl=${this.jvmImpl.toLowerCase()}`
+      `jvm_impl=openj9`
     ].join('&');
 
     // need to iterate through all pages to retrieve the list of all versions
     // Adoptium API doesn't provide way to retrieve the count of pages to iterate so infinity loop
     let page_index = 0;
-    const availableVersions: ITemurinAvailableVersions[] = [];
+    const availableVersions: ISemeruAvailableVersions[] = [];
     while (true) {
       const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
-      const availableVersionsUrl = `https://api.adoptium.net/v3/assets/version/${versionRange}?${requestArguments}`;
+      const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
       if (core.isDebug() && page_index === 0) {
         // url is identical except page_index so print it once for debug
         core.debug(
@@ -140,7 +161,7 @@ export class TemurinDistribution extends JavaBase {
       }
 
       const paginationPage = (
-        await this.http.getJson<ITemurinAvailableVersions[]>(
+        await this.http.getJson<ISemeruAvailableVersions[]>(
           availableVersionsUrl
         )
       ).result;
@@ -155,7 +176,7 @@ export class TemurinDistribution extends JavaBase {
 
     if (core.isDebug()) {
       core.startGroup('Print information about available versions');
-      console.timeEnd('Retrieving available versions for Temurin took'); // eslint-disable-line no-console
+      console.timeEnd('Retrieving available versions for Semeru took'); // eslint-disable-line no-console
       core.debug(`Available versions: [${availableVersions.length}]`);
       core.debug(
         availableVersions.map(item => item.version_data.semver).join(', ')
@@ -167,7 +188,7 @@ export class TemurinDistribution extends JavaBase {
   }
 
   private getPlatformOption(): string {
-    // Adoptium has own platform names so need to map them
+    // Adopt has own platform names so need to map them
     switch (process.platform) {
       case 'darwin':
         return 'mac';

@@ -1,12 +1,12 @@
-import { HttpClient } from '@actions/http-client';
+import {HttpClient} from '@actions/http-client';
 import os from 'os';
 import {
   TemurinDistribution,
   TemurinImplementation
 } from '../../src/distributions/temurin/installer';
-import { JavaInstallerOptions } from '../../src/distributions/base-models';
+import {JavaInstallerOptions} from '../../src/distributions/base-models';
 
-let manifestData = require('../data/temurin.json') as [];
+import manifestData from '../data/temurin.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
@@ -28,22 +28,42 @@ describe('getAvailableVersions', () => {
 
   it.each([
     [
-      { version: '16', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '16',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       TemurinImplementation.Hotspot,
       'os=mac&architecture=x64&image_type=jdk&release_type=ga&jvm_impl=hotspot&page_size=20&page=0'
     ],
     [
-      { version: '16', architecture: 'x86', packageType: 'jdk', checkLatest: false },
+      {
+        version: '16',
+        architecture: 'x86',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       TemurinImplementation.Hotspot,
       'os=mac&architecture=x86&image_type=jdk&release_type=ga&jvm_impl=hotspot&page_size=20&page=0'
     ],
     [
-      { version: '16', architecture: 'x64', packageType: 'jre', checkLatest: false },
+      {
+        version: '16',
+        architecture: 'x64',
+        packageType: 'jre',
+        checkLatest: false
+      },
       TemurinImplementation.Hotspot,
       'os=mac&architecture=x64&image_type=jre&release_type=ga&jvm_impl=hotspot&page_size=20&page=0'
     ],
     [
-      { version: '16-ea', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '16-ea',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       TemurinImplementation.Hotspot,
       'os=mac&architecture=x64&image_type=jdk&release_type=ea&jvm_impl=hotspot&page_size=20&page=0'
     ]
@@ -55,7 +75,8 @@ describe('getAvailableVersions', () => {
       expectedParameters
     ) => {
       const distribution = new TemurinDistribution(installerOptions, impl);
-      const baseUrl = 'https://api.adoptium.net/v3/assets/version/%5B1.0,100.0%5D';
+      const baseUrl =
+        'https://api.adoptium.net/v3/assets/version/%5B1.0,100.0%5D';
       const expectedUrl = `${baseUrl}?project=jdk&vendor=adoptium&heap_size=normal&sort_method=DEFAULT&sort_order=DESC&${expectedParameters}`;
       distribution['getPlatformOption'] = () => 'mac';
 
@@ -72,12 +93,12 @@ describe('getAvailableVersions', () => {
       .mockReturnValueOnce({
         statusCode: 200,
         headers: {},
-        result: manifestData
+        result: manifestData as any
       })
       .mockReturnValueOnce({
         statusCode: 200,
         headers: {},
-        result: manifestData
+        result: manifestData as any
       })
       .mockReturnValueOnce({
         statusCode: 200,
@@ -86,7 +107,12 @@ describe('getAvailableVersions', () => {
       });
 
     const distribution = new TemurinDistribution(
-      { version: '8', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '8',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       TemurinImplementation.Hotspot
     );
     const availableVersions = await distribution['getAvailableVersions']();
@@ -101,7 +127,12 @@ describe('getAvailableVersions', () => {
     'find right toolchain folder',
     (impl: TemurinImplementation, packageType: string, expected: string) => {
       const distribution = new TemurinDistribution(
-        { version: '8', architecture: 'x64', packageType: packageType, checkLatest: false },
+        {
+          version: '8',
+          architecture: 'x64',
+          packageType: packageType,
+          checkLatest: false
+        },
         impl
       );
 
@@ -127,8 +158,12 @@ describe('getAvailableVersions', () => {
 
       const expectedParameters = `os=mac&architecture=${distroArch}&image_type=jdk&release_type=ga&jvm_impl=hotspot&page_size=20&page=0`;
 
-      const distribution = new TemurinDistribution(installerOptions, TemurinImplementation.Hotspot);
-      const baseUrl = 'https://api.adoptium.net/v3/assets/version/%5B1.0,100.0%5D';
+      const distribution = new TemurinDistribution(
+        installerOptions,
+        TemurinImplementation.Hotspot
+      );
+      const baseUrl =
+        'https://api.adoptium.net/v3/assets/version/%5B1.0,100.0%5D';
       const expectedUrl = `${baseUrl}?project=jdk&vendor=adoptium&heap_size=normal&sort_method=DEFAULT&sort_order=DESC&${expectedParameters}`;
       distribution['getPlatformOption'] = () => 'mac';
 
@@ -150,43 +185,63 @@ describe('findPackageForDownload', () => {
     ['x', '16.0.2+7']
   ])('version is resolved correctly %s -> %s', async (input, expected) => {
     const distribution = new TemurinDistribution(
-      { version: '8', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '8',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       TemurinImplementation.Hotspot
     );
-    distribution['getAvailableVersions'] = async () => manifestData;
+    distribution['getAvailableVersions'] = async () => manifestData as any;
     const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
   });
 
   it('version is found but binaries list is empty', async () => {
     const distribution = new TemurinDistribution(
-      { version: '9.0.8', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '9.0.8',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       TemurinImplementation.Hotspot
     );
-    distribution['getAvailableVersions'] = async () => manifestData;
-    await expect(distribution['findPackageForDownload']('9.0.8')).rejects.toThrowError(
-      /Could not find satisfied version for SemVer */
-    );
+    distribution['getAvailableVersions'] = async () => manifestData as any;
+    await expect(
+      distribution['findPackageForDownload']('9.0.8')
+    ).rejects.toThrow(/Could not find satisfied version for SemVer */);
   });
 
   it('version is not found', async () => {
     const distribution = new TemurinDistribution(
-      { version: '7.x', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '7.x',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       TemurinImplementation.Hotspot
     );
-    distribution['getAvailableVersions'] = async () => manifestData;
-    await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrowError(
+    distribution['getAvailableVersions'] = async () => manifestData as any;
+    await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrow(
       /Could not find satisfied version for SemVer */
     );
   });
 
   it('version list is empty', async () => {
     const distribution = new TemurinDistribution(
-      { version: '8', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '8',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       TemurinImplementation.Hotspot
     );
     distribution['getAvailableVersions'] = async () => [];
-    await expect(distribution['findPackageForDownload']('8')).rejects.toThrowError(
+    await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
       /Could not find satisfied version for SemVer */
     );
   });

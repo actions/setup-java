@@ -103,19 +103,20 @@ Currently, the following distributions are supported:
 | `liberica` | Liberica JDK | [Link](https://bell-sw.com/) | [Link](https://bell-sw.com/liberica_eula/) |
 | `microsoft` | Microsoft Build of OpenJDK | [Link](https://www.microsoft.com/openjdk) | [Link](https://docs.microsoft.com/java/openjdk/faq)
 | `corretto` | Amazon Corretto Build of OpenJDK | [Link](https://aws.amazon.com/corretto/) | [Link](https://aws.amazon.com/corretto/faqs/)
+| `semeru` | IBM Semeru Runtime Open Edition | [Link](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) | [Link](https://openjdk.java.net/legal/gplv2+ce.html) |
 | `oracle` | Oracle JDK | [Link](https://www.oracle.com/java/technologies/downloads/) | [Link](https://java.com/freeuselicense)
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 
-**NOTE:** AdoptOpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` to `temurin` to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
+**NOTE:** AdoptOpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` and `adopt-openj9`, to `temurin` and `semeru` respectively, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 
 **NOTE:** For Azul Zulu OpenJDK architectures x64 and arm64 are mapped to x86 / arm with proper hw_bitness.
 
 ### Caching packages dependencies
-The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
-- gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, and `gradle/*.versions.toml`
+The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
+- gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, and `**/versions.properties`
 - maven: `**/pom.xml`
-- sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.{scala,sbt}`
+- sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.scala`, `**/project/**.sbt`
 
 The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
 

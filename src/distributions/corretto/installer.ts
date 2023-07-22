@@ -2,17 +2,30 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
-import { extractJdkFile, getDownloadArchiveExtension } from '../../util';
-import { JavaBase } from '../base-installer';
-import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
-import { ICorrettoAllAvailableVersions, ICorrettoAvailableVersions } from './models';
+import {
+  extractJdkFile,
+  getDownloadArchiveExtension,
+  convertVersionToSemver
+} from '../../util';
+import {JavaBase} from '../base-installer';
+import {
+  JavaDownloadRelease,
+  JavaInstallerOptions,
+  JavaInstallerResults
+} from '../base-models';
+import {
+  ICorrettoAllAvailableVersions,
+  ICorrettoAvailableVersions
+} from './models';
 
 export class CorrettoDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('Corretto', installerOptions);
   }
 
-  protected async downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults> {
+  protected async downloadTool(
+    javaRelease: JavaDownloadRelease
+  ): Promise<JavaInstallerResults> {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
@@ -20,7 +33,10 @@ export class CorrettoDistribution extends JavaBase {
 
     core.info(`Extracting Java archive...`);
 
-    const extractedJavaPath = await extractJdkFile(javaArchivePath, getDownloadArchiveExtension());
+    const extractedJavaPath = await extractJdkFile(
+      javaArchivePath,
+      getDownloadArchiveExtension()
+    );
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
@@ -33,10 +49,12 @@ export class CorrettoDistribution extends JavaBase {
       this.architecture
     );
 
-    return { version: javaRelease.version, path: javaPath };
+    return {version: javaRelease.version, path: javaPath};
   }
 
-  protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
+  protected async findPackageForDownload(
+    version: string
+  ): Promise<JavaDownloadRelease> {
     if (!this.stable) {
       throw new Error('Early access versions are not supported');
     }
@@ -48,14 +66,17 @@ export class CorrettoDistribution extends JavaBase {
       .filter(item => item.version == version)
       .map(item => {
         return {
-          version: item.correttoVersion,
+          version: convertVersionToSemver(item.correttoVersion),
           url: item.downloadLink
         } as JavaDownloadRelease;
       });
 
-    const resolvedVersion = matchingVersions.length > 0 ? matchingVersions[0] : null;
+    const resolvedVersion =
+      matchingVersions.length > 0 ? matchingVersions[0] : null;
     if (!resolvedVersion) {
-      const availableOptions = availableVersions.map(item => item.version).join(', ');
+      const availableOptions = availableVersions
+        .map(item => item.version)
+        .join(', ');
       const availableOptionsMessage = availableOptions
         ? `\nAvailable versions: ${availableOptions}`
         : '';
@@ -72,43 +93,61 @@ export class CorrettoDistribution extends JavaBase {
     const imageType = this.packageType;
 
     if (core.isDebug()) {
-      console.time('corretto-retrieve-available-versions');
+      console.time('Retrieving available versions for Coretto took'); // eslint-disable-line no-console
     }
 
     const availableVersionsUrl =
       'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
-    const fetchCurrentVersions = await this.http.getJson<ICorrettoAllAvailableVersions>(
-      availableVersionsUrl
-    );
+    const fetchCurrentVersions =
+      await this.http.getJson<ICorrettoAllAvailableVersions>(
+        availableVersionsUrl
+      );
     const fetchedCurrentVersions = fetchCurrentVersions.result;
     if (!fetchedCurrentVersions) {
-      throw Error(`Could not fetch latest corretto versions from ${availableVersionsUrl}`);
+      throw Error(
+        `Could not fetch latest corretto versions from ${availableVersionsUrl}`
+      );
     }
 
-    const eligibleVersions = fetchedCurrentVersions?.[platform]?.[arch]?.[imageType];
-    const availableVersions = this.getAvailableVersionsForPlatform(eligibleVersions);
+    const eligibleVersions =
+      fetchedCurrentVersions?.[platform]?.[arch]?.[imageType];
+    const availableVersions =
+      this.getAvailableVersionsForPlatform(eligibleVersions);
 
     if (core.isDebug()) {
-      this.printAvailableVersions(availableVersions);
+      core.startGroup('Print information about available versions');
+      console.timeEnd('Retrieving available versions for Coretto took'); // eslint-disable-line no-console
+      core.debug(`Available versions: [${availableVersions.length}]`);
+      core.debug(
+        availableVersions
+          .map(item => `${item.version}: ${item.correttoVersion}`)
+          .join(', ')
+      );
+      core.endGroup();
     }
 
     return availableVersions;
   }
 
   private getAvailableVersionsForPlatform(
-    eligibleVersions: ICorrettoAllAvailableVersions['os']['arch']['imageType'] | undefined
+    eligibleVersions:
+      | ICorrettoAllAvailableVersions['os']['arch']['imageType']
+      | undefined
   ): ICorrettoAvailableVersions[] {
     const availableVersions: ICorrettoAvailableVersions[] = [];
 
     for (const version in eligibleVersions) {
       const availableVersion = eligibleVersions[version];
       for (const fileType in availableVersion) {
-        const skipNonExtractableBinaries = fileType != getDownloadArchiveExtension();
+        const skipNonExtractableBinaries =
+          fileType != getDownloadArchiveExtension();
         if (skipNonExtractableBinaries) {
           continue;
         }
         const availableVersionDetails = availableVersion[fileType];
-        const correttoVersion = this.getCorrettoVersion(availableVersionDetails.resource);
+        const correttoVersion = this.getCorrettoVersion(
+          availableVersionDetails.resource
+        );
 
         availableVersions.push({
           checksum: availableVersionDetails.checksum,
@@ -122,16 +161,6 @@ export class CorrettoDistribution extends JavaBase {
       }
     }
     return availableVersions;
-  }
-
-  private printAvailableVersions(availableVersions: ICorrettoAvailableVersions[]) {
-    core.startGroup('Print information about available versions');
-    console.timeEnd('corretto-retrieve-available-versions');
-    console.log(`Available versions: [${availableVersions.length}]`);
-    console.log(
-      availableVersions.map(item => `${item.version}: ${item.correttoVersion}`).join(', ')
-    );
-    core.endGroup();
   }
 
   private getPlatformOption(): string {

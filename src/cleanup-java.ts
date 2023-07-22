@@ -1,14 +1,16 @@
 import * as core from '@actions/core';
 import * as gpg from './gpg';
 import * as constants from './constants';
-import { isJobStatusSuccess } from './util';
-import { save } from './cache';
+import {isJobStatusSuccess} from './util';
+import {save} from './cache';
 
 async function removePrivateKeyFromKeychain() {
-  if (core.getInput(constants.INPUT_GPG_PRIVATE_KEY, { required: false })) {
+  if (core.getInput(constants.INPUT_GPG_PRIVATE_KEY, {required: false})) {
     core.info('Removing private key from keychain');
     try {
-      const keyFingerprint = core.getState(constants.STATE_GPG_PRIVATE_KEY_FINGERPRINT);
+      const keyFingerprint = core.getState(
+        constants.STATE_GPG_PRIVATE_KEY_FINGERPRINT
+      );
       await gpg.deleteKey(keyFingerprint);
     } catch (error) {
       core.setFailed(`Failed to remove private key due to: ${error.message}`);
