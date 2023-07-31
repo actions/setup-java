@@ -31,7 +31,7 @@ This action allows you to work with Java and Scala projects.
    
   - `distribution`: _(required)_ Java [distribution](#supported-distributions).
 
-  - `java-package`: The packaging variant of the choosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
+  - `java-package`: The packaging variant of the chosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
 
   - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
 
@@ -39,12 +39,12 @@ This action allows you to work with Java and Scala projects.
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
-  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predifined package managers. It can be one of "maven", "gradle" or "sbt".
+  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
 
   #### Maven options
   The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
 
-  - `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists set this to `false`.
+  - `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists, set this to `false`.
 
   - `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
 
@@ -56,7 +56,7 @@ This action allows you to work with Java and Scala projects.
 
   - `gpg-private-key`: GPG private key to import. Default is empty string.
 
-  - `gpg-passphrase`: description: Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
+  - `gpg-passphrase`: Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
 
   - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
 
