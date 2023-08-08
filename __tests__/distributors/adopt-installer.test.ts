@@ -1,14 +1,11 @@
 import {HttpClient} from '@actions/http-client';
-import {IAdoptAvailableVersions} from '../../src/distributions/adopt/models';
-import {
-  AdoptDistribution,
-  AdoptImplementation
-} from '../../src/distributions/adopt/installer';
+import {AdoptDistribution, AdoptImplementation} from '../../src/distributions/adopt/installer';
 import {JavaInstallerOptions} from '../../src/distributions/base-models';
 
 import os from 'os';
 
 import manifestData from '../data/adopt.json';
+import {TemurinDistribution, TemurinImplementation} from "../../src/distributions/temurin/installer";
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
@@ -246,6 +243,85 @@ describe('findPackageForDownload', () => {
     const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
   });
+
+  describe('delegates to Temurin', () => {
+      it.each([
+          ['9', '9.0.7+10'],
+          ['15', '15.0.2+7'],
+          ['15.0', '15.0.2+7'],
+          ['15.0.2', '15.0.2+7'],
+          ['15.0.1', '15.0.1+9.1'],
+          ['11.x', '11.0.10+9'],
+          ['x', '15.0.2+7'],
+          ['12', '12.0.2+10.3'], // make sure that '12.0.2+10.1', '12.0.2+10.3', '12.0.2+10.2' are sorted correctly
+          ['12.0.2+10.1', '12.0.2+10.1'],
+          ['15.0.1+9', '15.0.1+9'],
+          ['15.0.1+9.1', '15.0.1+9.1']
+      ])('version is resolved correctly %s -> %s', async (input, expected) => {
+
+          const temurinDistribution = new TemurinDistribution(
+              {
+                  version: '11',
+                  architecture: 'x64',
+                  packageType: 'jdk',
+                  checkLatest: false
+              },
+              TemurinImplementation.Hotspot
+          );
+
+          const distribution = new AdoptDistribution(
+              {
+                  version: '11',
+                  architecture: 'x64',
+                  packageType: 'jdk',
+                  checkLatest: false
+              },
+              AdoptImplementation.Hotspot,
+              temurinDistribution
+          );
+
+          temurinDistribution['getAvailableVersions'] = async () => manifestData as any;
+          const resolvedVersion = await distribution['findPackageForDownload'](input);
+          expect(resolvedVersion.version).toBe(expected);
+      });
+  });
+
+
+    describe('Falls back if Temurin fails', () => {
+        it.each([
+            ['9', '9.0.7+10']
+        ])('version is resolved correctly %s -> %s', async (input, expected) => {
+
+            const temurinDistribution = new TemurinDistribution(
+                {
+                    version: '11',
+                    architecture: 'x64',
+                    packageType: 'jdk',
+                    checkLatest: false
+                },
+                TemurinImplementation.Hotspot
+            );
+
+            const distribution = new AdoptDistribution(
+                {
+                    version: '11',
+                    architecture: 'x64',
+                    packageType: 'jdk',
+                    checkLatest: false
+                },
+                AdoptImplementation.Hotspot,
+                temurinDistribution
+            );
+
+            temurinDistribution['findPackageForDownload'] = async () => new Promise(function () {
+                throw new Error("Could not find satisfied version for SemVer")
+            });
+            distribution['getAvailableVersions'] = async () => manifestData as any;
+
+            const resolvedVersion = await distribution['findPackageForDownload'](input);
+            expect(resolvedVersion.version).toBe(expected);
+        });
+    });
 
   it('version is found but binaries list is empty', async () => {
     const distribution = new AdoptDistribution(

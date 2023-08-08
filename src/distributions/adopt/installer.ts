@@ -17,6 +17,7 @@ import {
   getDownloadArchiveExtension,
   isVersionSatisfies
 } from '../../util';
+import {TemurinDistribution, TemurinImplementation} from "../temurin/installer";
 
 export enum AdoptImplementation {
   Hotspot = 'Hotspot',
@@ -26,13 +27,47 @@ export enum AdoptImplementation {
 export class AdoptDistribution extends JavaBase {
   constructor(
     installerOptions: JavaInstallerOptions,
-    private readonly jvmImpl: AdoptImplementation
+    private readonly jvmImpl: AdoptImplementation,
+    private readonly temurinDistribution: TemurinDistribution | null = null
   ) {
     super(`Adopt-${jvmImpl}`, installerOptions);
+
+    if (temurinDistribution != null && jvmImpl != AdoptImplementation.Hotspot) {
+      throw new Error("Only Hotspot JVM is supported by Temurin.")
+    }
+
+    // Only use the temurin repo for Hotspot JVMs
+    if (temurinDistribution == null && jvmImpl == AdoptImplementation.Hotspot) {
+      this.temurinDistribution = new TemurinDistribution(
+          installerOptions,
+          TemurinImplementation.Hotspot);
+    }
   }
 
   protected async findPackageForDownload(
-    version: string
+      version: string
+  ): Promise<JavaDownloadRelease> {
+    if (this.jvmImpl == AdoptImplementation.Hotspot && this.temurinDistribution != null) {
+      try {
+        let result = await this.temurinDistribution.findPackageForDownload(version)
+
+        if (result != undefined) {
+          return result
+        }
+      } catch (error) {
+        if (error.message.includes('Could not find satisfied version')) {
+          console.warn("The JVM you are looking for could not be found in the Temurin repository, this likely indicates " +
+              "that you are using an out of date version of Java, consider updating and moving to using the Temurin distribution type in setup-java.")
+        }
+      }
+    }
+
+    // failed to find a Temurin version, so fall back to AdoptOpenJDK
+    return this.findPackageForDownloadOldAdoptOpenJdk(version);
+  }
+
+  private async findPackageForDownloadOldAdoptOpenJdk(
+      version: string
   ): Promise<JavaDownloadRelease> {
     const availableVersionsRaw = await this.getAvailableVersions();
     const availableVersionsWithBinaries = availableVersionsRaw
