@@ -47,6 +47,11 @@ export class AdoptDistribution extends JavaBase {
   protected async findPackageForDownload(
       version: string
   ): Promise<JavaDownloadRelease> {
+
+    if (this.jvmImpl == AdoptImplementation.Hotspot) {
+      core.notice("AdoptOpenJDK has moved to Eclipse Temurin https://github.com/actions/setup-java#supported-distributions please consider changing to the 'temurin' distribution type in your setup-java configuration.")
+    }
+
     if (this.jvmImpl == AdoptImplementation.Hotspot && this.temurinDistribution != null) {
       try {
         let result = await this.temurinDistribution.findPackageForDownload(version)
@@ -56,7 +61,7 @@ export class AdoptDistribution extends JavaBase {
         }
       } catch (error) {
         if (error.message.includes('Could not find satisfied version')) {
-          console.warn("The JVM you are looking for could not be found in the Temurin repository, this likely indicates " +
+          core.notice("The JVM you are looking for could not be found in the Temurin repository, this likely indicates " +
               "that you are using an out of date version of Java, consider updating and moving to using the Temurin distribution type in setup-java.")
         }
       }
