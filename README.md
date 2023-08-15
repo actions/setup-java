@@ -5,7 +5,7 @@
 [![Validate cache](https://github.com/actions/setup-java/actions/workflows/e2e-cache.yml/badge.svg?branch=main)](https://github.com/actions/setup-java/actions/workflows/e2e-cache.yml)
 
 The `setup-java` action provides the following functionality for GitHub Actions runners:
-- Downloading and setting up a requested version of Java. See [Usage](#Usage) for a list of supported distributions.
+- Downloading and setting up a requested version of Java. See [Usage](#usage) for a list of supported distributions.
 - Extracting and caching custom version of Java from a local file.
 - Configuring runner for publishing using Apache Maven.
 - Configuring runner for publishing using Gradle.
