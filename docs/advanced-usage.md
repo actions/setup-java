@@ -7,6 +7,7 @@
   - [Microsoft](#Microsoft)
   - [Amazon Corretto](#Amazon-Corretto)
   - [Oracle](#Oracle)
+  - [GraalVM](#GraalVM)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -122,6 +123,21 @@ steps:
     distribution: 'oracle'
     java-version: '17'
 - run: java -cp java HelloWorldApp
+```
+
+### GraalVM
+**NOTE:** Oracle GraalVM JDK is only available for version 17 and later.
+
+```yaml
+steps:
+- uses: actions/checkout@v3
+- uses: actions/setup-java@v3
+  with:
+    distribution: 'graalvm'
+    java-version: '17'
+- run:
+  java -cp java HelloWorldApp
+  native-image -cp java HelloWorldApp
 ```
 
 ## Installing custom Java package type

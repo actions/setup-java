@@ -9,6 +9,7 @@ import {MicrosoftDistributions} from './microsoft/installer';
 import {SemeruDistribution} from './semeru/installer';
 import {CorrettoDistribution} from './corretto/installer';
 import {OracleDistribution} from './oracle/installer';
+import {GraalVMDistribution} from './graalvm/installer';
 
 enum JavaDistribution {
   Adopt = 'adopt',
@@ -21,7 +22,8 @@ enum JavaDistribution {
   Microsoft = 'microsoft',
   Semeru = 'semeru',
   Corretto = 'corretto',
-  Oracle = 'oracle'
+  Oracle = 'oracle',
+  GraalVM = 'graalvm'
 }
 
 export function getJavaDistribution(
@@ -60,6 +62,8 @@ export function getJavaDistribution(
       return new CorrettoDistribution(installerOptions);
     case JavaDistribution.Oracle:
       return new OracleDistribution(installerOptions);
+    case JavaDistribution.GraalVM:
+      return new GraalVMDistribution(installerOptions);
     default:
       return null;
   }
