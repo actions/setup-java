@@ -67,7 +67,7 @@ This action allows you to work with Java and Scala projects.
 #### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
@@ -78,7 +78,7 @@ steps:
 #### Azul Zulu OpenJDK
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
@@ -125,7 +125,7 @@ The cache input is optional, and caching is turned off by default.
 #### Caching gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
@@ -137,7 +137,7 @@ steps:
 #### Caching maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
@@ -150,7 +150,7 @@ steps:
 #### Caching sbt dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
@@ -171,7 +171,7 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
@@ -190,7 +190,7 @@ jobs:
         java: [ '8', '11', '17' ]
     name: Java ${{ matrix.Java }} sample
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup java
         uses: actions/setup-java@v3
         with:

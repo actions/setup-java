@@ -26,7 +26,7 @@ Inputs `java-version` and `distribution` are mandatory and needs to be provided.
 ### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
@@ -39,7 +39,7 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'adopt-hotspot'
@@ -50,7 +50,7 @@ steps:
 ### Zulu
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'zulu'
@@ -62,7 +62,7 @@ steps:
 ### Liberica
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'liberica'
@@ -74,7 +74,7 @@ steps:
 ### Microsoft
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'microsoft'
@@ -103,7 +103,7 @@ If the runner is not able to access github.com, any Java versions requested duri
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'corretto'
@@ -116,7 +116,7 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'oracle'
@@ -127,7 +127,7 @@ steps:
 ## Installing custom Java package type
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: '<distribution>'
@@ -141,7 +141,7 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: '<distribution>'
@@ -205,7 +205,7 @@ jobs:
         java: [ '8', '11' ]
     name: Java ${{ matrix.Java }} (${{ matrix.distribution }}) sample
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup java
         uses: actions/setup-java@v3
         with:
@@ -225,7 +225,7 @@ jobs:
         os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
     name: Java ${{ matrix.Java }} (${{ matrix.os }}) sample
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup java
         uses: actions/setup-java@v3
         with:
@@ -242,7 +242,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up JDK 11
       uses: actions/setup-java@v3
       with:
@@ -353,7 +353,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Set up JDK 11 for Shared Runner
       uses: actions/setup-java@v3
       with:
@@ -379,7 +379,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up JDK 11
       uses: actions/setup-java@v3
@@ -481,7 +481,7 @@ Each JDK provider will receive a default `id` based on the combination of `distr
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
+- uses: actions/checkout@v4
 - uses: actions/setup-java@v3
   with:
     distribution: 'temurin'
