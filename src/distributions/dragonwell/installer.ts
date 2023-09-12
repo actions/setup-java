@@ -1,11 +1,12 @@
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
+import semver from 'semver';
 
 import fs from 'fs';
 import path from 'path';
 
 import {JavaBase} from '../base-installer';
-import {extractJdkFile, getDownloadArchiveExtension} from '../../util';
+import {extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies} from '../../util';
 import {IDragonwellVersions, IDragonwellAllVersions} from './models';
 import {
   JavaDownloadRelease,
@@ -24,22 +25,20 @@ export class DragonwellDistribution extends JavaBase {
     if (!this.stable) {
       throw new Error('Early access versions are not supported');
     }
-    let majorVersion = version;
-    if (version.includes('.')) {
-      const splits = version.split('.');
-      majorVersion = splits[0];
-      version = splits.length >= 3 ? splits.slice(0, 3).join('.') : version;
-    }
-    const edition = majorVersion == '17' ? 'Standard' : 'Extended';
+    
     const availableVersions = await this.getAvailableVersions();
+
     const matchedVersions = availableVersions
-      .filter(item => item.jdk_version == version && item.edition == edition)
+      .filter(item => {
+        return isVersionSatisfies(version, item.jdk_version);
+      }) 
       .map(item => {
         return {
           version: item.jdk_version,
           url: item.download_link
         } as JavaDownloadRelease;
       });
+
     if (!matchedVersions.length) {
       throw new Error(
         `Couldn't find any satisfied version for the specified: "${version}".`
@@ -59,17 +58,19 @@ export class DragonwellDistribution extends JavaBase {
 
     const fetchedDragonwellVersions =
       (await this.http.getJson<IDragonwellAllVersions>(availableVersionsUrl))
-        .result ?? {};
-    if (Object.keys(fetchedDragonwellVersions).length == 0) {
-      throw Error(
+        .result;
+
+    if (!fetchedDragonwellVersions) { 
+      throw new Error(
         `Couldn't fetch any dragonwell versions from ${availableVersionsUrl}`
       );
     }
-    const availableVersions = this.getEligibleAvailableVersions(
+    
+    const availableVersions = this.parseVersions(
       platform,
       arch,
       fetchedDragonwellVersions
-    );
+    ); 
 
     if (core.isDebug()) {
       core.startGroup('Print information about available versions');
@@ -109,7 +110,7 @@ export class DragonwellDistribution extends JavaBase {
     return {version: javaRelease.version, path: javaPath};
   }
 
-  private getEligibleAvailableVersions(
+  private parseVersions(
     platform: string,
     arch: string,
     dragonwellVersions: IDragonwellAllVersions
@@ -119,6 +120,7 @@ export class DragonwellDistribution extends JavaBase {
     for (const majorVersion in dragonwellVersions) {
       const majorVersionMap = dragonwellVersions[majorVersion];
       for (let jdkVersion in majorVersionMap) {
+
         const jdkVersionMap = majorVersionMap[jdkVersion];
         if (!(platform in jdkVersionMap)) {
           continue;
@@ -128,28 +130,52 @@ export class DragonwellDistribution extends JavaBase {
           continue;
         }
         const archMap = platformMap[arch];
+
         if (jdkVersion === 'latest') {
-          jdkVersion = majorVersion;
+          continue;
         }
-        if (jdkVersion.includes('.')) {
-          const splits = jdkVersion.split('.');
-          jdkVersion =
-            splits.length >= 3 ? splits.slice(0, 3).join('.') : jdkVersion;
+
+        if (jdkVersion.split(".").length > 3) {
+          jdkVersion = this.transformToSemver(jdkVersion);
         }
+
         for (const edition in archMap) {
           eligibleVersions.push({
             os: platform,
             architecture: arch,
             jdk_version: jdkVersion,
-            checksum: archMap[edition].sha256,
+            checksum: archMap[edition].sha256 ?? "",
             download_link: archMap[edition].download_url,
             edition: edition,
             image_type: 'jdk'
           });
+          break; // Get the first available link to the JDK. In most cases it should point to the Extended version of JDK, in rare cases like with v17 it points to the Standard version (the only available).
         }
       }
     }
-    return eligibleVersions;
+
+    const sortedEligibleVersions = this.sortParsedVersions(eligibleVersions); // сортирует версии в порядке убивания
+    
+    return sortedEligibleVersions;
+  }
+
+  // Sorts versions in descending order as by default data in JSON isn't sorted
+  private sortParsedVersions(eligibleVersions: IDragonwellVersions[]): IDragonwellVersions[] {
+    const sortedVersions = eligibleVersions.sort((versionObj1, versionObj2) => {
+      const version1 = versionObj1.jdk_version;
+      const version2 = versionObj2.jdk_version;
+      return semver.compareBuild(version1, version2);
+    });
+    return sortedVersions.reverse();
+  }
+
+  // Some version of Dragonwell JDK are numerated with help of non-semver notation (more then 3 digits).
+  // Common practice is to transform excess digits to the so-called semver build part, which is prefixed with the plus sign, to be able to operate with them using semver tools.
+  private transformToSemver(version: string) {
+    const splits = version.split('.');
+    const versionMainPart = splits.slice(0,3).join(".");
+    const versionBuildPart = splits.slice(3).join(".");
+    return `${versionMainPart}+${versionBuildPart}`;
   }
 
   private getPlatformOption(): string {
