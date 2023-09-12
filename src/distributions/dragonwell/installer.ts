@@ -41,7 +41,7 @@ export class DragonwellDistribution extends JavaBase {
 
     if (!matchedVersions.length) {
       throw new Error(
-        `Couldn't find any satisfied version for the specified: "${version}".`
+        `Couldn't find any satisfied version for the specified java-version: "${version}".`
       );
     }
 
