@@ -154,9 +154,9 @@ export class DragonwellDistribution extends JavaBase {
       }
     }
 
-    const sortedEligibleVersions = this.sortParsedVersions(eligibleVersions); // сортирует версии в порядке убивания
+    const sortedVersions = this.sortParsedVersions(eligibleVersions);
     
-    return sortedEligibleVersions;
+    return sortedVersions;
   }
 
   // Sorts versions in descending order as by default data in JSON isn't sorted
