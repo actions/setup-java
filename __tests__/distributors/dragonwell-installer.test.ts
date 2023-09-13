@@ -1,9 +1,6 @@
 import {HttpClient} from '@actions/http-client';
-import * as semver from 'semver';
 import {DragonwellDistribution} from '../../src/distributions/dragonwell/installer';
-import {IDragonwellAllVersions} from '../../src/distributions/dragonwell/models';
 import * as utils from '../../src/util';
-import os from 'os';
 
 import manifestData from '../data/dragonwell.json';
 
@@ -44,17 +41,17 @@ describe('getAvailableVersions', () => {
   describe('getAvailableVersions', () => {
     it.each([
       ['8', 'x86', 'linux', 0],
-      ['8', 'aarch64', 'linux', 33],
-      ['8.6.6', 'x64', 'linux', 36],
+      ['8', 'aarch64', 'linux', 24],
+      ['8.6.6', 'x64', 'linux', 27],
       ['8', 'x86', 'anolis', 0],
       ['8', 'x86', 'windows', 0],
       ['8', 'x86', 'mac', 0],
-      ['11', 'x64', 'linux', 36],
-      ['11', 'aarch64', 'linux', 33],
+      ['11', 'x64', 'linux', 27],
+      ['11', 'aarch64', 'linux', 24],
       ['17', 'riscv', 'linux', 0],
-      ['16.0.1', 'x64', 'linux', 36]
+      ['16.0.1', 'x64', 'linux', 27]
     ])(
-      'load available versions',
+      'should get right number of available versions from JSON',
       async (
         jdkVersion: string,
         arch: string,
@@ -163,7 +160,7 @@ describe('getAvailableVersions', () => {
         'https://github.com/alibaba/dragonwell17/releases/download/dragonwell-standard-17.0.4.0.4%2B8_jdk-17.0.4-ga/Alibaba_Dragonwell_Standard_17.0.4.0.4%2B8_x64_linux.tar.gz'
       ]
     ])(
-      'test for download link',
+      'should return proper link according to the specified java-version, platform and arch',
       async (
         jdkVersion: string,
         platform: string,
@@ -192,7 +189,7 @@ describe('getAvailableVersions', () => {
       ['11', 'macos', 'aarch64'],
       ['17', 'linux', 'riscv']
     ])(
-      'test for unsupported version',
+      'should throw when required version of JDK can not be found in the JSON',
       async (jdkVersion: string, platform: string, arch: string) => {
         const distribution = new DragonwellDistribution({
           version: jdkVersion,
@@ -205,7 +202,7 @@ describe('getAvailableVersions', () => {
         await expect(
           distribution['findPackageForDownload'](jdkVersion)
         ).rejects.toThrow(
-          `Couldn't find any satisfied version for the specified: "${jdkVersion}".`
+          `Couldn't find any satisfied version for the specified java-version: "${jdkVersion}".`
         );
       }
     );
