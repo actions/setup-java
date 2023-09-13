@@ -102,7 +102,7 @@ describe('dependency cache', () => {
         await expect(restore('gradle')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/*.gradle*,**/gradle-wrapper.properties,buildSrc/**/Versions.kt,buildSrc/**/Dependencies.kt,gradle/*.versions.toml], make sure you have checked out the target repository`
+          )} matched to [**/*.gradle*,**/gradle-wrapper.properties,buildSrc/**/Versions.kt,buildSrc/**/Dependencies.kt,gradle/*.versions.toml,**/versions.properties], make sure you have checked out the target repository`
         );
       });
       it('downloads cache based on build.gradle', async () => {
@@ -145,7 +145,7 @@ describe('dependency cache', () => {
         await expect(restore('sbt')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/*.sbt,**/project/build.properties,**/project/**.{scala,sbt}], make sure you have checked out the target repository`
+          )} matched to [**/*.sbt,**/project/build.properties,**/project/**.scala,**/project/**.sbt], make sure you have checked out the target repository`
         );
       });
       it('downloads cache', async () => {
@@ -156,6 +156,36 @@ describe('dependency cache', () => {
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith('sbt cache is not found');
       });
+      it('detects scala and sbt changes under **/project/ folder', async () => {
+        createFile(join(workspace, 'build.sbt'));
+        createDirectory(join(workspace, 'project'));
+        createFile(join(workspace, 'project/DependenciesV1.scala'));
+
+        await restore('sbt');
+        const firstCall = spySaveState.mock.calls.toString();
+
+        spySaveState.mockClear();
+        await restore('sbt');
+        const secondCall = spySaveState.mock.calls.toString();
+
+        // Make sure multiple restores produce the same cache
+        expect(firstCall).toBe(secondCall);
+
+        spySaveState.mockClear();
+        createFile(join(workspace, 'project/DependenciesV2.scala'));
+        await restore('sbt');
+        const thirdCall = spySaveState.mock.calls.toString();
+
+        expect(firstCall).not.toBe(thirdCall);
+      });
+    });
+    it('downloads cache based on versions.properties', async () => {
+      createFile(join(workspace, 'versions.properties'));
+
+      await restore('gradle');
+      expect(spyCacheRestore).toHaveBeenCalled();
+      expect(spyWarning).not.toHaveBeenCalled();
+      expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
     });
   });
   describe('save', () => {
@@ -305,6 +335,17 @@ describe('dependency cache', () => {
         createStateForSuccessfulRestore();
 
         await save('sbt');
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith(
+          expect.stringMatching(/^Cache saved with the key:.*/)
+        );
+      });
+      it('uploads cache based on versions.properties', async () => {
+        createFile(join(workspace, 'versions.properties'));
+        createStateForSuccessfulRestore();
+
+        await save('gradle');
         expect(spyCacheSave).toHaveBeenCalled();
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith(

@@ -39,7 +39,8 @@ const supportedPackageManager: PackageManager[] = [
       '**/gradle-wrapper.properties',
       'buildSrc/**/Versions.kt',
       'buildSrc/**/Dependencies.kt',
-      'gradle/*.versions.toml'
+      'gradle/*.versions.toml',
+      '**/versions.properties'
     ]
   },
   {
@@ -56,7 +57,8 @@ const supportedPackageManager: PackageManager[] = [
     pattern: [
       '**/*.sbt',
       '**/project/build.properties',
-      '**/project/**.{scala,sbt}'
+      '**/project/**.scala',
+      '**/project/**.sbt'
     ]
   }
 ];

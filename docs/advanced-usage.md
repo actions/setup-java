@@ -181,6 +181,31 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
+If your use-case requires a custom distribution (in the example, alpine-linux is used) or a version that is not provided by setup-java and you want to always install the latest version during runtime, then you can use the following code to auto-download the latest JDK, determine the semver needed for setup-java, and setup-java will take care of the installation and caching on the VM:
+
+```yaml
+   steps:
+      - name: fetch latest temurin JDK
+        id: fetch_latest_jdk
+        run: |
+          major_version={{ env.JAVA_VERSION }} # Example 8 or 11 or 17
+          cd $RUNNER_TEMP
+          response=$(curl -s "https://api.github.com/repos/adoptium/temurin${major_version}-binaries/releases")
+          latest_jdk_download_url=$(echo "$response" | jq -r '.[0].assets[] | select(.name | contains("jdk_x64_alpine-linux") and endswith(".tar.gz")) | .browser_download_url')
+          curl -Ls "$latest_jdk_download_url" -o java_package.tar.gz
+          latest_jdk_json_url=$(jdk_download_url "$response" | jq -r '.[0].assets[] | select(.name | contains("jdk_x64_alpine-linux") and endswith(".tar.gz.json")) | .browser_download_url')
+          latest_semver_version=$(curl -sL $latest_jdk_json_url | jq -r 'version.semver')
+          echo "java_version=$latest_semver_version" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'jdkfile'
+          jdkFile: ${{ runner.temp }}/java_package.tar.gz
+          java-version: {{ steps.fetch_latest_jdk.outputs.java_version }}
+          architecture: x64
+       - run: java -cp java HelloWorldApp
+```
+
 ## Testing against different Java distributions
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 ```yaml

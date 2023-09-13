@@ -47,25 +47,26 @@ export class LocalDistribution extends JavaBase {
       const archivePath = path.join(extractedJavaPath, archiveName);
       const javaVersion = this.version;
 
-      let javaPath = await tc.cacheDir(
+      const javaPath = await tc.cacheDir(
         archivePath,
         this.toolcacheFolderName,
         this.getToolcacheVersionName(javaVersion),
         this.architecture
       );
 
-      // for different Java distributions, postfix can exist or not so need to check both cases
-      if (
-        process.platform === 'darwin' &&
-        fs.existsSync(path.join(javaPath, MACOS_JAVA_CONTENT_POSTFIX))
-      ) {
-        javaPath = path.join(javaPath, MACOS_JAVA_CONTENT_POSTFIX);
-      }
-
       foundJava = {
         version: javaVersion,
         path: javaPath
       };
+    }
+
+    // JDK folder may contain postfix "Contents/Home" on macOS
+    const macOSPostfixPath = path.join(
+      foundJava.path,
+      MACOS_JAVA_CONTENT_POSTFIX
+    );
+    if (process.platform === 'darwin' && fs.existsSync(macOSPostfixPath)) {
+      foundJava.path = macOSPostfixPath;
     }
 
     core.info(`Setting Java ${foundJava.version} as default`);

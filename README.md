@@ -5,7 +5,7 @@
 [![Validate cache](https://github.com/actions/setup-java/actions/workflows/e2e-cache.yml/badge.svg?branch=main)](https://github.com/actions/setup-java/actions/workflows/e2e-cache.yml)
 
 The `setup-java` action provides the following functionality for GitHub Actions runners:
-- Downloading and setting up a requested version of Java. See [Usage](#Usage) for a list of supported distributions.
+- Downloading and setting up a requested version of Java. See [Usage](#usage) for a list of supported distributions.
 - Extracting and caching custom version of Java from a local file.
 - Configuring runner for publishing using Apache Maven.
 - Configuring runner for publishing using Gradle.
@@ -31,7 +31,7 @@ This action allows you to work with Java and Scala projects.
    
   - `distribution`: _(required)_ Java [distribution](#supported-distributions).
 
-  - `java-package`: The packaging variant of the choosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
+  - `java-package`: The packaging variant of the chosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
 
   - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
 
@@ -39,12 +39,12 @@ This action allows you to work with Java and Scala projects.
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
-  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predifined package managers. It can be one of "maven", "gradle" or "sbt".
+  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
 
   #### Maven options
   The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
 
-  - `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists set this to `false`.
+  - `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists, set this to `false`.
 
   - `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
 
@@ -56,7 +56,7 @@ This action allows you to work with Java and Scala projects.
 
   - `gpg-private-key`: GPG private key to import. Default is empty string.
 
-  - `gpg-passphrase`: description: Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
+  - `gpg-passphrase`: Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
 
   - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
 
@@ -114,10 +114,10 @@ Currently, the following distributions are supported:
 **NOTE:** For Azul Zulu OpenJDK architectures x64 and arm64 are mapped to x86 / arm with proper hw_bitness.
 
 ### Caching packages dependencies
-The action has a built-in functionality for caching and restoring dependencies. It uses [actions/cache](https://github.com/actions/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
-- gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, and `gradle/*.versions.toml`
+The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
+- gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, and `**/versions.properties`
 - maven: `**/pom.xml`
-- sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.{scala,sbt}`
+- sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.scala`, `**/project/**.sbt`
 
 The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
 

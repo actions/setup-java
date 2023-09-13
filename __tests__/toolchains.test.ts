@@ -77,9 +77,9 @@ describe('toolchains tests', () => {
     };
 
     const result = `<?xml version="1.0"?>
-<toolchains xmlns="https://maven.apache.org/TOOLCHAINS/1.1.0"
-  xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="https://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd">
+<toolchains xmlns="http://maven.apache.org/TOOLCHAINS/1.1.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd">
   <toolchain>
     <type>jdk</type>
     <provides>
@@ -248,9 +248,9 @@ describe('toolchains tests', () => {
     };
 
     const expectedToolchains = `<?xml version="1.0"?>
-<toolchains xmlns="https://maven.apache.org/TOOLCHAINS/1.1.0"
-  xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="https://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd">
+<toolchains xmlns="http://maven.apache.org/TOOLCHAINS/1.1.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd">
   <toolchain>
     <type>jdk</type>
     <provides>
