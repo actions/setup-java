@@ -6,7 +6,11 @@ import fs from 'fs';
 import path from 'path';
 
 import {JavaBase} from '../base-installer';
-import {extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies} from '../../util';
+import {
+  extractJdkFile,
+  getDownloadArchiveExtension,
+  isVersionSatisfies
+} from '../../util';
 import {IDragonwellVersions, IDragonwellAllVersions} from './models';
 import {
   JavaDownloadRelease,
@@ -25,13 +29,13 @@ export class DragonwellDistribution extends JavaBase {
     if (!this.stable) {
       throw new Error('Early access versions are not supported');
     }
-    
+
     const availableVersions = await this.getAvailableVersions();
 
     const matchedVersions = availableVersions
       .filter(item => {
         return isVersionSatisfies(version, item.jdk_version);
-      }) 
+      })
       .map(item => {
         return {
           version: item.jdk_version,
@@ -56,21 +60,21 @@ export class DragonwellDistribution extends JavaBase {
     const availableVersionsUrl =
       'https://raw.githubusercontent.com/dragonwell-releng/dragonwell-setup-java/main/releases.json';
 
-    const fetchedDragonwellVersions =
-      (await this.http.getJson<IDragonwellAllVersions>(availableVersionsUrl))
-        .result;
+    const fetchedDragonwellVersions = (
+      await this.http.getJson<IDragonwellAllVersions>(availableVersionsUrl)
+    ).result;
 
-    if (!fetchedDragonwellVersions) { 
+    if (!fetchedDragonwellVersions) {
       throw new Error(
         `Couldn't fetch any dragonwell versions from ${availableVersionsUrl}`
       );
     }
-    
+
     const availableVersions = this.parseVersions(
       platform,
       arch,
       fetchedDragonwellVersions
-    ); 
+    );
 
     if (core.isDebug()) {
       core.startGroup('Print information about available versions');
@@ -120,7 +124,6 @@ export class DragonwellDistribution extends JavaBase {
     for (const majorVersion in dragonwellVersions) {
       const majorVersionMap = dragonwellVersions[majorVersion];
       for (let jdkVersion in majorVersionMap) {
-
         const jdkVersionMap = majorVersionMap[jdkVersion];
         if (!(platform in jdkVersionMap)) {
           continue;
@@ -135,7 +138,7 @@ export class DragonwellDistribution extends JavaBase {
           continue;
         }
 
-        if (jdkVersion.split(".").length > 3) {
+        if (jdkVersion.split('.').length > 3) {
           jdkVersion = this.transformToSemver(jdkVersion);
         }
 
@@ -144,7 +147,7 @@ export class DragonwellDistribution extends JavaBase {
             os: platform,
             architecture: arch,
             jdk_version: jdkVersion,
-            checksum: archMap[edition].sha256 ?? "",
+            checksum: archMap[edition].sha256 ?? '',
             download_link: archMap[edition].download_url,
             edition: edition,
             image_type: 'jdk'
@@ -155,12 +158,14 @@ export class DragonwellDistribution extends JavaBase {
     }
 
     const sortedVersions = this.sortParsedVersions(eligibleVersions);
-    
+
     return sortedVersions;
   }
 
   // Sorts versions in descending order as by default data in JSON isn't sorted
-  private sortParsedVersions(eligibleVersions: IDragonwellVersions[]): IDragonwellVersions[] {
+  private sortParsedVersions(
+    eligibleVersions: IDragonwellVersions[]
+  ): IDragonwellVersions[] {
     const sortedVersions = eligibleVersions.sort((versionObj1, versionObj2) => {
       const version1 = versionObj1.jdk_version;
       const version2 = versionObj2.jdk_version;
@@ -173,8 +178,8 @@ export class DragonwellDistribution extends JavaBase {
   // Common practice is to transform excess digits to the so-called semver build part, which is prefixed with the plus sign, to be able to operate with them using semver tools.
   private transformToSemver(version: string) {
     const splits = version.split('.');
-    const versionMainPart = splits.slice(0,3).join(".");
-    const versionBuildPart = splits.slice(3).join(".");
+    const versionMainPart = splits.slice(0, 3).join('.');
+    const versionBuildPart = splits.slice(3).join('.');
     return `${versionMainPart}+${versionBuildPart}`;
   }
 

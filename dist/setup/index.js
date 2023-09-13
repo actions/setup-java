@@ -102681,8 +102681,7 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
             const platform = this.getPlatformOption();
             const arch = this.distributionArchitecture();
             const availableVersionsUrl = 'https://raw.githubusercontent.com/dragonwell-releng/dragonwell-setup-java/main/releases.json';
-            const fetchedDragonwellVersions = (yield this.http.getJson(availableVersionsUrl))
-                .result;
+            const fetchedDragonwellVersions = (yield this.http.getJson(availableVersionsUrl)).result;
             if (!fetchedDragonwellVersions) {
                 throw new Error(`Couldn't fetch any dragonwell versions from ${availableVersionsUrl}`);
             }
@@ -102726,7 +102725,7 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
                 if (jdkVersion === 'latest') {
                     continue;
                 }
-                if (jdkVersion.split(".").length > 3) {
+                if (jdkVersion.split('.').length > 3) {
                     jdkVersion = this.transformToSemver(jdkVersion);
                 }
                 for (const edition in archMap) {
@@ -102734,7 +102733,7 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
                         os: platform,
                         architecture: arch,
                         jdk_version: jdkVersion,
-                        checksum: (_a = archMap[edition].sha256) !== null && _a !== void 0 ? _a : "",
+                        checksum: (_a = archMap[edition].sha256) !== null && _a !== void 0 ? _a : '',
                         download_link: archMap[edition].download_url,
                         edition: edition,
                         image_type: 'jdk'
@@ -102759,8 +102758,8 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
     // Common practice is to transform excess digits to the so-called semver build part, which is prefixed with the plus sign, to be able to operate with them using semver tools.
     transformToSemver(version) {
         const splits = version.split('.');
-        const versionMainPart = splits.slice(0, 3).join(".");
-        const versionBuildPart = splits.slice(3).join(".");
+        const versionMainPart = splits.slice(0, 3).join('.');
+        const versionBuildPart = splits.slice(3).join('.');
         return `${versionMainPart}+${versionBuildPart}`;
     }
     getPlatformOption() {
