@@ -206,5 +206,22 @@ describe('getAvailableVersions', () => {
         );
       }
     );
+
+    it('should throw when required package type is not jdk', async () => {
+      const jdkVersion = '17';
+      const arch = 'x64';
+      const platform = 'linux';
+      const distribution = new DragonwellDistribution({
+        version: jdkVersion,
+        architecture: arch,
+        packageType: 'jre',
+        checkLatest: false
+      });
+      mockPlatform(distribution, platform);
+
+      await expect(
+        distribution['findPackageForDownload'](jdkVersion)
+      ).rejects.toThrow('Dragonwell provides only the `jdk` package type');
+    });
   });
 });

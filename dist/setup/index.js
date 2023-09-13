@@ -102658,6 +102658,9 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
             if (!this.stable) {
                 throw new Error('Early access versions are not supported');
             }
+            if (this.packageType !== 'jdk') {
+                throw new Error('Dragonwell provides only the `jdk` package type');
+            }
             const availableVersions = yield this.getAvailableVersions();
             const matchedVersions = availableVersions
                 .filter(item => {

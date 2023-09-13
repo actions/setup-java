@@ -30,6 +30,10 @@ export class DragonwellDistribution extends JavaBase {
       throw new Error('Early access versions are not supported');
     }
 
+    if (this.packageType !== 'jdk') {
+      throw new Error('Dragonwell provides only the `jdk` package type');
+    }
+
     const availableVersions = await this.getAvailableVersions();
 
     const matchedVersions = availableVersions
