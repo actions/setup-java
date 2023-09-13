@@ -92,9 +92,6 @@ jobs:
             version: '11.0'
           - distribution: dragonwell
             os: ubuntu-latest
-            version: '8.13.14'
-          - distribution: dragonwell
-            os: ubuntu-latest
             version: '11.0.13+9'
     steps:
       - name: Checkout
