@@ -38,8 +38,6 @@ jobs:
             version: 8
           - distribution: dragonwell
             os: macos-latest
-          - distribution: dragonwell
-            version: 16
         include:
           - distribution: oracle
             os: macos-latest
@@ -50,12 +48,6 @@ jobs:
           - distribution: oracle
             os: ubuntu-latest
             version: 20
-          - distribution: dragonwell
-            os: windows-latest
-            version: 17
-          - distribution: dragonwell
-            os: ubuntu-latest
-            version: 17
 
     steps:
       - name: Checkout
