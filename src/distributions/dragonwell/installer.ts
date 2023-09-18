@@ -4,6 +4,7 @@ import semver from 'semver';
 
 import fs from 'fs';
 import path from 'path';
+import {OutgoingHttpHeaders} from 'http';
 
 import {JavaBase} from '../base-installer';
 import {
@@ -61,11 +62,25 @@ export class DragonwellDistribution extends JavaBase {
     const platform = this.getPlatformOption();
     const arch = this.distributionArchitecture();
 
-    const availableVersionsUrl =
-      'https://raw.githubusercontent.com/dragonwell-releng/dragonwell-setup-java/main/releases.json';
+    const token = core.getInput('token');
+    const auth = !token ? undefined : `token ${token}`;
+    const owner = 'dragonwell-releng';
+    const repository = 'dragonwell-setup-java';
+    const branch = 'main';
+    const filePath = 'releases.json';
+
+    const availableVersionsUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
+
+    const headers: OutgoingHttpHeaders = {
+      authorization: auth,
+      accept: 'application/vnd.github.VERSION.raw'
+    };
 
     const fetchedDragonwellVersions = (
-      await this.http.getJson<IDragonwellAllVersions>(availableVersionsUrl)
+      await this.http.getJson<IDragonwellAllVersions>(
+        availableVersionsUrl,
+        headers
+      )
     ).result;
 
     if (!fetchedDragonwellVersions) {

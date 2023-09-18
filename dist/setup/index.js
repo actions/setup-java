@@ -102683,8 +102683,18 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
         return __awaiter(this, void 0, void 0, function* () {
             const platform = this.getPlatformOption();
             const arch = this.distributionArchitecture();
-            const availableVersionsUrl = 'https://raw.githubusercontent.com/dragonwell-releng/dragonwell-setup-java/main/releases.json';
-            const fetchedDragonwellVersions = (yield this.http.getJson(availableVersionsUrl)).result;
+            const token = core.getInput('token');
+            const auth = !token ? undefined : `token ${token}`;
+            const owner = 'dragonwell-releng';
+            const repository = 'dragonwell-setup-java';
+            const branch = 'main';
+            const filePath = 'releases.json';
+            const availableVersionsUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
+            const headers = {
+                authorization: auth,
+                accept: 'application/vnd.github.VERSION.raw'
+            };
+            const fetchedDragonwellVersions = (yield this.http.getJson(availableVersionsUrl, headers)).result;
             if (!fetchedDragonwellVersions) {
                 throw new Error(`Couldn't fetch any dragonwell versions from ${availableVersionsUrl}`);
             }
