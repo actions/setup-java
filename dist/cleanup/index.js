@@ -67020,7 +67020,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.convertVersionToSemver = exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
+exports.getGitHubHttpHeaders = exports.convertVersionToSemver = exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
 const os_1 = __importDefault(__nccwpck_require__(2037));
 const path_1 = __importDefault(__nccwpck_require__(1017));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -67157,6 +67157,16 @@ function convertVersionToSemver(version) {
     return mainVersion;
 }
 exports.convertVersionToSemver = convertVersionToSemver;
+function getGitHubHttpHeaders() {
+    const token = core.getInput('token');
+    const auth = !token ? undefined : `token ${token}`;
+    const headers = {
+        authorization: auth,
+        accept: 'application/vnd.github.VERSION.raw'
+    };
+    return headers;
+}
+exports.getGitHubHttpHeaders = getGitHubHttpHeaders;
 
 
 /***/ }),

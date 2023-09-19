@@ -102792,17 +102792,12 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
     }
     fetchJsonFromBackupUrl() {
         return __awaiter(this, void 0, void 0, function* () {
-            const token = core.getInput('token');
-            const auth = !token ? undefined : `token ${token}`;
             const owner = 'dragonwell-releng';
             const repository = 'dragonwell-setup-java';
             const branch = 'main';
             const filePath = 'releases.json';
             const backupUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
-            const headers = {
-                authorization: auth,
-                accept: 'application/vnd.github.VERSION.raw'
-            };
+            const headers = util_1.getGitHubHttpHeaders();
             try {
                 core.debug(`Trying to fetch available versions info from the backup url: ${backupUrl}`);
                 const fetchedDragonwellVersions = (yield this.http.getJson(backupUrl, headers)).result;
@@ -103190,18 +103185,13 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
         return __awaiter(this, void 0, void 0, function* () {
             // TODO get these dynamically!
             // We will need Microsoft to add an endpoint where we can query for versions.
-            const token = core.getInput('token');
-            const auth = !token ? undefined : `token ${token}`;
             const owner = 'actions';
             const repository = 'setup-java';
             const branch = 'main';
             const filePath = 'src/distributions/microsoft/microsoft-openjdk-versions.json';
             let releases = null;
             const fileUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
-            const headers = {
-                authorization: auth,
-                accept: 'application/vnd.github.VERSION.raw'
-            };
+            const headers = util_1.getGitHubHttpHeaders();
             let response = null;
             if (core.isDebug()) {
                 console.time('Retrieving available versions for Microsoft took'); // eslint-disable-line no-console
@@ -104294,7 +104284,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.convertVersionToSemver = exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
+exports.getGitHubHttpHeaders = exports.convertVersionToSemver = exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
 const os_1 = __importDefault(__nccwpck_require__(2037));
 const path_1 = __importDefault(__nccwpck_require__(1017));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -104431,6 +104421,16 @@ function convertVersionToSemver(version) {
     return mainVersion;
 }
 exports.convertVersionToSemver = convertVersionToSemver;
+function getGitHubHttpHeaders() {
+    const token = core.getInput('token');
+    const auth = !token ? undefined : `token ${token}`;
+    const headers = {
+        authorization: auth,
+        accept: 'application/vnd.github.VERSION.raw'
+    };
+    return headers;
+}
+exports.getGitHubHttpHeaders = getGitHubHttpHeaders;
 
 
 /***/ }),
