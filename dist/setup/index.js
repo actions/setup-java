@@ -102784,7 +102784,7 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
                 return fetchedDragonwellJson;
             }
             catch (err) {
-                core.debug(`Fetching from the primary link: ${primaryUrl} ended with the error: ${err.message}`);
+                core.debug(`Fetching from the primary link: ${primaryUrl} ended up with the error: ${err.message}`);
                 return null;
             }
         });
@@ -102803,12 +102803,12 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
                 accept: 'application/vnd.github.VERSION.raw'
             };
             try {
-                core.debug(`Trying to fetch available versions from the backup url: ${backupUrl}`);
+                core.debug(`Trying to fetch available versions info from the backup url: ${backupUrl}`);
                 const fetchedDragonwellVersions = (yield this.http.getJson(backupUrl, headers)).result;
                 return fetchedDragonwellVersions;
             }
             catch (err) {
-                core.debug(`Fetching from the backup url: ${backupUrl} ended with the error: ${err.message}`);
+                core.debug(`Fetching from the backup url: ${backupUrl} ended up with the error: ${err.message}`);
                 return null;
             }
         });

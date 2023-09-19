@@ -208,7 +208,7 @@ export class DragonwellDistribution extends JavaBase {
       return fetchedDragonwellJson;
     } catch (err) {
       core.debug(
-        `Fetching from the primary link: ${primaryUrl} ended with the error: ${err.message}`
+        `Fetching from the primary link: ${primaryUrl} ended up with the error: ${err.message}`
       );
       return null;
     }
@@ -231,7 +231,7 @@ export class DragonwellDistribution extends JavaBase {
 
     try {
       core.debug(
-        `Trying to fetch available versions from the backup url: ${backupUrl}`
+        `Trying to fetch available versions info from the backup url: ${backupUrl}`
       );
       const fetchedDragonwellVersions = (
         await this.http.getJson<IDragonwellAllVersions>(backupUrl, headers)
@@ -239,7 +239,7 @@ export class DragonwellDistribution extends JavaBase {
       return fetchedDragonwellVersions;
     } catch (err) {
       core.debug(
-        `Fetching from the backup url: ${backupUrl} ended with the error: ${err.message}`
+        `Fetching from the backup url: ${backupUrl} ended up with the error: ${err.message}`
       );
       return null;
     }
