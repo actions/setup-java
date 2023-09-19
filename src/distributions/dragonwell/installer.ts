@@ -62,37 +62,22 @@ export class DragonwellDistribution extends JavaBase {
     const platform = this.getPlatformOption();
     const arch = this.distributionArchitecture();
 
-    const token = core.getInput('token');
-    const auth = !token ? undefined : `token ${token}`;
-    const owner = 'dragonwell-releng';
-    const repository = 'dragonwell-setup-java';
-    const branch = 'main';
-    const filePath = 'releases.json';
+    let fetchedDragonwellJson = await this.fetchJsonFromPrimaryUrl();
 
-    const availableVersionsUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
+    if (!fetchedDragonwellJson) {
+      fetchedDragonwellJson = await this.fetchJsonFromBackupUrl();
+    }
 
-    const headers: OutgoingHttpHeaders = {
-      authorization: auth,
-      accept: 'application/vnd.github.VERSION.raw'
-    };
-
-    const fetchedDragonwellVersions = (
-      await this.http.getJson<IDragonwellAllVersions>(
-        availableVersionsUrl,
-        headers
-      )
-    ).result;
-
-    if (!fetchedDragonwellVersions) {
+    if (!fetchedDragonwellJson) {
       throw new Error(
-        `Couldn't fetch any dragonwell versions from ${availableVersionsUrl}`
+        `Couldn't fetch any dragonwell versions from both primary and backup urls`
       );
     }
 
     const availableVersions = this.parseVersions(
       platform,
       arch,
-      fetchedDragonwellVersions
+      fetchedDragonwellJson
     );
 
     if (core.isDebug()) {
@@ -208,6 +193,55 @@ export class DragonwellDistribution extends JavaBase {
         return 'windows';
       default:
         return process.platform;
+    }
+  }
+
+  private async fetchJsonFromPrimaryUrl(): Promise<IDragonwellAllVersions | null> {
+    const primaryUrl = 'https://dragonwell-jjk.io/map_with_checksum.json';
+    try {
+      core.debug(
+        `Trying to fetch available versions info from the primary url: ${primaryUrl}`
+      );
+      const fetchedDragonwellJson = (
+        await this.http.getJson<IDragonwellAllVersions>(primaryUrl)
+      ).result;
+      return fetchedDragonwellJson;
+    } catch (err) {
+      core.debug(
+        `Fetching from the primary link: ${primaryUrl} ended with the error: ${err.message}`
+      );
+      return null;
+    }
+  }
+
+  private async fetchJsonFromBackupUrl(): Promise<IDragonwellAllVersions | null> {
+    const token = core.getInput('token');
+    const auth = !token ? undefined : `token ${token}`;
+    const owner = 'dragonwell-releng';
+    const repository = 'dragonwell-setup-java';
+    const branch = 'main';
+    const filePath = 'releases.json';
+
+    const backupUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
+
+    const headers: OutgoingHttpHeaders = {
+      authorization: auth,
+      accept: 'application/vnd.github.VERSION.raw'
+    };
+
+    try {
+      core.debug(
+        `Trying to fetch available versions from the backup url: ${backupUrl}`
+      );
+      const fetchedDragonwellVersions = (
+        await this.http.getJson<IDragonwellAllVersions>(backupUrl, headers)
+      ).result;
+      return fetchedDragonwellVersions;
+    } catch (err) {
+      core.debug(
+        `Fetching from the backup url: ${backupUrl} ended with the error: ${err.message}`
+      );
+      return null;
     }
   }
 }
