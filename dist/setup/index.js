@@ -102688,8 +102688,9 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
                 fetchedDragonwellJson = yield this.fetchJsonFromBackupUrl();
             }
             if (!fetchedDragonwellJson) {
-                throw new Error(`Couldn't fetch any dragonwell versions from both primary and backup urls`);
+                throw new Error(`Couldn't fetch dragonwell versions information from both primary and backup urls`);
             }
+            core.debug('Successfully fetched information about available dragonwell versions');
             const availableVersions = this.parseVersions(platform, arch, fetchedDragonwellJson);
             if (core.isDebug()) {
                 core.startGroup('Print information about available versions');
@@ -102777,7 +102778,7 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
     }
     fetchJsonFromPrimaryUrl() {
         return __awaiter(this, void 0, void 0, function* () {
-            const primaryUrl = 'https://dragonwell-jjk.io/map_with_checksum.json';
+            const primaryUrl = 'https://dragonwell-jdk.io/map_with_checksum.json';
             try {
                 core.debug(`Trying to fetch available versions info from the primary url: ${primaryUrl}`);
                 const fetchedDragonwellJson = (yield this.http.getJson(primaryUrl)).result;

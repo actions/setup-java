@@ -70,9 +70,13 @@ export class DragonwellDistribution extends JavaBase {
 
     if (!fetchedDragonwellJson) {
       throw new Error(
-        `Couldn't fetch any dragonwell versions from both primary and backup urls`
+        `Couldn't fetch dragonwell versions information from both primary and backup urls`
       );
     }
+
+    core.debug(
+      'Successfully fetched information about available dragonwell versions'
+    );
 
     const availableVersions = this.parseVersions(
       platform,
@@ -197,7 +201,7 @@ export class DragonwellDistribution extends JavaBase {
   }
 
   private async fetchJsonFromPrimaryUrl(): Promise<IDragonwellAllVersions | null> {
-    const primaryUrl = 'https://dragonwell-jjk.io/map_with_checksum.json';
+    const primaryUrl = 'https://dragonwell-jdk.io/map_with_checksum.json';
     try {
       core.debug(
         `Trying to fetch available versions info from the primary url: ${primaryUrl}`
