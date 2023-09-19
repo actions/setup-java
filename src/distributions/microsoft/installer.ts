@@ -4,10 +4,13 @@ import {
   JavaInstallerOptions,
   JavaInstallerResults
 } from '../base-models';
-import {extractJdkFile, getDownloadArchiveExtension} from '../../util';
+import {
+  extractJdkFile,
+  getDownloadArchiveExtension,
+  getGitHubHttpHeaders
+} from '../../util';
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
-import {OutgoingHttpHeaders} from 'http';
 import fs from 'fs';
 import path from 'path';
 import {ITypedResponse} from '@actions/http-client/interfaces';
@@ -85,8 +88,6 @@ export class MicrosoftDistributions extends JavaBase {
   private async getAvailableVersions(): Promise<tc.IToolRelease[] | null> {
     // TODO get these dynamically!
     // We will need Microsoft to add an endpoint where we can query for versions.
-    const token = core.getInput('token');
-    const auth = !token ? undefined : `token ${token}`;
     const owner = 'actions';
     const repository = 'setup-java';
     const branch = 'main';
@@ -96,10 +97,7 @@ export class MicrosoftDistributions extends JavaBase {
     let releases: tc.IToolRelease[] | null = null;
     const fileUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
 
-    const headers: OutgoingHttpHeaders = {
-      authorization: auth,
-      accept: 'application/vnd.github.VERSION.raw'
-    };
+    const headers = getGitHubHttpHeaders();
 
     let response: ITypedResponse<tc.IToolRelease[]> | null = null;
 

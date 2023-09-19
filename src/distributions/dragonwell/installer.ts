@@ -4,12 +4,12 @@ import semver from 'semver';
 
 import fs from 'fs';
 import path from 'path';
-import {OutgoingHttpHeaders} from 'http';
 
 import {JavaBase} from '../base-installer';
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
+  getGitHubHttpHeaders,
   isVersionSatisfies
 } from '../../util';
 import {IDragonwellVersions, IDragonwellAllVersions} from './models';
@@ -219,8 +219,6 @@ export class DragonwellDistribution extends JavaBase {
   }
 
   private async fetchJsonFromBackupUrl(): Promise<IDragonwellAllVersions | null> {
-    const token = core.getInput('token');
-    const auth = !token ? undefined : `token ${token}`;
     const owner = 'dragonwell-releng';
     const repository = 'dragonwell-setup-java';
     const branch = 'main';
@@ -228,10 +226,7 @@ export class DragonwellDistribution extends JavaBase {
 
     const backupUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
 
-    const headers: OutgoingHttpHeaders = {
-      authorization: auth,
-      accept: 'application/vnd.github.VERSION.raw'
-    };
+    const headers = getGitHubHttpHeaders();
 
     try {
       core.debug(
