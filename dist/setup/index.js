@@ -102554,6 +102554,7 @@ const installer_6 = __nccwpck_require__(3613);
 const installer_7 = __nccwpck_require__(1121);
 const installer_8 = __nccwpck_require__(4750);
 const installer_9 = __nccwpck_require__(4298);
+const installer_10 = __nccwpck_require__(6132);
 var JavaDistribution;
 (function (JavaDistribution) {
     JavaDistribution["Adopt"] = "adopt";
@@ -102567,6 +102568,7 @@ var JavaDistribution;
     JavaDistribution["Semeru"] = "semeru";
     JavaDistribution["Corretto"] = "corretto";
     JavaDistribution["Oracle"] = "oracle";
+    JavaDistribution["Dragonwell"] = "dragonwell";
 })(JavaDistribution || (JavaDistribution = {}));
 function getJavaDistribution(distributionName, installerOptions, jdkFile) {
     switch (distributionName) {
@@ -102591,11 +102593,218 @@ function getJavaDistribution(distributionName, installerOptions, jdkFile) {
             return new installer_8.CorrettoDistribution(installerOptions);
         case JavaDistribution.Oracle:
             return new installer_9.OracleDistribution(installerOptions);
+        case JavaDistribution.Dragonwell:
+            return new installer_10.DragonwellDistribution(installerOptions);
         default:
             return null;
     }
 }
 exports.getJavaDistribution = getJavaDistribution;
+
+
+/***/ }),
+
+/***/ 6132:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DragonwellDistribution = void 0;
+const core = __importStar(__nccwpck_require__(2186));
+const tc = __importStar(__nccwpck_require__(7784));
+const semver_1 = __importDefault(__nccwpck_require__(1383));
+const fs_1 = __importDefault(__nccwpck_require__(7147));
+const path_1 = __importDefault(__nccwpck_require__(1017));
+const base_installer_1 = __nccwpck_require__(9741);
+const util_1 = __nccwpck_require__(2629);
+class DragonwellDistribution extends base_installer_1.JavaBase {
+    constructor(installerOptions) {
+        super('Dragonwell', installerOptions);
+    }
+    findPackageForDownload(version) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.stable) {
+                throw new Error('Early access versions are not supported by Dragonwell');
+            }
+            if (this.packageType !== 'jdk') {
+                throw new Error('Dragonwell provides only the `jdk` package type');
+            }
+            const availableVersions = yield this.getAvailableVersions();
+            const matchedVersions = availableVersions
+                .filter(item => {
+                return util_1.isVersionSatisfies(version, item.jdk_version);
+            })
+                .map(item => {
+                return {
+                    version: item.jdk_version,
+                    url: item.download_link
+                };
+            });
+            if (!matchedVersions.length) {
+                throw new Error(`Couldn't find any satisfied version for the specified java-version: "${version}" and architecture: "${this.architecture}".`);
+            }
+            const resolvedVersion = matchedVersions[0];
+            return resolvedVersion;
+        });
+    }
+    getAvailableVersions() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const platform = this.getPlatformOption();
+            const arch = this.distributionArchitecture();
+            let fetchedDragonwellJson = yield this.fetchJsonFromPrimaryUrl();
+            if (!fetchedDragonwellJson) {
+                fetchedDragonwellJson = yield this.fetchJsonFromBackupUrl();
+            }
+            if (!fetchedDragonwellJson) {
+                throw new Error(`Couldn't fetch Dragonwell versions information from both primary and backup urls`);
+            }
+            core.debug('Successfully fetched information about available Dragonwell versions');
+            const availableVersions = this.parseVersions(platform, arch, fetchedDragonwellJson);
+            if (core.isDebug()) {
+                core.startGroup('Print information about available versions');
+                core.debug(availableVersions.map(item => item.jdk_version).join(', '));
+                core.endGroup();
+            }
+            return availableVersions;
+        });
+    }
+    downloadTool(javaRelease) {
+        return __awaiter(this, void 0, void 0, function* () {
+            core.info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
+            const javaArchivePath = yield tc.downloadTool(javaRelease.url);
+            core.info(`Extracting Java archive...`);
+            const extractedJavaPath = yield util_1.extractJdkFile(javaArchivePath, util_1.getDownloadArchiveExtension());
+            const archiveName = fs_1.default.readdirSync(extractedJavaPath)[0];
+            const archivePath = path_1.default.join(extractedJavaPath, archiveName);
+            const version = this.getToolcacheVersionName(javaRelease.version);
+            const javaPath = yield tc.cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
+            return { version: javaRelease.version, path: javaPath };
+        });
+    }
+    parseVersions(platform, arch, dragonwellVersions) {
+        var _a;
+        const eligibleVersions = [];
+        for (const majorVersion in dragonwellVersions) {
+            const majorVersionMap = dragonwellVersions[majorVersion];
+            for (let jdkVersion in majorVersionMap) {
+                const jdkVersionMap = majorVersionMap[jdkVersion];
+                if (!(platform in jdkVersionMap)) {
+                    continue;
+                }
+                const platformMap = jdkVersionMap[platform];
+                if (!(arch in platformMap)) {
+                    continue;
+                }
+                const archMap = platformMap[arch];
+                if (jdkVersion === 'latest') {
+                    continue;
+                }
+                // Some version of Dragonwell JDK are numerated with help of non-semver notation (more then 3 digits).
+                // Common practice is to transform excess digits to the so-called semver build part, which is prefixed with the plus sign, to be able to operate with them using semver tools.
+                if (jdkVersion.split('.').length > 3) {
+                    jdkVersion = util_1.convertVersionToSemver(jdkVersion);
+                }
+                for (const edition in archMap) {
+                    eligibleVersions.push({
+                        os: platform,
+                        architecture: arch,
+                        jdk_version: jdkVersion,
+                        checksum: (_a = archMap[edition].sha256) !== null && _a !== void 0 ? _a : '',
+                        download_link: archMap[edition].download_url,
+                        edition: edition,
+                        image_type: 'jdk'
+                    });
+                    break; // Get the first available link to the JDK. In most cases it should point to the Extended version of JDK, in rare cases like with v17 it points to the Standard version (the only available).
+                }
+            }
+        }
+        const sortedVersions = this.sortParsedVersions(eligibleVersions);
+        return sortedVersions;
+    }
+    // Sorts versions in descending order as by default data in JSON isn't sorted
+    sortParsedVersions(eligibleVersions) {
+        const sortedVersions = eligibleVersions.sort((versionObj1, versionObj2) => {
+            const version1 = versionObj1.jdk_version;
+            const version2 = versionObj2.jdk_version;
+            return semver_1.default.compareBuild(version1, version2);
+        });
+        return sortedVersions.reverse();
+    }
+    getPlatformOption() {
+        switch (process.platform) {
+            case 'win32':
+                return 'windows';
+            default:
+                return process.platform;
+        }
+    }
+    fetchJsonFromPrimaryUrl() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const primaryUrl = 'https://dragonwell-jdk.io/map_with_checksum.json';
+            try {
+                core.debug(`Trying to fetch available Dragonwell versions info from the primary url: ${primaryUrl}`);
+                const fetchedDragonwellJson = (yield this.http.getJson(primaryUrl)).result;
+                return fetchedDragonwellJson;
+            }
+            catch (err) {
+                core.debug(`Fetching Dragonwell versions info from the primary link: ${primaryUrl} ended up with the error: ${err.message}`);
+                return null;
+            }
+        });
+    }
+    fetchJsonFromBackupUrl() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const owner = 'dragonwell-releng';
+            const repository = 'dragonwell-setup-java';
+            const branch = 'main';
+            const filePath = 'releases.json';
+            const backupUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
+            const headers = util_1.getGitHubHttpHeaders();
+            try {
+                core.debug(`Trying to fetch available Dragonwell versions info from the backup url: ${backupUrl}`);
+                const fetchedDragonwellJson = (yield this.http.getJson(backupUrl, headers)).result;
+                return fetchedDragonwellJson;
+            }
+            catch (err) {
+                core.debug(`Fetching Dragonwell versions info from the backup url: ${backupUrl} ended up with the error: ${err.message}`);
+                return null;
+            }
+        });
+    }
+}
+exports.DragonwellDistribution = DragonwellDistribution;
 
 
 /***/ }),
@@ -102970,18 +103179,13 @@ class MicrosoftDistributions extends base_installer_1.JavaBase {
         return __awaiter(this, void 0, void 0, function* () {
             // TODO get these dynamically!
             // We will need Microsoft to add an endpoint where we can query for versions.
-            const token = core.getInput('token');
-            const auth = !token ? undefined : `token ${token}`;
             const owner = 'actions';
             const repository = 'setup-java';
             const branch = 'main';
             const filePath = 'src/distributions/microsoft/microsoft-openjdk-versions.json';
             let releases = null;
             const fileUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
-            const headers = {
-                authorization: auth,
-                accept: 'application/vnd.github.VERSION.raw'
-            };
+            const headers = util_1.getGitHubHttpHeaders();
             let response = null;
             if (core.isDebug()) {
                 console.time('Retrieving available versions for Microsoft took'); // eslint-disable-line no-console
@@ -104074,7 +104278,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.convertVersionToSemver = exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
+exports.getGitHubHttpHeaders = exports.convertVersionToSemver = exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
 const os_1 = __importDefault(__nccwpck_require__(2037));
 const path_1 = __importDefault(__nccwpck_require__(1017));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -104211,6 +104415,16 @@ function convertVersionToSemver(version) {
     return mainVersion;
 }
 exports.convertVersionToSemver = convertVersionToSemver;
+function getGitHubHttpHeaders() {
+    const token = core.getInput('token');
+    const auth = !token ? undefined : `token ${token}`;
+    const headers = {
+        authorization: auth,
+        accept: 'application/vnd.github.VERSION.raw'
+    };
+    return headers;
+}
+exports.getGitHubHttpHeaders = getGitHubHttpHeaders;
 
 
 /***/ }),
