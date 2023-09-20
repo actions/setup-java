@@ -202,7 +202,7 @@ describe('getAvailableVersions', () => {
         await expect(
           distribution['findPackageForDownload'](jdkVersion)
         ).rejects.toThrow(
-          `Couldn't find any satisfied version for the specified java-version: "${jdkVersion}".`
+          `Couldn't find any satisfied version for the specified java-version: "${jdkVersion}" and architecture: "${arch}".`
         );
       }
     );
@@ -218,7 +218,6 @@ describe('getAvailableVersions', () => {
         checkLatest: false
       });
       mockPlatform(distribution, platform);
-
       await expect(
         distribution['findPackageForDownload'](jdkVersion)
       ).rejects.toThrow('Dragonwell provides only the `jdk` package type');

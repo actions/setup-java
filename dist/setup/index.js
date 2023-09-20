@@ -102656,7 +102656,7 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
     findPackageForDownload(version) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.stable) {
-                throw new Error('Early access versions are not supported');
+                throw new Error('Early access versions are not supported by Dragonwell');
             }
             if (this.packageType !== 'jdk') {
                 throw new Error('Dragonwell provides only the `jdk` package type');
@@ -102673,7 +102673,7 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
                 };
             });
             if (!matchedVersions.length) {
-                throw new Error(`Couldn't find any satisfied version for the specified java-version: "${version}".`);
+                throw new Error(`Couldn't find any satisfied version for the specified java-version: "${version}" and architecture: "${this.architecture}".`);
             }
             const resolvedVersion = matchedVersions[0];
             return resolvedVersion;
@@ -102688,9 +102688,9 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
                 fetchedDragonwellJson = yield this.fetchJsonFromBackupUrl();
             }
             if (!fetchedDragonwellJson) {
-                throw new Error(`Couldn't fetch dragonwell versions information from both primary and backup urls`);
+                throw new Error(`Couldn't fetch Dragonwell versions information from both primary and backup urls`);
             }
-            core.debug('Successfully fetched information about available dragonwell versions');
+            core.debug('Successfully fetched information about available Dragonwell versions');
             const availableVersions = this.parseVersions(platform, arch, fetchedDragonwellJson);
             if (core.isDebug()) {
                 core.startGroup('Print information about available versions');
@@ -102780,12 +102780,12 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
         return __awaiter(this, void 0, void 0, function* () {
             const primaryUrl = 'https://dragonwell-jdk.io/map_with_checksum.json';
             try {
-                core.debug(`Trying to fetch available versions info from the primary url: ${primaryUrl}`);
+                core.debug(`Trying to fetch available Dragonwell versions info from the primary url: ${primaryUrl}`);
                 const fetchedDragonwellJson = (yield this.http.getJson(primaryUrl)).result;
                 return fetchedDragonwellJson;
             }
             catch (err) {
-                core.debug(`Fetching from the primary link: ${primaryUrl} ended up with the error: ${err.message}`);
+                core.debug(`Fetching Dragonwell versions info from the primary link: ${primaryUrl} ended up with the error: ${err.message}`);
                 return null;
             }
         });
@@ -102799,12 +102799,12 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
             const backupUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
             const headers = util_1.getGitHubHttpHeaders();
             try {
-                core.debug(`Trying to fetch available versions info from the backup url: ${backupUrl}`);
-                const fetchedDragonwellVersions = (yield this.http.getJson(backupUrl, headers)).result;
-                return fetchedDragonwellVersions;
+                core.debug(`Trying to fetch available Dragonwell versions info from the backup url: ${backupUrl}`);
+                const fetchedDragonwellJson = (yield this.http.getJson(backupUrl, headers)).result;
+                return fetchedDragonwellJson;
             }
             catch (err) {
-                core.debug(`Fetching from the backup url: ${backupUrl} ended up with the error: ${err.message}`);
+                core.debug(`Fetching Dragonwell versions info from the backup url: ${backupUrl} ended up with the error: ${err.message}`);
                 return null;
             }
         });

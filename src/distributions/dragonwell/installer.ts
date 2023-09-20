@@ -28,7 +28,7 @@ export class DragonwellDistribution extends JavaBase {
     version: string
   ): Promise<JavaDownloadRelease> {
     if (!this.stable) {
-      throw new Error('Early access versions are not supported');
+      throw new Error('Early access versions are not supported by Dragonwell');
     }
 
     if (this.packageType !== 'jdk') {
@@ -50,7 +50,7 @@ export class DragonwellDistribution extends JavaBase {
 
     if (!matchedVersions.length) {
       throw new Error(
-        `Couldn't find any satisfied version for the specified java-version: "${version}".`
+        `Couldn't find any satisfied version for the specified java-version: "${version}" and architecture: "${this.architecture}".`
       );
     }
 
@@ -70,12 +70,12 @@ export class DragonwellDistribution extends JavaBase {
 
     if (!fetchedDragonwellJson) {
       throw new Error(
-        `Couldn't fetch dragonwell versions information from both primary and backup urls`
+        `Couldn't fetch Dragonwell versions information from both primary and backup urls`
       );
     }
 
     core.debug(
-      'Successfully fetched information about available dragonwell versions'
+      'Successfully fetched information about available Dragonwell versions'
     );
 
     const availableVersions = this.parseVersions(
@@ -204,7 +204,7 @@ export class DragonwellDistribution extends JavaBase {
     const primaryUrl = 'https://dragonwell-jdk.io/map_with_checksum.json';
     try {
       core.debug(
-        `Trying to fetch available versions info from the primary url: ${primaryUrl}`
+        `Trying to fetch available Dragonwell versions info from the primary url: ${primaryUrl}`
       );
       const fetchedDragonwellJson = (
         await this.http.getJson<IDragonwellAllVersions>(primaryUrl)
@@ -212,7 +212,7 @@ export class DragonwellDistribution extends JavaBase {
       return fetchedDragonwellJson;
     } catch (err) {
       core.debug(
-        `Fetching from the primary link: ${primaryUrl} ended up with the error: ${err.message}`
+        `Fetching Dragonwell versions info from the primary link: ${primaryUrl} ended up with the error: ${err.message}`
       );
       return null;
     }
@@ -230,15 +230,15 @@ export class DragonwellDistribution extends JavaBase {
 
     try {
       core.debug(
-        `Trying to fetch available versions info from the backup url: ${backupUrl}`
+        `Trying to fetch available Dragonwell versions info from the backup url: ${backupUrl}`
       );
-      const fetchedDragonwellVersions = (
+      const fetchedDragonwellJson = (
         await this.http.getJson<IDragonwellAllVersions>(backupUrl, headers)
       ).result;
-      return fetchedDragonwellVersions;
+      return fetchedDragonwellJson;
     } catch (err) {
       core.debug(
-        `Fetching from the backup url: ${backupUrl} ended up with the error: ${err.message}`
+        `Fetching Dragonwell versions info from the backup url: ${backupUrl} ended up with the error: ${err.message}`
       );
       return null;
     }
