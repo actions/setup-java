@@ -102731,8 +102731,10 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
                 if (jdkVersion === 'latest') {
                     continue;
                 }
+                // Some version of Dragonwell JDK are numerated with help of non-semver notation (more then 3 digits).
+                // Common practice is to transform excess digits to the so-called semver build part, which is prefixed with the plus sign, to be able to operate with them using semver tools.
                 if (jdkVersion.split('.').length > 3) {
-                    jdkVersion = this.transformToSemver(jdkVersion);
+                    jdkVersion = util_1.convertVersionToSemver(jdkVersion);
                 }
                 for (const edition in archMap) {
                     eligibleVersions.push({
@@ -102759,14 +102761,6 @@ class DragonwellDistribution extends base_installer_1.JavaBase {
             return semver_1.default.compareBuild(version1, version2);
         });
         return sortedVersions.reverse();
-    }
-    // Some version of Dragonwell JDK are numerated with help of non-semver notation (more then 3 digits).
-    // Common practice is to transform excess digits to the so-called semver build part, which is prefixed with the plus sign, to be able to operate with them using semver tools.
-    transformToSemver(version) {
-        const splits = version.split('.');
-        const versionMainPart = splits.slice(0, 3).join('.');
-        const versionBuildPart = splits.slice(3).join('.');
-        return `${versionMainPart}+${versionBuildPart}`;
     }
     getPlatformOption() {
         switch (process.platform) {

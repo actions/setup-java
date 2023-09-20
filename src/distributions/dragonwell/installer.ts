@@ -7,6 +7,7 @@ import path from 'path';
 
 import {JavaBase} from '../base-installer';
 import {
+  convertVersionToSemver,
   extractJdkFile,
   getDownloadArchiveExtension,
   getGitHubHttpHeaders,
@@ -146,8 +147,10 @@ export class DragonwellDistribution extends JavaBase {
           continue;
         }
 
+        // Some version of Dragonwell JDK are numerated with help of non-semver notation (more then 3 digits).
+        // Common practice is to transform excess digits to the so-called semver build part, which is prefixed with the plus sign, to be able to operate with them using semver tools.
         if (jdkVersion.split('.').length > 3) {
-          jdkVersion = this.transformToSemver(jdkVersion);
+          jdkVersion = convertVersionToSemver(jdkVersion);
         }
 
         for (const edition in archMap) {
@@ -180,15 +183,6 @@ export class DragonwellDistribution extends JavaBase {
       return semver.compareBuild(version1, version2);
     });
     return sortedVersions.reverse();
-  }
-
-  // Some version of Dragonwell JDK are numerated with help of non-semver notation (more then 3 digits).
-  // Common practice is to transform excess digits to the so-called semver build part, which is prefixed with the plus sign, to be able to operate with them using semver tools.
-  private transformToSemver(version: string) {
-    const splits = version.split('.');
-    const versionMainPart = splits.slice(0, 3).join('.');
-    const versionBuildPart = splits.slice(3).join('.');
-    return `${versionMainPart}+${versionBuildPart}`;
   }
 
   private getPlatformOption(): string {
