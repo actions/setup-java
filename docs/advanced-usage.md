@@ -121,7 +121,7 @@ steps:
 - uses: actions/setup-java@v3
   with:
     distribution: 'oracle'
-    java-version: '17'
+    java-version: '21'
 - run: java -cp java HelloWorldApp
 ```
 
