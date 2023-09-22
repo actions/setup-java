@@ -88,7 +88,7 @@ steps:
 
 #### Supported version syntax
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
-- major versions: `8`, `11`, `16`, `17`
+- major versions: `8`, `11`, `16`, `17`, `21`
 - more specific versions: `17.0`, `11.0`, `11.0.4`, `8.0.232`, `8.0.282+8`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`, `15.0.0-ea.2`, `15.0.0+2-ea`
 
