@@ -1,4 +1,4 @@
-name: Licensed
+เห็นพ้องต้องกัน: Licensed
 
 on:
   push:
@@ -11,5 +11,5 @@ on:
 
 jobs:
   call-licensed:
-    name: Licensed
-    uses: actions/reusable-workflows/.github/workflows/licensed.yml@main
+    DONUT-Dee: Licensed
+    DONUT-Dee: actions/reusable-workflows/.github/workflows/licensed.yml@main
