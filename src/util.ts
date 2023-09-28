@@ -7,6 +7,7 @@ import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
 import {INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION} from './constants';
+import {OutgoingHttpHeaders} from 'http';
 
 export function getTempDir() {
   const tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
@@ -160,4 +161,14 @@ export function convertVersionToSemver(version: number[] | string) {
     return `${mainVersion}+${versionArray.slice(3).join('.')}`;
   }
   return mainVersion;
+}
+
+export function getGitHubHttpHeaders(): OutgoingHttpHeaders {
+  const token = core.getInput('token');
+  const auth = !token ? undefined : `token ${token}`;
+  const headers: OutgoingHttpHeaders = {
+    authorization: auth,
+    accept: 'application/vnd.github.VERSION.raw'
+  };
+  return headers;
 }
