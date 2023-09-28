@@ -17,7 +17,7 @@ import {
   getDownloadArchiveExtension,
   isVersionSatisfies
 } from '../../util';
-import {TemurinDistribution, TemurinImplementation} from "../temurin/installer";
+import {TemurinDistribution, TemurinImplementation} from '../temurin/installer';
 
 export enum AdoptImplementation {
   Hotspot = 'Hotspot',
@@ -33,36 +33,45 @@ export class AdoptDistribution extends JavaBase {
     super(`Adopt-${jvmImpl}`, installerOptions);
 
     if (temurinDistribution != null && jvmImpl != AdoptImplementation.Hotspot) {
-      throw new Error("Only Hotspot JVM is supported by Temurin.")
+      throw new Error('Only Hotspot JVM is supported by Temurin.');
     }
 
     // Only use the temurin repo for Hotspot JVMs
     if (temurinDistribution == null && jvmImpl == AdoptImplementation.Hotspot) {
       this.temurinDistribution = new TemurinDistribution(
-          installerOptions,
-          TemurinImplementation.Hotspot);
+        installerOptions,
+        TemurinImplementation.Hotspot
+      );
     }
   }
 
   protected async findPackageForDownload(
-      version: string
+    version: string
   ): Promise<JavaDownloadRelease> {
-
     if (this.jvmImpl == AdoptImplementation.Hotspot) {
-      core.notice("AdoptOpenJDK has moved to Eclipse Temurin https://github.com/actions/setup-java#supported-distributions please consider changing to the 'temurin' distribution type in your setup-java configuration.")
+      core.notice(
+        "AdoptOpenJDK has moved to Eclipse Temurin https://github.com/actions/setup-java#supported-distributions please consider changing to the 'temurin' distribution type in your setup-java configuration."
+      );
     }
 
-    if (this.jvmImpl == AdoptImplementation.Hotspot && this.temurinDistribution != null) {
+    if (
+      this.jvmImpl == AdoptImplementation.Hotspot &&
+      this.temurinDistribution != null
+    ) {
       try {
-        let result = await this.temurinDistribution.findPackageForDownload(version)
+        let result = await this.temurinDistribution.findPackageForDownload(
+          version
+        );
 
         if (result != undefined) {
-          return result
+          return result;
         }
       } catch (error) {
         if (error.message.includes('Could not find satisfied version')) {
-          core.notice("The JVM you are looking for could not be found in the Temurin repository, this likely indicates " +
-              "that you are using an out of date version of Java, consider updating and moving to using the Temurin distribution type in setup-java.")
+          core.notice(
+            'The JVM you are looking for could not be found in the Temurin repository, this likely indicates ' +
+              'that you are using an out of date version of Java, consider updating and moving to using the Temurin distribution type in setup-java.'
+          );
         }
       }
     }
@@ -72,7 +81,7 @@ export class AdoptDistribution extends JavaBase {
   }
 
   private async findPackageForDownloadOldAdoptOpenJdk(
-      version: string
+    version: string
   ): Promise<JavaDownloadRelease> {
     const availableVersionsRaw = await this.getAvailableVersions();
     const availableVersionsWithBinaries = availableVersionsRaw
