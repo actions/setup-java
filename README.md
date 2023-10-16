@@ -166,7 +166,7 @@ Usually, cache gets downloaded in multiple segments of fixed sizes. Sometimes, a
 
 ```yaml
 env:
-  SEGMENT_DOWNLOAD_TIMEOUT_MINS: "5"
+  SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
 steps:
 - uses: actions/checkout@v3
 - uses: actions/setup-java@v3
