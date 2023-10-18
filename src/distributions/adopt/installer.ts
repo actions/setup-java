@@ -59,7 +59,7 @@ export class AdoptDistribution extends JavaBase {
       this.temurinDistribution != null
     ) {
       try {
-        let result = await this.temurinDistribution.findPackageForDownload(
+        const result = await this.temurinDistribution.findPackageForDownload(
           version
         );
 

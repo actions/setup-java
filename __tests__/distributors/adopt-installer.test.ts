@@ -420,7 +420,7 @@ describe('findPackageForDownload', () => {
   });
 
   it('version list is empty', async () => {
-    let spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
+    const spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
 
     spyHttpClient.mockImplementation((requestUrl, additionalHeaders) => {
       if (requestUrl.startsWith('https://api.adoptium.net/')) {
