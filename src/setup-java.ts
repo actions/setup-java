@@ -13,6 +13,19 @@ import * as path from 'path';
 import {getJavaDistribution} from './distributions/distribution-factory';
 import {JavaInstallerOptions} from './distributions/base-models';
 
+interface IInstallerInputsOptions {
+  architecture: string;
+  packageType: string;
+  checkLatest: boolean;
+  distributionName: string;
+  jdkFile: string;
+  toolchainIds: Array<string>;
+  updateToolchainsOnly: boolean;
+  overwriteSettings: boolean;
+  updateEnvJavaHome: boolean;
+  addToEnvPath: boolean;
+}
+
 async function run() {
   try {
     const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
@@ -28,6 +41,11 @@ async function run() {
       constants.INPUT_CACHE_DEPENDENCY_PATH
     );
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
+    const updateToolchainsOnly = getBooleanInput(constants.INPUT_UPDATE_TOOLCHAINS_ONLY, false);
+    const overwriteSettings = getBooleanInput(constants.INPUT_OVERWRITE_SETTINGS, !updateToolchainsOnly);
+    const updateEnvJavaHome = getBooleanInput(constants.INPUT_UPDATE_JAVA_HOME, !updateToolchainsOnly);
+    const addToEnvPath = getBooleanInput(constants.INPUT_ADD_TO_PATH, !updateToolchainsOnly);
+
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
 
     core.startGroup('Installed distributions');
@@ -40,13 +58,17 @@ async function run() {
       throw new Error('java-version or java-version-file input expected');
     }
 
-    const installerInputsOptions: installerInputsOptions = {
+    const installerInputsOptions: IInstallerInputsOptions = {
       architecture,
       packageType,
       checkLatest,
       distributionName,
       jdkFile,
-      toolchainIds
+      toolchainIds,
+      updateToolchainsOnly,
+      overwriteSettings,
+      updateEnvJavaHome,
+      addToEnvPath
     };
 
     if (!versions.length) {
@@ -78,7 +100,7 @@ async function run() {
     const matchersPath = path.join(__dirname, '..', '..', '.github');
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
-    await auth.configureAuthentication();
+    await auth.configureAuthentication(overwriteSettings);
     if (cache && isCacheFeatureAvailable()) {
       await restore(cache, cacheDependencyPath);
     }
@@ -91,7 +113,7 @@ run();
 
 async function installVersion(
   version: string,
-  options: installerInputsOptions,
+  options: IInstallerInputsOptions,
   toolchainId = 0
 ) {
   const {
@@ -100,14 +122,20 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
-    toolchainIds
+    toolchainIds,
+    updateToolchainsOnly,
+    overwriteSettings,
+    updateEnvJavaHome,
+    addToEnvPath
   } = options;
 
   const installerOptions: JavaInstallerOptions = {
+    version,
     architecture,
     packageType,
     checkLatest,
-    version
+    updateEnvJavaHome,
+    addToEnvPath
   };
 
   const distribution = getJavaDistribution(
@@ -126,6 +154,7 @@ async function installVersion(
     version,
     distributionName,
     result.path,
+    overwriteSettings || updateToolchainsOnly,
     toolchainIds[toolchainId]
   );
 
@@ -135,13 +164,4 @@ async function installVersion(
   core.info(`  Version: ${result.version}`);
   core.info(`  Path: ${result.path}`);
   core.info('');
-}
-
-interface installerInputsOptions {
-  architecture: string;
-  packageType: string;
-  checkLatest: boolean;
-  distributionName: string;
-  jdkFile: string;
-  toolchainIds: Array<string>;
 }
