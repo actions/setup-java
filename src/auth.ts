@@ -10,17 +10,15 @@ import * as constants from './constants';
 import * as gpg from './gpg';
 import {getBooleanInput} from './util';
 
-export async function configureAuthentication() {
+export async function configureAuthentication(
+  overwriteSettings: boolean
+) {
   const id = core.getInput(constants.INPUT_SERVER_ID);
   const username = core.getInput(constants.INPUT_SERVER_USERNAME);
   const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
   const settingsDirectory =
     core.getInput(constants.INPUT_SETTINGS_PATH) ||
     path.join(os.homedir(), constants.M2_DIR);
-  const overwriteSettings = getBooleanInput(
-    constants.INPUT_OVERWRITE_SETTINGS,
-    true
-  );
   const gpgPrivateKey =
     core.getInput(constants.INPUT_GPG_PRIVATE_KEY) ||
     constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
