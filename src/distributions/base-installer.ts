@@ -10,7 +10,11 @@ import {
   JavaInstallerOptions,
   JavaInstallerResults
 } from './base-models';
-import {MACOS_JAVA_CONTENT_POSTFIX} from '../constants';
+import {
+  MACOS_JAVA_CONTENT_POSTFIX,
+  INPUT_UPDATE_JAVA_HOME,
+  INPUT_ADD_TO_PATH
+} from '../constants';
 import os from 'os';
 
 export abstract class JavaBase {
@@ -20,6 +24,8 @@ export abstract class JavaBase {
   protected packageType: string;
   protected stable: boolean;
   protected checkLatest: boolean;
+  protected updateEnvJavaHome: boolean;
+  protected addToEnvPath: boolean;
 
   constructor(
     protected distribution: string,
@@ -36,6 +42,8 @@ export abstract class JavaBase {
     this.architecture = installerOptions.architecture || os.arch();
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
+    this.updateEnvJavaHome = installerOptions.updateEnvJavaHome;
+    this.addToEnvPath = installerOptions.addToEnvPath;
   }
 
   protected abstract downloadTool(
@@ -261,8 +269,16 @@ export abstract class JavaBase {
 
   protected setJavaDefault(version: string, toolPath: string) {
     const majorVersion = version.split('.')[0];
-    core.exportVariable('JAVA_HOME', toolPath);
-    core.addPath(path.join(toolPath, 'bin'));
+    if (this.updateEnvJavaHome) {
+      core.exportVariable('JAVA_HOME', toolPath);
+    } else {
+      core.info(`Skip updating env.JAVA_HOME according to ${INPUT_UPDATE_JAVA_HOME}`);
+    }
+    if (this.addToEnvPath) {
+      core.addPath(path.join(toolPath, 'bin'));
+    } else {
+      core.info(`Skip adding to env.PATH according to ${INPUT_ADD_TO_PATH}`);
+    }
     core.setOutput('distribution', this.distribution);
     core.setOutput('path', toolPath);
     core.setOutput('version', version);

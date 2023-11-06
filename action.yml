@@ -43,9 +43,21 @@ inputs:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false
   overwrite-settings:
-    description: 'Overwrite the settings.xml file if it exists. Default is "true".'
+    description: 'Overwrite the settings.xml file if it exists. Default is "!update-toolchains-only". If explcitly set "true", it will update settings.xml regardless of "update-toolchains-only"'
     required: false
-    default: true
+    # DO NOT set a default here! The default will be propagated from input 'update-toolchains-only'!
+  update-toolchains-only:
+    description: 'Update toolchains.xml only. Default is "false". No update of settings.xml, no update of JAVA_HOME, no adding to PATH by default - unless "overwrite-settings", "update-env-javahome" or "add-to-env-path" are not explicitly set "true"'
+    required: false
+    default: false
+  update-env-javahome:
+    description: 'Update the JAVA_HOME environment variable. Default is "!update-toolchains-only"'
+    required: false
+    # DO NOT set a default here! The default will be propagated from input 'update-toolchains-only'!
+  add-to-env-path:
+    description: 'Add "<JDK home>/bin" to the PATH environment variable. Default is "!update-toolchains-only"'
+    required: false
+    # DO NOT set a default here! The default will be propagated from input 'update-toolchains-only'!
   gpg-private-key:
     description: 'GPG private key to import. Default is empty string.'
     required: false
