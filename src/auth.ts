@@ -10,9 +10,7 @@ import * as constants from './constants';
 import * as gpg from './gpg';
 import {getBooleanInput} from './util';
 
-export async function configureAuthentication(
-  overwriteSettings: boolean
-) {
+export async function configureAuthentication(overwriteSettings: boolean) {
   const id = core.getInput(constants.INPUT_SERVER_ID);
   const username = core.getInput(constants.INPUT_SERVER_USERNAME);
   const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
