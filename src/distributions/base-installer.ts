@@ -196,7 +196,9 @@ export abstract class JavaBase {
     if (this.updateEnvJavaHome) {
       core.exportVariable('JAVA_HOME', toolPath);
     } else {
-      core.info(`Skip updating env.JAVA_HOME according to ${INPUT_UPDATE_JAVA_HOME}`);
+      core.info(
+        `Skip updating env.JAVA_HOME according to ${INPUT_UPDATE_JAVA_HOME}`
+      );
     }
     if (this.addToEnvPath) {
       core.addPath(path.join(toolPath, 'bin'));

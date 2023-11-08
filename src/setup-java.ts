@@ -41,10 +41,22 @@ async function run() {
       constants.INPUT_CACHE_DEPENDENCY_PATH
     );
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
-    const updateToolchainsOnly = getBooleanInput(constants.INPUT_UPDATE_TOOLCHAINS_ONLY, false);
-    const overwriteSettings = getBooleanInput(constants.INPUT_OVERWRITE_SETTINGS, !updateToolchainsOnly);
-    const updateEnvJavaHome = getBooleanInput(constants.INPUT_UPDATE_JAVA_HOME, !updateToolchainsOnly);
-    const addToEnvPath = getBooleanInput(constants.INPUT_ADD_TO_PATH, !updateToolchainsOnly);
+    const updateToolchainsOnly = getBooleanInput(
+      constants.INPUT_UPDATE_TOOLCHAINS_ONLY,
+      false
+    );
+    const overwriteSettings = getBooleanInput(
+      constants.INPUT_OVERWRITE_SETTINGS,
+      !updateToolchainsOnly
+    );
+    const updateEnvJavaHome = getBooleanInput(
+      constants.INPUT_UPDATE_JAVA_HOME,
+      !updateToolchainsOnly
+    );
+    const addToEnvPath = getBooleanInput(
+      constants.INPUT_ADD_TO_PATH,
+      !updateToolchainsOnly
+    );
 
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
 
