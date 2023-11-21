@@ -76,7 +76,7 @@ async function run() {
       await restore(cache);
     }
   } catch (error) {
-    core.setFailed(error.message);
+    core.setFailed((error as Error).message);
   }
 }
 

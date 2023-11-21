@@ -146,10 +146,12 @@ export async function save(id: string) {
     await cache.saveCache(packageManager.path, primaryKey);
     core.info(`Cache saved with the key: ${primaryKey}`);
   } catch (error) {
-    if (error.name === cache.ReserveCacheError.name) {
-      core.info(error.message);
+    const err = error as Error;
+
+    if (err.name === cache.ReserveCacheError.name) {
+      core.info(err.message);
     } else {
-      if (isProbablyGradleDaemonProblem(packageManager, error)) {
+      if (isProbablyGradleDaemonProblem(packageManager, err)) {
         core.warning(
           'Failed to save Gradle cache on Windows. If tar.exe reported "Permission denied", try to run Gradle with `--no-daemon` option. Refer to https://github.com/actions/cache/issues/454 for details.'
         );
