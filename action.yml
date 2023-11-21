@@ -1,4 +1,4 @@
-nnname: 'Setup Java JDK'
+name: 'Setup Java JDK'
 description: 'Set up a specific version of the Java JDK and add the
    command-line tools to the PATH'
 author: 'GitHub'
@@ -78,6 +78,6 @@ outputs:
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'
 runs:
-  using: 'node21'
+  using: 'node20'
   main: 'dist/setup/index.js'
   post: 'dist/cleanup/index.js'
