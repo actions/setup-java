@@ -1,6 +1,6 @@
 {
   "name": "setup-java",
-  "version": "3.4.1",
+  "version": "4.0.0",
   "private": true,
   "description": "setup java action",
   "main": "dist/setup/index.js",
