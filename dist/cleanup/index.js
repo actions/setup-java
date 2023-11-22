@@ -89724,28 +89724,31 @@ function findPackageManager(id) {
 /**
  * A function that generates a cache key to use.
  * Format of the generated key will be "${{ platform }}-${{ id }}-${{ fileHash }}"".
- * If there is no file matched to {@link PackageManager.path}, the generated key ends with a dash (-).
  * @see {@link https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key|spec of cache key}
  */
-function computeCacheKey(packageManager) {
+function computeCacheKey(packageManager, cacheDependencyPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        const hash = yield glob.hashFiles(packageManager.pattern.join('\n'));
-        return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${hash}`;
+        const pattern = cacheDependencyPath
+            ? cacheDependencyPath.trim().split('\n')
+            : packageManager.pattern;
+        const fileHash = yield glob.hashFiles(pattern.join('\n'));
+        if (!fileHash) {
+            throw new Error(`No file in ${process.cwd()} matched to [${pattern}], make sure you have checked out the target repository`);
+        }
+        return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${fileHash}`;
     });
 }
 /**
  * Restore the dependency cache
  * @param id ID of the package manager, should be "maven" or "gradle"
+ * @param cacheDependencyPath The path to a dependency file
  */
-function restore(id) {
+function restore(id, cacheDependencyPath) {
     return __awaiter(this, void 0, void 0, function* () {
         const packageManager = findPackageManager(id);
-        const primaryKey = yield computeCacheKey(packageManager);
+        const primaryKey = yield computeCacheKey(packageManager, cacheDependencyPath);
         core.debug(`primary key is ${primaryKey}`);
         core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
-        if (primaryKey.endsWith('-')) {
-            throw new Error(`No file in ${process.cwd()} matched to [${packageManager.pattern}], make sure you have checked out the target repository`);
-        }
         // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
         const matchedKey = yield cache.restoreCache(packageManager.path, primaryKey);
         if (matchedKey) {
@@ -89922,7 +89925,7 @@ else {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.DISTRIBUTIONS_ONLY_MAJOR_VERSION = exports.INPUT_MVN_TOOLCHAIN_VENDOR = exports.INPUT_MVN_TOOLCHAIN_ID = exports.MVN_TOOLCHAINS_FILE = exports.MVN_SETTINGS_FILE = exports.M2_DIR = exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION_FILE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
+exports.DISTRIBUTIONS_ONLY_MAJOR_VERSION = exports.INPUT_MVN_TOOLCHAIN_VENDOR = exports.INPUT_MVN_TOOLCHAIN_ID = exports.MVN_TOOLCHAINS_FILE = exports.MVN_SETTINGS_FILE = exports.M2_DIR = exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE_DEPENDENCY_PATH = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION_FILE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
 exports.MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
 exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_JAVA_VERSION_FILE = 'java-version-file';
@@ -89941,6 +89944,7 @@ exports.INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 exports.INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
 exports.INPUT_CACHE = 'cache';
+exports.INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
 exports.INPUT_JOB_STATUS = 'job-status';
 exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
 exports.M2_DIR = '.m2';
