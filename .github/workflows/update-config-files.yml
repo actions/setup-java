@@ -9,3 +9,6 @@ jobs:
   call-update-configuration-files:
     name: Update configuration files
     uses: actions/reusable-workflows/.github/workflows/update-config-files.yml@main
+with : 
+
+node-version : 20
