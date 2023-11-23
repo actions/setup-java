@@ -57,7 +57,5 @@
     "url": "https://github.com/actions/setup-java/issues"
   },
   "homepage": "https://github.com/actions/setup-java#readme",
-  "directories": {
-    "doc": "docs"
-  }
+  
 }
