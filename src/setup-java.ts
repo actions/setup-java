@@ -24,6 +24,9 @@ async function run() {
     const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
     const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
     const cache = core.getInput(constants.INPUT_CACHE);
+    const cacheDependencyPath = core.getInput(
+      constants.INPUT_CACHE_DEPENDENCY_PATH
+    );
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
 
@@ -73,7 +76,7 @@ async function run() {
 
     await auth.configureAuthentication();
     if (cache && isCacheFeatureAvailable()) {
-      await restore(cache);
+      await restore(cache, cacheDependencyPath);
     }
   } catch (error) {
     core.setFailed((error as Error).message);

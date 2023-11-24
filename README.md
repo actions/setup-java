@@ -41,6 +41,8 @@ This action allows you to work with Java and Scala projects.
 
   - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
 
+  - `cache-dependency-path`: The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.
+
   #### Maven options
   The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
 
@@ -115,9 +117,12 @@ Currently, the following distributions are supported:
 
 ### Caching packages dependencies
 The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
+
 - gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, and `**/versions.properties`
 - maven: `**/pom.xml`
 - sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.scala`, `**/project/**.sbt`
+
+When the option `cache-dependency-path` is specified, the hash is based on the matching file. This option supports wildcards and a list of file names, and is especially useful for monorepos.
 
 The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
 
@@ -132,6 +137,9 @@ steps:
     distribution: 'temurin'
     java-version: '17'
     cache: 'gradle'
+    cache-dependency-path: | # optional
+      sub-project/*.gradle*
+      sub-project/**/gradle-wrapper.properties
 - run: ./gradlew build --no-daemon
 ```
 
@@ -144,6 +152,7 @@ steps:
     distribution: 'temurin'
     java-version: '17'
     cache: 'maven'
+    cache-dependency-path: 'sub-project/pom.xml' # optional
 - name: Build with Maven
   run: mvn -B package --file pom.xml
 ```
@@ -157,6 +166,9 @@ steps:
     distribution: 'temurin'
     java-version: '17'
     cache: 'sbt'
+    cache-dependency-path: | # optional
+      sub-project/build.sbt
+      sub-project/project/build.properties
 - name: Build with SBT
   run: sbt package
 ```
