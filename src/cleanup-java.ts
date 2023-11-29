@@ -13,7 +13,9 @@ async function removePrivateKeyFromKeychain() {
       );
       await gpg.deleteKey(keyFingerprint);
     } catch (error) {
-      core.setFailed(`Failed to remove private key due to: ${error.message}`);
+      core.setFailed(
+        `Failed to remove private key due to: ${(error as Error).message}`
+      );
     }
   }
 }

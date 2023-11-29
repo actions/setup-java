@@ -79,7 +79,7 @@ async function run() {
       await restore(cache, cacheDependencyPath);
     }
   } catch (error) {
-    core.setFailed(error.message);
+    core.setFailed((error as Error).message);
   }
 }
 
