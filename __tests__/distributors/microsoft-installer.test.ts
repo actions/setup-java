@@ -30,6 +30,11 @@ describe('findPackageForDownload', () => {
 
   it.each([
     [
+      '21.x',
+      '21.0.0',
+      'https://aka.ms/download-jdk/microsoft-jdk-21.0.0-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+    ],
+    [
       '17.0.1',
       '17.0.1+12.1',
       'https://aka.ms/download-jdk/microsoft-jdk-17.0.1.12.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'

@@ -1,0 +1,17 @@
+plugins {
+    id 'java'
+}
+repositories {
+    mavenCentral()
+}
+dependencies {
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
+}
+tasks.register('downloadDependencies') {
+    doLast {
+        def total = configurations.compileClasspath.inject (0) { sum, file ->
+            sum + file.length()
+        }
+        println total
+    }
+}
