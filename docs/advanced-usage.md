@@ -28,7 +28,7 @@ Inputs `java-version` and `distribution` are mandatory and needs to be provided.
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
     java-version: '11'
@@ -41,7 +41,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'adopt-hotspot'
     java-version: '11'
@@ -52,7 +52,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'zulu'
     java-version: '11'
@@ -64,7 +64,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'liberica'
     java-version: '11'
@@ -76,7 +76,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'microsoft'
     java-version: '11'
@@ -90,7 +90,7 @@ steps:
 To get a higher rate limit, you can [generate a personal access token on github.com](https://github.com/settings/tokens/new) and pass it as the `token` input for the action:
 
 ```yaml
-uses: actions/setup-java@v3
+uses: actions/setup-java@v4
 with:
   token: ${{ secrets.GH_DOTCOM_TOKEN }}
   distribution: 'microsoft'
@@ -105,7 +105,7 @@ If the runner is not able to access github.com, any Java versions requested duri
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'corretto'
     java-version: '11'
@@ -118,7 +118,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'oracle'
     java-version: '17'
@@ -129,8 +129,8 @@ steps:
 **NOTE:** Alibaba Dragonwell only provides jdk.
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'dragonwell'
     java-version: '8'
@@ -141,7 +141,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: '<distribution>'
     java-version: '11'
@@ -155,7 +155,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: '<distribution>'
     java-version: '11'
@@ -171,7 +171,7 @@ steps:
 - run: |
     download_url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz"
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'jdkfile'
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
@@ -197,7 +197,7 @@ If your use-case requires a custom distribution (in the example, alpine-linux is
           latest_semver_version=$(curl -sL $latest_jdk_json_url | jq -r 'version.semver')
           echo "java_version=$latest_semver_version" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: 'jdkfile'
           jdkFile: ${{ runner.temp }}/java_package.tar.gz
@@ -220,7 +220,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
@@ -240,7 +240,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
@@ -257,7 +257,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 11
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -271,7 +271,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
 
     - name: Set up Apache Maven Central
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with: # running setup-java again overwrites the settings.xml
         distribution: 'temurin'
         java-version: '11'
@@ -368,7 +368,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 11 for Shared Runner
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -395,7 +395,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up JDK 11
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -429,14 +429,14 @@ Subsequent calls to `setup-java` with distinct distribution and version paramete
 
 ```yaml
 steps:
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: '<distribution>'
     java-version: |
       8
       11
 
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: '<distribution>'
     java-version: 15
@@ -448,7 +448,7 @@ The result is a Toolchain with entries for JDKs 8, 11 and 15. You can even combi
 - run: |
     download_url="https://example.com/java/jdk/6u45-b06/jdk-6u45-linux-x64.tar.gz"
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'jdkfile'
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
@@ -465,7 +465,7 @@ Each JDK provider will receive a default `vendor` using the `distribution` input
 - run: |
     download_url="https://example.com/java/jdk/6u45-b06/jdk-6u45-linux-x64.tar.gz"
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'jdkfile'
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
@@ -480,7 +480,7 @@ In case you install multiple versions of Java at once with multi-line `java-vers
 
 ```yaml
 steps:
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: '<distribution>'
     java-version: |
@@ -495,7 +495,7 @@ Each JDK provider will receive a default `id` based on the combination of `distr
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
     java-version: '11'
@@ -507,7 +507,7 @@ In case you install multiple versions of Java at once you can use the same synta
 
 ```yaml
 steps:
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: '<distribution>'
     java-version: |

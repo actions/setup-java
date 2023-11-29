@@ -70,7 +70,7 @@ This action allows you to work with Java and Scala projects.
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
     java-version: '17'
@@ -81,7 +81,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
     java-version: '17'
@@ -132,7 +132,7 @@ The cache input is optional, and caching is turned off by default.
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
     java-version: '17'
@@ -147,7 +147,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
     java-version: '17'
@@ -161,7 +161,7 @@ steps:
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
     java-version: '17'
@@ -180,8 +180,8 @@ Usually, cache gets downloaded in multiple segments of fixed sizes. Sometimes, a
 env:
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
     java-version: '17'
@@ -201,7 +201,7 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 ```yaml
 steps:
 - uses: actions/checkout@v4
-- uses: actions/setup-java@v3
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
     java-version: '17'
@@ -221,7 +221,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
@@ -234,7 +234,7 @@ All versions are added to the PATH. The last version will be used and available 
 
 ```yaml
     steps:
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: '<distribution>'
           java-version: |
