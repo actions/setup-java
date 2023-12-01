@@ -87931,9 +87931,11 @@ function getGitHubHttpHeaders() {
     const token = core.getInput('token');
     const auth = !token ? undefined : `token ${token}`;
     const headers = {
-        authorization: auth,
         accept: 'application/vnd.github.VERSION.raw'
     };
+    if (auth) {
+        headers.authorization = auth;
+    }
     return headers;
 }
 exports.getGitHubHttpHeaders = getGitHubHttpHeaders;
