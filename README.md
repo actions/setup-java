@@ -69,8 +69,8 @@ This action allows you to work with Java and Scala projects.
 #### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
     java-version: '17'
@@ -80,8 +80,8 @@ steps:
 #### Azul Zulu OpenJDK
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
     java-version: '17'
@@ -131,8 +131,8 @@ The cache input is optional, and caching is turned off by default.
 #### Caching gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
     java-version: '17'
@@ -146,8 +146,8 @@ steps:
 #### Caching maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
     java-version: '17'
@@ -160,8 +160,8 @@ steps:
 #### Caching sbt dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
     java-version: '17'
@@ -180,8 +180,8 @@ Usually, cache gets downloaded in multiple segments of fixed sizes. Sometimes, a
 env:
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
     java-version: '17'
@@ -200,8 +200,8 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
     java-version: '17'
@@ -219,9 +219,9 @@ jobs:
         java: [ '8', '11', '17' ]
     name: Java ${{ matrix.Java }} sample
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
@@ -234,7 +234,7 @@ All versions are added to the PATH. The last version will be used and available 
 
 ```yaml
     steps:
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: '<distribution>'
           java-version: |
