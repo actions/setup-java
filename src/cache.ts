@@ -58,7 +58,8 @@ const supportedPackageManager: PackageManager[] = [
       '**/*.sbt',
       '**/project/build.properties',
       '**/project/**.scala',
-      '**/project/**.sbt'
+      '**/project/**.sbt',
+      '!**/version.sbt' // releasing a new version of a library project shouldn't invalidate the entire sbt cache
     ]
   }
 ];
