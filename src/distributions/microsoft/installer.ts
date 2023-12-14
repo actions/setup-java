@@ -13,7 +13,7 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
-import {ITypedResponse} from '@actions/http-client/interfaces';
+import {TypedResponse} from '@actions/http-client/lib/interfaces';
 
 export class MicrosoftDistributions extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -99,7 +99,7 @@ export class MicrosoftDistributions extends JavaBase {
 
     const headers = getGitHubHttpHeaders();
 
-    let response: ITypedResponse<tc.IToolRelease[]> | null = null;
+    let response: TypedResponse<tc.IToolRelease[]> | null = null;
 
     if (core.isDebug()) {
       console.time('Retrieving available versions for Microsoft took'); // eslint-disable-line no-console

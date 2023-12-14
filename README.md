@@ -41,6 +41,8 @@ This action allows you to work with Java and Scala projects.
 
   - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
 
+  - `cache-dependency-path`: The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.
+
   #### Maven options
   The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
 
@@ -67,22 +69,22 @@ This action allows you to work with Java and Scala projects.
 #### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
-    java-version: '17'
+    java-version: '21'
 - run: java HelloWorldApp.java
 ```
 
 #### Azul Zulu OpenJDK
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
-    java-version: '17'
+    java-version: '21'
 - run: java HelloWorldApp.java
 ```
 
@@ -115,9 +117,12 @@ Currently, the following distributions are supported:
 
 ### Caching packages dependencies
 The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
+
 - gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, and `**/versions.properties`
 - maven: `**/pom.xml`
 - sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.scala`, `**/project/**.sbt`
+
+When the option `cache-dependency-path` is specified, the hash is based on the matching file. This option supports wildcards and a list of file names, and is especially useful for monorepos.
 
 The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
 
@@ -126,24 +131,28 @@ The cache input is optional, and caching is turned off by default.
 #### Caching gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
-    java-version: '17'
+    java-version: '21'
     cache: 'gradle'
+    cache-dependency-path: | # optional
+      sub-project/*.gradle*
+      sub-project/**/gradle-wrapper.properties
 - run: ./gradlew build --no-daemon
 ```
 
 #### Caching maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
-    java-version: '17'
+    java-version: '21'
     cache: 'maven'
+    cache-dependency-path: 'sub-project/pom.xml' # optional
 - name: Build with Maven
   run: mvn -B package --file pom.xml
 ```
@@ -151,14 +160,33 @@ steps:
 #### Caching sbt dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
-    java-version: '17'
+    java-version: '21'
     cache: 'sbt'
+    cache-dependency-path: | # optional
+      sub-project/build.sbt
+      sub-project/project/build.properties
 - name: Build with SBT
   run: sbt package
+```
+
+#### Cache segment restore timeout
+Usually, cache gets downloaded in multiple segments of fixed sizes. Sometimes, a segment download gets stuck, which causes the workflow job to be stuck. The cache segment download timeout [was introduced](https://github.com/actions/toolkit/tree/main/packages/cache#cache-segment-restore-timeout) to solve this issue as it allows the segment download to get aborted and hence allows the job to proceed with a cache miss. The default value of the cache segment download timeout is set to 10 minutes and can be customized by specifying an environment variable named `SEGMENT_DOWNLOAD_TIMEOUT_MINS` with a timeout value in minutes.
+
+```yaml
+env:
+  SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'temurin'
+    java-version: '21'
+    cache: 'gradle'
+- run: ./gradlew build --no-daemon
 ```
 
 ### Check latest
@@ -172,11 +200,11 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 
 ```yaml
 steps:
-- uses: actions/checkout@v3
-- uses: actions/setup-java@v3
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
-    java-version: '17'
+    java-version: '21'
     check-latest: true
 - run: java HelloWorldApp.java
 ```
@@ -188,12 +216,12 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        java: [ '8', '11', '17' ]
+        java: [ '8', '11', '17', '21' ]
     name: Java ${{ matrix.Java }} sample
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
@@ -206,7 +234,7 @@ All versions are added to the PATH. The last version will be used and available 
 
 ```yaml
     steps:
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
           distribution: '<distribution>'
           java-version: |

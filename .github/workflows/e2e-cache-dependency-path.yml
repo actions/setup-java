@@ -1,0 +1,93 @@
+name: Validate cache with cache-dependency-path option
+
+on:
+  push:
+    branches:
+      - main
+      - releases/*
+    paths-ignore:
+      - '**.md'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  gradle1-save:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run setup-java with the cache for gradle
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: gradle
+          cache-dependency-path: __tests__/cache/gradle1/*.gradle*
+      - name: Create files to cache
+        # Need to avoid using Gradle daemon to stabilize the save process on Windows
+        # https://github.com/actions/cache/issues/454#issuecomment-840493935
+        run: |
+          gradle downloadDependencies --no-daemon -p __tests__/cache/gradle1
+          if [ ! -d ~/.gradle/caches ]; then
+            echo "::error::The ~/.gradle/caches directory does not exist unexpectedly"
+            exit 1
+          fi
+  gradle1-restore:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    needs: gradle1-save
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run setup-java with the cache for gradle
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: gradle
+          cache-dependency-path: __tests__/cache/gradle1/*.gradle*
+      - name: Confirm that ~/.gradle/caches directory has been made
+        run: |
+          if [ ! -d ~/.gradle/caches ]; then
+            echo "::error::The ~/.gradle/caches directory does not exist unexpectedly"
+            exit 1
+          fi
+          ls ~/.gradle/caches/
+  gradle2-restore:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    needs: gradle1-save
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run setup-java with the cache for gradle
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: gradle
+          cache-dependency-path: __tests__/cache/gradle2/*.gradle*
+      - name: Confirm that ~/.gradle/caches directory has not been made
+        run: |
+          if [ -d ~/.gradle/caches ]; then
+            echo "::error::The ~/.gradle/caches directory exists unexpectedly"
+            exit 1
+          fi

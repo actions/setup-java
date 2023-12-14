@@ -51,7 +51,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup-java
         uses: ./
         id: setup-java
@@ -87,7 +87,7 @@ jobs:
             version: '11.0.13+9'
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup-java
         uses: ./
         id: setup-java
@@ -112,7 +112,7 @@ jobs:
             os: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup-java
         uses: ./
         id: setup-java
@@ -138,7 +138,7 @@ jobs:
             os: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup-java
         uses: ./
         id: setup-java
@@ -175,7 +175,7 @@ jobs:
         version: ['17-ea', '15.0.0-ea.14']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup-java
         uses: ./
         id: setup-java
@@ -197,7 +197,7 @@ jobs:
         version: ['17-ea']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup-java
         uses: ./
         id: setup-java
@@ -242,7 +242,7 @@ jobs:
             os: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup-java
         uses: ./
         id: setup-java
@@ -268,7 +268,7 @@ jobs:
         version: ['11']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup-java
         uses: ./
         id: setup-java
@@ -290,7 +290,7 @@ jobs:
         distribution: ['temurin', 'microsoft', 'corretto']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Create .java-version file
         shell: bash
         run: echo "8" > .java-version
@@ -315,7 +315,7 @@ jobs:
         distribution: ['temurin', 'zulu', 'liberica', 'microsoft', 'corretto']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Create .java-version file
         shell: bash
         run: echo "11" > .java-version
@@ -339,7 +339,7 @@ jobs:
         distribution: ['adopt', 'adopt-openj9', 'zulu']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Create .java-version file
         shell: bash
         run: echo "11.0.2" > .java-version
@@ -363,7 +363,7 @@ jobs:
         distribution: ['adopt', 'zulu', 'liberica']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Create .java-version file
         shell: bash
         run: echo "openjdk64-11.0.2" > .java-version

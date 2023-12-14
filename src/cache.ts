@@ -83,31 +83,34 @@ function findPackageManager(id: string): PackageManager {
 /**
  * A function that generates a cache key to use.
  * Format of the generated key will be "${{ platform }}-${{ id }}-${{ fileHash }}"".
- * If there is no file matched to {@link PackageManager.path}, the generated key ends with a dash (-).
  * @see {@link https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key|spec of cache key}
  */
-async function computeCacheKey(packageManager: PackageManager) {
-  const hash = await glob.hashFiles(packageManager.pattern.join('\n'));
-  return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${hash}`;
+async function computeCacheKey(
+  packageManager: PackageManager,
+  cacheDependencyPath: string
+) {
+  const pattern = cacheDependencyPath
+    ? cacheDependencyPath.trim().split('\n')
+    : packageManager.pattern;
+  const fileHash = await glob.hashFiles(pattern.join('\n'));
+  if (!fileHash) {
+    throw new Error(
+      `No file in ${process.cwd()} matched to [${pattern}], make sure you have checked out the target repository`
+    );
+  }
+  return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${fileHash}`;
 }
 
 /**
  * Restore the dependency cache
  * @param id ID of the package manager, should be "maven" or "gradle"
+ * @param cacheDependencyPath The path to a dependency file
  */
-export async function restore(id: string) {
+export async function restore(id: string, cacheDependencyPath: string) {
   const packageManager = findPackageManager(id);
-  const primaryKey = await computeCacheKey(packageManager);
-
+  const primaryKey = await computeCacheKey(packageManager, cacheDependencyPath);
   core.debug(`primary key is ${primaryKey}`);
   core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
-  if (primaryKey.endsWith('-')) {
-    throw new Error(
-      `No file in ${process.cwd()} matched to [${
-        packageManager.pattern
-      }], make sure you have checked out the target repository`
-    );
-  }
 
   // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
   const matchedKey = await cache.restoreCache(packageManager.path, primaryKey);
@@ -146,10 +149,12 @@ export async function save(id: string) {
     await cache.saveCache(packageManager.path, primaryKey);
     core.info(`Cache saved with the key: ${primaryKey}`);
   } catch (error) {
-    if (error.name === cache.ReserveCacheError.name) {
-      core.info(error.message);
+    const err = error as Error;
+
+    if (err.name === cache.ReserveCacheError.name) {
+      core.info(err.message);
     } else {
-      if (isProbablyGradleDaemonProblem(packageManager, error)) {
+      if (isProbablyGradleDaemonProblem(packageManager, err)) {
         core.warning(
           'Failed to save Gradle cache on Windows. If tar.exe reported "Permission denied", try to run Gradle with `--no-daemon` option. Refer to https://github.com/actions/cache/issues/454 for details.'
         );

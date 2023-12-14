@@ -1,6 +1,6 @@
 ---
 name: xmlbuilder2
-version: 2.4.0
+version: 2.4.1
 type: npm
 summary: An XML builder for node.js
 homepage: http://github.com/oozcitak/xmlbuilder2

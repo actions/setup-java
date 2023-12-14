@@ -206,7 +206,9 @@ export class DragonwellDistribution extends JavaBase {
       return fetchedDragonwellJson;
     } catch (err) {
       core.debug(
-        `Fetching Dragonwell versions info from the primary link: ${primaryUrl} ended up with the error: ${err.message}`
+        `Fetching Dragonwell versions info from the primary link: ${primaryUrl} ended up with the error: ${
+          (err as Error).message
+        }`
       );
       return null;
     }
@@ -232,7 +234,9 @@ export class DragonwellDistribution extends JavaBase {
       return fetchedDragonwellJson;
     } catch (err) {
       core.debug(
-        `Fetching Dragonwell versions info from the backup url: ${backupUrl} ended up with the error: ${err.message}`
+        `Fetching Dragonwell versions info from the backup url: ${backupUrl} ended up with the error: ${
+          (err as Error).message
+        }`
       );
       return null;
     }
