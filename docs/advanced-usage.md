@@ -356,6 +356,8 @@ If `gpg-private-key` input is provided, the private key will be written to a fil
 
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
+***NOTE***: If the error that states, `gpg: Sorry, no terminal at all requested - can't get input` [is encountered](https://github.com/actions/setup-java/issues/554), please update the version of `maven-gpg-plugin` to 1.6 or higher.
+
 ## Apache Maven with a settings path
 
 When using an Actions self-hosted runner with multiple shared runners the default `$HOME` directory can be shared by a number runners at the same time which could overwrite existing settings file. Setting the `settings-path` variable allows you to choose a unique location for your settings file.
