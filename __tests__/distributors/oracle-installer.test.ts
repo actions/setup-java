@@ -23,6 +23,11 @@ describe('findPackageForDownload', () => {
 
   it.each([
     [
+      '21',
+      '21',
+      'https://download.oracle.com/java/21/latest/jdk-21_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
+    ],
+    [
       '20',
       '20',
       'https://download.oracle.com/java/20/latest/jdk-20_{{OS_TYPE}}-x64_bin.{{ARCHIVE_TYPE}}'
