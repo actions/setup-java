@@ -33,6 +33,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-21.0.0-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-21.0.0-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-21.0.0-windows-aarch64.zip"
       }
     ]
   },
@@ -70,6 +76,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.7-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-17.0.7-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.7-windows-aarch64.zip"
       }
     ]
   },
@@ -107,6 +119,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.6-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-17.0.6-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.6-windows-aarch64.zip"
       }
     ]
   },
@@ -144,6 +162,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.5-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-17.0.5-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.5-windows-aarch64.zip"
       }
     ]
   },
@@ -181,6 +205,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.4-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-17.0.4-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.4-windows-aarch64.zip"
       }
     ]
   },
@@ -218,6 +248,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.3-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-17.0.3-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.3-windows-aarch64.zip"
       }
     ]
   },
@@ -255,6 +291,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.1.12.1-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-17.0.1.12.1-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.1.12.1-windows-aarch64.zip"
       }
     ]
   },
@@ -292,6 +334,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-16.0.2.7.1-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-16.0.2.7.1-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-16.0.2.7.1-windows-aarch64.zip"
       }
     ]
   },
@@ -329,6 +377,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-11.0.19-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-11.0.19-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-11.0.19-windows-aarch64.zip"
       }
     ]
   },
@@ -366,6 +420,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-11.0.18-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-11.0.18-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-11.0.18-windows-aarch64.zip"
       }
     ]
   },
@@ -403,6 +463,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-11.0.17-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-11.0.17-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-11.0.17-windows-aarch64.zip"
       }
     ]
   },
@@ -440,6 +506,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-11.0.16-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-11.0.16-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-11.0.16-windows-aarch64.zip"
       }
     ]
   },
@@ -477,6 +549,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-11.0.15-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-11.0.15-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-11.0.15-windows-aarch64.zip"
       }
     ]
   },
@@ -508,6 +586,12 @@
         "arch": "aarch64",
         "platform": "linux",
         "download_url": "https://aka.ms/download-jdk/microsoft-jdk-11.0.13.8.1-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-11.0.13.8.1-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-11.0.13.8.1-windows-aarch64.zip"
       }
     ]
   }
