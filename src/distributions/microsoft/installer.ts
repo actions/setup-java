@@ -27,7 +27,7 @@ export class MicrosoftDistributions extends JavaBase {
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
     let javaArchivePath = await tc.downloadTool(javaRelease.url);
-    core.info(`javaArchivePath is ${javaArchivePath}`);
+
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
     if (process.platform === 'win32' && (this.architecture === 'arm64' || this.architecture === 'aarch64')) {
@@ -93,9 +93,9 @@ export class MicrosoftDistributions extends JavaBase {
   private async getAvailableVersions(): Promise<tc.IToolRelease[] | null> {
     // TODO get these dynamically!
     // We will need Microsoft to add an endpoint where we can query for versions.
-    const owner = 'dmitry-shibanov';
+    const owner = 'actions';
     const repository = 'setup-java';
-    const branch = 'v-dmshib/add-arm64-windows-microsoft';
+    const branch = 'main';
     const filePath =
       'src/distributions/microsoft/microsoft-openjdk-versions.json';
 
