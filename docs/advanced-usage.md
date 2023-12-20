@@ -463,7 +463,7 @@ The result is a Toolchain with entries for JDKs 8, 11 and 15. You can even combi
     architecture: x64
 ```
 
-This will generate a Toolchains entry with the following values: `version: 1.6`, `vendor: jkdfile`, `id: Oracle_1.6`.
+This will generate a Toolchains entry with the following values: `version: 1.6`, `vendor: jdkfile`, `id: Oracle_1.6`.
 
 ### Modifying The Toolchain Vendor For JDKs
 Each JDK provider will receive a default `vendor` using the `distribution` input value but this can be overridden with the `mvn-toolchain-vendor` parameter as follows.
