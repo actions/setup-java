@@ -30,7 +30,10 @@ export class MicrosoftDistributions extends JavaBase {
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
-    if (process.platform === 'win32' && (this.architecture === 'arm64' || this.architecture === 'aarch64')) {
+    if (
+      process.platform === 'win32' &&
+      (this.architecture === 'arm64' || this.architecture === 'aarch64')
+    ) {
       const javaArchivePathRenamed = `${javaArchivePath}.zip`;
       await fs.renameSync(javaArchivePath, javaArchivePathRenamed);
       javaArchivePath = javaArchivePathRenamed;
