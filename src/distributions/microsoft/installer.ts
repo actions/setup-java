@@ -30,6 +30,11 @@ export class MicrosoftDistributions extends JavaBase {
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
+    // Rename archive to add extension because after downloading
+    // archive does not contain extension type and it leads to some issues
+    // on Windows runners without PowerShell Core.
+    //
+    // For default PowerShell Windows it should contain extension type to unpack it.
     if (
       process.platform === 'win32' &&
       (this.architecture === 'arm64' || this.architecture === 'aarch64')
@@ -38,6 +43,7 @@ export class MicrosoftDistributions extends JavaBase {
       await fs.renameSync(javaArchivePath, javaArchivePathRenamed);
       javaArchivePath = javaArchivePathRenamed;
     }
+
     const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
