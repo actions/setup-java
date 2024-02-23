@@ -6,7 +6,7 @@ import {
 import {HttpClient} from '@actions/http-client';
 import os from 'os';
 
-import manifestData from '../data/liberica.json';
+import manifestData from '../data/liberica-windows.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;

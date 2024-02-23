@@ -5,7 +5,7 @@ import {IZuluVersions} from '../../src/distributions/zulu/models';
 import * as utils from '../../src/util';
 import os from 'os';
 
-import manifestData from '../data/zulu-releases-default.json';
+import manifestData from '../data/zulu-linux.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;

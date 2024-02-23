@@ -132,7 +132,7 @@ describe('findPackageForDownload', () => {
 
       const result = await distro['findPackageForDownload'](version);
       const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.7-linux-${distroArch}.tar.gz`;
-  
+
       expect(result.url).toBe(expectedUrl);
     }
   );
@@ -160,7 +160,7 @@ describe('findPackageForDownload', () => {
       expect(result.url).toBe(expectedUrl);
     }
   );
-  
+
   it('should throw an error', async () => {
     await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
       /Could not find satisfied version for SemVer */
