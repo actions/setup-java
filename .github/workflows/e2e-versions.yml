@@ -288,7 +288,6 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['temurin', 'microsoft', 'corretto']
-        java-version-file-array: [.java-version, .tool-versions]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -301,7 +300,7 @@ jobs:
         with:
           distribution: ${{ matrix.distribution }}
           java-version: 11
-          java-version-file: './${{ matrix.java-version-file-array }}'
+          java-version-file: '.java-version'
       - name: Verify Java
         run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
         shell: bash
@@ -314,7 +313,6 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['temurin', 'zulu', 'liberica', 'microsoft', 'corretto']
-        java-version-file-array: [.java-version, .tool-versions]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -326,7 +324,7 @@ jobs:
         id: setup-java
         with:
           distribution: ${{ matrix.distribution }}
-          java-version-file: './${{ matrix.java-version-file-array }}'
+          java-version-file: '.java-version'
       - name: Verify Java
         run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
         shell: bash
@@ -339,7 +337,6 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['adopt', 'adopt-openj9', 'zulu']
-        java-version-file-array: [.java-version, .tool-versions]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -351,7 +348,7 @@ jobs:
         id: setup-java
         with:
           distribution: ${{ matrix.distribution }}
-          java-version-file: './${{ matrix.java-version-file-array }}'          
+          java-version-file: '.java-version'
       - name: Verify Java
         run: bash __tests__/verify-java.sh "11.0.2" "${{ steps.setup-java.outputs.path }}"
         shell: bash
@@ -364,7 +361,6 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['adopt', 'zulu', 'liberica']
-        java-version-file-array: [.java-version, .tool-versions]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -376,7 +372,7 @@ jobs:
         id: setup-java
         with:
           distribution: ${{ matrix.distribution }}
-          java-version-file: './${{ matrix.java-version-file-array }}'
+          java-version-file: '.java-version'
       - name: Verify Java
         run: bash __tests__/verify-java.sh "11.0.2" "${{ steps.setup-java.outputs.path }}"
         shell: bash
