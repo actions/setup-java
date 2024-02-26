@@ -26,7 +26,20 @@ export class MicrosoftDistributions extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    const javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await tc.downloadTool(javaRelease.url);
+    // Rename archive to add extension because after downloading
+    // archive does not contain extension type and it leads to some issues
+    // on Windows runners without PowerShell Core.
+    //
+    // For default PowerShell Windows it should contain extension type to unpack it.
+    if (
+      process.platform === 'win32' &&
+      (this.architecture === 'arm64' || this.architecture === 'aarch64')
+    ) {
+      const javaArchivePathRenamed = `${javaArchivePath}.zip`;
+      await fs.renameSync(javaArchivePath, javaArchivePathRenamed);
+      javaArchivePath = javaArchivePathRenamed;
+    }
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
