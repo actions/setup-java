@@ -96,6 +96,30 @@ describe('findPackageForDownload', () => {
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: string) => {
       jest.spyOn(os, 'arch').mockReturnValue(osArch);
+      jest.spyOn(os, 'platform').mockReturnValue('darwin');
+
+      const version = '17';
+      const distro = new MicrosoftDistributions({
+        version,
+        architecture: '', // to get default value
+        packageType: 'jdk',
+        checkLatest: false
+      });
+
+      const result = await distro['findPackageForDownload'](version);
+      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.7-macos-${distroArch}.tar.gz`;
+
+      expect(result.url).toBe(expectedUrl);
+    }
+  );
+
+  it.each([
+    ['amd64', 'x64'],
+    ['arm64', 'aarch64']
+  ])(
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArch: string) => {
+      jest.spyOn(os, 'arch').mockReturnValue(osArch);
       jest.spyOn(os, 'platform').mockReturnValue('linux');
 
       const version = '17';
@@ -108,6 +132,30 @@ describe('findPackageForDownload', () => {
 
       const result = await distro['findPackageForDownload'](version);
       const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.7-linux-${distroArch}.tar.gz`;
+
+      expect(result.url).toBe(expectedUrl);
+    }
+  );
+
+  it.each([
+    ['amd64', 'x64'],
+    ['arm64', 'aarch64']
+  ])(
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArch: string) => {
+      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+      jest.spyOn(os, 'platform').mockReturnValue('win32');
+
+      const version = '17';
+      const distro = new MicrosoftDistributions({
+        version,
+        architecture: '', // to get default value
+        packageType: 'jdk',
+        checkLatest: false
+      });
+
+      const result = await distro['findPackageForDownload'](version);
+      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.7-windows-${distroArch}.zip`;
 
       expect(result.url).toBe(expectedUrl);
     }

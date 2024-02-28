@@ -70,6 +70,12 @@
             "arch": "aarch64",
             "platform": "linux",
             "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.7-linux-aarch64.tar.gz"
+          },
+          {
+            "filename": "microsoft-jdk-17.0.7-windows-aarch64.zip",
+            "arch": "aarch64",
+            "platform": "win32",
+            "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.7-windows-aarch64.zip"
           }
         ]
     },
