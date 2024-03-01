@@ -36,6 +36,10 @@ jobs:
           server-username: MAVEN_USERNAME
           server-password: MAVEN_CENTRAL_TOKEN
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+        env:
+          MAVEN_USERNAME: MAVEN_USERNAME
+          MAVEN_CENTRAL_TOKEN: MAVEN_CENTRAL_TOKEN
+          MAVEN_GPG_PASSPHRASE: MAVEN_GPG_PASSPHRASE
       - name: Validate settings.xml
         run: |
           $xmlPath = Join-Path $HOME ".m2" "settings.xml"
@@ -43,11 +47,11 @@ jobs:
 
           [xml]$xml = Get-Content $xmlPath
           $servers = $xml.settings.servers.server
-          if (($servers[0].id -ne 'maven') -or ($servers[0].username -ne '${env.MAVEN_USERNAME}') -or ($servers[0].password -ne '${env.MAVEN_CENTRAL_TOKEN}')) {
+          if (($servers[0].id -ne 'maven') -or ($servers[0].username -ne 'MAVEN_USERNAME') -or ($servers[0].password -ne 'MAVEN_CENTRAL_TOKEN')) {
             throw "Generated XML file is incorrect"
           }
 
-          if (($servers[1].id -ne 'gpg.passphrase') -or ($servers[1].passphrase -ne '${env.MAVEN_GPG_PASSPHRASE}')) {
+          if (($servers[1].id -ne 'gpg.passphrase') -or ($servers[1].passphrase -ne 'MAVEN_GPG_PASSPHRASE')) {
             throw "Generated XML file is incorrect"
           }
 
@@ -77,6 +81,10 @@ jobs:
           server-username: MAVEN_USERNAME
           server-password: MAVEN_CENTRAL_TOKEN
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+        env:
+          MAVEN_USERNAME: MAVEN_USERNAME
+          MAVEN_CENTRAL_TOKEN: MAVEN_CENTRAL_TOKEN
+          MAVEN_GPG_PASSPHRASE: MAVEN_GPG_PASSPHRASE
       - name: Validate settings.xml is overwritten
         run: |
           $xmlPath = Join-Path $HOME ".m2" "settings.xml"
@@ -114,6 +122,10 @@ jobs:
           server-password: MAVEN_CENTRAL_TOKEN
           overwrite-settings: false
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+        env:
+          MAVEN_USERNAME: MAVEN_USERNAME
+          MAVEN_CENTRAL_TOKEN: MAVEN_CENTRAL_TOKEN
+          MAVEN_GPG_PASSPHRASE: MAVEN_GPG_PASSPHRASE
       - name: Validate that settings.xml is not overwritten
         run: |
           $xmlPath = Join-Path $HOME ".m2" "settings.xml"
@@ -145,6 +157,10 @@ jobs:
           server-password: MAVEN_CENTRAL_TOKEN
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
           settings-path: ${{ runner.temp }}
+        env:
+          MAVEN_USERNAME: MAVEN_USERNAME
+          MAVEN_CENTRAL_TOKEN: MAVEN_CENTRAL_TOKEN
+          MAVEN_GPG_PASSPHRASE: MAVEN_GPG_PASSPHRASE
       - name: Validate settings.xml location
         run: |
           $path = Join-Path $env:RUNNER_TEMP "settings.xml"
