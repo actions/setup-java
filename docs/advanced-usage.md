@@ -182,7 +182,7 @@ steps:
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
     java-version: '11.0.0'
     architecture: x64
-    
+
 - run: java -cp java HelloWorldApp
 ```
 
@@ -285,7 +285,10 @@ jobs:
         server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
         gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
-
+      env:
+        MAVEN_USERNAME: ${{ vars.MAVEN_USERNAME }} # set the env variable for username
+        MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }} # set the env variable for token
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }} # set the env variable for GPG private key passphrase
     - name: Publish to Apache Maven Central
       run: mvn deploy
       env:
@@ -527,7 +530,7 @@ steps:
 
 ## Java-version file
 If the `java-version-file` input is specified, the action will try to extract the version from the file and install it.
-Action is able to recognize all variants of the version description according to [jenv](https://github.com/jenv/jenv). 
+Action is able to recognize all variants of the version description according to [jenv](https://github.com/jenv/jenv).
 Valid entry options:
 ```
 major versions: 8, 11, 16, 17, 21
