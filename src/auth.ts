@@ -1,6 +1,6 @@
-import * as path from 'path';
 import * as core from '@actions/core';
 import * as io from '@actions/io';
+import * as path from 'path';
 
 import * as fs from 'fs';
 import * as os from 'os';
@@ -84,8 +84,8 @@ export function generate(
         server: [
           {
             id: id,
-            username: `\${env.${username}}`,
-            password: `\${env.${password}}`
+            username: process.env['username'],
+            password: process.env['password']
           }
         ]
       }
@@ -95,7 +95,7 @@ export function generate(
   if (gpgPassphrase) {
     const gpgServer = {
       id: 'gpg.passphrase',
-      passphrase: `\${env.${gpgPassphrase}}`
+      passphrase: process.env['gpgPassphrase']
     };
     xmlObj.settings.servers.server.push(gpgServer);
   }

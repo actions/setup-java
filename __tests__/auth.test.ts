@@ -1,14 +1,22 @@
-import * as io from '@actions/io';
 import * as core from '@actions/core';
+import * as io from '@actions/io';
 import * as fs from 'fs';
-import * as path from 'path';
 import os from 'os';
+import * as path from 'path';
 
 import * as auth from '../src/auth';
 import {M2_DIR, MVN_SETTINGS_FILE} from '../src/constants';
 
 const m2Dir = path.join(__dirname, M2_DIR);
 const settingsFile = path.join(m2Dir, MVN_SETTINGS_FILE);
+
+// escape xml special characters
+function escapeXml(unsafeStr: string) {
+  return unsafeStr
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 describe('auth tests', () => {
   let spyOSHomedir: jest.SpyInstance;
@@ -157,14 +165,17 @@ describe('auth tests', () => {
     const username = 'USER';
     const password = '&<>"\'\'"><&';
 
+    process.env['username'] = username;
+    process.env['password'] = password;
+
     const expectedSettings = `<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
   <servers>
     <server>
-      <id>${id}</id>
-      <username>\${env.${username}}</username>
-      <password>\${env.&amp;&lt;&gt;"''"&gt;&lt;&amp;}</password>
+      <id>${escapeXml(id)}</id>
+      <username>${escapeXml(username)}</username>
+      <password>${escapeXml(password)}</password>
     </server>
   </servers>
 </settings>`;
@@ -178,18 +189,22 @@ describe('auth tests', () => {
     const password = '&<>"\'\'"><&';
     const gpgPassphrase = 'PASSPHRASE';
 
+    process.env['username'] = username;
+    process.env['password'] = password;
+    process.env['gpgPassphrase'] = gpgPassphrase;
+
     const expectedSettings = `<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
   <servers>
     <server>
-      <id>${id}</id>
-      <username>\${env.${username}}</username>
-      <password>\${env.&amp;&lt;&gt;"''"&gt;&lt;&amp;}</password>
+      <id>${escapeXml(id)}</id>
+      <username>${escapeXml(username)}</username>
+      <password>${escapeXml(password)}</password>
     </server>
     <server>
       <id>gpg.passphrase</id>
-      <passphrase>\${env.${gpgPassphrase}}</passphrase>
+      <passphrase>${escapeXml(gpgPassphrase)}</passphrase>
     </server>
   </servers>
 </settings>`;
