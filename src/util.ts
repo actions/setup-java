@@ -7,6 +7,8 @@ import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
 import { INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION } from './constants';
+import { create } from 'xmlbuilder2';
+import { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
 
 export function getTempDir() {
   let tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
@@ -155,11 +157,11 @@ function parseJavaVersionFile(content: string): string | null {
   return fileContent;
 }
 
-function parsePomXmlFile(xmlFile: string): string | null {
+function parsePomXmlFile(xmlFileAsString: string): string | null {
   const versionDefinitionTypes = [getByMavenCompilerSpecification, getBySpringBootSpecification];
 
   for (var definitionType of versionDefinitionTypes) {
-    var version = definitionType(xmlFile);
+    var version = definitionType(create(xmlFileAsString));
 
     if (version !== null) {
       return version;
@@ -169,14 +171,14 @@ function parsePomXmlFile(xmlFile: string): string | null {
   return null;
 }
 
-function getByMavenCompilerSpecification(xmlFile: string): string | null {
+function getByMavenCompilerSpecification(xmlDoc: XMLBuilder): string | null {
   const possibleTagsRegex = [
-    '<maven\.compiler\.source>(.*?)<\/maven\.compiler\.source>',
-    '<maven.compiler.release>(.*?)<\/maven.compiler.release>',
+    'maven.compiler.source',
+    'maven.compiler.release',
   ];
 
   for (var tag of possibleTagsRegex) {
-    const version = getVersionByTagName(xmlFile, tag);
+    const version = getVersionByTagName(xmlDoc, tag);
 
     if (version !== null) {
       return version;
@@ -186,16 +188,16 @@ function getByMavenCompilerSpecification(xmlFile: string): string | null {
   return null;
 }
 
-function getBySpringBootSpecification(xmlFile: string): string | null {
-  return getVersionByTagName(xmlFile, '<java.version>(.*?)<\/java.version>');
+function getBySpringBootSpecification(xmlDoc: XMLBuilder): string | null {
+  return getVersionByTagName(xmlDoc, 'java.version');
 }
 
-function getVersionByTagName(xmlFile: string, regex: string): string | null {
-  const match = xmlFile.match(new RegExp(regex));
+function getVersionByTagName(xmlDoc: XMLBuilder, tag: string): string | null {
+  const match = xmlDoc.find(n => n.node.nodeName === tag);
 
-  if (match) {
-    core.debug(`Found java version: '${match[1]}' using regex: '${regex}'`);
-    return match[1];
+  if (match !== undefined) {
+    core.debug(`Found java version: '${match.first().toString()}' using tag: '${tag}'`);
+    return match.first().toString();
   } else {
     return null;
   }
