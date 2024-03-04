@@ -31,10 +31,18 @@ export class LibericaDistributions extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    const javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
+    if (
+      process.platform === 'win32' &&
+      (this.architecture === 'arm64' || this.architecture === 'aarch64')
+    ) {
+      const javaArchivePathRenamed = `${javaArchivePath}.zip`;
+      await fs.renameSync(javaArchivePath, javaArchivePathRenamed);
+      javaArchivePath = javaArchivePathRenamed;
+    }
     const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
