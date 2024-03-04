@@ -8,6 +8,7 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import {INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION} from './constants';
 import {OutgoingHttpHeaders} from 'http';
+import {error} from 'console';
 
 export function getTempDir() {
   const tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
@@ -121,8 +122,10 @@ export function getVersionFromFileContent(
   let javaVersionRegExp: RegExp;
   if (versionFile == '.tool-versions') {
     javaVersionRegExp = /^java\s+(?:\S+-)?v?(?<version>[^\s]+)$/m;
-  } else {
+  } else if (versionFile == '.java-version') {
     javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+  } else {
+    throw new Error('Invalid version file');
   }
 
   const fileContent = content.match(javaVersionRegExp)?.groups?.version
