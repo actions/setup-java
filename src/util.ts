@@ -118,12 +118,13 @@ export function getVersionFromFileContent(
   distributionName: string,
   versionFile: string
 ): string | null {
-  let javaVersionRegExp: RegExp;
-  if (versionFile == '.tool-versions') {
-    javaVersionRegExp = /^java\s+(?:\S+-)?v?(?<version>[^\s]+)$/m;
-  } else {
-    javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
-  }
+  const javaVersionRegExp = /^java\s+(?:\S+-)?v?(?<version>[^\s]+)$/m;
+
+  // if (versionFile == '.tool-versions') {
+  //   javaVersionRegExp = /^java\s+(?:\S+-)?v?(?<version>[^\s]+)$/m;
+  // } else {
+  //   javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+  // }
 
   const fileContent = content.match(javaVersionRegExp)?.groups?.version
     ? (content.match(javaVersionRegExp)?.groups?.version as string)
