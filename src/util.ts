@@ -8,7 +8,6 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import {INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION} from './constants';
 import {OutgoingHttpHeaders} from 'http';
-import {error} from 'console';
 
 export function getTempDir() {
   const tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
