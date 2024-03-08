@@ -87892,9 +87892,11 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     let javaVersionRegExp;
     if (versionFile == '.tool-versions') {
         javaVersionRegExp = /^java\s+(?:\S+-)?v?(?<version>[^\s-]+(?:-\S+)?)$/m;
+        core.info(`Tool version javaVersionRegExp: ${javaVersionRegExp}`);
     }
     else if (versionFile == '.java-version') {
         javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+        core.info(`java version javaVersionRegExp: ${javaVersionRegExp}`);
     }
     else {
         throw new Error('Invalid version file');
