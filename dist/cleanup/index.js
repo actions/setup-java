@@ -87891,7 +87891,7 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     var _a, _b, _c, _d, _e;
     let javaVersionRegExp;
     if (versionFile == '.tool-versions') {
-        javaVersionRegExp = /^java\s+(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+        javaVersionRegExp = /^java\s+(\S+)/m;
         core.info(`Using .tool-versions file regx: ${javaVersionRegExp}`);
     }
     else if (versionFile == '.java-version') {
