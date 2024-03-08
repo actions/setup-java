@@ -121,7 +121,7 @@ export function getVersionFromFileContent(
   let javaVersionRegExp: RegExp;
   if (versionFile == '.tool-versions') {
     javaVersionRegExp =
-      /^(java\s+)(?:\S*-)?v?(?<version>(\d+)(\.\d+)?(\.\d+)?(\+\d+)?(-ea(\.\d+)?)?)$/m;
+      /^(java\s+)(?:\S*-)?v?(?<version>(\d+)(\.\d+)?(\.\d+)?(\+\d+)?(-ea)?)$/m;
   } else if (versionFile == '.java-version') {
     javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
   } else {
