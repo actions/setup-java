@@ -27,7 +27,7 @@ This action allows you to work with Java and Scala projects.
 
   - `java-version`: The Java version that is going to be set up. Takes a whole or [semver](#supported-version-syntax) Java version. If not specified, the action will expect `java-version-file` input to be specified.
 
-  - `java-version-file`: The path to the `.java-version` file. See more details in [about `.java-version` file](docs/advanced-usage.md#Java-version-file).
+  - `java-version-file`: The path to a file containing java version. Supported file types are `.java-version` and `.tool-versions`. See more details in [about .java-version-file](docs/advanced-usage.md#Java-version-file).
    
   - `distribution`: _(required)_ Java [distribution](#supported-distributions).
 
@@ -266,6 +266,7 @@ In the example above multiple JDKs are installed for the same job. The result af
 - [Publishing using Gradle](docs/advanced-usage.md#Publishing-using-Gradle)
 - [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](docs/advanced-usage.md#Modifying-Maven-Toolchains)
+- [Java Version File](docs/advanced-usage.md#Java-version-file)
 
 ## License
 
