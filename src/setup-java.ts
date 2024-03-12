@@ -55,7 +55,11 @@ async function run() {
       );
       const content = fs.readFileSync(versionFile).toString().trim();
 
-      const version = getVersionFromFileContent(content, distributionName);
+      const version = getVersionFromFileContent(
+        content,
+        distributionName,
+        versionFile
+      );
       core.debug(`Parsed version from file '${version}'`);
 
       if (!version) {

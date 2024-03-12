@@ -115,9 +115,19 @@ export function isCacheFeatureAvailable(): boolean {
 
 export function getVersionFromFileContent(
   content: string,
-  distributionName: string
+  distributionName: string,
+  versionFile: string
 ): string | null {
-  const javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+  let javaVersionRegExp: RegExp;
+  if (versionFile == '.tool-versions') {
+    javaVersionRegExp =
+      /^(java\s+)(?:\S*-)?v?(?<version>(\d+)(\.\d+)?(\.\d+)?(\+\d+)?(-ea(\.\d+)?)?)$/m;
+  } else if (versionFile == '.java-version') {
+    javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+  } else {
+    throw new Error('Invalid version file');
+  }
+
   const fileContent = content.match(javaVersionRegExp)?.groups?.version
     ? (content.match(javaVersionRegExp)?.groups?.version as string)
     : '';
