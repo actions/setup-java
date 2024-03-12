@@ -526,16 +526,19 @@ steps:
 ```
 
 ## Java-version file
-If the `java-version-file` input is specified, the action will try to extract the version from the file and install it.
-Action is able to recognize all variants of the version description according to [jenv](https://github.com/jenv/jenv). 
-If both the java-version and the java-version-file inputs are provided then the java-version input is used.
-.java-version and .tool-versions are the supported file.In .java-version file, only version should be specified e.g “17.0.7 ”while in .tool-versions file, java version should be followed java keyword e.g “java 17.0.7”.
+If the `java-version-file` input is specified, the action will extract the version from the file and install it.
+It recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv).
+
+Supported files are .java-version and .tool-versions.
+In .java-version file, only the version should be specified, e.g., 17.0.7.
+In .tool-versions file, java version should be preceded by the java keyword, e.g., java 17.0.7.
+If both java-version and java-version-file inputs are provided, the java-version input will be used.
 
 Valid entry options:
 ```
 major versions: 8, 11, 16, 17, 21
 more specific versions: 1.8.0.2, 17.0, 11.0, 11.0.4, 8.0.232, 8.0.282+8
-early access (EA) versions: 15-ea, 15.0.0-ea, 15.0.0-ea.2, 15.0.0+2-ea
+early access (EA) versions: 15-ea, 15.0.0-ea
 versions with specified distribution: openjdk64-11.0.2
 ```
 If the file contains multiple versions, only the first one will be recognized.
