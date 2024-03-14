@@ -128,10 +128,8 @@ export function getVersionFromFileContent(
   if (versionFileName == '.tool-versions') {
     javaVersionRegExp =
       /^(java\s+)(?:\S*-)?v?(?<version>(\d+)(\.\d+)?(\.\d+)?(\+\d+)?(-ea(\.\d+)?)?)$/m;
-  } else if (versionFileName == '.java-version') {
-    javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
   } else {
-    throw new Error('Invalid version file');
+    javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
   }
 
   const fileContent = content.match(javaVersionRegExp)?.groups?.version
