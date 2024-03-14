@@ -119,6 +119,13 @@ export function getVersionFromFileContent(
   versionFile: string
 ): string | null {
   let javaVersionRegExp: RegExp;
+  const path = require('path');
+
+  function getFileName(versionFile: string) {
+    return path.basename(versionFile);
+  }
+
+  const versionFileName = getFileName(versionFile);
   if (versionFile == '.tool-versions') {
     javaVersionRegExp =
       /^(java\s+)(?:\S*-)?v?(?<version>(\d+)(\.\d+)?(\.\d+)?(\+\d+)?(-ea(\.\d+)?)?)$/m;
