@@ -119,13 +119,17 @@ export function getVersionFromFileContent(
   versionFile: string
 ): string | null {
   let javaVersionRegExp: RegExp;
-  if (versionFile == '.tool-versions') {
+
+  function getFileName(versionFile: string) {
+    return path.basename(versionFile);
+  }
+
+  const versionFileName = getFileName(versionFile);
+  if (versionFileName == '.tool-versions') {
     javaVersionRegExp =
       /^(java\s+)(?:\S*-)?v?(?<version>(\d+)(\.\d+)?(\.\d+)?(\+\d+)?(-ea(\.\d+)?)?)$/m;
-  } else if (versionFile == '.java-version') {
-    javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
   } else {
-    throw new Error('Invalid version file');
+    javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
   }
 
   const fileContent = content.match(javaVersionRegExp)?.groups?.version
