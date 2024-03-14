@@ -119,7 +119,6 @@ export function getVersionFromFileContent(
   versionFile: string
 ): string | null {
   let javaVersionRegExp: RegExp;
-  const path = require('path');
 
   function getFileName(versionFile: string) {
     return path.basename(versionFile);

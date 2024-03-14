@@ -88355,9 +88355,8 @@ exports.isCacheFeatureAvailable = isCacheFeatureAvailable;
 function getVersionFromFileContent(content, distributionName, versionFile) {
     var _a, _b, _c, _d, _e;
     let javaVersionRegExp;
-    const path = __nccwpck_require__(1017);
     function getFileName(versionFile) {
-        return path.basename(versionFile);
+        return path_1.default.basename(versionFile);
     }
     const versionFileName = getFileName(versionFile);
     if (versionFileName == '.tool-versions') {
