@@ -88360,11 +88360,11 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
         return path.basename(versionFile);
     }
     const versionFileName = getFileName(versionFile);
-    if (versionFile == '.tool-versions') {
+    if (versionFileName == '.tool-versions') {
         javaVersionRegExp =
             /^(java\s+)(?:\S*-)?v?(?<version>(\d+)(\.\d+)?(\.\d+)?(\+\d+)?(-ea(\.\d+)?)?)$/m;
     }
-    else if (versionFile == '.java-version') {
+    else if (versionFileName == '.java-version') {
         javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
     }
     else {
