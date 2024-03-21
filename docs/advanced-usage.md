@@ -182,7 +182,7 @@ steps:
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
     java-version: '11.0.0'
     architecture: x64
-    
+
 - run: java -cp java HelloWorldApp
 ```
 
@@ -285,7 +285,10 @@ jobs:
         server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
         gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
-
+      env:
+        MAVEN_USERNAME: ${{ vars.MAVEN_USERNAME }} # set the env variable for username
+        MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }} # set the env variable for token
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }} # set the env variable for GPG private key passphrase
     - name: Publish to Apache Maven Central
       run: mvn deploy
       env:
