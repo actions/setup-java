@@ -469,3 +469,47 @@ jobs:
       - name: Verify Java
         run: bash __tests__/verify-java.sh "8" "${{ steps.setup-java.outputs.path }}"
         shell: bash
+
+  setup-java-version-from-pom-maven-compiler-plugin-configuration:
+    name: ${{ matrix.distribution }} version from pom.xml - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['adopt', 'zulu', 'liberica']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create pom.xml file
+        shell: bash
+        run: |
+          echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" > pom.xml
+          echo "<project>" >> pom.xml
+          echo "  <modelVersion>4.0.0</modelVersion>" >> pom.xml
+          echo "  <groupId>foo.bar</groupId>" >> pom.xml
+          echo "  <artifactId>FooBar</artifactId>" >> pom.xml
+          echo "  <version>0.0.1-SNAPSHOT</version>" >> pom.xml
+          echo "  <build>" >> pom.xml
+          echo "    <plugins>" >> pom.xml
+          echo "      <plugin>" >> pom.xml
+          echo "        <groupId>org.apache.maven.plugins</groupId>" >> pom.xml
+          echo "        <artifactId>maven-compiler-plugin</artifactId>" >> pom.xml
+          echo "        <version>3.10.1</version>" >> pom.xml
+          echo "        <configuration>" >> pom.xml
+          echo "          <source>1.8</source>" >> pom.xml
+          echo "          <target>1.8</target>" >> pom.xml
+          echo "        </configuration>" >> pom.xml
+          echo "      </plugin>" >> pom.xml
+          echo "    </plugins>" >> pom.xml
+          echo "  </build>" >> pom.xml
+          echo "</project>" >> pom.xml
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version-file: 'pom.xml'
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "8" "${{ steps.setup-java.outputs.path }}"
+        shell: bash

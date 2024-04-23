@@ -103834,16 +103834,21 @@ function parseJavaVersionFile(content) {
     return fileContent;
 }
 function parsePomXmlFile(xmlFileAsString) {
-    const versionDefinitionTypes = [getByMavenCompilerSpecification, getBySpringBootSpecification];
-    for (var definitionType of versionDefinitionTypes) {
-        var version = definitionType(xmlbuilder2_1.create(xmlFileAsString));
+    const xmlDoc = xmlbuilder2_1.create(xmlFileAsString);
+    const versionDefinitionTypes = [
+        getByMavenProperties,
+        getBySpringBootSpecification,
+        getByMavenCompilerPluginConfig
+    ];
+    for (const definitionType of versionDefinitionTypes) {
+        const version = definitionType(xmlDoc);
         if (version !== null) {
             return version;
         }
     }
     return null;
 }
-function getByMavenCompilerSpecification(xmlDoc) {
+function getByMavenProperties(xmlDoc) {
     const possibleTagsRegex = [
         'maven.compiler.source',
         'maven.compiler.release',
@@ -103868,6 +103873,41 @@ function getVersionByTagName(xmlDoc, tag) {
     else {
         return null;
     }
+}
+function getByMavenCompilerPluginConfig(xmlDoc) {
+    var _a;
+    const source = xmlDoc.find(n => {
+        // Find <source> node
+        if (n.node.nodeName !== "source") {
+            return false;
+        }
+        if (n.node.childNodes.length !== 1) {
+            return false;
+        }
+        // Must be within <configuration>
+        if (n.up().node.nodeName !== "configuration") {
+            return false;
+        }
+        // Which must be inside <plugin>
+        if (n.up().up().node.nodeName !== "plugin") {
+            return false;
+        }
+        // Make sure the plugin is maven-compiler-plugin
+        const isCompilerPlugin = n.up().up().some(c => {
+            if (c.node.nodeName !== "artifactId") {
+                return false;
+            }
+            if (c.node.childNodes.length !== 1) {
+                return false;
+            }
+            return c.first().toString() === "maven-compiler-plugin";
+        }, false, true);
+        if (!isCompilerPlugin) {
+            return false;
+        }
+        return true;
+    });
+    return (_a = source === null || source === void 0 ? void 0 : source.first().toString()) !== null && _a !== void 0 ? _a : null;
 }
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
 function avoidOldNotation(content) {
