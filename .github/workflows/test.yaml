@@ -1,0 +1,37 @@
+name: Display Supported PHP Versions
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  display_versions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Fetch supported PHP versions
+        id: fetch-versions
+        run: |
+          # Replace `owner/repo` with your actual repository name
+          curl -s "https://raw.githubusercontent.com/owner/repo/main/supported_versions.md" > supported_versions.md
+
+      - name: Display versions as dropdown
+        id: display-dropdown
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Update PHP version dropdown"
+          branch: main
+          files: |
+            versions.json
+          actions: |
+            {
+              "name": "PHP Version",
+              "input_type": "select",
+              "options": [
+                $(awk '{print "{ \"label\": \""$2"\", \"value\": \""$2"\" }"}' supported_versions.md | tr -d '\n')
+              ]
+            }
