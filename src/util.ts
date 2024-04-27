@@ -9,6 +9,7 @@ import * as tc from '@actions/tool-cache';
 import { INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION } from './constants';
 import { create } from 'xmlbuilder2';
 import { XMLBuilder } from 'xmlbuilder2/lib/interfaces';
+import { on } from 'events';
 
 export function getTempDir() {
   let tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
@@ -114,6 +115,8 @@ export function getVersionFromFile(
     parsedVersion = parseJavaVersionFile(content);
   } else if (fileName.includes('pom.xml')) {
     parsedVersion = parsePomXmlFile(content);
+  } else if (fileName.includes('build.gradle')) {
+    parsedVersion = parseBuildGradleFile(content);
   } else {
     throw new Error(
       `File ${fileName} not supported, files supported: '.java-version' and 'pom.xml'`
@@ -247,6 +250,52 @@ function getByMavenCompilerPluginConfig(xmlDoc: XMLBuilder): string | null {
   });
 
   return source?.first().toString() ?? null;
+}
+
+function parseBuildGradleFile(buildGradle: string): any {
+  const versionDefinitionTypes = [getByJavaLibraryPlugin, getByJavaPlugin];
+
+  for (const definitionType of versionDefinitionTypes) {
+    const version = definitionType(buildGradle);
+
+    if (version !== null) {
+      return version;
+    }
+  }
+
+  return null;
+}
+
+function getByJavaLibraryPlugin(buildGradle: string) {
+  return getVersionByRegex(buildGradle, 'JavaLanguageVersion.of((d+))');
+}
+
+function getByJavaPlugin(buildGradle: string) {
+  const possibleRegex = [
+    'sourceCompatibilitys?=s?JavaVersion.VERSION_(?:1_)?(d+)',
+    'targetCompatibilitys?=s?JavaVersion.VERSION_(?:1_)?(d+)'
+  ];
+
+  for (var regex of possibleRegex) {
+    const version = getVersionByRegex(buildGradle, regex);
+
+    if (version !== null) {
+      return version;
+    }
+  }
+
+  return null;
+}
+
+function getVersionByRegex(content: string, regex: string): string | null {
+  const match = content.match(new RegExp(regex));
+
+  if (match) {
+    core.debug(`Found java version: '${match[1]}' using regex: '${regex}'`);
+    return match[1];
+  } else {
+    return null;
+  }
 }
 
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`

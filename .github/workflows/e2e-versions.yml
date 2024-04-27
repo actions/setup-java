@@ -469,7 +469,6 @@ jobs:
       - name: Verify Java
         run: bash __tests__/verify-java.sh "8" "${{ steps.setup-java.outputs.path }}"
         shell: bash
-
   setup-java-version-from-pom-maven-compiler-plugin-configuration:
     name: ${{ matrix.distribution }} version from pom.xml - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -512,4 +511,87 @@ jobs:
           java-version-file: 'pom.xml'
       - name: Verify Java
         run: bash __tests__/verify-java.sh "8" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+  setup-java-version-from-build-gradle-java-library-plugin-specification:
+    name: ${{ matrix.distribution }} version from build.gradle - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['adopt', 'zulu', 'liberica']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create build.gradle file
+        shell: bash
+        run: |
+          echo "java {" > build.gradle
+          echo "    toolchain {" >> build.gradle
+          echo "        languageVersion.set(JavaLanguageVersion.of(11))" >> build.gradle
+          echo "    }" >> build.gradle
+          echo "}" >> build.gradle
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version-file: 'build.gradle'
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
+  setup-java-version-from-build-gradle-java-plugin-source-compatibility-specification:
+    name: ${{ matrix.distribution }} version from build.gradle - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['adopt', 'zulu', 'liberica']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create pom.xml file
+        shell: bash
+        run: |
+          echo "java {" > build.gradle
+          echo "    sourceCompatibility = JavaVersion.VERSION_1_8" >> build.gradle
+          echo "    targetCompatibility = JavaVersion.VERSION_1_8" >> build.gradle
+          echo "}" >> build.gradle
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version-file: 'build.gradle'
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "8" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
+  setup-java-version-from-build-gradle-java-plugin-target-compatibility-specification:
+    name: ${{ matrix.distribution }} version from build.gradle - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        distribution: ['adopt', 'zulu', 'liberica']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Create pom.xml file
+        shell: bash
+        run: |
+          echo "java {" > build.gradle
+          echo "    targetCompatibility = JavaVersion.VERSION_21" >> build.gradle
+          echo "}" >> build.gradle
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: ${{ matrix.distribution }}
+          java-version-file: 'build.gradle'
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "21" "${{ steps.setup-java.outputs.path }}"
         shell: bash

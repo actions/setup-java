@@ -103801,6 +103801,9 @@ function getVersionFromFile(fileName, content, distributionName) {
     else if (fileName.includes('pom.xml')) {
         parsedVersion = parsePomXmlFile(content);
     }
+    else if (fileName.includes('build.gradle')) {
+        parsedVersion = parseBuildGradleFile(content);
+    }
     else {
         throw new Error(`File ${fileName} not supported, files supported: '.java-version' and 'pom.xml'`);
     }
@@ -103908,6 +103911,42 @@ function getByMavenCompilerPluginConfig(xmlDoc) {
         return true;
     });
     return (_a = source === null || source === void 0 ? void 0 : source.first().toString()) !== null && _a !== void 0 ? _a : null;
+}
+function parseBuildGradleFile(buildGradle) {
+    const versionDefinitionTypes = [getByJavaLibraryPlugin, getByJavaPlugin];
+    for (const definitionType of versionDefinitionTypes) {
+        const version = definitionType(buildGradle);
+        if (version !== null) {
+            return version;
+        }
+    }
+    return null;
+}
+function getByJavaLibraryPlugin(buildGradle) {
+    return getVersionByRegex(buildGradle, 'JavaLanguageVersion.of((d+))');
+}
+function getByJavaPlugin(buildGradle) {
+    const possibleRegex = [
+        'sourceCompatibilitys?=s?JavaVersion.VERSION_(?:1_)?(d+)',
+        'targetCompatibilitys?=s?JavaVersion.VERSION_(?:1_)?(d+)'
+    ];
+    for (var regex of possibleRegex) {
+        const version = getVersionByRegex(buildGradle, regex);
+        if (version !== null) {
+            return version;
+        }
+    }
+    return null;
+}
+function getVersionByRegex(content, regex) {
+    const match = content.match(new RegExp(regex));
+    if (match) {
+        core.debug(`Found java version: '${match[1]}' using regex: '${regex}'`);
+        return match[1];
+    }
+    else {
+        return null;
+    }
 }
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
 function avoidOldNotation(content) {
