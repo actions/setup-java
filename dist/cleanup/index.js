@@ -103695,7 +103695,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
+exports.getVersionFromFile = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
 const os_1 = __importDefault(__nccwpck_require__(2037));
 const path_1 = __importDefault(__nccwpck_require__(1017));
 const fs = __importStar(__nccwpck_require__(7147));
@@ -103791,24 +103791,24 @@ function isCacheFeatureAvailable() {
     return false;
 }
 exports.isCacheFeatureAvailable = isCacheFeatureAvailable;
-function getVersionFromFileContent(fileName, content, distributionName) {
+function getVersionFromFile(fileName, content, distributionName) {
     var _a;
-    let fileContent = null;
+    let parsedVersion = null;
     core.debug(`Getting version from: '${fileName}'`);
     if (fileName.includes('.java-version')) {
-        fileContent = parseJavaVersionFile(content);
+        parsedVersion = parseJavaVersionFile(content);
     }
     else if (fileName.includes('pom.xml')) {
-        fileContent = parsePomXmlFile(content);
+        parsedVersion = parsePomXmlFile(content);
     }
     else {
         throw new Error(`File ${fileName} not supported, files supported: '.java-version' and 'pom.xml'`);
     }
-    if (!fileContent) {
+    if (!parsedVersion) {
         return null;
     }
-    core.debug(`Version from file '${fileContent}'`);
-    const tentativeVersion = avoidOldNotation(fileContent);
+    core.debug(`Version from file '${parsedVersion}'`);
+    const tentativeVersion = avoidOldNotation(parsedVersion);
     const rawVersion = tentativeVersion.split('-')[0];
     let version = semver.validRange(rawVersion) ? tentativeVersion : semver.coerce(tentativeVersion);
     core.debug(`Range version from file is '${version}'`);
@@ -103821,7 +103821,7 @@ function getVersionFromFileContent(fileName, content, distributionName) {
     }
     return version.toString();
 }
-exports.getVersionFromFileContent = getVersionFromFileContent;
+exports.getVersionFromFile = getVersionFromFile;
 function parseJavaVersionFile(content) {
     var _a, _b, _c, _d;
     const javaVersionRegExp = /(?<version>(?<=(^|\s|\-))(\d+\S*))(\s|$)/;
@@ -103849,11 +103849,8 @@ function parsePomXmlFile(xmlFileAsString) {
     return null;
 }
 function getByMavenProperties(xmlDoc) {
-    const possibleTagsRegex = [
-        'maven.compiler.source',
-        'maven.compiler.release',
-    ];
-    for (var tag of possibleTagsRegex) {
+    const versionTags = ['maven.compiler.source', 'maven.compiler.release'];
+    for (const tag of versionTags) {
         const version = getVersionByTagName(xmlDoc, tag);
         if (version !== null) {
             return version;
@@ -103878,29 +103875,32 @@ function getByMavenCompilerPluginConfig(xmlDoc) {
     var _a;
     const source = xmlDoc.find(n => {
         // Find <source> node
-        if (n.node.nodeName !== "source") {
+        if (n.node.nodeName !== 'source') {
             return false;
         }
         if (n.node.childNodes.length !== 1) {
             return false;
         }
         // Must be within <configuration>
-        if (n.up().node.nodeName !== "configuration") {
+        if (n.up().node.nodeName !== 'configuration') {
             return false;
         }
         // Which must be inside <plugin>
-        if (n.up().up().node.nodeName !== "plugin") {
+        if (n.up().up().node.nodeName !== 'plugin') {
             return false;
         }
         // Make sure the plugin is maven-compiler-plugin
-        const isCompilerPlugin = n.up().up().some(c => {
-            if (c.node.nodeName !== "artifactId") {
+        const isCompilerPlugin = n
+            .up()
+            .up()
+            .some(c => {
+            if (c.node.nodeName !== 'artifactId') {
                 return false;
             }
             if (c.node.childNodes.length !== 1) {
                 return false;
             }
-            return c.first().toString() === "maven-compiler-plugin";
+            return c.first().toString() === 'maven-compiler-plugin';
         }, false, true);
         if (!isCompilerPlugin) {
             return false;

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import * as core from '@actions/core';
 import * as auth from './auth';
-import { getBooleanInput, isCacheFeatureAvailable, getVersionFromFileContent } from './util';
+import { getBooleanInput, isCacheFeatureAvailable, getVersionFromFile } from './util';
 import * as toolchains from './toolchains';
 import * as constants from './constants';
 import { restore } from './cache';
@@ -47,7 +47,7 @@ async function run() {
         .toString()
         .trim();
 
-      const version = getVersionFromFileContent(versionFile, content, distributionName);
+      const version = getVersionFromFile(versionFile, content, distributionName);
       core.debug(`Parsed version from file '${version}'`);
 
       if (!version) {
