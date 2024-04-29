@@ -119,7 +119,7 @@ export function getVersionFromFile(
     parsedVersion = parseBuildGradleFile(content);
   } else {
     throw new Error(
-      `File ${fileName} not supported, files supported: '.java-version' and 'pom.xml'`
+      `File ${fileName} not supported, files supported: '.java-version' 'pom.xml' and 'build.gradle'`
     );
   }
 
@@ -198,7 +198,7 @@ function getBySpringBootSpecification(xmlDoc: XMLBuilder): string | null {
 }
 
 function getVersionByTagName(xmlDoc: XMLBuilder, tag: string): string | null {
-  const match = xmlDoc.find(n => n.node.nodeName === tag);
+  const match = xmlDoc.find(n => n.node.nodeName === tag, false, true);
 
   if (match !== undefined) {
     core.debug(`Found java version: '${match.first().toString()}' using tag: '${tag}'`);
@@ -209,47 +209,28 @@ function getVersionByTagName(xmlDoc: XMLBuilder, tag: string): string | null {
 }
 
 function getByMavenCompilerPluginConfig(xmlDoc: XMLBuilder): string | null {
-  const source = xmlDoc.find(n => {
-    // Find <source> node
-    if (n.node.nodeName !== 'source') {
-      return false;
-    }
-    if (n.node.childNodes.length !== 1) {
-      return false;
-    }
-    // Must be within <configuration>
-    if (n.up().node.nodeName !== 'configuration') {
-      return false;
-    }
-    // Which must be inside <plugin>
-    if (n.up().up().node.nodeName !== 'plugin') {
-      return false;
-    }
-    // Make sure the plugin is maven-compiler-plugin
-    const isCompilerPlugin = n
+  const mavenCompilePlugin = xmlDoc.find(
+    n => n.node.nodeName === 'artifactId' && n.first().toString() === 'maven-compiler-plugin',
+    false,
+    true
+  );
+
+  if (mavenCompilePlugin != undefined) {
+    const sourceOrTag = mavenCompilePlugin
       .up()
-      .up()
-      .some(
-        c => {
-          if (c.node.nodeName !== 'artifactId') {
-            return false;
-          }
-          if (c.node.childNodes.length !== 1) {
-            return false;
-          }
-          return c.first().toString() === 'maven-compiler-plugin';
-        },
-        false,
-        true
+      .find(n => n.node.nodeName === 'source' || n.node.nodeName === 'target', false, true);
+
+    if (sourceOrTag !== undefined) {
+      core.debug(
+        `Found java version: '${sourceOrTag
+          .first()
+          .toString()}' defined on the maven-compiler-plugin'`
       );
-    if (!isCompilerPlugin) {
-      return false;
+      return sourceOrTag.first().toString();
     }
+  }
 
-    return true;
-  });
-
-  return source?.first().toString() ?? null;
+  return null;
 }
 
 function parseBuildGradleFile(buildGradle: string): any {
@@ -267,13 +248,13 @@ function parseBuildGradleFile(buildGradle: string): any {
 }
 
 function getByJavaLibraryPlugin(buildGradle: string) {
-  return getVersionByRegex(buildGradle, 'JavaLanguageVersion.of((d+))');
+  return getVersionByRegex(buildGradle, 'JavaLanguageVersion.of\\((\\d+)\\)');
 }
 
 function getByJavaPlugin(buildGradle: string) {
   const possibleRegex = [
-    'sourceCompatibilitys?=s?JavaVersion.VERSION_(?:1_)?(d+)',
-    'targetCompatibilitys?=s?JavaVersion.VERSION_(?:1_)?(d+)'
+    'sourceCompatibility\\s?=\\s?JavaVersion.VERSION_(?:1_)?(\\d+)',
+    'targetCompatibility\\s?=\\s?JavaVersion.VERSION_(?:1_)?(\\d+)'
   ];
 
   for (var regex of possibleRegex) {
