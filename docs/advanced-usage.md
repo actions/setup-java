@@ -526,19 +526,19 @@ steps:
 ```
 
 ## Java version file
-If the `java-version-file` input is specified, the action will extract the version from the file and install it.
-
-Supported files are .java-version and .tool-versions.
-In .java-version file, only the version should be specified, e.g., 17.0.7.
-In .tool-versions file, java version should be preceded by the java keyword, e.g., java 17.0.7.
-.java-version recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv) and .tool-version recognizes all variants of the version description according to [asdf](https://github.com/asdf-vm/asdf).
-
-If both java-version and java-version-file inputs are provided, the java-version input will be used.
+  If the `java-version-file` input is specified, the action will extract the version from the file and install it.
+  
+  Supported files are .java-version and .tool-versions.
+  In .java-version file, only the version should be specified (e.g., 17.0.7).
+  In .tool-versions file, java version should be preceded by the java keyword (e.g., java 17.0.7).
+  The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv). Similarly, the `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning (semver).
+  
+  If both java-version and java-version-file inputs are provided, the java-version input will be used.
 
 Valid entry options:
 ```
 major versions: 8, 11, 16, 17, 21
-more specific versions: 1.8.0.2, 17.0, 11.0, 11.0.4, 8.0.232, 8.0.282+8
+more specific versions: 8.0.282+8, 8.0.232, 11.0, 11.0.4, 17.0
 early access (EA) versions: 15-ea, 15.0.0-ea
 versions with specified distribution: openjdk64-11.0.2
 ```
