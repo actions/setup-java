@@ -47,7 +47,7 @@ jobs:
             version: 20
           - distribution: oracle
             os: ubuntu-latest
-            version: 20      
+            version: 20
 
     steps:
       - name: Checkout
