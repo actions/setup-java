@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         distribution: [
             'temurin',
             'adopt',
@@ -33,17 +33,15 @@ jobs:
             'dragonwell',
             'sapmachine'
           ] # internally 'adopt-hotspot' is the same as 'adopt'
-        version: ['8', '11', '17', '21']
+        version: ['21', '11', '17']
         exclude:
           - distribution: microsoft
             version: 8
           - distribution: dragonwell
-            os: macos-latest
-          - distribution: sapmachine
-            version: 8
+            os: macos-13
         include:
           - distribution: oracle
-            os: macos-latest
+            os: macos-13
             version: 17
           - distribution: oracle
             os: windows-latest
@@ -76,7 +74,7 @@ jobs:
         distribution: ['temurin', 'zulu', 'liberica']
         version:
           - '11.0'
-          - '8.0.302'
+          - '21.0'
           - '17.0.7+7'
         include:
           - distribution: oracle
@@ -179,7 +177,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         version: ['17-ea', '15.0.0-ea.14']
     steps:
       - name: Checkout
@@ -245,22 +243,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         distribution: ['temurin', 'zulu', 'liberica', 'semeru', 'sapmachine']
         java-package: ['jre']
         version: ['17.0']
         include:
           - distribution: 'zulu'
             java-package: jre+fx
-            version: '8'
+            version: '21'
             os: ubuntu-latest
           - distribution: 'zulu'
             java-package: jdk+fx
-            version: '8.0.242'
+            version: '21.0'
             os: ubuntu-latest
           - distribution: 'liberica'
             java-package: jdk+fx
-            version: '8'
+            version: '21'
             os: ubuntu-latest
           - distribution: 'liberica'
             java-package: jre+fx
@@ -324,10 +322,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Create .java-version file
         shell: bash
-        run: echo "8" > .java-version
+        run: echo "17" > .java-version
       - name: Create .tool-versions file
         shell: bash
-        run: echo "java 8" > .tool-versions
+        run: echo "java 17" > .tool-versions
       - name: setup-java
         uses: ./
         id: setup-java
@@ -381,10 +379,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Create .java-version file
         shell: bash
-        run: echo "11.0.2" > .java-version
+        run: echo "17.0.10" > .java-version
       - name: Create .tool-versions file
         shell: bash
-        run: echo "java 11.0.2" > .tool-versions
+        run: echo "java 17.0.10" > .tool-versions
       - name: setup-java
         uses: ./
         id: setup-java
@@ -392,11 +390,11 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version-file: ${{matrix.java-version-file }}
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "11.0.2" "${{ steps.setup-java.outputs.path }}"
+        run: bash __tests__/verify-java.sh "17.0.10" "${{ steps.setup-java.outputs.path }}"
         shell: bash
 
   setup-java-version-from-file-major-minor-patch-with-dist:
-    name: ${{ matrix.distribution }} version from file 'openjdk64-11.0.2' - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} version from file 'openjdk64-17.0.10' - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -409,10 +407,10 @@ jobs:
         uses: actions/checkout@v4
       - name: Create .java-version file
         shell: bash
-        run: echo "openjdk64-11.0.2" > .java-version
+        run: echo "openjdk64-17.0.10" > .java-version
       - name: Create .tool-versions file
         shell: bash
-        run: echo "java openjdk64-11.0.2" > .tool-versions
+        run: echo "java openjdk64-17.0.10" > .tool-versions
       - name: setup-java
         uses: ./
         id: setup-java
@@ -420,5 +418,5 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version-file: ${{matrix.java-version-file }}
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "11.0.2" "${{ steps.setup-java.outputs.path }}"
+        run: bash __tests__/verify-java.sh "17.0.10" "${{ steps.setup-java.outputs.path }}"
         shell: bash
