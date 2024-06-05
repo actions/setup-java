@@ -23,7 +23,8 @@ enum JavaDistribution {
   Semeru = 'semeru',
   Corretto = 'corretto',
   Oracle = 'oracle',
-  Dragonwell = 'dragonwell'
+  Dragonwell = 'dragonwell',
+  JetBrains = 'jetbrains',
 }
 
 export function getJavaDistribution(

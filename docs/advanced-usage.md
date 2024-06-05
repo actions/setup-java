@@ -8,6 +8,7 @@
   - [Amazon Corretto](#Amazon-Corretto)
   - [Oracle](#Oracle)
   - [Alibaba Dragonwell](#Alibaba-Dragonwell)
+  - [JetBrains](#JetBrains)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -139,6 +140,19 @@ steps:
   with:
     distribution: 'dragonwell'
     java-version: '8'
+- run: java -cp java HelloWorldApp
+```
+
+### JetBrains
+**NOTE:** JetBrains only provides jdk and is only available for LTS versions 11 or later.
+
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'jetbrains'
+    java-version: '11'
 - run: java -cp java HelloWorldApp
 ```
 
