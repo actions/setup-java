@@ -68,7 +68,7 @@ export class JetBrainsDistribution extends JavaBase {
     const javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
-    const extractedJavaPath = await extractJdkFile(javaArchivePath);
+    const extractedJavaPath = await extractJdkFile(javaArchivePath, "tar.gz");
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
