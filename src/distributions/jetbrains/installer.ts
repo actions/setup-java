@@ -152,7 +152,7 @@ export class JetBrainsDistribution extends JavaBase {
       const build = +vsplit[1];
 
       // Construct URL
-      const url = `https://cache-redirector.jetbrains.com/intellij-jbr/jbr-${semver}-${platform}-${arch}-b${build}.tar.gz`;
+      const url = `https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_jcef-${semver}-${platform}-${arch}-b${build}.tar.gz`;
 
       return {
         tag_name: tag,
