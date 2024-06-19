@@ -531,7 +531,7 @@ steps:
   Supported files are .java-version and .tool-versions.
   In .java-version file, only the version should be specified (e.g., 17.0.7).
   In .tool-versions file, java version should be preceded by the java keyword (e.g., java 17.0.7).
-  The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv). Similarly, the `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning (semver).
+  The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv). Similarly, the `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)).
   
   If both java-version and java-version-file inputs are provided, the java-version input will be used.
 
