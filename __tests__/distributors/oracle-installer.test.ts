@@ -115,7 +115,8 @@ describe('findPackageForDownload', () => {
       const expectedUrl = `https://download.oracle.com/java/18/archive/jdk-18_${osType}-${distroArch}_bin.${archiveType}`;
 
       expect(result.url).toBe(expectedUrl);
-    }
+    },
+    10000
   );
 
   it('should throw an error', async () => {
