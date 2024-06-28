@@ -30,7 +30,8 @@ jobs:
             'microsoft',
             'semeru',
             'corretto',
-            'dragonwell'
+            'dragonwell',
+            'sapmachine'
           ] # internally 'adopt-hotspot' is the same as 'adopt'
         version: ['21', '11', '17']
         exclude:
@@ -85,6 +86,9 @@ jobs:
           - distribution: dragonwell
             os: ubuntu-latest
             version: '11.0.13+9'
+          - distribution: sapmachine
+            os: ubuntu-latest
+            version: '17.0.7'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -106,7 +110,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        distribution: ['temurin', 'zulu', 'liberica', 'dragonwell']
+        distribution:
+          ['temurin', 'zulu', 'liberica', 'dragonwell', 'sapmachine']
         exclude:
           - distribution: dragonwell
             os: macos-latest
@@ -132,7 +137,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        distribution: ['temurin', 'zulu', 'liberica', 'dragonwell']
+        distribution:
+          ['temurin', 'zulu', 'liberica', 'dragonwell', 'sapmachine']
         exclude:
           - distribution: dragonwell
             os: macos-latest
@@ -154,10 +160,10 @@ jobs:
           {
             $envName = "JAVA_HOME_${version}_${env:RUNNER_ARCH}"
             $JavaVersionPath = [Environment]::GetEnvironmentVariable($envName)
-            if (-not (Test-Path "$JavaVersionPath")) { 
+            if (-not (Test-Path "$JavaVersionPath")) {
               Write-Host "$envName is not found"
               exit 1
-            } 
+            }
           }
         shell: pwsh
       - name: Verify Java
@@ -208,6 +214,28 @@ jobs:
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
 
+  setup-java-ea-versions-sapmachine:
+    name: sapmachine ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    needs: setup-java-major-minor-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        version: ['17-ea', '21-ea']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          java-version: ${{ matrix.version }}
+          distribution: sapmachine
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
   setup-java-custom-package-type:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (${{ matrix.java-package }}-x64) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
@@ -216,7 +244,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-13, windows-latest, ubuntu-latest]
-        distribution: ['temurin', 'zulu', 'liberica', 'semeru']
+        distribution: ['temurin', 'zulu', 'liberica', 'semeru', 'sapmachine']
         java-package: ['jre']
         version: ['17.0']
         include:
