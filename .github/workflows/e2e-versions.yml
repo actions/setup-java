@@ -30,7 +30,8 @@ jobs:
             'microsoft',
             'semeru',
             'corretto',
-            'dragonwell'
+            'dragonwell',
+            'jetbrains'
           ] # internally 'adopt-hotspot' is the same as 'adopt'
         version: ['21', '11', '17']
         exclude:
