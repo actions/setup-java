@@ -150,7 +150,17 @@ export class DragonwellDistribution extends JavaBase {
         // Some version of Dragonwell JDK are numerated with help of non-semver notation (more then 3 digits).
         // Common practice is to transform excess digits to the so-called semver build part, which is prefixed with the plus sign, to be able to operate with them using semver tools.
         if (jdkVersion.split('.').length > 3) {
-          jdkVersion = convertVersionToSemver(jdkVersion);
+          const jdkVersionNums: string[] = jdkVersion.split('.');
+          const splitedJdkVersionList: string[] = jdkVersionNums.slice(0, 3);
+          if (jdkVersion.includes('+')) {
+            const buildParts: string[] = jdkVersion.split('+');
+            splitedJdkVersionList.push(buildParts[buildParts.length - 1]);
+          } else {
+            splitedJdkVersionList.push(
+              jdkVersionNums[jdkVersionNums.length - 1]
+            );
+          }
+          jdkVersion = convertVersionToSemver(splitedJdkVersionList.join('.'));
         }
 
         for (const edition in archMap) {
