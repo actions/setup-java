@@ -156,6 +156,21 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
+The JetBrains installer uses the GitHub API to fetch the latest version. If you believe your project is going to be running into rate limits, you can provide a
+GitHub token to the action to increase the rate limit. Set the `GITHUB_TOKEN` environment variable to the value of your GitHub token in the workflow file.
+
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'jetbrains'
+    java-version: '11'
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+- run: java -cp java HelloWorldApp
+```
+
 ## Installing custom Java package type
 ```yaml
 steps:
