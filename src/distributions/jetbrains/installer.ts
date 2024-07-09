@@ -14,9 +14,9 @@ import {
 } from '../base-models';
 import {
   extractJdkFile,
-  getDownloadArchiveExtension,
   isVersionSatisfies
 } from '../../util';
+import {IncomingHttpHeaders, OutgoingHttpHeaders} from "http";
 
 export class JetBrainsDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -98,6 +98,10 @@ export class JetBrainsDistribution extends JavaBase {
     const rawVersions: IJetBrainsRawVersion[] = [];
     while (true) {
       const requestArguments = `per_page=100&page=${page_index}`;
+      const requestHeaders: OutgoingHttpHeaders = {
+        "User-Agent": "jetbrains-jbr-installer",
+        "Authorization": `Token ${process.env.GITHUB_TOKEN}`,
+      }
       const rawUrl = `https://api.github.com/repos/JetBrains/JetBrainsRuntime/releases?${requestArguments}`;
 
       if (core.isDebug() && page_index === 1) {
@@ -109,7 +113,7 @@ export class JetBrainsDistribution extends JavaBase {
 
       const paginationPage = (
         await this.http.getJson<IJetBrainsRawVersion[]>(
-          rawUrl
+          rawUrl, requestHeaders
         )
       ).result;
       if (!paginationPage || paginationPage.length === 0) {
