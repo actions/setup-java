@@ -11,6 +11,9 @@ export const INPUT_SERVER_USERNAME = 'server-username';
 export const INPUT_SERVER_PASSWORD = 'server-password';
 export const INPUT_SETTINGS_PATH = 'settings-path';
 export const INPUT_OVERWRITE_SETTINGS = 'overwrite-settings';
+export const INPUT_UPDATE_TOOLCHAINS_ONLY = 'update-toolchains-only';
+export const INPUT_UPDATE_JAVA_HOME = 'update-env-javahome';
+export const INPUT_ADD_TO_PATH = 'add-to-env-path';
 export const INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 export const INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 
