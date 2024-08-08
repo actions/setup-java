@@ -8,6 +8,7 @@
   - [Amazon Corretto](#Amazon-Corretto)
   - [Oracle](#Oracle)
   - [Alibaba Dragonwell](#Alibaba-Dragonwell)
+  - [JetBrains](#JetBrains)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -139,6 +140,34 @@ steps:
   with:
     distribution: 'dragonwell'
     java-version: '8'
+- run: java -cp java HelloWorldApp
+```
+
+### JetBrains
+**NOTE:** JetBrains only provides jdk and is only available for LTS versions 11 or later.
+
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'jetbrains'
+    java-version: '11'
+- run: java -cp java HelloWorldApp
+```
+
+The JetBrains installer uses the GitHub API to fetch the latest version. If you believe your project is going to be running into rate limits, you can provide a
+GitHub token to the action to increase the rate limit. Set the `GITHUB_TOKEN` environment variable to the value of your GitHub token in the workflow file.
+
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'jetbrains'
+    java-version: '11'
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 - run: java -cp java HelloWorldApp
 ```
 
