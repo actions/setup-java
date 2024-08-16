@@ -173,6 +173,11 @@ export class TemurinDistribution extends JavaBase {
         return 'mac';
       case 'win32':
         return 'windows';
+      case 'linux':
+        if (fs.existsSync('/etc/alpine-release')) {
+          return 'alpine-linux';
+        }
+        return 'linux';
       default:
         return process.platform;
     }
