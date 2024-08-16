@@ -17,8 +17,6 @@ jobs:
   setup-java-major-versions:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    container:
-      image: ${{ matrix.container }}
     strategy:
       fail-fast: false
       matrix:
@@ -50,10 +48,6 @@ jobs:
           - distribution: oracle
             os: ubuntu-latest
             version: 20
-          - distribution: temurin
-            os: ubuntu-latest
-            version: 21
-            container: alpine:latest
 
     steps:
       - name: Checkout
@@ -210,6 +204,31 @@ jobs:
         with:
           java-version: ${{ matrix.version }}
           distribution: temurin
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
+  setup-java-alpine-linux:
+    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - alpine-linux - ${{ matrix.os }}
+    needs: setup-java-major-minor-versions
+    runs-on: ${{ matrix.os }}
+    container:
+      image: alpine:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        distribution: ['temurin']
+        version: ['21', '17']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          java-version: ${{ matrix.version }}
+          distribution: ${{ matrix.distribution }}
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
