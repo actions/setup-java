@@ -207,7 +207,7 @@ describe('findPackageForDownload', () => {
       });
       distribution['getAvailableVersions'] = async () => [];
       await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
-        `Unsupported architecture for IBM Semeru: ${arch}, the following are supported: x64, x86, ppc64le, ppc64, s390x, aarch64`
+        `Unsupported architecture for IBM Semeru: ${arch}, is not supported for IBM Semeru 8 on your current OS version. Please refer to IBM Semeru documentation or support resources to verify compatibility with your OS.`
       );
     }
   );

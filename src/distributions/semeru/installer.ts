@@ -35,9 +35,7 @@ export class SemeruDistribution extends JavaBase {
   ): Promise<JavaDownloadRelease> {
     if (!supportedArchitectures.includes(this.architecture)) {
       throw new Error(
-        `Unsupported architecture for IBM Semeru: ${
-          this.architecture
-        }, the following are supported: ${supportedArchitectures.join(', ')}`
+        `Unsupported architecture for IBM Semeru: ${this.architecture}, is not supported for IBM Semeru ${this.version} on your current OS version. Please refer to IBM Semeru documentation or support resources to verify compatibility with your OS.`
       );
     }
 
