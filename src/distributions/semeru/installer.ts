@@ -22,7 +22,8 @@ const supportedArchitectures = [
   'ppc64le',
   'ppc64',
   's390x',
-  'aarch64'
+  'aarch64',
+  'arm64'
 ];
 
 export class SemeruDistribution extends JavaBase {
