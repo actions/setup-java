@@ -34,7 +34,9 @@ export class SemeruDistribution extends JavaBase {
   protected async findPackageForDownload(
     version: string
   ): Promise<JavaDownloadRelease> {
-    if (!supportedArchitectures.includes(this.architecture)) {
+    const arch = this.distributionArchitecture();
+
+    if (!supportedArchitectures.includes(arch)) {
       throw new Error(
         `Unsupported architecture: ${this.architecture} is not supported for IBM Semeru ${this.version} on your current OS version. Please refer to IBM Semeru documentation or support resources to verify compatibility with your OS.`
       );
@@ -123,7 +125,7 @@ export class SemeruDistribution extends JavaBase {
 
   public async getAvailableVersions(): Promise<ISemeruAvailableVersions[]> {
     const platform = this.getPlatformOption();
-    const arch = this.architecture;
+    const arch = this.distributionArchitecture();
     const imageType = this.packageType;
     const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
     const releaseType = this.stable ? 'ga' : 'ea';
