@@ -82,7 +82,7 @@ export class SemeruDistribution extends JavaBase {
         ? `\nAvailable versions: ${availableOptions}`
         : '';
       throw new Error(
-        `Could not find satisfied version for SemVer '${version}'. ${availableOptionsMessage}`
+        `Could not find satisfied version for SemVer '${version}'. on your current OS version for ${arch}  ${availableOptionsMessage}`
       );
     }
 
