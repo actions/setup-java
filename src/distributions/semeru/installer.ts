@@ -38,7 +38,7 @@ export class SemeruDistribution extends JavaBase {
 
     if (!supportedArchitectures.includes(arch)) {
       throw new Error(
-        `Unsupported architecture: ${this.architecture} is not supported for IBM Semeru ${this.version} on your current OS version. Please refer to IBM Semeru documentation or support resources to verify compatibility with your OS.`
+        `Unsupported architecture: ${this.architecture} is not supported for IBM Semeru ${this.version} for your current OS version. Please refer to IBM Semeru documentation or support resources to verify compatibility with your OS.`
       );
     }
 
@@ -82,7 +82,7 @@ export class SemeruDistribution extends JavaBase {
         ? `\nAvailable versions: ${availableOptions}`
         : '';
       throw new Error(
-        `Could not find satisfied version for SemVer '${version}' on your current OS version for ${this.architecture} ${availableOptionsMessage}`
+        `Could not find satisfied version for SemVer version '${version}' for your current OS version for ${this.architecture} architecture ${availableOptionsMessage}`
       );
     }
 
