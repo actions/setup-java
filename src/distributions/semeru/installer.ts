@@ -22,8 +22,7 @@ const supportedArchitectures = [
   'ppc64le',
   'ppc64',
   's390x',
-  'aarch64',
-  'arm64'
+  'aarch64'
 ];
 
 export class SemeruDistribution extends JavaBase {
@@ -38,7 +37,11 @@ export class SemeruDistribution extends JavaBase {
 
     if (!supportedArchitectures.includes(arch)) {
       throw new Error(
-        `Unsupported architecture: ${this.architecture} is not supported for IBM Semeru ${this.version} for your current OS version. Please refer to IBM Semeru documentation or support resources to verify compatibility with your OS.`
+        `Unsupported architecture for IBM Semeru: ${
+          this.architecture
+        } for your current OS version, the following are supported: ${supportedArchitectures.join(
+          ', '
+        )}`
       );
     }
 
