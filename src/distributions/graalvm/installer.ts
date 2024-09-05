@@ -10,10 +10,17 @@ import {
   JavaInstallerOptions,
   JavaInstallerResults
 } from '../base-models';
-import {extractJdkFile, getDownloadArchiveExtension} from '../../util';
+import {
+  extractJdkFile,
+  getDownloadArchiveExtension,
+  getGitHubHttpHeaders
+} from '../../util';
 import {HttpCodes} from '@actions/http-client';
+import {GraalVMEAVersion} from './models';
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm';
+const IS_WINDOWS = process.platform === 'win32';
+const GRAALVM_PLATFORM = IS_WINDOWS ? 'windows' : process.platform;
 
 export class GraalVMDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -56,11 +63,11 @@ export class GraalVMDistribution extends JavaBase {
     }
 
     if (!this.stable) {
-      throw new Error('Early access versions are not supported');
+      return this.findEABuildDownloadUrl(`${range}-ea`);
     }
 
     if (this.packageType !== 'jdk') {
-      throw new Error('GraalVM JDK provides only the `jdk` package type');
+      throw new Error('GraalVM provides only the `jdk` package type');
     }
 
     const platform = this.getPlatform();
@@ -76,22 +83,77 @@ export class GraalVMDistribution extends JavaBase {
     }
 
     if (parseInt(major) < 17) {
-      throw new Error('GraalVM JDK is only supported for JDK 17 and later');
+      throw new Error('GraalVM is only supported for JDK 17 and later');
     }
 
     const response = await this.http.head(fileUrl);
 
     if (response.message.statusCode === HttpCodes.NotFound) {
-      throw new Error(`Could not find GraalVM JDK for SemVer ${range}`);
+      throw new Error(`Could not find GraalVM for SemVer ${range}`);
     }
 
     if (response.message.statusCode !== HttpCodes.OK) {
       throw new Error(
-        `Http request for GraalVM JDK failed with status code: ${response.message.statusCode}`
+        `Http request for GraalVM failed with status code: ${response.message.statusCode}`
       );
     }
 
     return {url: fileUrl, version: range};
+  }
+
+  private async findEABuildDownloadUrl(
+    javaEaVersion: string
+  ): Promise<JavaDownloadRelease> {
+    const versions = await this.fetchEAJson(javaEaVersion);
+    const latestVersion = versions.find(v => v.latest);
+    if (!latestVersion) {
+      throw new Error(`Unable to find latest version for '${javaEaVersion}'`);
+    }
+    const arch = this.distributionArchitecture();
+    const file = latestVersion.files.find(
+      f => f.arch === arch && f.platform === GRAALVM_PLATFORM
+    );
+    if (!file || !file.filename.startsWith('graalvm-jdk-')) {
+      throw new Error(`Unable to find file metadata for '${javaEaVersion}'`);
+    }
+    return {
+      url: `${latestVersion.download_base_url}${file.filename}`,
+      version: latestVersion.version
+    };
+  }
+
+  private async fetchEAJson(
+    javaEaVersion: string
+  ): Promise<GraalVMEAVersion[]> {
+    const owner = 'graalvm';
+    const repository = 'oracle-graalvm-ea-builds';
+    const branch = 'main';
+    const filePath = `versions/${javaEaVersion}.json`;
+
+    const url = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
+
+    const headers = getGitHubHttpHeaders();
+
+    core.debug(
+      `Trying to fetch available version info for GraalVM EA builds from '${url}'`
+    );
+    let fetchedJson;
+    try {
+      fetchedJson = (await this.http.getJson<GraalVMEAVersion[]>(url, headers))
+        .result;
+    } catch (err) {
+      throw Error(
+        `Fetching version info for GraalVM EA builds from '${url}' failed with the error: ${
+          (err as Error).message
+        }`
+      );
+    }
+    if (fetchedJson === null) {
+      throw Error(
+        `No GraalVM EA build found. Are you sure java-version: '${javaEaVersion}' is correct?`
+      );
+    }
+    return fetchedJson;
   }
 
   public getPlatform(platform: NodeJS.Platform = process.platform): OsVersions {

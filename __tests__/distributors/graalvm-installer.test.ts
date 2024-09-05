@@ -67,6 +67,37 @@ describe('findPackageForDownload', () => {
   });
 
   it.each([
+    [
+      '24-ea',
+      /^https:\/\/github\.com\/graalvm\/oracle-graalvm-ea-builds\/releases\/download\/jdk-24\.0\.0-ea\./
+    ]
+  ])('version is %s -> %s', async (version, expectedUrlPrefix) => {
+    /* Needed only for this particular test because /latest/ urls tend to change */
+    spyHttpClient = jest.spyOn(HttpClient.prototype, 'head');
+    spyHttpClient.mockReturnValue(
+      Promise.resolve({
+        message: {
+          statusCode: 200
+        }
+      })
+    );
+
+    const eaDistro = new GraalVMDistribution({
+      version,
+      architecture: '', // to get default value
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    const versionWithoutEA = version.split('-')[0];
+    const result = await eaDistro['findPackageForDownload'](versionWithoutEA);
+
+    jest.restoreAllMocks();
+
+    expect(result.url).toEqual(expect.stringMatching(expectedUrlPrefix));
+  });
+
+  it.each([
     ['amd64', 'x64'],
     ['arm64', 'aarch64']
   ])(
@@ -75,7 +106,7 @@ describe('findPackageForDownload', () => {
       jest.spyOn(os, 'arch').mockReturnValue(osArch);
       jest.spyOn(os, 'platform').mockReturnValue('linux');
 
-      const version = '17';
+      const version = '21';
       const distro = new GraalVMDistribution({
         version,
         architecture: '', // to get default value
@@ -89,7 +120,7 @@ describe('findPackageForDownload', () => {
       }
       const archiveType = getDownloadArchiveExtension();
       const result = await distro['findPackageForDownload'](version);
-      const expectedUrl = `https://download.oracle.com/graalvm/17/latest/graalvm-jdk-17_${osType}-${distroArch}_bin.${archiveType}`;
+      const expectedUrl = `https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_${osType}-${distroArch}_bin.${archiveType}`;
 
       expect(result.url).toBe(expectedUrl);
     }
@@ -97,13 +128,25 @@ describe('findPackageForDownload', () => {
 
   it('should throw an error', async () => {
     await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
-      /GraalVM JDK is only supported for JDK 17 and later/
+      /GraalVM is only supported for JDK 17 and later/
     );
     await expect(distribution['findPackageForDownload']('11')).rejects.toThrow(
-      /GraalVM JDK is only supported for JDK 17 and later/
+      /GraalVM is only supported for JDK 17 and later/
     );
     await expect(distribution['findPackageForDownload']('18')).rejects.toThrow(
-      /Could not find GraalVM JDK for SemVer */
+      /Could not find GraalVM for SemVer */
+    );
+
+    const unavailableEADistro = new GraalVMDistribution({
+      version: '17-ea',
+      architecture: '', // to get default value
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    await expect(
+      unavailableEADistro['findPackageForDownload']('17')
+    ).rejects.toThrow(
+      /No GraalVM EA build found\. Are you sure java-version: '17-ea' is correct\?/
     );
   });
 });

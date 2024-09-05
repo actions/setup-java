@@ -58,6 +58,9 @@ jobs:
           - distribution: graalvm
             os: ubuntu-latest
             version: 21
+          - distribution: graalvm
+            os: ubuntu-latest
+            version: '24-ea'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
