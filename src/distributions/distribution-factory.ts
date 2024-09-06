@@ -25,7 +25,7 @@ enum JavaDistribution {
   Corretto = 'corretto',
   Oracle = 'oracle',
   Dragonwell = 'dragonwell',
-  SapMachine = 'sapmachine',
+  SapMachine = 'sapmachine'
 }
 
 export function getJavaDistribution(
