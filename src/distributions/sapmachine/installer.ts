@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import semver from 'semver';
 import fs from 'fs';
-import { OutgoingHttpHeaders } from 'http';
+import {OutgoingHttpHeaders} from 'http';
 import path from 'path';
 import {
   convertVersionToSemver,
@@ -11,13 +11,13 @@ import {
   getGitHubHttpHeaders,
   isVersionSatisfies
 } from '../../util';
-import { JavaBase } from '../base-installer';
+import {JavaBase} from '../base-installer';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
 } from '../base-models';
-import { ISapMachineAllVersions, ISapMachineVersions } from './models';
+import {ISapMachineAllVersions, ISapMachineVersions} from './models';
 
 export class SapMachineDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -27,10 +27,12 @@ export class SapMachineDistribution extends JavaBase {
   protected async findPackageForDownload(
     version: string
   ): Promise<JavaDownloadRelease> {
-    core.debug(`Only stable versions: ${this.stable}`)
+    core.debug(`Only stable versions: ${this.stable}`);
 
     if (!['jdk', 'jre'].includes(this.packageType)) {
-      throw new Error('SapMachine provides only the `jdk` and `jre` package type');
+      throw new Error(
+        'SapMachine provides only the `jdk` and `jre` package type'
+      );
     }
 
     const availableVersions = await this.getAvailableVersions();
@@ -60,10 +62,15 @@ export class SapMachineDistribution extends JavaBase {
     const platform = this.getPlatformOption();
     const arch = this.distributionArchitecture();
 
-    let fetchedReleasesJson = await this.fetchReleasesFromUrl('https://sap.github.io/SapMachine/assets/data/sapmachine-releases-all.json')
+    let fetchedReleasesJson = await this.fetchReleasesFromUrl(
+      'https://sap.github.io/SapMachine/assets/data/sapmachine-releases-all.json'
+    );
 
     if (!fetchedReleasesJson) {
-      fetchedReleasesJson = await this.fetchReleasesFromUrl('https://api.github.com/repos/SAP/SapMachine/contents/assets/data/sapmachine-releases-all.json?ref=gh-pages', getGitHubHttpHeaders());
+      fetchedReleasesJson = await this.fetchReleasesFromUrl(
+        'https://api.github.com/repos/SAP/SapMachine/contents/assets/data/sapmachine-releases-all.json?ref=gh-pages',
+        getGitHubHttpHeaders()
+      );
     }
 
     if (!fetchedReleasesJson) {
@@ -117,29 +124,42 @@ export class SapMachineDistribution extends JavaBase {
       this.architecture
     );
 
-    return { version: javaRelease.version, path: javaPath };
+    return {version: javaRelease.version, path: javaPath};
   }
 
   private parseVersions(
     platform: string,
     arch: string,
-    versions: ISapMachineAllVersions,
+    versions: ISapMachineAllVersions
   ): ISapMachineVersions[] {
     const eligibleVersions: ISapMachineVersions[] = [];
 
     for (const [, majorVersionMap] of Object.entries(versions)) {
       for (const [, jdkVersionMap] of Object.entries(majorVersionMap.updates)) {
-        for (const [buildVersion, buildVersionMap] of Object.entries(jdkVersionMap)) {
-          let buildVersionWithoutPrefix = buildVersion.replace('sapmachine-', '');
+        for (const [buildVersion, buildVersionMap] of Object.entries(
+          jdkVersionMap
+        )) {
+          let buildVersionWithoutPrefix = buildVersion.replace(
+            'sapmachine-',
+            ''
+          );
           if (!buildVersionWithoutPrefix.includes('.')) {
             // replace major version with major.minor.patch and keep the remaining build identifier after the + as is with regex
-            buildVersionWithoutPrefix = buildVersionWithoutPrefix.replace(/(\d+)(\+.*)?/, '$1.0.0$2');
+            buildVersionWithoutPrefix = buildVersionWithoutPrefix.replace(
+              /(\d+)(\+.*)?/,
+              '$1.0.0$2'
+            );
           }
           // replace + with . to convert to semver format if we have more than 3 version digits
           if (buildVersionWithoutPrefix.split('.').length > 3) {
-            buildVersionWithoutPrefix = buildVersionWithoutPrefix.replace('+', '.');
+            buildVersionWithoutPrefix = buildVersionWithoutPrefix.replace(
+              '+',
+              '.'
+            );
           }
-          buildVersionWithoutPrefix = convertVersionToSemver(buildVersionWithoutPrefix);
+          buildVersionWithoutPrefix = convertVersionToSemver(
+            buildVersionWithoutPrefix
+          );
 
           // ignore invalid version
           if (!semver.valid(buildVersionWithoutPrefix)) {
@@ -148,23 +168,29 @@ export class SapMachineDistribution extends JavaBase {
           }
 
           // skip earlyAccessVersions if stable version requested
-          if (this.stable && buildVersionMap.ea === "true") {
+          if (this.stable && buildVersionMap.ea === 'true') {
             continue;
           }
 
-          for (const [edition, editionAssets] of Object.entries(buildVersionMap.assets)) {
+          for (const [edition, editionAssets] of Object.entries(
+            buildVersionMap.assets
+          )) {
             if (this.packageType !== edition) {
               continue;
             }
-            for (const [archAndPlatForm, archAssets] of Object.entries(editionAssets)) {
-              let expectedArchAndPlatform = `${platform}-${arch}`
+            for (const [archAndPlatForm, archAssets] of Object.entries(
+              editionAssets
+            )) {
+              let expectedArchAndPlatform = `${platform}-${arch}`;
               if (platform === 'linux-musl') {
-                expectedArchAndPlatform = `linux-${arch}-musl`
+                expectedArchAndPlatform = `linux-${arch}-musl`;
               }
               if (archAndPlatForm !== expectedArchAndPlatform) {
-                continue
+                continue;
               }
-              for (const [contentType, contentTypeAssets] of Object.entries(archAssets)) {
+              for (const [contentType, contentTypeAssets] of Object.entries(
+                archAssets
+              )) {
                 // skip if not tar.gz and zip files
                 if (contentType !== 'tar.gz' && contentType !== 'zip') {
                   continue;
@@ -175,7 +201,7 @@ export class SapMachineDistribution extends JavaBase {
                   version: buildVersionWithoutPrefix,
                   checksum: contentTypeAssets.checksum,
                   downloadLink: contentTypeAssets.url,
-                  packageType: edition,
+                  packageType: edition
                 });
               }
             }
@@ -206,7 +232,7 @@ export class SapMachineDistribution extends JavaBase {
       case 'win32':
         return 'windows';
       case 'darwin':
-        return 'macos'
+        return 'macos';
       case 'linux':
         // figure out if alpine/musl
         if (fs.existsSync('/etc/alpine-release')) {
@@ -218,7 +244,10 @@ export class SapMachineDistribution extends JavaBase {
     }
   }
 
-  private async fetchReleasesFromUrl(url: string, headers: OutgoingHttpHeaders = {}): Promise<ISapMachineAllVersions | null> {
+  private async fetchReleasesFromUrl(
+    url: string,
+    headers: OutgoingHttpHeaders = {}
+  ): Promise<ISapMachineAllVersions | null> {
     try {
       core.debug(
         `Trying to fetch available SapMachine versions info from the primary url: ${url}`
@@ -229,7 +258,8 @@ export class SapMachineDistribution extends JavaBase {
       return releases;
     } catch (err) {
       core.debug(
-        `Fetching SapMachine versions info from the link: ${url} ended up with the error: ${(err as Error).message
+        `Fetching SapMachine versions info from the link: ${url} ended up with the error: ${
+          (err as Error).message
         }`
       );
       return null;

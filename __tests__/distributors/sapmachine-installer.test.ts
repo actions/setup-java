@@ -1,5 +1,5 @@
-import { HttpClient } from '@actions/http-client';
-import { SapMachineDistribution } from '../../src/distributions/sapmachine/installer';
+import {HttpClient} from '@actions/http-client';
+import {SapMachineDistribution} from '../../src/distributions/sapmachine/installer';
 import * as utils from '../../src/util';
 
 import manifestData from '../data/sapmachine.json';
@@ -43,13 +43,13 @@ describe('getAvailableVersions', () => {
       spyHttpClient.mockReturnValueOnce({
         statusCode: 404,
         headers: {},
-        result: ""
-      })
+        result: ''
+      });
       spyHttpClient.mockReturnValueOnce({
         statusCode: 200,
         headers: {},
         result: manifestData
-      })
+      });
 
       const version = '17';
       const distribution = new SapMachineDistribution({
@@ -65,8 +65,10 @@ describe('getAvailableVersions', () => {
         version
       );
       expect(availableVersion).not.toBeNull();
-      expect(availableVersion.url).toBe('https://github.com/SAP/SapMachine/releases/download/sapmachine-17.0.10/sapmachine-jdk-17.0.10_linux-x64_bin.tar.gz');
-    })
+      expect(availableVersion.url).toBe(
+        'https://github.com/SAP/SapMachine/releases/download/sapmachine-17.0.10/sapmachine-jdk-17.0.10_linux-x64_bin.tar.gz'
+      );
+    });
   });
 
   describe('getAvailableVersions', () => {
@@ -77,7 +79,7 @@ describe('getAvailableVersions', () => {
       ['16.0.1', 'x64', 'linux', 71],
       ['23-ea', 'x64', 'linux', 798],
       ['23-ea', 'aarch64', 'windows', 0],
-      ['23-ea', 'x64', 'windows', 750],
+      ['23-ea', 'x64', 'windows', 750]
     ])(
       'should get right number of available versions from JSON',
       async (
@@ -209,7 +211,7 @@ describe('getAvailableVersions', () => {
         'x64',
         'jdk',
         'https://github.com/SAP/SapMachine/releases/download/sapmachine-17.0.10/sapmachine-jdk-17.0.10_linux-x64-musl_bin.tar.gz'
-      ],
+      ]
     ])(
       'should return proper link according to the specified java-version, platform and arch',
       async (
@@ -224,8 +226,7 @@ describe('getAvailableVersions', () => {
           version: version,
           architecture: arch,
           packageType: packageType,
-          checkLatest: false,
-
+          checkLatest: false
         });
         mockPlatform(distribution, platform);
 
@@ -247,15 +248,20 @@ describe('getAvailableVersions', () => {
       ['8-ea', 'linux', 'x64', '8'],
       ['21.0.3+7', 'linux', 'x64', '21.0.3+7'],
       ['21.0.3+8-ea', 'linux', 'x64', '21.0.3+8'],
-      ['17', 'linux-muse', 'aarch64'],
+      ['17', 'linux-muse', 'aarch64']
     ])(
       'should throw when required version of JDK can not be found in the JSON',
-      async (version: string, platform: string, arch: string, normalizedVersion: string = version) => {
+      async (
+        version: string,
+        platform: string,
+        arch: string,
+        normalizedVersion: string = version
+      ) => {
         const distribution = new SapMachineDistribution({
           version: version,
           architecture: arch,
           packageType: 'jdk',
-          checkLatest: false,
+          checkLatest: false
         });
         mockPlatform(distribution, platform);
 
@@ -280,7 +286,9 @@ describe('getAvailableVersions', () => {
       mockPlatform(distribution, platform);
       await expect(
         distribution['findPackageForDownload'](jdkVersion)
-      ).rejects.toThrow('SapMachine provides only the `jdk` and `jre` package type');
+      ).rejects.toThrow(
+        'SapMachine provides only the `jdk` and `jre` package type'
+      );
     });
   });
 });
