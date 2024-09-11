@@ -93,7 +93,7 @@ export class CorrettoDistribution extends JavaBase {
     const imageType = this.packageType;
 
     if (core.isDebug()) {
-      console.time('Retrieving available versions for Coretto took'); // eslint-disable-line no-console
+      console.time('Retrieving available versions for Corretto took'); // eslint-disable-line no-console
     }
 
     const availableVersionsUrl =
@@ -116,7 +116,7 @@ export class CorrettoDistribution extends JavaBase {
 
     if (core.isDebug()) {
       core.startGroup('Print information about available versions');
-      console.timeEnd('Retrieving available versions for Coretto took'); // eslint-disable-line no-console
+      console.timeEnd('Retrieving available versions for Corretto took'); // eslint-disable-line no-console
       core.debug(`Available versions: [${availableVersions.length}]`);
       core.debug(
         availableVersions

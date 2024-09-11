@@ -41,15 +41,16 @@ describe('getAvailableVersions', () => {
   describe('getAvailableVersions', () => {
     it.each([
       ['8', 'x86', 'linux', 0],
-      ['8', 'aarch64', 'linux', 24],
-      ['8.6.6', 'x64', 'linux', 27],
+      ['8', 'aarch64', 'linux', 28],
+      ['8.6.6', 'x64', 'linux', 31],
       ['8', 'x86', 'anolis', 0],
       ['8', 'x86', 'windows', 0],
       ['8', 'x86', 'mac', 0],
-      ['11', 'x64', 'linux', 27],
-      ['11', 'aarch64', 'linux', 24],
-      ['17', 'riscv', 'linux', 0],
-      ['16.0.1', 'x64', 'linux', 27]
+      ['11', 'x64', 'linux', 31],
+      ['11', 'aarch64', 'linux', 28],
+      ['17', 'riscv', 'linux', 3],
+      ['16.0.1', 'x64', 'linux', 31],
+      ['21', 'x64', 'linux', 31]
     ])(
       'should get right number of available versions from JSON',
       async (
@@ -103,25 +104,31 @@ describe('getAvailableVersions', () => {
         '11',
         'linux',
         'x64',
-        'https://github.com/alibaba/dragonwell11/releases/download/dragonwell-extended-11.0.17.13_jdk-11.0.17-ga/Alibaba_Dragonwell_Extended_11.0.17.13.8_x64_linux.tar.gz'
+        'https://github.com/dragonwell-project/dragonwell11/releases/download/dragonwell-extended-11.0.23.20_jdk-11.0.23-ga/Alibaba_Dragonwell_Extended_11.0.23.20.9_x64_linux.tar.gz'
       ],
       [
         '11',
         'linux',
         'aarch64',
-        'https://github.com/alibaba/dragonwell11/releases/download/dragonwell-extended-11.0.17.13_jdk-11.0.17-ga/Alibaba_Dragonwell_Extended_11.0.17.13.8_aarch64_linux.tar.gz'
+        'https://github.com/dragonwell-project/dragonwell11/releases/download/dragonwell-extended-11.0.23.20_jdk-11.0.23-ga/Alibaba_Dragonwell_Extended_11.0.23.20.9_aarch64_linux.tar.gz'
+      ],
+      [
+        '11',
+        'linux',
+        'riscv',
+        'https://github.com/dragonwell-project/dragonwell11/releases/download/dragonwell-extended-11.0.23.20_jdk-11.0.23-ga/Alibaba_Dragonwell_Extended_11.0.23.20.9_riscv64_linux.tar.gz'
       ],
       [
         '11',
         'windows',
         'x64',
-        'https://github.com/alibaba/dragonwell11/releases/download/dragonwell-extended-11.0.17.13_jdk-11.0.17-ga/Alibaba_Dragonwell_Extended_11.0.17.13.8_x64_windows.zip'
+        'https://github.com/dragonwell-project/dragonwell11/releases/download/dragonwell-extended-11.0.23.20_jdk-11.0.23-ga/Alibaba_Dragonwell_Extended_11.0.23.20.9_x64_windows.zip'
       ],
       [
         '11',
         'alpine-linux',
         'x64',
-        'https://github.com/alibaba/dragonwell11/releases/download/dragonwell-extended-11.0.17.13_jdk-11.0.17-ga/Alibaba_Dragonwell_Extended_11.0.17.13.8_x64_alpine-linux.tar.gz'
+        'https://github.com/dragonwell-project/dragonwell11/releases/download/dragonwell-extended-11.0.23.20_jdk-11.0.23-ga/Alibaba_Dragonwell_Extended_11.0.23.20.9_x64_alpine-linux.tar.gz'
       ],
       [
         '11.0.17',
@@ -158,6 +165,30 @@ describe('getAvailableVersions', () => {
         'linux',
         'x64',
         'https://github.com/alibaba/dragonwell17/releases/download/dragonwell-standard-17.0.4.0.4%2B8_jdk-17.0.4-ga/Alibaba_Dragonwell_Standard_17.0.4.0.4%2B8_x64_linux.tar.gz'
+      ],
+      [
+        '17.0.4+8',
+        'linux',
+        'x64',
+        'https://github.com/alibaba/dragonwell17/releases/download/dragonwell-standard-17.0.4.0.4%2B8_jdk-17.0.4-ga/Alibaba_Dragonwell_Standard_17.0.4.0.4%2B8_x64_linux.tar.gz'
+      ],
+      [
+        '21',
+        'linux',
+        'aarch64',
+        'https://github.com/dragonwell-project/dragonwell21/releases/download/dragonwell-standard-21.0.3.0.3%2B9_jdk-21.0.3-ga/Alibaba_Dragonwell_Standard_21.0.3.0.3.9_aarch64_linux.tar.gz'
+      ],
+      [
+        '21.0.3+9',
+        'linux',
+        'riscv',
+        'https://github.com/dragonwell-project/dragonwell21/releases/download/dragonwell-standard-21.0.3.0.3%2B9_jdk-21.0.3-ga/Alibaba_Dragonwell_Standard_21.0.3.0.3.9_riscv64_linux.tar.gz'
+      ],
+      [
+        '21.0.1+12',
+        'linux',
+        'x64',
+        'https://github.com/dragonwell-project/dragonwell21/releases/download/dragonwell-standard-21.0.1.0.1%2B12_jdk-21.0.1-ga/Alibaba_Dragonwell_Standard_21.0.1.0.1.12_x64_linux.tar.gz'
       ]
     ])(
       'should return proper link according to the specified java-version, platform and arch',

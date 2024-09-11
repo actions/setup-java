@@ -8,6 +8,7 @@
   - [Amazon Corretto](#Amazon-Corretto)
   - [Oracle](#Oracle)
   - [Alibaba Dragonwell](#Alibaba-Dragonwell)
+  - [SapMachine](#SapMachine)
   - [JetBrains](#JetBrains)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
@@ -143,6 +144,18 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
+### SapMachine
+**NOTE:** An OpenJDK release maintained and supported by SAP
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'sapmachine'
+    java-version: '21'
+- run: java -cp java HelloWorldApp
+```
+
 ### JetBrains
 **NOTE:** JetBrains only provides jdk and is only available for LTS versions 11 or later.
 
@@ -182,7 +195,6 @@ steps:
     java-package: jdk # optional (jdk or jre) - defaults to jdk
 - run: java -cp java HelloWorldApp
 ```
-
 
 ## Installing custom Java architecture
 

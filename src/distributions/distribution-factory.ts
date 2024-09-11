@@ -10,6 +10,7 @@ import {SemeruDistribution} from './semeru/installer';
 import {CorrettoDistribution} from './corretto/installer';
 import {OracleDistribution} from './oracle/installer';
 import {DragonwellDistribution} from './dragonwell/installer';
+import {SapMachineDistribution} from './sapmachine/installer';
 import {JetBrainsDistribution} from "./jetbrains/installer";
 
 enum JavaDistribution {
@@ -25,7 +26,8 @@ enum JavaDistribution {
   Corretto = 'corretto',
   Oracle = 'oracle',
   Dragonwell = 'dragonwell',
-  JetBrains = 'jetbrains',
+  SapMachine = 'sapmachine',
+  JetBrains = 'jetbrains'
 }
 
 export function getJavaDistribution(
@@ -66,6 +68,8 @@ export function getJavaDistribution(
       return new OracleDistribution(installerOptions);
     case JavaDistribution.Dragonwell:
       return new DragonwellDistribution(installerOptions);
+    case JavaDistribution.SapMachine:
+      return new SapMachineDistribution(installerOptions);
     case JavaDistribution.JetBrains:
       return new JetBrainsDistribution(installerOptions);
     default:
