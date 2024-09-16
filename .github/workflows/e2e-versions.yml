@@ -71,7 +71,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        distribution: ['temurin']
+        distribution: ['temurin', 'sapmachine']
         version: ['21', '17']
     steps:
       - name: Checkout
