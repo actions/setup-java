@@ -9,6 +9,7 @@
   - [Oracle](#Oracle)
   - [Alibaba Dragonwell](#Alibaba-Dragonwell)
   - [SapMachine](#SapMachine)
+  - [GraalVM](#GraalVM)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -153,6 +154,21 @@ steps:
     distribution: 'sapmachine'
     java-version: '21'
 - run: java -cp java HelloWorldApp
+```
+
+### GraalVM
+**NOTE:** Oracle GraalVM is only available for JDK 17 and later.
+
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'graalvm'
+    java-version: '21'
+- run: |
+    java -cp java HelloWorldApp
+    native-image -cp java HelloWorldApp
 ```
 
 ## Installing custom Java package type
