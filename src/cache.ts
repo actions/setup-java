@@ -98,7 +98,7 @@ async function computeCacheKey(
       `No file in ${process.cwd()} matched to [${pattern}], make sure you have checked out the target repository`
     );
   }
-  return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${packageManager.id}-${fileHash}`;
+  return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${process.arch}-${packageManager.id}-${fileHash}`;
 }
 
 /**
