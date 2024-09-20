@@ -11,7 +11,8 @@ import {
   extractJdkFile,
   getDownloadArchiveExtension,
   convertVersionToSemver,
-  isVersionSatisfies
+  isVersionSatisfies,
+  renameWinArchive
 } from '../../util';
 import {
   JavaDownloadRelease,
@@ -80,13 +81,8 @@ export class ZuluDistribution extends JavaBase {
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
-    if (
-      process.platform === 'win32' &&
-      (this.architecture === 'arm64' || this.architecture === 'aarch64')
-    ) {
-      const javaArchivePathRenamed = `${javaArchivePath}.zip`;
-      await fs.renameSync(javaArchivePath, javaArchivePathRenamed);
-      javaArchivePath = javaArchivePathRenamed;
+    if (process.platform === 'win32') {
+      javaArchivePath = renameWinArchive(javaArchivePath);
     }
     const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
 
