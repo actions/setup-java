@@ -9,6 +9,7 @@
   - [Oracle](#Oracle)
   - [Alibaba Dragonwell](#Alibaba-Dragonwell)
   - [SapMachine](#SapMachine)
+  - [GraalVM](#GraalVM)
   - [JetBrains](#JetBrains)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
@@ -156,6 +157,21 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
+### GraalVM
+**NOTE:** Oracle GraalVM is only available for JDK 17 and later.
+
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'graalvm'
+    java-version: '21'
+- run: |
+    java -cp java HelloWorldApp
+    native-image -cp java HelloWorldApp
+```
+
 ### JetBrains
 **NOTE:** JetBrains only provides jdk and is only available for LTS versions 11 or later.
 
@@ -182,6 +198,21 @@ steps:
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 - run: java -cp java HelloWorldApp
+```
+
+### GraalVM
+**NOTE:** Oracle GraalVM is only available for JDK 17 and later.
+
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'graalvm'
+    java-version: '21'
+- run: |
+    java -cp java HelloWorldApp
+    native-image -cp java HelloWorldApp
 ```
 
 ## Installing custom Java package type

@@ -46,11 +46,22 @@ jobs:
             version: 17
           - distribution: oracle
             os: windows-latest
-            version: 20
+            version: 21
           - distribution: oracle
             os: ubuntu-latest
-            version: 20
-
+            version: 21
+          - distribution: graalvm
+            os: macos-latest
+            version: 17
+          - distribution: graalvm
+            os: windows-latest
+            version: 21
+          - distribution: graalvm
+            os: ubuntu-latest
+            version: 21
+          - distribution: graalvm
+            os: ubuntu-latest
+            version: '24-ea'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -80,7 +91,10 @@ jobs:
         include:
           - distribution: oracle
             os: ubuntu-latest
-            version: '20.0.1'
+            version: '21.0.4'
+          - distribution: graalvm
+            os: ubuntu-latest
+            version: '21.0.4'
           - distribution: dragonwell
             os: ubuntu-latest
             version: '11.0'

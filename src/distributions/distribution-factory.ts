@@ -11,6 +11,7 @@ import {CorrettoDistribution} from './corretto/installer';
 import {OracleDistribution} from './oracle/installer';
 import {DragonwellDistribution} from './dragonwell/installer';
 import {SapMachineDistribution} from './sapmachine/installer';
+import {GraalVMDistribution} from './graalvm/installer';
 import {JetBrainsDistribution} from "./jetbrains/installer";
 
 enum JavaDistribution {
@@ -27,6 +28,7 @@ enum JavaDistribution {
   Oracle = 'oracle',
   Dragonwell = 'dragonwell',
   SapMachine = 'sapmachine',
+  GraalVM = 'graalvm',
   JetBrains = 'jetbrains'
 }
 
@@ -70,6 +72,8 @@ export function getJavaDistribution(
       return new DragonwellDistribution(installerOptions);
     case JavaDistribution.SapMachine:
       return new SapMachineDistribution(installerOptions);
+    case JavaDistribution.GraalVM:
+      return new GraalVMDistribution(installerOptions);
     case JavaDistribution.JetBrains:
       return new JetBrainsDistribution(installerOptions);
     default:
