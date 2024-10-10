@@ -12,6 +12,7 @@ import {OracleDistribution} from './oracle/installer';
 import {DragonwellDistribution} from './dragonwell/installer';
 import {SapMachineDistribution} from './sapmachine/installer';
 import {GraalVMDistribution} from './graalvm/installer';
+import {KonaDistribution} from './kona/installer';
 
 enum JavaDistribution {
   Adopt = 'adopt',
@@ -27,7 +28,8 @@ enum JavaDistribution {
   Oracle = 'oracle',
   Dragonwell = 'dragonwell',
   SapMachine = 'sapmachine',
-  GraalVM = 'graalvm'
+  GraalVM = 'graalvm',
+  Kona = 'kona'
 }
 
 export function getJavaDistribution(
@@ -72,6 +74,8 @@ export function getJavaDistribution(
       return new SapMachineDistribution(installerOptions);
     case JavaDistribution.GraalVM:
       return new GraalVMDistribution(installerOptions);
+    case JavaDistribution.Kona:
+      return new KonaDistribution(installerOptions);
     default:
       return null;
   }
