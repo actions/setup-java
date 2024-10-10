@@ -190,3 +190,14 @@ export function getGitHubHttpHeaders(): OutgoingHttpHeaders {
   }
   return headers;
 }
+
+// Rename archive to add extension because after downloading
+// archive does not contain extension type and it leads to some issues
+// on Windows runners without PowerShell Core.
+//
+// For default PowerShell Windows it should contain extension type to unpack it.
+export function renameWinArchive(javaArchivePath: string): string {
+  const javaArchivePathRenamed = `${javaArchivePath}.zip`;
+  fs.renameSync(javaArchivePath, javaArchivePathRenamed);
+  return javaArchivePathRenamed;
+}
