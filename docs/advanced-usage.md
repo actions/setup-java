@@ -10,6 +10,7 @@
   - [Alibaba Dragonwell](#Alibaba-Dragonwell)
   - [SapMachine](#SapMachine)
   - [GraalVM](#GraalVM)
+  - [Tencent Kona](#Tencent-Kona)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -171,6 +172,19 @@ steps:
     native-image -cp java HelloWorldApp
 ```
 
+### Tencent Kona
+**NOTE:** Tencent Kona supports major versions 8, 11, 17 and 21, and provides jdk only.
+
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'kona'
+    java-version: '8'
+- run: java -cp java HelloWorldApp
+```
+
 ## Installing custom Java package type
 ```yaml
 steps:
@@ -211,7 +225,7 @@ steps:
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
     java-version: '11.0.0'
     architecture: x64
-    
+
 - run: java -cp java HelloWorldApp
 ```
 
@@ -556,12 +570,12 @@ steps:
 
 ## Java version file
   If the `java-version-file` input is specified, the action will extract the version from the file and install it.
-  
+
   Supported files are .java-version and .tool-versions.
   In .java-version file, only the version should be specified (e.g., 17.0.7).
   In .tool-versions file, java version should be preceded by the java keyword (e.g., java 17.0.7).
   The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv). Similarly, the `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)).
-  
+
   If both java-version and java-version-file inputs are provided, the java-version input will be used.
 
 Valid entry options:
