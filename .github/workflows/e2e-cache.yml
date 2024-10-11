@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-24.04]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-24.04]
     needs: gradle-save
     steps:
       - name: Checkout
@@ -70,7 +70,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-24.04]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -93,7 +93,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-24.04]
     needs: maven-save
     steps:
       - name: Checkout
@@ -121,7 +121,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-22.04]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -170,7 +170,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-22.04]
     needs: sbt-save
     steps:
       - name: Checkout
