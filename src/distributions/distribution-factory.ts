@@ -12,7 +12,7 @@ import {OracleDistribution} from './oracle/installer';
 import {DragonwellDistribution} from './dragonwell/installer';
 import {SapMachineDistribution} from './sapmachine/installer';
 import {GraalVMDistribution} from './graalvm/installer';
-import {JetBrainsDistribution} from "./jetbrains/installer";
+import {JetBrainsDistribution} from './jetbrains/installer';
 
 enum JavaDistribution {
   Adopt = 'adopt',

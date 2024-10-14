@@ -12,11 +12,8 @@ import {
   JavaInstallerOptions,
   JavaInstallerResults
 } from '../base-models';
-import {
-  extractJdkFile,
-  isVersionSatisfies
-} from '../../util';
-import {IncomingHttpHeaders, OutgoingHttpHeaders} from "http";
+import {extractJdkFile, isVersionSatisfies} from '../../util';
+import {OutgoingHttpHeaders} from 'http';
 
 export class JetBrainsDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -46,7 +43,9 @@ export class JetBrainsDistribution extends JavaBase {
     const resolvedFullVersion =
       satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
     if (!resolvedFullVersion) {
-      const availableOptions = versionsRaw.map(item => item.tag_name).join(', ');
+      const availableOptions = versionsRaw
+        .map(item => item.tag_name)
+        .join(', ');
       const availableOptionsMessage = availableOptions
         ? `\nAvailable versions: ${availableOptions}`
         : '';
@@ -68,7 +67,7 @@ export class JetBrainsDistribution extends JavaBase {
     const javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
-    const extractedJavaPath = await extractJdkFile(javaArchivePath, "tar.gz");
+    const extractedJavaPath = await extractJdkFile(javaArchivePath, 'tar.gz');
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
@@ -98,7 +97,7 @@ export class JetBrainsDistribution extends JavaBase {
     const rawVersions: IJetBrainsRawVersion[] = [];
     while (true) {
       const requestArguments = `per_page=100&page=${page_index}`;
-      const requestHeaders: OutgoingHttpHeaders = {}
+      const requestHeaders: OutgoingHttpHeaders = {};
 
       if (process.env.GITHUB_TOKEN) {
         requestHeaders['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
@@ -108,15 +107,11 @@ export class JetBrainsDistribution extends JavaBase {
 
       if (core.isDebug() && page_index === 1) {
         // url is identical except page_index so print it once for debug
-        core.debug(
-          `Gathering available versions from '${rawUrl}'`
-        );
+        core.debug(`Gathering available versions from '${rawUrl}'`);
       }
 
       const paginationPage = (
-        await this.http.getJson<IJetBrainsRawVersion[]>(
-          rawUrl, requestHeaders
-        )
+        await this.http.getJson<IJetBrainsRawVersion[]>(rawUrl, requestHeaders)
       ).result;
       if (!paginationPage || paginationPage.length === 0) {
         // break infinity loop because we have reached end of pagination
@@ -145,14 +140,14 @@ export class JetBrainsDistribution extends JavaBase {
           vstring = tag.substring(2).replace(/-/g, '').replace(/_/g, '.');
           break;
         case undefined: // 0
-          vstring = tag.substring(3)
+          vstring = tag.substring(3);
           break;
         default:
-          throw new Error(`Unrecognized tag_name: ${tag}`)
+          throw new Error(`Unrecognized tag_name: ${tag}`);
       }
 
       const vsplit = vstring.split('b');
-      const semver = vsplit[0].replace(/_/g, '.');
+      const semver = vsplit[0];
       const build = +vsplit[1];
 
       // Construct URL
