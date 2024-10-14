@@ -305,7 +305,7 @@ jobs:
       fail-fast: false
       matrix:
         # x86 is not supported on macOS
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-22.04]
         distribution: ['liberica', 'zulu', 'corretto']
         version: ['11']
     steps:
