@@ -2,8 +2,9 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 
 import fs from 'fs';
-import path from 'path';
+import path, {resolve} from 'path';
 import semver from 'semver';
+import https from 'https';
 
 import {JavaBase} from '../base-installer';
 import {IJetBrainsRawVersion, IJetBrainsVersion} from './models';
@@ -151,7 +152,7 @@ export class JetBrainsDistribution extends JavaBase {
       const build = +vsplit[1];
 
       // Construct URL
-      const url = `https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_jcef-${semver}-${platform}-${arch}-b${build}.tar.gz`;
+      const url = `https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-${semver}-${platform}-${arch}-b${build}.tar.gz`;
 
       return {
         tag_name: tag,

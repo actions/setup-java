@@ -173,7 +173,7 @@ steps:
 ```
 
 ### JetBrains
-**NOTE:** JetBrains only provides jdk and is only available for LTS versions 11 or later.
+**NOTE:** JetBrains only provides jdk and is only available for LTS versions 11 or later. JCEF is not bundled with this distribution.
 
 ```yaml
 steps:
