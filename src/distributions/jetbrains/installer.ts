@@ -138,7 +138,7 @@ export class JetBrainsDistribution extends JavaBase {
           vstring = tag.substring(tag.lastIndexOf('-') + 1);
           break;
         case 1:
-          vstring = tag.substring(2).replace(/-/g, '').replace(/_/g, '.');
+          vstring = tag.substring(2).replace(/-/g, '');
           break;
         case undefined: // 0
           vstring = tag.substring(3);
