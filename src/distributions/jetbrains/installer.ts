@@ -2,9 +2,8 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 
 import fs from 'fs';
-import path, {resolve} from 'path';
+import path from 'path';
 import semver from 'semver';
-import https from 'https';
 
 import {JavaBase} from '../base-installer';
 import {IJetBrainsRawVersion, IJetBrainsVersion} from './models';
@@ -156,7 +155,7 @@ export class JetBrainsDistribution extends JavaBase {
 
       return {
         tag_name: tag,
-        semver: semver,
+        semver: semver.replace(/_/g, '.'),
         build: build,
         url: url
       } as IJetBrainsVersion;
@@ -166,7 +165,7 @@ export class JetBrainsDistribution extends JavaBase {
       core.startGroup('Print information about available versions');
       console.timeEnd('Retrieving available versions for JBR took'); // eslint-disable-line no-console
       core.debug(`Available versions: [${versions.length}]`);
-      core.debug(versions.map(item => item.tag_name).join(', '));
+      core.debug(versions.map(item => item.semver).join(', '));
       core.endGroup();
     }
 
