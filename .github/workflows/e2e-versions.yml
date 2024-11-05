@@ -74,6 +74,8 @@ jobs:
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   setup-java-major-minor-versions:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
@@ -104,6 +106,12 @@ jobs:
           - distribution: sapmachine
             os: ubuntu-latest
             version: '17.0.7'
+          - distribution: jetbrains
+            os: ubuntu-latest
+            version: '11.0.11'
+          - distribution: jetbrains
+            os: ubuntu-latest
+            version: '17.0.7'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -116,6 +124,8 @@ jobs:
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   setup-java-check-latest:
     name: ${{ matrix.distribution }} ${{ matrix.version }} - check-latest flag - ${{ matrix.os }}
@@ -126,7 +136,7 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution:
-          ['temurin', 'zulu', 'liberica', 'dragonwell', 'sapmachine']
+          ['temurin', 'zulu', 'liberica', 'dragonwell', 'sapmachine', 'jetbrains']
         exclude:
           - distribution: dragonwell
             os: macos-latest
@@ -153,7 +163,7 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution:
-          ['temurin', 'zulu', 'liberica', 'dragonwell', 'sapmachine']
+          ['temurin', 'zulu', 'liberica', 'dragonwell', 'sapmachine', 'jetbrains']
         exclude:
           - distribution: dragonwell
             os: macos-latest
