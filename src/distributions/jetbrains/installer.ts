@@ -122,7 +122,7 @@ export class JetBrainsDistribution extends JavaBase {
       page_index++;
     }
 
-    const versions = rawVersions.map(v => {
+    const versions0 = rawVersions.map(v => {
       // Release tags look like one of these:
       // jbr-release-21.0.3b465.3
       // jb11_0_11-b87.7
@@ -159,6 +159,11 @@ export class JetBrainsDistribution extends JavaBase {
         build: build,
         url: url
       } as IJetBrainsVersion;
+    });
+
+    const versions = versions0.filter(async i => {
+      const res = await this.http.head(i.url);
+      return res.message.statusCode === 200;
     });
 
     if (core.isDebug()) {
