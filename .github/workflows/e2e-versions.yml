@@ -71,11 +71,11 @@ jobs:
         with:
           java-version: ${{ matrix.version }}
           distribution: ${{ matrix.distribution }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   setup-java-major-minor-versions:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
@@ -283,7 +283,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-13, windows-latest, ubuntu-latest]
-        distribution: ['temurin', 'zulu', 'liberica', 'semeru', 'sapmachine']
+        distribution:
+          ['temurin', 'zulu', 'liberica', 'semeru', 'sapmachine', 'jetbrains']
         java-package: ['jre']
         version: ['17.0']
         include:
@@ -307,6 +308,55 @@ jobs:
             java-package: jre
             version: '8'
             os: windows-latest
+          - distribution: 'jetbrains'
+            java-package: jdk+jcef
+            version: '11'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jdk+jcef
+            version: '17'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jdk+jcef
+            version: '21'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jre+jcef
+            version: '11'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jre+jcef
+            version: '17'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jre+jcef
+            version: '21'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jdk+ft
+            version: '11'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jdk+ft
+            version: '17'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jdk+ft
+            version: '21'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jre+ft
+            version: '11'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jre+ft
+            version: '17'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jre+ft
+            version: '21'
+            os: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4

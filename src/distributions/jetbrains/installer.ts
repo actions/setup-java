@@ -14,6 +14,7 @@ import {
 } from '../base-models';
 import {extractJdkFile, isVersionSatisfies} from '../../util';
 import {OutgoingHttpHeaders} from 'http';
+import {HttpCodes} from '@actions/http-client';
 
 export class JetBrainsDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -44,7 +45,7 @@ export class JetBrainsDistribution extends JavaBase {
       satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
     if (!resolvedFullVersion) {
       const availableOptions = versionsRaw
-        .map(item => item.tag_name)
+        .map(item => `${item.tag_name} (${item.semver}+${item.build})`)
         .join(', ');
       const availableOptionsMessage = availableOptions
         ? `\nAvailable versions: ${availableOptions}`
@@ -122,49 +123,84 @@ export class JetBrainsDistribution extends JavaBase {
       page_index++;
     }
 
-    const versions0 = rawVersions.map(v => {
+    const versions0 = rawVersions.map(async v => {
       // Release tags look like one of these:
       // jbr-release-21.0.3b465.3
+      // jbr17-b87.7
       // jb11_0_11-b87.7
       // jbr11_0_15b2043.56
+      // 11_0_11b1536.2
+      // 11_0_11-b1522
       const tag = v.tag_name;
 
       // Extract version string
-      let vstring;
-
-      switch (tag.match(/-/g)?.length) {
-        case 2:
-          vstring = tag.substring(tag.lastIndexOf('-') + 1);
-          break;
-        case 1:
-          vstring = tag.substring(2).replace(/-/g, '');
-          break;
-        case undefined: // 0
-          vstring = tag.substring(3);
-          break;
-        default:
-          throw new Error(`Unrecognized tag_name: ${tag}`);
-      }
+      const vstring = tag
+        .replace('jbr-release-', '')
+        .replace('jbr', '')
+        .replace('jb', '')
+        .replace('-', '');
 
       const vsplit = vstring.split('b');
-      const semver = vsplit[0];
+      let semver = vsplit[0];
       const build = +vsplit[1];
 
-      // Construct URL
-      const url = `https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-${semver}-${platform}-${arch}-b${build}.tar.gz`;
+      // Normalize semver
+      if (!semver.includes('.') && !semver.includes('_'))
+        semver = `${semver}.0.0`;
 
-      return {
+      // Construct URL
+      let type: string;
+      switch (this.packageType ?? '') {
+        case 'jre':
+          type = 'jbr';
+          break;
+        case 'jdk+jcef':
+          type = 'jbrsdk_jcef';
+          break;
+        case 'jre+jcef':
+          type = 'jbr_jcef';
+          break;
+        case 'jdk+ft':
+          type = 'jbrsdk_ft';
+          break;
+        case 'jre+ft':
+          type = 'jbr_ft';
+          break;
+        default:
+          type = 'jbrsdk';
+          break;
+      }
+
+      let url = `https://cache-redirector.jetbrains.com/intellij-jbr/${type}-${semver}-${platform}-${arch}-b${build}.tar.gz`;
+      let include = false;
+
+      const res = await this.http.head(url);
+      if (res.message.statusCode === HttpCodes.OK) {
+        include = true;
+      } else {
+        url = `https://cache-redirector.jetbrains.com/intellij-jbr/${type}_nomod-${semver}-${platform}-${arch}-b${build}.tar.gz`;
+        const res2 = await this.http.head(url);
+        if (res2.message.statusCode === HttpCodes.OK) {
+          include = true;
+        }
+      }
+
+      const version = {
         tag_name: tag,
         semver: semver.replace(/_/g, '.'),
         build: build,
         url: url
       } as IJetBrainsVersion;
+
+      return {
+        item: version,
+        include: include
+      };
     });
 
-    const versions = versions0.filter(async i => {
-      const res = await this.http.head(i.url);
-      return res.message.statusCode === 200;
-    });
+    const versions = await Promise.all(versions0).then(res =>
+      res.filter(item => item.include).map(item => item.item)
+    );
 
     if (core.isDebug()) {
       core.startGroup('Print information about available versions');

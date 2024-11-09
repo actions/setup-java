@@ -173,7 +173,8 @@ steps:
 ```
 
 ### JetBrains
-**NOTE:** JetBrains only provides jdk and is only available for LTS versions 11 or later. JCEF is not bundled with this distribution.
+
+**NOTE:** JetBrains is only available for LTS versions on 11 or later.
 
 ```yaml
 steps:
@@ -194,11 +195,21 @@ steps:
 - uses: actions/setup-java@v4
   with:
     distribution: 'jetbrains'
-    java-version: '11'
+    java-version: '17'
+    package-type: 'jdk' # optional (jdk, jre, jdk+jcef, jre+jcef, jdk+ft, or jre+ft) - defaults to jdk
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 - run: java -cp java HelloWorldApp
 ```
+
+JetBrains Package Types (as shown in the [releases page](https://github.com/JetBrains/JetBrainsRuntime/releases/)):
+
+- `jdk` - JBRSDK
+- `jre` - JBR (Vanilla)
+- `jdk+jcef` - JBRSDK with JCEF
+- `jre+jcef` - JBR with JCEF
+- `jdk+ft` - JBRSDK (FreeType)
+- `jre+ft` - JBR (FreeType)
 
 ### GraalVM
 **NOTE:** Oracle GraalVM is only available for JDK 17 and later.
