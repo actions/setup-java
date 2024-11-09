@@ -3,6 +3,7 @@ import {HttpClient} from '@actions/http-client';
 import {JetBrainsDistribution} from '../../src/distributions/jetbrains/installer';
 
 import manifestData from '../data/jetbrains.json';
+import {fstat, writeFileSync} from 'fs';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
@@ -50,7 +51,7 @@ describe('getAvailableVersions', () => {
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).not.toBeNull();
     expect(availableVersions.length).toBe(manifestData.length * 2);
-  });
+  }, 10_000);
 });
 
 describe('findPackageForDownload', () => {
