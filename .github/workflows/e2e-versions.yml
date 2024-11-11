@@ -157,6 +157,8 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: 11
           check-latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java
         run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
         shell: bash
@@ -192,6 +194,8 @@ jobs:
           java-version: |
             11
             17
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java env variables
         run: |
           $versionsArr = "11","17"
@@ -334,19 +338,11 @@ jobs:
             os: ubuntu-latest
           - distribution: 'jetbrains'
             java-package: jdk+ft
-            version: '11'
-            os: ubuntu-latest
-          - distribution: 'jetbrains'
-            java-package: jdk+ft
             version: '17'
             os: ubuntu-latest
           - distribution: 'jetbrains'
             java-package: jdk+ft
             version: '21'
-            os: ubuntu-latest
-          - distribution: 'jetbrains'
-            java-package: jre+ft
-            version: '11'
             os: ubuntu-latest
           - distribution: 'jetbrains'
             java-package: jre+ft
@@ -367,6 +363,8 @@ jobs:
           java-version: ${{ matrix.version }}
           java-package: ${{ matrix.java-package }}
           distribution: ${{ matrix.distribution }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash

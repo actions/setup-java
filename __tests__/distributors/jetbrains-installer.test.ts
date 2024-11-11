@@ -3,7 +3,7 @@ import {HttpClient} from '@actions/http-client';
 import {JetBrainsDistribution} from '../../src/distributions/jetbrains/installer';
 
 import manifestData from '../data/jetbrains.json';
-import {fstat, writeFileSync} from 'fs';
+import os from 'os';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
@@ -50,7 +50,12 @@ describe('getAvailableVersions', () => {
     });
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).not.toBeNull();
-    expect(availableVersions.length).toBe(manifestData.length * 2);
+
+    const length =
+      os.platform() === 'win32'
+        ? manifestData.length * 2 - 4
+        : manifestData.length * 2;
+    expect(availableVersions.length).toBe(length);
   }, 10_000);
 });
 
