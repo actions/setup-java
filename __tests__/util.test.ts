@@ -3,8 +3,7 @@ import * as core from '@actions/core';
 import {
   convertVersionToSemver,
   isVersionSatisfies,
-  isCacheFeatureAvailable,
-  isGhes
+  isCacheFeatureAvailable
 } from '../src/util';
 
 jest.mock('@actions/cache');
@@ -79,43 +78,5 @@ describe('convertVersionToSemver', () => {
   ])('%s -> %s', (input: string, expected: string) => {
     const actual = convertVersionToSemver(input);
     expect(actual).toBe(expected);
-  });
-});
-
-describe('isGhes', () => {
-  const pristineEnv = process.env;
-
-  beforeEach(() => {
-    jest.resetModules();
-    process.env = {...pristineEnv};
-  });
-
-  afterAll(() => {
-    process.env = pristineEnv;
-  });
-
-  it('returns false when the GITHUB_SERVER_URL environment variable is not defined', async () => {
-    delete process.env['GITHUB_SERVER_URL'];
-    expect(isGhes()).toBeFalsy();
-  });
-
-  it('returns false when the GITHUB_SERVER_URL environment variable is set to github.com', async () => {
-    process.env['GITHUB_SERVER_URL'] = 'https://github.com';
-    expect(isGhes()).toBeFalsy();
-  });
-
-  it('returns false when the GITHUB_SERVER_URL environment variable is set to a GitHub Enterprise Cloud-style URL', async () => {
-    process.env['GITHUB_SERVER_URL'] = 'https://contoso.ghe.com';
-    expect(isGhes()).toBeFalsy();
-  });
-
-  it('returns false when the GITHUB_SERVER_URL environment variable has a .localhost suffix', async () => {
-    process.env['GITHUB_SERVER_URL'] = 'https://mock-github.localhost';
-    expect(isGhes()).toBeFalsy();
-  });
-
-  it('returns true when the GITHUB_SERVER_URL environment variable is set to some other URL', async () => {
-    process.env['GITHUB_SERVER_URL'] = 'https://src.onpremise.fabrikam.com';
-    expect(isGhes()).toBeTruthy();
   });
 });
