@@ -96,12 +96,14 @@ export class JetBrainsDistribution extends JavaBase {
     // GitHub API doesn't provide way to retrieve the count of pages to iterate so infinity loop
     let page_index = 1;
     const rawVersions: IJetBrainsRawVersion[] = [];
+    const bearerToken = process.env.GITHUB_TOKEN;
+
     while (true) {
       const requestArguments = `per_page=100&page=${page_index}`;
       const requestHeaders: OutgoingHttpHeaders = {};
 
-      if (process.env.GITHUB_TOKEN) {
-        requestHeaders['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+      if (bearerToken) {
+        requestHeaders['Authorization'] = `Bearer ${bearerToken}`;
       }
 
       const rawUrl = `https://api.github.com/repos/JetBrains/JetBrainsRuntime/releases?${requestArguments}`;
@@ -122,6 +124,10 @@ export class JetBrainsDistribution extends JavaBase {
       rawVersions.push(...paginationPage);
       page_index++;
     }
+
+    // Add versions not available from the API but are downloadable
+    const hidden = ['11_0_10b1145.115', '11_0_11b1341.60'];
+    rawVersions.push(...hidden.map(tag => ({tag_name: tag, name: tag})));
 
     const versions0 = rawVersions.map(async v => {
       // Release tags look like one of these:
