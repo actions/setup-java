@@ -25,22 +25,11 @@ describe('getAvailableVersions', () => {
 
   it('load available versions', async () => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
-    spyHttpClient
-      .mockReturnValueOnce({
-        statusCode: 200,
-        headers: {},
-        result: manifestData as any
-      })
-      .mockReturnValueOnce({
-        statusCode: 200,
-        headers: {},
-        result: manifestData as any
-      })
-      .mockReturnValueOnce({
-        statusCode: 200,
-        headers: {},
-        result: []
-      });
+    spyHttpClient.mockReturnValueOnce({
+      statusCode: 200,
+      headers: {},
+      result: manifestData as any
+    });
 
     const distribution = new JetBrainsDistribution({
       version: '17',
@@ -53,8 +42,8 @@ describe('getAvailableVersions', () => {
 
     const length =
       os.platform() === 'win32'
-        ? manifestData.length * 2 - 4
-        : manifestData.length * 2;
+        ? manifestData.length - 2
+        : manifestData.length + 1;
     expect(availableVersions.length).toBe(length);
   }, 10_000);
 });
