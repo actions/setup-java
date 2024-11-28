@@ -174,7 +174,14 @@ steps:
 
 ### JetBrains
 
-**NOTE:** JetBrains is only available for LTS versions on 11 or later.
+**NOTE:** JetBrains is only available for LTS versions on 11 or later (11, 17, 21, etc.).
+
+Not all minor LTS versions are guarenteed to be available, since JetBrains considers what to ship IntelliJ IDEA with, most commonly on JDK 11.
+For example, `11.0.24` is not available but `11.0.16` is.
+
+Versions are based on the GitHub tag on the [JetBrains Runtime releases page](https://github.com/JetBrains/JetBrainsRuntime/releases). As such, some tags may be formatted with
+underscores (`11_0_13`) and others with dots (`11.0.13`). Conversion is automatically applied to the dot version format, so `11.0.13` is equivalent to `11_0_13`. Dot format
+is more encouraged for consistency, but both are supported.
 
 ```yaml
 steps:
@@ -202,7 +209,8 @@ steps:
 - run: java -cp java HelloWorldApp
 ```
 
-JetBrains Package Types (as shown in the [releases page](https://github.com/JetBrains/JetBrainsRuntime/releases/)):
+You can specify your package type (as shown in the [releases page](https://github.com/JetBrains/JetBrainsRuntime/releases/)) in the `package-type` parameter. 
+The available package types are:
 
 - `jdk` - JBRSDK
 - `jre` - JBR (Vanilla)
