@@ -179,10 +179,6 @@ steps:
 Not all minor LTS versions are guarenteed to be available, since JetBrains considers what to ship IntelliJ IDEA with, most commonly on JDK 11.
 For example, `11.0.24` is not available but `11.0.16` is.
 
-Versions are based on the GitHub tag on the [JetBrains Runtime releases page](https://github.com/JetBrains/JetBrainsRuntime/releases). As such, some tags may be formatted with
-underscores (`11_0_13`) and others with dots (`11.0.13`). Conversion is automatically applied to the dot version format, so `11.0.13` is equivalent to `11_0_13`. Dot format
-is more encouraged for consistency, but both are supported.
-
 ```yaml
 steps:
 - uses: actions/checkout@v4
@@ -203,13 +199,13 @@ steps:
   with:
     distribution: 'jetbrains'
     java-version: '17'
-    package-type: 'jdk' # optional (jdk, jre, jdk+jcef, jre+jcef, jdk+ft, or jre+ft) - defaults to jdk
+    java-package: 'jdk' # optional (jdk, jre, jdk+jcef, jre+jcef, jdk+ft, or jre+ft) - defaults to jdk
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 - run: java -cp java HelloWorldApp
 ```
 
-You can specify your package type (as shown in the [releases page](https://github.com/JetBrains/JetBrainsRuntime/releases/)) in the `package-type` parameter. 
+You can specify your package type (as shown in the [releases page](https://github.com/JetBrains/JetBrainsRuntime/releases/)) in the `java-package` parameter. 
 The available package types are:
 
 - `jdk` - JBRSDK
