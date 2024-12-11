@@ -52,7 +52,7 @@ jobs:
             version: 21
           - distribution: graalvm
             os: macos-latest
-            version: 17
+            version: 17.0.12
           - distribution: graalvm
             os: windows-latest
             version: 21
@@ -378,7 +378,7 @@ jobs:
       fail-fast: false
       matrix:
         # x86 is not supported on macOS
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-22.04]
         distribution: ['liberica', 'zulu', 'corretto']
         version: ['11']
     steps:

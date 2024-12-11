@@ -92,7 +92,13 @@ export function isGhes(): boolean {
   const ghUrl = new URL(
     process.env['GITHUB_SERVER_URL'] || 'https://github.com'
   );
-  return ghUrl.hostname.toUpperCase() !== 'GITHUB.COM';
+
+  const hostname = ghUrl.hostname.trimEnd().toUpperCase();
+  const isGitHubHost = hostname === 'GITHUB.COM';
+  const isGitHubEnterpriseCloudHost = hostname.endsWith('.GHE.COM');
+  const isLocalHost = hostname.endsWith('.LOCALHOST');
+
+  return !isGitHubHost && !isGitHubEnterpriseCloudHost && !isLocalHost;
 }
 
 export function isCacheFeatureAvailable(): boolean {
@@ -189,4 +195,15 @@ export function getGitHubHttpHeaders(): OutgoingHttpHeaders {
     headers.authorization = auth;
   }
   return headers;
+}
+
+// Rename archive to add extension because after downloading
+// archive does not contain extension type and it leads to some issues
+// on Windows runners without PowerShell Core.
+//
+// For default PowerShell Windows it should contain extension type to unpack it.
+export function renameWinArchive(javaArchivePath: string): string {
+  const javaArchivePathRenamed = `${javaArchivePath}.zip`;
+  fs.renameSync(javaArchivePath, javaArchivePathRenamed);
+  return javaArchivePathRenamed;
 }
