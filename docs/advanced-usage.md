@@ -10,6 +10,7 @@
   - [Alibaba Dragonwell](#Alibaba-Dragonwell)
   - [SapMachine](#SapMachine)
   - [GraalVM](#GraalVM)
+  - [JetBrains](#JetBrains)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -171,6 +172,64 @@ steps:
     native-image -cp java HelloWorldApp
 ```
 
+### JetBrains
+
+**NOTE:** JetBrains is only available for LTS versions on 11 or later (11, 17, 21, etc.).
+
+Not all minor LTS versions are guarenteed to be available, since JetBrains considers what to ship IntelliJ IDEA with, most commonly on JDK 11.
+For example, `11.0.24` is not available but `11.0.16` is.
+
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'jetbrains'
+    java-version: '11'
+- run: java -cp java HelloWorldApp
+```
+
+The JetBrains installer uses the GitHub API to fetch the latest version. If you believe your project is going to be running into rate limits, you can provide a
+GitHub token to the action to increase the rate limit. Set the `GITHUB_TOKEN` environment variable to the value of your GitHub token in the workflow file.
+
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'jetbrains'
+    java-version: '17'
+    java-package: 'jdk' # optional (jdk, jre, jdk+jcef, jre+jcef, jdk+ft, or jre+ft) - defaults to jdk
+  env:
+    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+- run: java -cp java HelloWorldApp
+```
+
+You can specify your package type (as shown in the [releases page](https://github.com/JetBrains/JetBrainsRuntime/releases/)) in the `java-package` parameter. 
+The available package types are:
+
+- `jdk` - JBRSDK
+- `jre` - JBR (Vanilla)
+- `jdk+jcef` - JBRSDK with JCEF
+- `jre+jcef` - JBR with JCEF
+- `jdk+ft` - JBRSDK (FreeType)
+- `jre+ft` - JBR (FreeType)
+
+### GraalVM
+**NOTE:** Oracle GraalVM is only available for JDK 17 and later.
+
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'graalvm'
+    java-version: '21'
+- run: |
+    java -cp java HelloWorldApp
+    native-image -cp java HelloWorldApp
+```
+
 ## Installing custom Java package type
 ```yaml
 steps:
@@ -182,7 +241,6 @@ steps:
     java-package: jdk # optional (jdk or jre) - defaults to jdk
 - run: java -cp java HelloWorldApp
 ```
-
 
 ## Installing custom Java architecture
 

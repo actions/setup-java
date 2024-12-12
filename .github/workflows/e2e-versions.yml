@@ -31,7 +31,8 @@ jobs:
             'semeru',
             'corretto',
             'dragonwell',
-            'sapmachine'
+            'sapmachine',
+            'jetbrains'
           ] # internally 'adopt-hotspot' is the same as 'adopt'
         version: ['21', '11', '17']
         exclude:
@@ -70,6 +71,8 @@ jobs:
         with:
           java-version: ${{ matrix.version }}
           distribution: ${{ matrix.distribution }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
@@ -103,6 +106,12 @@ jobs:
           - distribution: sapmachine
             os: ubuntu-latest
             version: '17.0.7'
+          - distribution: jetbrains
+            os: ubuntu-latest
+            version: '11.0.11'
+          - distribution: jetbrains
+            os: ubuntu-latest
+            version: '17.0.7'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -115,6 +124,8 @@ jobs:
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   setup-java-check-latest:
     name: ${{ matrix.distribution }} ${{ matrix.version }} - check-latest flag - ${{ matrix.os }}
@@ -125,7 +136,14 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution:
-          ['temurin', 'zulu', 'liberica', 'dragonwell', 'sapmachine']
+          [
+            'temurin',
+            'zulu',
+            'liberica',
+            'dragonwell',
+            'sapmachine',
+            'jetbrains'
+          ]
         exclude:
           - distribution: dragonwell
             os: macos-latest
@@ -139,6 +157,8 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version: 11
           check-latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java
         run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
         shell: bash
@@ -152,7 +172,14 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution:
-          ['temurin', 'zulu', 'liberica', 'dragonwell', 'sapmachine']
+          [
+            'temurin',
+            'zulu',
+            'liberica',
+            'dragonwell',
+            'sapmachine',
+            'jetbrains'
+          ]
         exclude:
           - distribution: dragonwell
             os: macos-latest
@@ -167,6 +194,8 @@ jobs:
           java-version: |
             11
             17
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java env variables
         run: |
           $versionsArr = "11","17"
@@ -258,7 +287,8 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-13, windows-latest, ubuntu-latest]
-        distribution: ['temurin', 'zulu', 'liberica', 'semeru', 'sapmachine']
+        distribution:
+          ['temurin', 'zulu', 'liberica', 'semeru', 'sapmachine', 'jetbrains']
         java-package: ['jre']
         version: ['17.0']
         include:
@@ -282,6 +312,47 @@ jobs:
             java-package: jre
             version: '8'
             os: windows-latest
+          - distribution: 'jetbrains'
+            java-package: jdk+jcef
+            version: '11'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jdk+jcef
+            version: '17'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jdk+jcef
+            version: '21'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jre+jcef
+            version: '11'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jre+jcef
+            version: '17'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jre+jcef
+            version: '21'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jdk+ft
+            version: '17'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jdk+ft
+            version: '21'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jre+ft
+            version: '17'
+            os: ubuntu-latest
+          - distribution: 'jetbrains'
+            java-package: jre+ft
+            version: '21'
+            os: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -292,6 +363,8 @@ jobs:
           java-version: ${{ matrix.version }}
           java-package: ${{ matrix.java-package }}
           distribution: ${{ matrix.distribution }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
