@@ -247,7 +247,7 @@
   {
     "id": 12446,
     "url": "https://cdn.azul.com/zulu/bin/zulu17.48.15-ca-jdk17.0.10-windows_aarch64.zip",
-    "name": "zulu17.48.15-ca-jdk17.0.10-win_aarhc4.zip",
+    "name": "zulu17.48.15-ca-jdk17.0.10-win_aarch4.zip",
     "zulu_version": [17, 48, 15, 0],
     "jdk_version": [17, 0, 10, 7]
   }
