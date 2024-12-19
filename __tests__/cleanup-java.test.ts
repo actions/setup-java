@@ -26,7 +26,7 @@ describe('cleanup', () => {
     resetState();
   });
 
-  it('does not fail nor warn even when the save process throws a ReserveCacheError', async () => {
+  it('does not warn/fail even when the save process throws a ReserveCacheError', async () => {
     spyCacheSave.mockImplementation((paths: string[], key: string) =>
       Promise.reject(
         new cache.ReserveCacheError(
