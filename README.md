@@ -273,6 +273,15 @@ In the example above multiple JDKs are installed for the same job. The result af
 - [Modifying Maven Toolchains](docs/advanced-usage.md#Modifying-Maven-Toolchains)
 - [Java Version File](docs/advanced-usage.md#Java-version-file)
 
+## Recommended permissions
+
+When using the `setup-java` action in your GitHub Actions workflow, it is recommended to set the following permissions to ensure proper functionality:
+
+```yaml
+permissions:
+  contents: read # access to check out code and install dependencies
+```
+
 ## License
 
 The scripts and documentation in this project are released under the [MIT License](LICENSE).
