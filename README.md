@@ -46,7 +46,13 @@ This action allows you to work with Java and Scala projects.
   #### Maven options
   The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
 
-  - `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists, set this to `false`.
+  - `overwrite-settings`: By default action overwrites the settings.xml and adds a toolchain entry to toolchains.xml. In order to skip generation of settings.xml and skip adding a toolchain entry to toolchains.xml if the according file exists, set this to `false`.
+
+  - `update-env-javahome`: By default action updates `env.JAVA_HOME` with the path of java installed. In order to skip update of JAVA_HOME, set this to `false`. The creation of the env variable JAVA_HOME_{{ MAJOR_VERSION }}_{{ ARCHITECTURE }} is NOT affected by this item. That will be created for any setup.
+
+  - `update-env-path`: By default action adds `<java_install_dir>/bin` to `env.PATH`. In order to skip this, set this to `false`.
+
+  - `update-toolchains-only`: If set to true, then `overwrite-settings`, `update-env-javahome` and `update-env-path` are propagated to `false` if the specific one is not explicitly configured to `true`. Only a toolchain entry will be added to toolchains.xml. Default is `false`.
 
   - `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
 
@@ -233,7 +239,7 @@ jobs:
 
 ### Install multiple JDKs
 
-All versions are added to the PATH. The last version will be used and available globally. Other Java versions can be accessed through env variables with such specification as 'JAVA_HOME_{{ MAJOR_VERSION }}_{{ ARCHITECTURE }}'.
+By default all versions are added to the PATH. The last version will be used and available globally. Other Java versions can be accessed through env variables with such specification as 'JAVA_HOME_{{ MAJOR_VERSION }}_{{ ARCHITECTURE }}'.
 
 ```yaml
     steps:
@@ -245,6 +251,8 @@ All versions are added to the PATH. The last version will be used and available 
             11
             15
 ```
+
+**NOTE:** An alternative option is to use multiple setup-java steps. In this case the behavior can be controlled more granular by making use of the input items `overwrite-settings`, `update-env-javahome`, `update-env-path` and `update-toolchains-only`.
 
 ### Using Maven Toolchains
 In the example above multiple JDKs are installed for the same job. The result after the last JDK is installed is a Maven Toolchains declaration containing references to all three JDKs. The values for `id`, `version`, and `vendor` of the individual Toolchain entries are the given input values for `distribution` and `java-version` (`vendor` being the combination of `${distribution}_${java-version}`) by default.
