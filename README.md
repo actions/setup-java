@@ -96,21 +96,21 @@ The `java-version` input supports an exact version or a version range using [Sem
 
 #### Supported distributions
 Currently, the following distributions are supported:
-| Keyword | Distribution | Official site | License
-|-|-|-|-|
-| `temurin` | Eclipse Temurin | [Link](https://adoptium.net/) | [Link](https://adoptium.net/about.html)
-| `zulu` | Azul Zulu OpenJDK | [Link](https://www.azul.com/downloads/zulu-community/?package=jdk) | [Link](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
-| `adopt` or `adopt-hotspot` | AdoptOpenJDK Hotspot | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
-| `adopt-openj9` | AdoptOpenJDK OpenJ9 | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
-| `liberica` | Liberica JDK | [Link](https://bell-sw.com/) | [Link](https://bell-sw.com/liberica_eula/) |
-| `microsoft` | Microsoft Build of OpenJDK | [Link](https://www.microsoft.com/openjdk) | [Link](https://docs.microsoft.com/java/openjdk/faq)
-| `corretto` | Amazon Corretto Build of OpenJDK | [Link](https://aws.amazon.com/corretto/) | [Link](https://aws.amazon.com/corretto/faqs/)
-| `semeru` | IBM Semeru Runtime Open Edition | [Link](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) | [Link](https://openjdk.java.net/legal/gplv2+ce.html) |
-| `oracle` | Oracle JDK | [Link](https://www.oracle.com/java/technologies/downloads/) | [Link](https://java.com/freeuselicense)
-| `dragonwell` | Alibaba Dragonwell JDK | [Link](https://dragonwell-jdk.io/) | [Link](https://www.aliyun.com/product/dragonwell/)
-| `sapmachine` | SAP SapMachine JDK/JRE | [Link](https://sapmachine.io/) | [Link](https://github.com/SAP/SapMachine/blob/sapmachine/LICENSE)
-| `graalvm` | Oracle GraalVM | [Link](https://www.graalvm.org/) | [Link](https://www.oracle.com/downloads/licenses/graal-free-license.html)
-| `jetbrains` | JetBrains Runtime | [Link](https://github.com/JetBrains/JetBrainsRuntime/) | [Link](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE)
+| Keyword | Distribution / Official site | License
+|-|-|-|
+| `temurin` | [Eclipse Temurin](https://adoptium.net/) | [`temurin` license](https://adoptium.net/about.html)
+| `zulu` | [Azul Zulu OpenJDK](https://www.azul.com/downloads/zulu-community/?package=jdk) | [`zulu` license](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
+| `adopt` or `adopt-hotspot` | [AdoptOpenJDK Hotspot](https://adoptopenjdk.net/) | [`adopt-hotspot` license](https://adoptopenjdk.net/about.html) |
+| `adopt-openj9` | [AdoptOpenJDK OpenJ9](https://adoptopenjdk.net/) | [`adopt-openj9` license](https://adoptopenjdk.net/about.html) |
+| `liberica` | [Liberica JDK](https://bell-sw.com/) | [`liberica` license](https://bell-sw.com/liberica_eula/) |
+| `microsoft` | [Microsoft Build of OpenJDK](https://www.microsoft.com/openjdk) | [`microsoft` license](https://docs.microsoft.com/java/openjdk/faq)
+| `corretto` | [Amazon Corretto Build of OpenJDK](https://aws.amazon.com/corretto/) | [`corretto` license](https://aws.amazon.com/corretto/faqs/)
+| `semeru` | [IBM Semeru Runtime Open Edition](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) | [`semeru` license](https://openjdk.java.net/legal/gplv2+ce.html) |
+| `oracle` | [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) | [`oracle` license](https://java.com/freeuselicense)
+| `dragonwell` | [Alibaba Dragonwell JDK](https://dragonwell-jdk.io/) | [`dragonwell` license](https://www.aliyun.com/product/dragonwell/)
+| `sapmachine` | [SAP SapMachine JDK/JRE](https://sapmachine.io/) | [`sapmachine` license](https://github.com/SAP/SapMachine/blob/sapmachine/LICENSE)
+| `graalvm` | [Oracle GraalVM](https://www.graalvm.org/) | [`graalvm` license](https://www.oracle.com/downloads/licenses/graal-free-license.html)
+| `jetbrains` | [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime/) | [`jetbrains` license](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE)
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 
@@ -198,7 +198,7 @@ In the basic examples above, the `check-latest` flag defaults to `false`. When s
 
 If `check-latest` is set to `true`, the action first checks if the cached version is the latest one. If the locally cached version is not the most up-to-date, the latest version of Java will be downloaded. Set `check-latest` to `true` if you want the most up-to-date version of Java to always be used. Setting `check-latest` to `true` has performance implications as downloading versions of Java is slower than using cached versions.
 
-For Java distributions that are not cached on Hosted images, `check-latest` always behaves as `true` and downloads Java on-flight. Check out [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache) for more details about pre-cached Java versions.
+For Java distributions that are not cached on Hosted images, `check-latest` always behaves as `true` and downloads Java on the fly. Check out [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache) for more details about pre-cached Java versions.
 
 
 ```yaml
