@@ -490,7 +490,7 @@ jobs:
         shell: bash
 
   setup-java-version-from-file-major-minor-patch-with-dist:
-    name: ${{ matrix.distribution }} version from file 'openjdk64-17.0.10' - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} version from file '${{ matrix.java-version-file }}' - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
