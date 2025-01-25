@@ -2,6 +2,7 @@ import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 import {
   convertVersionToSemver,
+  getVersionFromFileContent,
   isVersionSatisfies,
   isCacheFeatureAvailable,
   isGhes
@@ -79,6 +80,22 @@ describe('convertVersionToSemver', () => {
   ])('%s -> %s', (input: string, expected: string) => {
     const actual = convertVersionToSemver(input);
     expect(actual).toBe(expected);
+  });
+});
+
+describe('getVersionFromFileContent', () => {
+  describe('.sdkmanrc', () => {
+    it.each([
+      ['java=11.0.20.1-tem', '11.0.20'],
+      ['java = 11.0.20.1-tem', '11.0.20'],
+      ['java=11.0.20.1-tem # a comment in sdkmanrc', '11.0.20'],
+      ['java=11.0.20.1-tem\n#java=21.0.20.1-tem\n', '11.0.20'], // choose first match
+      ['java=11.0.20.1-tem\njava=21.0.20.1-tem\n', '11.0.20'], // choose first match
+      ['#java=11.0.20.1-tem\njava=21.0.20.1-tem\n', '21.0.20'] // first one is 'commented' in .sdkmanrc
+    ])('parsing %s should return %s', (content: string, expected: string) => {
+      const actual = getVersionFromFileContent(content, 'openjdk', '.sdkmanrc');
+      expect(actual).toBe(expected);
+    });
   });
 });
 
