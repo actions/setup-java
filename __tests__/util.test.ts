@@ -1,5 +1,7 @@
 import * as cache from '@actions/cache';
 import * as core from '@actions/core';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   convertVersionToSemver,
   getVersionFromFileContent,
@@ -95,6 +97,27 @@ describe('getVersionFromFileContent', () => {
     ])('parsing %s should return %s', (content: string, expected: string) => {
       const actual = getVersionFromFileContent(content, 'openjdk', '.sdkmanrc');
       expect(actual).toBe(expected);
+    });
+
+    describe('known versions', () => {
+      const csv = fs.readFileSync(
+        path.join(__dirname, 'data/sdkman-java-versions.csv'),
+        'utf8'
+      );
+      const versions = csv.split('\n').map(r => r.split(', '));
+
+      it.each(versions)(
+        'parsing %s should return %s',
+        (sdkmanJavaVersion: string, expected: string) => {
+          const asContent = `java=${sdkmanJavaVersion}`;
+          const actual = getVersionFromFileContent(
+            asContent,
+            'openjdk',
+            '.sdkmanrc'
+          );
+          expect(actual).toBe(expected);
+        }
+      );
     });
   });
 });
