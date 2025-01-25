@@ -68,7 +68,7 @@ Pull requests are the easiest way to contribute changes to git repos at GitHub. 
 Adding or changing tests is an integral part of making a change to the code. 
 Unit tests are in the `__tests__` folder, and end-to-end tests are in the `workflows` folder, particularly take a look at the files with `e2e` prefix, for instance, [e2e-cache.yml](https://github.com/actions/setup-java/blob/main/.github/workflows/e2e-cache.yml).
 
-- The contributor can add various types of tests (like unit tests or end-to-end tests), which, in his opinion, will be necessary and sufficient for testing new or changed functionality
+- The contributor can add various types of tests (like unit tests or end-to-end tests), which, in their opinion, will be necessary and sufficient for testing new or changed functionality
 - Tests should cover a successful execution, as well as some edge cases and possible errors
 - As already mentioned, pull requests without tests will be considered more carefully by maintainers. If you are sure that in this situation the tests are not needed or cannot be implemented with a commensurate effort - please add this clarification message to your pull request
 
@@ -76,7 +76,7 @@ Unit tests are in the `__tests__` folder, and end-to-end tests are in the `workf
 
 - CI will start automatically with some checks. Wait until the end of the execution and make sure that all checks passed successfully. If some checks fail, you can open them one by one, try to find the reason for failing and make changes to your code to resolve the problem
 - Maintainers will review your pull request
-- If a maintainer requests changes, first of all, try to think about his request critically and only after that implement and request another review
+- If a maintainer requests changes, first of all, try to think about their request critically and only after that implement and request another review
 - If your PR gets accepted, it will soon be merged into the main branch. But your contribution will take effect only after the release of a new version of the action and updating the major tag
 > Sometimes maintainers reject pull requests and that's ok! Usually, along with rejection, we supply the reason for it. Nonetheless, we still really appreciate you taking the time to do it, and we don't take that lightly :heart:
 
