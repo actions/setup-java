@@ -134,6 +134,8 @@ export function getVersionFromFileContent(
   if (versionFileName == '.tool-versions') {
     javaVersionRegExp =
       /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
+  } else if (versionFileName == '.sdkmanrc') {
+    javaVersionRegExp = /^java\s*=\s*(?<version>[^-]+)/m;
   } else {
     javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
   }
