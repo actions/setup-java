@@ -1,0 +1,30 @@
+import java.util.* ;
+public class Coffee{
+public static void main(String [] args) {
+Scanner red = new Scanner(System.in);
+
+System.out.println("Enter the number of g");
+int num = red.nextInt();
+
+
+switch ( num )
+{
+case 10 :
+System.out.println("The Pour of coffee : 50 \n The Totel : 150");
+break ;
+case 15 :
+System.out.println("The Pour of coffee : 80 \n The Totel : 240");
+break ;
+case 20 :
+System.out.println("The Pour of coffee : 100 \n The Totel : 300");
+break ;
+case 30 :
+System.out.println("The Pour of coffee : 160 \n The Totel : 480");
+break ;
+}
+System.out.println("Enjoy!!");
+
+
+
+}
+}
