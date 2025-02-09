@@ -23,7 +23,7 @@ inputs:
   check-latest:
     description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec'
     required: false
-    default: false
+    default: 'false'
   server-id:
     description: 'ID of the distributionManagement repository in the pom.xml
        file. Default is `github`'
@@ -45,7 +45,7 @@ inputs:
   overwrite-settings:
     description: 'Overwrite the settings.xml file if it exists. Default is "true".'
     required: false
-    default: true
+    default: 'true'
   gpg-private-key:
     description: 'GPG private key to import. Default is empty string.'
     required: false
