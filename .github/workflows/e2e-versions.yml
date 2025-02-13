@@ -32,7 +32,8 @@ jobs:
             'corretto',
             'dragonwell',
             'sapmachine',
-            'jetbrains'
+            'jetbrains',
+            'kona'
           ] # internally 'adopt-hotspot' is the same as 'adopt'
         version: ['21', '11', '17']
         exclude:
