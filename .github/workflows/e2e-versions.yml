@@ -3,6 +3,7 @@ name: Validate Java e2e
 on:
   push:
     branches:
+      - main
       - releases/*
     paths-ignore:
       - '**.md'
