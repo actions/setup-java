@@ -13,6 +13,7 @@ import {DragonwellDistribution} from './dragonwell/installer';
 import {SapMachineDistribution} from './sapmachine/installer';
 import {GraalVMDistribution} from './graalvm/installer';
 import {JetBrainsDistribution} from './jetbrains/installer';
+import {KonaDistribution} from './kona/installer';
 
 enum JavaDistribution {
   Adopt = 'adopt',
@@ -29,7 +30,8 @@ enum JavaDistribution {
   Dragonwell = 'dragonwell',
   SapMachine = 'sapmachine',
   GraalVM = 'graalvm',
-  JetBrains = 'jetbrains'
+  JetBrains = 'jetbrains',
+  Kona = 'kona'
 }
 
 export function getJavaDistribution(
@@ -76,6 +78,8 @@ export function getJavaDistribution(
       return new GraalVMDistribution(installerOptions);
     case JavaDistribution.JetBrains:
       return new JetBrainsDistribution(installerOptions);
+    case JavaDistribution.Kona:
+      return new KonaDistribution(installerOptions);
     default:
       return null;
   }

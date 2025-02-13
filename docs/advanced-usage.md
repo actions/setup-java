@@ -11,6 +11,7 @@
   - [SapMachine](#SapMachine)
   - [GraalVM](#GraalVM)
   - [JetBrains](#JetBrains)
+  - [Tencent Kona](#Tencent-Kona)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -215,19 +216,17 @@ The available package types are:
 - `jdk+ft` - JBRSDK (FreeType)
 - `jre+ft` - JBR (FreeType)
 
-### GraalVM
-**NOTE:** Oracle GraalVM is only available for JDK 17 and later.
+### Tencent Kona
+**NOTE:** Tencent Kona supports major versions 8, 11, 17 and 21, and provides jdk only.
 
 ```yaml
 steps:
 - uses: actions/checkout@v4
 - uses: actions/setup-java@v4
   with:
-    distribution: 'graalvm'
-    java-version: '21'
-- run: |
-    java -cp java HelloWorldApp
-    native-image -cp java HelloWorldApp
+    distribution: 'kona'
+    java-version: '8'
+- run: java -cp java HelloWorldApp
 ```
 
 ## Installing custom Java package type
@@ -614,12 +613,12 @@ steps:
 
 ## Java version file
   If the `java-version-file` input is specified, the action will extract the version from the file and install it.
-  
+
   Supported files are .java-version and .tool-versions.
   In .java-version file, only the version should be specified (e.g., 17.0.7).
   In .tool-versions file, java version should be preceded by the java keyword (e.g., java 17.0.7).
   The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv). Similarly, the `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)).
-  
+
   If both java-version and java-version-file inputs are provided, the java-version input will be used.
 
 Valid entry options:
