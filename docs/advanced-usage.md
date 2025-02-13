@@ -12,6 +12,7 @@
   - [GraalVM](#GraalVM)
   - [GraalVM Community](#GraalVM-Community)
   - [JetBrains](#JetBrains)
+  - [Tencent Kona](#Tencent-Kona)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
   - [JavaFX Maven project](#JavaFX-Maven-project)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
@@ -233,6 +234,18 @@ The available package types are:
 - `jdk+ft` - JBRSDK (FreeType)
 - `jre+ft` - JBR (FreeType)
 
+### Tencent Kona
+**NOTE:** Tencent Kona supports major versions 8, 11, 17 and 21, and provides jdk only.
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'kona'
+    java-version: '21'
+- run: java --version
+```
 
 ## Installing custom Java package type
 ```yaml
