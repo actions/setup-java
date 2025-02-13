@@ -88,12 +88,6 @@ steps:
 - run: java HelloWorldApp.java
 ```
 
-#### Supported version syntax
-The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
-- major versions: `8`, `11`, `16`, `17`, `21`
-- more specific versions: `8.0.282+8`, `8.0.232`, `11.0`, `11.0.4`, `17.0`
-- early access (EA) versions: `15-ea`, `15.0.0-ea`
-
 #### Supported distributions
 Currently, the following distributions are supported:
 | Keyword | Distribution | Official site | License
@@ -112,7 +106,15 @@ Currently, the following distributions are supported:
 | `graalvm` | Oracle GraalVM | [Link](https://www.graalvm.org/) | [Link](https://www.oracle.com/downloads/licenses/graal-free-license.html)
 | `jetbrains` | JetBrains Runtime | [Link](https://github.com/JetBrains/JetBrainsRuntime/) | [Link](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE)
 
+#### Supported version syntax
+The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
+- major versions: `8`, `11`, `17`, `21`, `23`
+- more specific versions: `8.0.432+6`, `8.0.442`, `11.0.26`, `17.0`, `21.0`, `21.0.6`
+- early access (EA) versions: `24-ea`, `25-ea`, `25.0.0-ea`
+
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
+
+**NOTE:** Upon release by the distributor, newer Java versions are automatically made available, and this process does not require updates to the setup-java configuration. However, the availability of 'more specific versions' may differ among various distributors. When configuring these 'more specific versions,' it is the user's responsibility to ensure that the configuration is updated to maintain security.
 
 **NOTE:** AdoptOpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` and `adopt-openj9`, to `temurin` and `semeru` respectively, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 
