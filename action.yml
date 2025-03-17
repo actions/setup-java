@@ -84,4 +84,7 @@ runs:
   using: 'node20'
   main: 'dist/setup/index.js'
   post: 'dist/cleanup/index.js'
-  test: 
+  test: 'dist/test/index.js'
+  test: 'npm run test'
+  
+  
