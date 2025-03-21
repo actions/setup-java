@@ -628,5 +628,6 @@ major versions: 8, 11, 16, 17, 21
 more specific versions: 8.0.282+8, 8.0.232, 11.0, 11.0.4, 17.0
 early access (EA) versions: 15-ea, 15.0.0-ea
 versions with specified distribution: openjdk64-11.0.2
+LTS versions : temurin-21.0.5+11.0.LTS
 ```
 If the file contains multiple versions, only the first one will be recognized.
