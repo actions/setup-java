@@ -19,6 +19,7 @@ export async function configureToolchains(
   version: string,
   distributionName: string,
   jdkHome: string,
+  updateToolchains: boolean,
   toolchainId?: string
 ) {
   const vendor =
@@ -27,10 +28,6 @@ export async function configureToolchains(
   const settingsDirectory =
     core.getInput(constants.INPUT_SETTINGS_PATH) ||
     path.join(os.homedir(), constants.M2_DIR);
-  const overwriteSettings = getBooleanInput(
-    constants.INPUT_OVERWRITE_SETTINGS,
-    true
-  );
 
   await createToolchainsSettings({
     jdkInfo: {
@@ -40,21 +37,21 @@ export async function configureToolchains(
       jdkHome
     },
     settingsDirectory,
-    overwriteSettings
+    updateToolchains
   });
 }
 
 export async function createToolchainsSettings({
   jdkInfo,
   settingsDirectory,
-  overwriteSettings
+  updateToolchains
 }: {
   jdkInfo: JdkInfo;
   settingsDirectory: string;
-  overwriteSettings: boolean;
+  updateToolchains: boolean;
 }) {
   core.info(
-    `Creating ${constants.MVN_TOOLCHAINS_FILE} for JDK version ${jdkInfo.version} from ${jdkInfo.vendor}`
+    `Adding a toolchain entry in ${constants.MVN_TOOLCHAINS_FILE} for JDK version ${jdkInfo.version} from ${jdkInfo.vendor}`
   );
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
@@ -72,7 +69,7 @@ export async function createToolchainsSettings({
   await writeToolchainsFileToDisk(
     settingsDirectory,
     updatedToolchains,
-    overwriteSettings
+    updateToolchains
   );
 }
 
@@ -147,17 +144,17 @@ async function readExistingToolchainsFile(directory: string) {
 async function writeToolchainsFileToDisk(
   directory: string,
   settings: string,
-  overwriteSettings: boolean
+  updateToolchains: boolean
 ) {
   const location = path.join(directory, constants.MVN_TOOLCHAINS_FILE);
-  const settingsExists = fs.existsSync(location);
-  if (settingsExists && overwriteSettings) {
-    core.info(`Overwriting existing file ${location}`);
-  } else if (!settingsExists) {
-    core.info(`Writing to ${location}`);
+  const toolchainsExists = fs.existsSync(location);
+  if (toolchainsExists && updateToolchains) {
+    core.info(`Updating existing file ${location}`);
+  } else if (!toolchainsExists) {
+    core.info(`Creating file ${location}`);
   } else {
     core.info(
-      `Skipping generation of ${location} because file already exists and overwriting is not enabled`
+      `Skipping update of ${location} since file already exists and updating is not enabled`
     );
     return;
   }
