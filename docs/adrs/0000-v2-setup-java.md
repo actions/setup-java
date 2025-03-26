@@ -34,7 +34,7 @@ Requiring a default version will break users that are pinned to `@main` as they 
 
 `setup-java` should be structured in such a way that will allow the open source community to easily add support for extra distributions.
 
-Existing code will be restructured so that distribution specific code will be easily separated. Currently the core download logic is in a single file, `installer.ts`. This file will be split up and abstracted out so that there will be no vendor specified logic. Each distribution will have it's own files under `src/distributions` that will contain the core setup logic for a specific distribution. 
+Existing code will be restructured so that distribution specific code will be easily separated. Currently the core download logic is in a single file, `installer.ts`. This file will be split up and abstracted out so that there will be no vendor specified logic. Each distribution will have its own files under `src/distributions` that will contain the core setup logic for a specific distribution. 
 
 ```yaml
  ∟ src/

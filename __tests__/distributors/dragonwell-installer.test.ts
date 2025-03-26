@@ -220,7 +220,7 @@ describe('getAvailableVersions', () => {
       ['11', 'macos', 'aarch64'],
       ['17', 'linux', 'riscv']
     ])(
-      'should throw when required version of JDK can not be found in the JSON',
+      'should throw when required version of JDK cannot be found in the JSON',
       async (jdkVersion: string, platform: string, arch: string) => {
         const distribution = new DragonwellDistribution({
           version: jdkVersion,
