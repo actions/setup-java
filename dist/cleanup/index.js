@@ -94272,6 +94272,9 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
         javaVersionRegExp =
             /^(java\s+)(?:\S*-)?v?(?<version>(\d+)(\.\d+)?(\.\d+)?(\+\d+)?(-ea(\.\d+)?)?)$/m;
     }
+    else if (versionFileName == '.sdkmanrc') {
+        javaVersionRegExp = /^java\s*=\s*(?<version>[^-]+)/m;
+    }
     else {
         javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
     }
