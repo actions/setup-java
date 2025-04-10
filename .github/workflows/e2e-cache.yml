@@ -136,7 +136,7 @@ jobs:
         run: sbt update
 
       - name: Check files to cache on macos-latest
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-13'
         run: |
           if [ ! -d ~/Library/Caches/Coursier ]; then
             echo "::error::The ~/Library/Caches/Coursier directory does not exist unexpectedly"

@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         distribution: [
             'temurin',
             'adopt',
@@ -311,7 +311,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         distribution: ['temurin', 'zulu', 'liberica', 'microsoft', 'corretto']
     steps:
       - name: Checkout
@@ -335,7 +335,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         distribution: ['adopt', 'adopt-openj9', 'zulu']
     steps:
       - name: Checkout
