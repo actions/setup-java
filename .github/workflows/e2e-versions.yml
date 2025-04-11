@@ -30,10 +30,9 @@ jobs:
             'liberica',
             'microsoft',
             'semeru',
-            'corretto',
-            'dragonwell'
+            'corretto'
           ] # internally 'adopt-hotspot' is the same as 'adopt'
-        version: ['21', '11', '17']
+        version: ['8', '11', '17']
         exclude:
           - distribution: microsoft
             version: 8
@@ -49,6 +48,19 @@ jobs:
           - distribution: oracle
             os: ubuntu-latest
             version: 20
+          - distribution: dragonwell
+            os: ubuntu-latest
+            version: 11.0.26
+          - distribution: dragonwell
+            os: windows-latest
+            version: 11.0.26
+          - distribution: dragonwell
+            os: ubuntu-latest
+            version: 17.0.14
+          - distribution: dragonwell
+            os: windows-latest
+            version: 17.0.14
+
 
     steps:
       - name: Checkout
