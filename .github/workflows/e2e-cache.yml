@@ -121,7 +121,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-22.04]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -132,11 +132,16 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
           cache: sbt
+      - name: Setup SBT
+        if: matrix.os == 'macos-13'
+        run: |
+          echo ""Installing SBT...""
+          brew install sbt
       - name: Create files to cache
         run: sbt update
 
       - name: Check files to cache on macos-latest
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-13'
         run: |
           if [ ! -d ~/Library/Caches/Coursier ]; then
             echo "::error::The ~/Library/Caches/Coursier directory does not exist unexpectedly"

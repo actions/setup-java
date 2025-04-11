@@ -1,3 +1,4 @@
+
 name: Validate Java e2e
 
 on:
@@ -20,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-2022, ubuntu-22.04]
         distribution: [
             'temurin',
             'adopt',
@@ -37,10 +38,10 @@ jobs:
           - distribution: microsoft
             version: 8
           - distribution: dragonwell
-            os: macos-latest
+            os: macos-13
         include:
           - distribution: oracle
-            os: macos-latest
+            os: macos-13
             version: 17
           - distribution: oracle
             os: windows-latest
@@ -171,7 +172,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         version: ['17-ea', '15.0.0-ea.14']
     steps:
       - name: Checkout
@@ -215,7 +216,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         distribution: ['temurin', 'zulu', 'liberica', 'semeru']
         java-package: ['jre']
         version: ['17.0']
@@ -311,7 +312,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         distribution: ['temurin', 'zulu', 'liberica', 'microsoft', 'corretto']
     steps:
       - name: Checkout
@@ -335,7 +336,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         distribution: ['adopt', 'adopt-openj9', 'zulu']
     steps:
       - name: Checkout
@@ -359,7 +360,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         distribution: ['adopt', 'zulu', 'liberica']
     steps:
       - name: Checkout
