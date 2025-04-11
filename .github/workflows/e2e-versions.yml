@@ -48,6 +48,12 @@ jobs:
           - distribution: oracle
             os: ubuntu-latest
             version: 20
+          - distribution: dragonwell
+            os: ubuntu-latest
+            version: '11.0'
+          - distribution: dragonwell
+            os: ubuntu-latest
+            version: '11.0.13+9'
 
     steps:
       - name: Checkout

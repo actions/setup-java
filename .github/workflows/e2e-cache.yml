@@ -132,6 +132,11 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
           cache: sbt
+      - name: Setup SBT
+        if: matrix.os == 'macos-13'
+        run: |
+          echo ""Installing SBT...""
+          brew install sbt
       - name: Create files to cache
         run: sbt update
 
