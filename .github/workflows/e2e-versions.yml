@@ -1,3 +1,4 @@
+
 name: Validate Java e2e
 
 on:
@@ -32,37 +33,22 @@ jobs:
             'corretto',
             'dragonwell'
           ] # internally 'adopt-hotspot' is the same as 'adopt'
-        version: ['8', '11.0', '17.0.7+7']
+        version: ['17', '11', '8']
         exclude:
           - distribution: microsoft
             version: 8
           - distribution: dragonwell
-            os: macos-latest
+            os: macos-13
         include:
           - distribution: oracle
-            os: macos-latest
-            version: '17.0.7'
+            os: macos-13
+            version: 17
           - distribution: oracle
             os: windows-latest
-            version: '20'
+            version: 20
           - distribution: oracle
             os: ubuntu-latest
-            version: '20'
-          - distribution: dragonwell
-            os: ubuntu-latest
-            version: '11.0'
-          - distribution: dragonwell
-            os: ubuntu-latest
-            version: '11.0.13+9'
-          - distribution: sapmachine
-            os: ubuntu-latest
-            version: '17.0.7'
-          - distribution: jetbrains
-            os: ubuntu-latest
-            version: '11.0.11'
-          - distribution: jetbrains
-            os: ubuntu-latest
-            version: '17.0.7'
+            version: 20
 
     steps:
       - name: Checkout
@@ -186,7 +172,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         version: ['17-ea', '15.0.0-ea.14']
     steps:
       - name: Checkout
@@ -230,7 +216,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         distribution: ['temurin', 'zulu', 'liberica', 'semeru']
         java-package: ['jre']
         version: ['17.0']
@@ -326,7 +312,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['temurin', 'zulu', 'liberica', 'microsoft', 'corretto']
     steps:
       - name: Checkout
@@ -350,7 +336,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['adopt', 'adopt-openj9', 'zulu']
     steps:
       - name: Checkout
@@ -374,7 +360,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['adopt', 'zulu', 'liberica']
     steps:
       - name: Checkout
