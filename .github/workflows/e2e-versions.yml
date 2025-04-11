@@ -33,7 +33,7 @@ jobs:
             'corretto',
             'dragonwell'
           ] # internally 'adopt-hotspot' is the same as 'adopt'
-        version: ['17', '11', '8']
+        version: ['21', '11', '17']
         exclude:
           - distribution: microsoft
             version: 8
@@ -360,7 +360,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: [macos-13, windows-latest, ubuntu-latest]
         distribution: ['adopt', 'zulu', 'liberica']
     steps:
       - name: Checkout
