@@ -16,4 +16,4 @@ This folder includes ADRs for the setup-java action. ADRs are proposed in the fo
 
 ---
 
-- More information about ADRs can be found [here](https://github.com/joelparkerhenderson/architecture_decision_record).
+- See [more information about ADRs](https://github.com/joelparkerhenderson/architecture_decision_record).
