@@ -51,14 +51,53 @@ export abstract class JavaBase {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
       core.info('Trying to resolve the latest version from remote');
-      const javaRelease = await this.findPackageForDownload(this.version);
-      core.info(`Resolved latest version as ${javaRelease.version}`);
-      if (foundJava?.version === javaRelease.version) {
-        core.info(`Resolved Java ${foundJava.version} from tool-cache`);
-      } else {
-        core.info('Trying to download...');
-        foundJava = await this.downloadTool(javaRelease);
-        core.info(`Java ${foundJava.version} was downloaded`);
+      try {
+        const javaRelease = await this.findPackageForDownload(this.version);
+        core.info(`Resolved latest version as ${javaRelease.version}`);
+        if (foundJava?.version === javaRelease.version) {
+          core.info(`Resolved Java ${foundJava.version} from tool-cache`);
+        } else {
+          core.info('Trying to download...');
+          try {
+            foundJava = await this.downloadTool(javaRelease);
+            core.info(`Java ${foundJava.version} was downloaded`);
+          } catch (downloadError: any) {
+            core.error(
+              'Failed to download Java. Please check your network connection or the provided version.'
+            );
+            core.error(`Error details: ${downloadError.message}`);
+            throw downloadError;
+          }
+        }
+      } catch (resolveError: any) {
+        if (
+          resolveError instanceof tc.HTTPError &&
+          resolveError.httpStatusCode === 403
+        ) {
+          core.error(
+            `Received HTTP 403: Permission denied or restricted access.`
+          );
+        } else if (
+          resolveError instanceof tc.HTTPError &&
+          resolveError.httpStatusCode === 429
+        ) {
+          core.warning(
+            `Received HTTP 429: Rate limit exceeded. Try again later.`
+          );
+        } else {
+          const message =
+            resolveError instanceof Error
+              ? resolveError.message
+              : JSON.stringify(resolveError);
+          core.error(
+            `Failed to set up Java due to a network issue or timeout: ${message}`
+          );
+        }
+        if (resolveError instanceof Error && resolveError.stack) {
+          core.debug(resolveError.stack);
+        }
+
+        throw resolveError;
       }
     }
 
