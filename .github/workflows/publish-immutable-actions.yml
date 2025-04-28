@@ -21,4 +21,3 @@ jobs:
         id: publish
 
         uses: actions/publish-immutable-action@v0.0.4
-
