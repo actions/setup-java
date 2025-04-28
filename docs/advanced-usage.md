@@ -215,20 +215,6 @@ The available package types are:
 - `jdk+ft` - JBRSDK (FreeType)
 - `jre+ft` - JBR (FreeType)
 
-### GraalVM
-**NOTE:** Oracle GraalVM is only available for JDK 17 and later.
-
-```yaml
-steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
-  with:
-    distribution: 'graalvm'
-    java-version: '21'
-- run: |
-    java -cp java HelloWorldApp
-    native-image -cp java HelloWorldApp
-```
 
 ## Installing custom Java package type
 ```yaml
