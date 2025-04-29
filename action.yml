@@ -60,7 +60,7 @@ inputs:
     description: 'URL of a repository where maven will look for Dependencies - e.g. "https://maven.pkg.github.com/<USERNAME_or_ORGANIZATION>/*"'
     required: false
   no-snapshots:
-    description: 'Sets the flag, if snapshots of custom repositories, shall be allowed of not. (default does allow Snapshots)'
+    description: 'Determines whether snapshots for custom repositories are allowed; defaults to allowing snapshots.'
     required: false
     default: false
   use-central:
