@@ -68,7 +68,7 @@ inputs:
     required: false
     default: true
   prioritize-central:
-    description: 'Allows it to define, which Repo will be choosen first to download Dependencies. (default Central prior Custom)'
+    description: 'Allows it to define, which Repo will be chosen first to download Dependencies. (default Central prior Custom)'
     required: false
     default: true
   cache:
