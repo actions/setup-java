@@ -436,6 +436,65 @@ See the help docs on [Publishing a Package](https://help.github.com/en/github/ma
 
 ***NOTE***: If the error that states, `gpg: Sorry, no terminal at all requested - can't get input` [is encountered](https://github.com/actions/setup-java/issues/554), please update the version of `maven-gpg-plugin` to 1.6 or higher.
 
+## Resolving Dependencies
+
+If you use setup-java action to build your project with dependencies of another repository then Maven Central, you need to tell maven where to find your Dependencies.
+
+
+```yaml    
+    - name: Set up Apache Maven Central
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+        server-username: ${{ secrets.USERNAME }}
+        server-password: ${{ secrets.PASS_WORD }}
+        repo-id: github
+        repo-url: 'https://maven.pkg.github.com/<USERNAME_or_ORGANIZATION>/*'
+        no-snapshots: false # (optional) default Snapshots enabled true
+        use-central: true # (optional) default uses Central
+        prioritize-central: true # (optional) default first lookup Maven Central
+```
+The generated `settings.xml` will look like:
+
+```xml
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <activeProfiles>
+    <activeProfile>github</activeProfile>
+  </activeProfiles>
+  <profiles>
+    <profile>
+      <id>github</id>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>https://repo1.maven.org/maven2</url>
+        </repository>
+        <repository>
+          <id>github</id>
+          <url>https://maven.pkg.github.com/<USERNAME_or_ORGANIZATION>/*</url>
+          <snapshots>
+<!--
+            <enabled>true</enabled>
+-->
+          </snapshots>
+        </repository>
+      </repositories>
+    </profile>
+  </profiles>
+  <servers>
+    <server>
+      <id>github</id>
+      <username>${secrets.USERNAME}</username>
+      <password>${secrets.PASS_WORD}</password>
+    </server>
+  </servers>
+</settings>
+```
+
 ## Apache Maven with a settings path
 
 When using an Actions self-hosted runner with multiple shared runners the default `$HOME` directory can be shared by a number runners at the same time which could overwrite existing settings file. Setting the `settings-path` variable allows you to choose a unique location for your settings file.
