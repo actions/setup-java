@@ -201,6 +201,48 @@ describe('dependency cache', () => {
         expect(firstCall).not.toBe(thirdCall);
       });
     });
+    describe('for mill', () => {
+      it('throws error if no build.sc found', async () => {
+        await expect(restore('mill', '')).rejects.toThrow(
+          `No file in ${projectRoot(
+            workspace
+          )} matched to [**/build.sc,**/*.sc,**/mill,**/.mill-version,**/.config/mill-version], make sure you have checked out the target repository`
+        );
+      });
+      it('downloads cache', async () => {
+        createFile(join(workspace, 'build.sc'));
+
+        await restore('mill', '');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/build.sc\n**/*.sc\n**/mill\n**/.mill-version\n**/.config/mill-version'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('mill cache is not found');
+      });
+      it('detects scala and mill changes under **/mill-build/ folder', async () => {
+        createFile(join(workspace, 'build.sc'));
+        createDirectory(join(workspace, 'project'));
+        createFile(join(workspace, '.config/mill-version'));
+
+        await restore('mill', '');
+        const firstCall = spySaveState.mock.calls.toString();
+
+        spySaveState.mockClear();
+        await restore('mill', '');
+        const secondCall = spySaveState.mock.calls.toString();
+
+        // Make sure multiple restores produce the same cache
+        expect(firstCall).toBe(secondCall);
+
+        spySaveState.mockClear();
+        createFile(join(workspace, '.mill-version'));
+        await restore('mill', '');
+        const thirdCall = spySaveState.mock.calls.toString();
+
+        expect(firstCall).not.toBe(thirdCall);
+      });
+    });
     it('downloads cache based on versions.properties', async () => {
       createFile(join(workspace, 'versions.properties'));
 
