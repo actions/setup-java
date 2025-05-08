@@ -1,10 +1,12 @@
+|
+<<<
 # Ignore node_modules, ncc is used to compile nodejs modules into a single file
 node_modules/
 __tests__/runner/*
 
 # Ignore js files that are transpiled from ts files in src/
 lib/
-
+>>>
 # Rest of the file pulled from https://github.com/github/gitignore/blob/master/Node.gitignore
 # Logs
 logs
@@ -13,9 +15,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
-
+<<<
 # Diagnostic reports (https://nodejs.org/api/report.html)
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+report.[a-y]*.[z-a]*.[0-9]*.[0-9]*.json
 
 # Runtime data
 pids
