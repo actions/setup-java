@@ -9,11 +9,11 @@ import {create as xmlCreate} from 'xmlbuilder2';
 import * as constants from './constants';
 import * as gpg from './gpg';
 import {getBooleanInput} from './util';
+import {MvnSettingDefinition} from './mvn.setting.definition';
 
 export async function configureAuthentication() {
-  const id = core.getInput(constants.INPUT_SERVER_ID);
-  const username = core.getInput(constants.INPUT_SERVER_USERNAME);
-  const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
+  const numMvnRepos = core.getInput(constants.INPUT_NUM_MVN_REPOS);
+  const mvnSettings: Array<MvnSettingDefinition> = [];
   const settingsDirectory =
     core.getInput(constants.INPUT_SETTINGS_PATH) ||
     path.join(os.homedir(), constants.M2_DIR);
@@ -21,24 +21,19 @@ export async function configureAuthentication() {
     constants.INPUT_OVERWRITE_SETTINGS,
     true
   );
-  const gpgPrivateKey =
-    core.getInput(constants.INPUT_GPG_PRIVATE_KEY) ||
-    constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
-  const gpgPassphrase =
-    core.getInput(constants.INPUT_GPG_PASSPHRASE) ||
-    (gpgPrivateKey ? constants.INPUT_DEFAULT_GPG_PASSPHRASE : undefined);
-
-  if (gpgPrivateKey) {
-    core.setSecret(gpgPrivateKey);
+  let gpgPrivateKey;
+  if (numMvnRepos === '' || core.getInput(constants.INPUT_GPG_PRIVATE_KEY)) {
+    gpgPrivateKey = populateMvnSettings(mvnSettings);
+  } else {
+    for (let i = 0; i < parseInt(numMvnRepos); i++) {
+      populateMvnSettings(mvnSettings, i);
+    }
   }
 
   await createAuthenticationSettings(
-    id,
-    username,
-    password,
+    mvnSettings,
     settingsDirectory,
-    overwriteSettings,
-    gpgPassphrase
+    overwriteSettings
   );
 
   if (gpgPrivateKey) {
@@ -48,32 +43,61 @@ export async function configureAuthentication() {
   }
 }
 
+function populateMvnSettings(
+  mvnSettings: Array<MvnSettingDefinition>,
+  idx = -1
+): string | undefined {
+  const id = core.getInput(getIndexedInputName(constants.INPUT_SERVER_ID, idx));
+  const username = core.getInput(
+    getIndexedInputName(constants.INPUT_SERVER_USERNAME, idx)
+  );
+  const password = core.getInput(
+    getIndexedInputName(constants.INPUT_SERVER_PASSWORD, idx)
+  );
+  if (username !== '' && password !== '') {
+    mvnSettings.push({id: id, username: username, password: password});
+  }
+
+  if (idx === -1) {
+    const gpgPrivateKey =
+      core.getInput(
+        getIndexedInputName(constants.INPUT_GPG_PRIVATE_KEY, idx)
+      ) || constants.INPUT_DEFAULT_GPG_PRIVATE_KEY;
+    const gpgPassphrase =
+      core.getInput(getIndexedInputName(constants.INPUT_GPG_PASSPHRASE, idx)) ||
+      (gpgPrivateKey ? constants.INPUT_DEFAULT_GPG_PASSPHRASE : undefined);
+
+    if (gpgPrivateKey) {
+      core.setSecret(gpgPrivateKey);
+    }
+
+    if (gpgPassphrase) {
+      mvnSettings.push({id: 'gpg.passphrase', gpgPassphrase: gpgPassphrase});
+      return gpgPrivateKey;
+    }
+  }
+
+  return undefined;
+}
+
+function getIndexedInputName(inputName: string, idx: number): string {
+  return inputName + (idx >= 0 ? '-' + idx : '');
+}
+
 export async function createAuthenticationSettings(
-  id: string,
-  username: string,
-  password: string,
+  mvnSettings: Array<MvnSettingDefinition>,
   settingsDirectory: string,
-  overwriteSettings: boolean,
-  gpgPassphrase: string | undefined = undefined
+  overwriteSettings: boolean
 ) {
-  core.info(`Creating ${constants.MVN_SETTINGS_FILE} with server-id: ${id}`);
+  core.info(`Creating ${constants.MVN_SETTINGS_FILE}`);
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
   await io.mkdirP(settingsDirectory);
-  await write(
-    settingsDirectory,
-    generate(id, username, password, gpgPassphrase),
-    overwriteSettings
-  );
+  await write(settingsDirectory, generate(mvnSettings), overwriteSettings);
 }
 
 // only exported for testing purposes
-export function generate(
-  id: string,
-  username: string,
-  password: string,
-  gpgPassphrase?: string | undefined
-) {
+export function generate(mvnSettings: Array<MvnSettingDefinition>) {
   const xmlObj: {[key: string]: any} = {
     settings: {
       '@xmlns': 'http://maven.apache.org/SETTINGS/1.0.0',
@@ -81,24 +105,27 @@ export function generate(
       '@xsi:schemaLocation':
         'http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd',
       servers: {
-        server: [
-          {
-            id: id,
-            username: `\${env.${username}}`,
-            password: `\${env.${password}}`
-          }
-        ]
+        server: []
       }
     }
   };
 
-  if (gpgPassphrase) {
-    const gpgServer = {
-      id: 'gpg.passphrase',
-      passphrase: `\${env.${gpgPassphrase}}`
-    };
-    xmlObj.settings.servers.server.push(gpgServer);
-  }
+  mvnSettings.forEach(mvnSetting => {
+    if (mvnSetting.username && mvnSetting.password) {
+      xmlObj.settings.servers.server.push({
+        id: mvnSetting.id,
+        username: `\${env.${mvnSetting.username}}`,
+        password: `\${env.${mvnSetting.password}}`
+      });
+    }
+
+    if (mvnSetting.gpgPassphrase) {
+      xmlObj.settings.servers.server.push({
+        id: mvnSetting.id,
+        passphrase: `\${env.${mvnSetting.gpgPassphrase}}`
+      });
+    }
+  });
 
   return xmlCreate(xmlObj).end({
     headless: true,
