@@ -411,6 +411,85 @@ The two `settings.xml` files created from the above example look like the follow
 
 If you don't want to overwrite the `settings.xml` file, you can set `overwrite-settings: false`
 
+### Multiple repositories
+
+There might be instances where you will need to change the version to/from release/snapshot. That will require specifying two maven repositories - one for release versions, one for snapshot versions.
+
+#### Yaml example
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK 11
+      uses: actions/setup-java@v4
+      with:
+        distribution: '<distribution>'
+        java-version: '11'
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+
+    - name: Publish to GitHub Packages Apache Maven
+      run: mvn deploy
+      env:
+        GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
+
+    - name: Set up Apache Maven Central
+      uses: actions/setup-java@v4
+      with: # running setup-java again overwrites the settings.xml
+        distribution: 'temurin'
+        java-version: '11'
+        mvn-repositories-len: 2
+        server-id-0: artifactory # Value of the distributionManagement/repository/id field of the pom.xml
+        server-username-0: ARTIFACTORY_USERNAME # env variable for username in deploy
+        server-password-0: ARTIFACTORY_TOKEN # env variable for token in deploy
+        server-id-1: snapshot-artifactory # Value of the distributionManagement/repository/id field of the pom.xml
+        server-username-1: SNAPSHOT_ARTIFACTORY_USERNAME # env variable for username in deploy
+        server-password-1: SNAPSHOT_ARTIFACTORY_TOKEN # env variable for token in deploy
+        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
+
+    - name: Publish to Apache Maven Central
+      run: mvn deploy
+      env:
+        ARTIFACTORY_USERNAME: maven_username123
+        ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_USERNAME }}
+        SNAPSHOT_ARTIFACTORY_USERNAME: snapshot_maven_username123
+        SNAPSHOT_ARTIFACTORY_TOKEN: ${{ secrets.SNAPSHOT_ARTIFACTORY_TOKEN }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+```
+
+Here `mvn-repositories-len` specifies how many artifactories we're configuring here. In this example, the value is 2. In this case, the action will look for `server-id-0`, `server-username-0`, `server-password-0`, `server-id-1`, `server-username-1` and `server-password-1`.
+Depending on the value of `mvn-repositories-len`, the number of entries that will be looked for will vary. But it is looking for 0 based indexing with the max value less than the value of `mvn-repositories-len`.
+
+`settings.xml` file created for the deployment to the Maven Artifactory
+```xml
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <server>
+      <id>artifactory</id>
+      <username>${env.ARTIFACTORY_USERNAME}</username>
+      <password>${env.ARTIFACTORY_TOKEN}</password>
+    </server>
+    <server>
+      <id>snapshot-artifactory</id>
+      <username>${env.SNAPSHOT_ARTIFACTORY_USERNAME}</username>
+      <password>${env.SNAPSHOT_ARTIFACTORY_TOKEN}</password>
+    </server>
+    <server>
+      <id>gpg.passphrase</id>
+      <passphrase>${env.MAVEN_GPG_PASSPHRASE}</passphrase>
+    </server>
+  </servers>
+</settings>
+```
+
+
 ### Extra setup for pom.xml:
 
 The Maven GPG Plugin configuration in the pom.xml file should contain the following structure to avoid possible issues like `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`:
