@@ -264,6 +264,7 @@ In the example above multiple JDKs are installed for the same job. The result af
   - [Alibaba Dragonwell](docs/advanced-usage.md#Alibaba-Dragonwell)
   - [SapMachine](docs/advanced-usage.md#SapMachine)
   - [GraalVM](docs/advanced-usage.md#GraalVM)
+  - [JetBrains](docs/advanced-usage.md#JetBrains)
 - [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](docs/advanced-usage.md#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](docs/advanced-usage.md#Installing-Java-from-local-file)
