@@ -62,28 +62,24 @@ export abstract class JavaBase {
           core.info(`Java ${foundJava.version} was downloaded`);
         }
       } catch (error: any) {
-        if (error instanceof tc.HTTPError && error.httpStatusCode === 403) {
-          core.error(
-            `Received HTTP 403: Permission denied or restricted access.`
-          );
-        } else if (
-          error instanceof tc.HTTPError &&
-          error.httpStatusCode === 429
-        ) {
-          core.warning(
-            `Received HTTP 429: Rate limit exceeded. Try again later.`
-          );
+        if (error instanceof tc.HTTPError) {
+          if (error.httpStatusCode === 403) {
+            core.error('HTTP 403: Permission denied or access restricted.');
+          } else if (error.httpStatusCode === 429) {
+            core.warning('HTTP 429: Rate limit exceeded. Please retry later.');
+          } else {
+            core.error(`HTTP ${error.httpStatusCode}: ${error.message}`);
+          }
         } else {
           const message =
             error instanceof Error ? error.message : JSON.stringify(error);
           core.error(
-            `Failed to set up Java due to a network issue or timeout: ${message}`
+            `Java setup failed due to network issue or timeout: ${message}`
           );
         }
         if (error instanceof Error && error.stack) {
           core.debug(error.stack);
         }
-
         throw error;
       }
     }
