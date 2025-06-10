@@ -51,14 +51,36 @@ export abstract class JavaBase {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
       core.info('Trying to resolve the latest version from remote');
-      const javaRelease = await this.findPackageForDownload(this.version);
-      core.info(`Resolved latest version as ${javaRelease.version}`);
-      if (foundJava?.version === javaRelease.version) {
-        core.info(`Resolved Java ${foundJava.version} from tool-cache`);
-      } else {
-        core.info('Trying to download...');
-        foundJava = await this.downloadTool(javaRelease);
-        core.info(`Java ${foundJava.version} was downloaded`);
+      try {
+        const javaRelease = await this.findPackageForDownload(this.version);
+        core.info(`Resolved latest version as ${javaRelease.version}`);
+        if (foundJava?.version === javaRelease.version) {
+          core.info(`Resolved Java ${foundJava.version} from tool-cache`);
+        } else {
+          core.info('Trying to download...');
+          foundJava = await this.downloadTool(javaRelease);
+          core.info(`Java ${foundJava.version} was downloaded`);
+        }
+      } catch (error: any) {
+        if (error instanceof tc.HTTPError) {
+          if (error.httpStatusCode === 403) {
+            core.error('HTTP 403: Permission denied or access restricted.');
+          } else if (error.httpStatusCode === 429) {
+            core.warning('HTTP 429: Rate limit exceeded. Please retry later.');
+          } else {
+            core.error(`HTTP ${error.httpStatusCode}: ${error.message}`);
+          }
+        } else {
+          const message =
+            error instanceof Error ? error.message : JSON.stringify(error);
+          core.error(
+            `Java setup failed due to network issue or timeout: ${message}`
+          );
+        }
+        if (error instanceof Error && error.stack) {
+          core.debug(error.stack);
+        }
+        throw error;
       }
     }
 
