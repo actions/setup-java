@@ -3,11 +3,12 @@
 export interface IJetBrainsRawVersion {
   tag_name: string;
   name: string;
+  prerelease: boolean;
 }
 
 export interface IJetBrainsVersion {
   tag_name: string;
   semver: string;
-  build: number;
+  build: string;
   url: string;
 }
