@@ -123,7 +123,7 @@ export class JetBrainsDistribution extends JavaBase {
 
       const paginationPage: IJetBrainsRawVersion[] =
         paginationPageResult.filter(version =>
-          this.stable ? !version.prerelease : version.prerelease == true
+          this.stable ? !version.prerelease : version.prerelease
         );
       if (!paginationPage || paginationPage.length === 0) {
         // break infinity loop because we have reached end of pagination
