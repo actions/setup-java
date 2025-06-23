@@ -41,9 +41,7 @@ describe('getAvailableVersions', () => {
     expect(availableVersions).not.toBeNull();
 
     const length =
-      os.platform() === 'win32'
-        ? manifestData.length - 1
-        : manifestData.length + 1;
+      os.platform() === 'win32' ? manifestData.length : manifestData.length + 2;
     expect(availableVersions.length).toBe(length);
   }, 10_000);
 });
