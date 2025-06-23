@@ -93140,6 +93140,15 @@ const supportedPackageManager = [
             '**/project/**.scala',
             '**/project/**.sbt'
         ]
+    },
+    {
+        id: 'amper',
+        path: [
+            (0, path_1.join)(os_1.default.homedir(), '.cache', 'Amper'),
+            (0, path_1.join)(os_1.default.homedir(), '.gradle', 'caches'),
+            (0, path_1.join)(os_1.default.homedir(), '.gradle', 'wrapper')
+        ],
+        pattern: ['**/module.xml', 'amper', 'amper.bat', 'gradle/*.versions.toml']
     }
 ];
 function getCoursierCachePath() {

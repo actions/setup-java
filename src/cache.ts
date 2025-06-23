@@ -13,7 +13,7 @@ const CACHE_MATCHED_KEY = 'cache-matched-key';
 const CACHE_KEY_PREFIX = 'setup-java';
 
 interface PackageManager {
-  id: 'maven' | 'gradle' | 'sbt';
+  id: 'maven' | 'gradle' | 'sbt' | 'amper';
   /**
    * Paths of the file that specify the files to cache.
    */
@@ -60,6 +60,15 @@ const supportedPackageManager: PackageManager[] = [
       '**/project/**.scala',
       '**/project/**.sbt'
     ]
+  },
+  {
+    id: 'amper',
+    path: [
+      join(os.homedir(), '.cache', 'Amper'),
+      join(os.homedir(), '.gradle', 'caches'),
+      join(os.homedir(), '.gradle', 'wrapper')
+    ],
+    pattern: ['**/module.xml', 'amper', 'amper.bat', 'gradle/*.versions.toml']
   }
 ];
 

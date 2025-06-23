@@ -201,6 +201,60 @@ describe('dependency cache', () => {
         expect(firstCall).not.toBe(thirdCall);
       });
     });
+    describe('for amper', () => {
+      it('throws error if no module.xml found', async () => {
+        await expect(restore('amper', '')).rejects.toThrow(
+          `No file in ${projectRoot(
+            workspace
+          )} matched to [**/module.xml,amper,amper.bat,gradle/*.versions.toml], make sure you have checked out the target repository`
+        );
+      });
+      it('downloads cache based on module.xml', async () => {
+        createFile(join(workspace, 'module.xml'));
+
+        await restore('amper', '');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/module.xml\namper\namper.bat\ngradle/*.versions.toml'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('amper cache is not found');
+      });
+      it('downloads cache based on amper script', async () => {
+        createFile(join(workspace, 'amper'));
+
+        await restore('amper', '');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/module.xml\namper\namper.bat\ngradle/*.versions.toml'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('amper cache is not found');
+      });
+      it('downloads cache based on amper.bat script', async () => {
+        createFile(join(workspace, 'amper.bat'));
+
+        await restore('amper', '');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/module.xml\namper\namper.bat\ngradle/*.versions.toml'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('amper cache is not found');
+      });
+      it('downloads cache based on gradle/libs.versions.toml', async () => {
+        createDirectory(join(workspace, 'gradle'));
+        createFile(join(workspace, 'gradle', 'libs.versions.toml'));
+
+        await restore('amper', '');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/module.xml\namper\namper.bat\ngradle/*.versions.toml'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('amper cache is not found');
+      });
+    });
     it('downloads cache based on versions.properties', async () => {
       createFile(join(workspace, 'versions.properties'));
 
@@ -412,6 +466,68 @@ describe('dependency cache', () => {
         createStateForSuccessfulRestore();
 
         await save('gradle');
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith(
+          expect.stringMatching(/^Cache saved with the key:.*/)
+        );
+      });
+    });
+    describe('for amper', () => {
+      it('uploads cache even if no module.xml found', async () => {
+        createStateForMissingBuildFile();
+        await save('amper');
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+      });
+      it('does not upload cache if no restore run before', async () => {
+        createFile(join(workspace, 'module.xml'));
+
+        await save('amper');
+        expect(spyCacheSave).not.toHaveBeenCalled();
+        expect(spyWarning).toHaveBeenCalledWith(
+          'Error retrieving key from state.'
+        );
+      });
+      it('uploads cache based on module.xml', async () => {
+        createFile(join(workspace, 'module.xml'));
+        createStateForSuccessfulRestore();
+
+        await save('amper');
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith(
+          expect.stringMatching(/^Cache saved with the key:.*/)
+        );
+      });
+      it('uploads cache based on amper script', async () => {
+        createFile(join(workspace, 'amper'));
+        createStateForSuccessfulRestore();
+
+        await save('amper');
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith(
+          expect.stringMatching(/^Cache saved with the key:.*/)
+        );
+      });
+      it('uploads cache based on amper.bat script', async () => {
+        createFile(join(workspace, 'amper.bat'));
+        createStateForSuccessfulRestore();
+
+        await save('amper');
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith(
+          expect.stringMatching(/^Cache saved with the key:.*/)
+        );
+      });
+      it('uploads cache based on gradle/libs.versions.toml', async () => {
+        createDirectory(join(workspace, 'gradle'));
+        createFile(join(workspace, 'gradle', 'libs.versions.toml'));
+        createStateForSuccessfulRestore();
+
+        await save('amper');
         expect(spyCacheSave).toHaveBeenCalled();
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith(

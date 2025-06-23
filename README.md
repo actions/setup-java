@@ -14,6 +14,7 @@ The `setup-java` action provides the following functionality for GitHub Actions 
 - Caching dependencies managed by Apache Maven.
 - Caching dependencies managed by Gradle.
 - Caching dependencies managed by sbt.
+- Caching dependencies managed by Amper.
 - [Maven Toolchains declaration](https://maven.apache.org/guides/mini/guide-using-toolchains.html) for specified JDK versions.
 
 This action allows you to work with Java and Scala projects.
