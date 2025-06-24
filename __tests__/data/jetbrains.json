@@ -1,1454 +1,1454 @@
 [
-    {
-      "tag_name": "jbr-release-21.0.3b465.3",
-      "semver": "21.0.3",
-      "build": 465.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b465.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.3b458.1",
-      "semver": "21.0.3",
-      "build": 458.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b458.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.3b453.2",
-      "semver": "21.0.3",
-      "build": 453.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b453.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.11b1207.24",
-      "semver": "17.0.11",
-      "build": 1207.24,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.11-linux-x64-b1207.24.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.11b1207.23",
-      "semver": "17.0.11",
-      "build": 1207.23,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.11-linux-x64-b1207.23.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.3b446.1",
-      "semver": "21.0.3",
-      "build": 446.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b446.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1207.14",
-      "semver": "17.0.10",
-      "build": 1207.14,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.14.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b829.27",
-      "semver": "17.0.10",
-      "build": 829.27,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b829.27.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1087.23",
-      "semver": "17.0.10",
-      "build": 1087.23,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1087.23.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1207.12",
-      "semver": "17.0.10",
-      "build": 1207.12,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.12.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1087.21",
-      "semver": "17.0.10",
-      "build": 1087.21,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1087.21.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1207.6",
-      "semver": "17.0.10",
-      "build": 1207.6,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.6.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.2b375.1",
-      "semver": "21.0.2",
-      "build": 375.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.2-linux-x64-b375.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1207.1",
-      "semver": "17.0.10",
-      "build": 1207.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1186.1",
-      "semver": "17.0.10",
-      "build": 1186.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1186.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1171.14",
-      "semver": "17.0.10",
-      "build": 1171.14,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1171.14.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b829.26",
-      "semver": "17.0.10",
-      "build": 829.26,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b829.26.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.2b346.3",
-      "semver": "21.0.2",
-      "build": 346.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.2-linux-x64-b346.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1000.48",
-      "semver": "17.0.10",
-      "build": 1000.48,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1000.48.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.2b341.4",
-      "semver": "21.0.2",
-      "build": 341.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.2-linux-x64-b341.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1087.17",
-      "semver": "17.0.10",
-      "build": 1087.17,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1087.17.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1166.2",
-      "semver": "17.0.9",
-      "build": 1166.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1166.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1162.7",
-      "semver": "17.0.9",
-      "build": 1162.7,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1162.7.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1087.11",
-      "semver": "17.0.9",
-      "build": 1087.11,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.11.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1087.9",
-      "semver": "17.0.9",
-      "build": 1087.9,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.9.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1087.7",
-      "semver": "17.0.9",
-      "build": 1087.7,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.7.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1000.47",
-      "semver": "17.0.9",
-      "build": 1000.47,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1000.47.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1000.46",
-      "semver": "17.0.9",
-      "build": 1000.46,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1000.46.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1087.3",
-      "semver": "17.0.9",
-      "build": 1087.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8.1b1080.1",
-      "semver": "17.0.8.1",
-      "build": 1080.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1080.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8.1b1072.1",
-      "semver": "17.0.8.1",
-      "build": 1072.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1072.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8.1b1070.2",
-      "semver": "17.0.8.1",
-      "build": 1070.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1070.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8.1b1063.1",
-      "semver": "17.0.8.1",
-      "build": 1063.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1063.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8.1b1000.32",
-      "semver": "17.0.8.1",
-      "build": 1000.32,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1000.32.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8.1b1059.3",
-      "semver": "17.0.8.1",
-      "build": 1059.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1059.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8b1000.22",
-      "semver": "17.0.8",
-      "build": 1000.22,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8-linux-x64-b1000.22.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8b1000.8",
-      "semver": "17.0.8",
-      "build": 1000.8,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8-linux-x64-b1000.8.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b1000.6",
-      "semver": "17.0.7",
-      "build": 1000.6,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b1000.6.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b1000.5",
-      "semver": "17.0.7",
-      "build": 1000.5,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b1000.5.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b1000.2",
-      "semver": "17.0.7",
-      "build": 1000.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b1000.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b985.2",
-      "semver": "17.0.7",
-      "build": 985.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b985.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b979.4",
-      "semver": "17.0.7",
-      "build": 979.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b979.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b829.16",
-      "semver": "17.0.7",
-      "build": 829.16,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b829.16.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b966.2",
-      "semver": "17.0.7",
-      "build": 966.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b966.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b964.1",
-      "semver": "17.0.7",
-      "build": 964.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b964.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b829.14",
-      "semver": "17.0.7",
-      "build": 829.14,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b829.14.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b953.1",
-      "semver": "17.0.7",
-      "build": 953.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b953.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b829.9",
-      "semver": "17.0.6",
-      "build": 829.9,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.9.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b469.82",
-      "semver": "17.0.6",
-      "build": 469.82,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b469.82.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b829.5",
-      "semver": "17.0.6",
-      "build": 829.5,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.5.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b653.34",
-      "semver": "17.0.6",
-      "build": 653.34,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b653.34.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b829.4",
-      "semver": "17.0.6",
-      "build": 829.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b829.1",
-      "semver": "17.0.6",
-      "build": 829.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b653.32",
-      "semver": "17.0.6",
-      "build": 653.32,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b653.32.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b802.4",
-      "semver": "17.0.6",
-      "build": 802.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b802.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b802.1",
-      "semver": "17.0.6",
-      "build": 802.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b802.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b785.1",
-      "semver": "17.0.6",
-      "build": 785.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b785.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b779.1",
-      "semver": "17.0.6",
-      "build": 779.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b779.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b762.1",
-      "semver": "17.0.5",
-      "build": 762.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b762.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b653.25",
-      "semver": "17.0.5",
-      "build": 653.25,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.25.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b759.1",
-      "semver": "17.0.5",
-      "build": 759.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b759.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b653.23",
-      "semver": "17.0.5",
-      "build": 653.23,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.23.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b653.14",
-      "semver": "17.0.5",
-      "build": 653.14,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.14.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b469.71",
-      "semver": "17.0.5",
-      "build": 469.71,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b469.71.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_16b2043.64",
-      "semver": "11.0.16",
-      "build": 2043.64,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_nomod-11_0_16-linux-x64-b2043.64.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b653.6",
-      "semver": "17.0.5",
-      "build": 653.6,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.6.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b469.67",
-      "semver": "17.0.5",
-      "build": 469.67,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b469.67.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4.1b653.1",
-      "semver": "17.0.4.1",
-      "build": 653.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b653.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4.1b646.8",
-      "semver": "17.0.4.1",
-      "build": 646.8,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b646.8.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4.1b629.2",
-      "semver": "17.0.4.1",
-      "build": 629.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b629.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4.1b617.2",
-      "semver": "17.0.4.1",
-      "build": 617.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b617.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4.1b469.62",
-      "semver": "17.0.4.1",
-      "build": 469.62,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b469.62.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4.1b597.1",
-      "semver": "17.0.4.1",
-      "build": 597.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b597.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4b469.53",
-      "semver": "17.0.4",
-      "build": 469.53,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4-linux-x64-b469.53.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4b469.44",
-      "semver": "17.0.4",
-      "build": 469.44,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4-linux-x64-b469.44.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.3b469.37",
-      "semver": "17.0.3",
-      "build": 469.37,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.37.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b469.32",
-      "semver": "17.0.3",
-      "build": 469.32,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.32.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b469.30",
-      "semver": "17.0.3",
-      "build": 469.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b469.19",
-      "semver": "17.0.3",
-      "build": 469.19,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.19.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b498.3",
-      "semver": "17.0.3",
-      "build": 498.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b498.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b469.16",
-      "semver": "17.0.3",
-      "build": 469.16,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.16.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b469.12",
-      "semver": "17.0.3",
-      "build": 469.12,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.12.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b469.3",
-      "semver": "17.0.3",
-      "build": 469.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b463.3",
-      "semver": "17.0.3",
-      "build": 463.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b463.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b423.10",
-      "semver": "17.0.3",
-      "build": 423.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b423.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_15b2043.56",
-      "semver": "11.0.15",
-      "build": 2043.56,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_nomod-11_0_15-linux-x64-b2043.56.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b2043.45",
-      "semver": "11.0.14.1",
-      "build": 2043.45,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_nomod-11_0_14_1-linux-x64-b2043.45.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.2b396.4",
-      "semver": "17.0.2",
-      "build": 396.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.2-linux-x64-b396.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b2043.25",
-      "semver": "11.0.14.1",
-      "build": 2043.25,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.25.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b2043.22",
-      "semver": "11.0.14.1",
-      "build": 2043.22,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.22.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b2043.17",
-      "semver": "11.0.14.1",
-      "build": 2043.17,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.17.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b2043.14",
-      "semver": "11.0.14.1",
-      "build": 2043.14,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.14.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b2043.11",
-      "semver": "11.0.14.1",
-      "build": 2043.11,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.11.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14b2043.2",
-      "semver": "11.0.14",
-      "build": 2043.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14-linux-x64-b2043.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b1751.46",
-      "semver": "11.0.14.1",
-      "build": 1751.46,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b1751.46.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14b1993.2",
-      "semver": "11.0.14",
-      "build": 1993.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14-linux-x64-b1993.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr17_0_2b315.1",
-      "semver": "17.0.2",
-      "build": 315.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17_0_2-linux-x64-b315.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14b1982.1",
-      "semver": "11.0.14",
-      "build": 1982.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14-linux-x64-b1982.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_13b1890.3",
-      "semver": "11.0.13",
-      "build": 1890.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1890.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_13b1751.25",
-      "semver": "11.0.13",
-      "build": 1751.25,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.25.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_13b1751.24",
-      "semver": "11.0.13",
-      "build": 1751.24,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.24.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_13b1751.21",
-      "semver": "11.0.13",
-      "build": 1751.21,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.21.tar.gz"
-    },
-    {
-      "tag_name": "jbr17_0_1b164.8",
-      "semver": "17.0.1",
-      "build": 164.8,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17_0_1-linux-x64-b164.8.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_13b1751.19",
-      "semver": "11.0.13",
-      "build": 1751.19,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.19.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_13-b1504.49",
-      "semver": "11.0.13",
-      "build": 1504.49,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1504.49.tar.gz"
-    },
-    {
-      "tag_name": "jbr17_0_1b164.4",
-      "semver": "17.0.1",
-      "build": 164.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17_0_1-linux-x64-b164.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_13b1751.16",
-      "semver": "11.0.13",
-      "build": 1751.16,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.16.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_12b1751.11",
-      "semver": "11.0.12",
-      "build": 1751.11,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1751.11.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_12b1729.1",
-      "semver": "11.0.12",
-      "build": 1729.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1729.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_12b1715.4",
-      "semver": "11.0.12",
-      "build": 1715.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1715.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_12b1692.9",
-      "semver": "11.0.12",
-      "build": 1692.9,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1692.9.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_12-b1504.37",
-      "semver": "11.0.12",
-      "build": 1504.37,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1504.37.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_12b1665.1",
-      "semver": "11.0.12",
-      "build": 1665.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1665.1.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_12-b1504.28",
-      "semver": "11.0.12",
-      "build": 1504.28,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1504.28.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_12-b1504.27",
-      "semver": "11.0.12",
-      "build": 1504.27,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1504.27.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_11-b1504.16",
-      "semver": "11.0.11",
-      "build": 1504.16,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.16.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_11-b1504.13",
-      "semver": "11.0.11",
-      "build": 1504.13,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.13.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_11-b1504.12",
-      "semver": "11.0.11",
-      "build": 1504.12,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.12.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_11-b1542.1",
-      "semver": "11.0.11",
-      "build": 1542.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1542.1.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_11-b1504.8",
-      "semver": "11.0.11",
-      "build": 1504.8,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.8.tar.gz"
-    },
-    {
-      "tag_name": "11_0_11b1536.2",
-      "semver": "11.0.11",
-      "build": 1536.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1536.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.3b465.3",
-      "semver": "21.0.3",
-      "build": 465.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b465.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.3b458.1",
-      "semver": "21.0.3",
-      "build": 458.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b458.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.3b453.2",
-      "semver": "21.0.3",
-      "build": 453.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b453.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.11b1207.24",
-      "semver": "17.0.11",
-      "build": 1207.24,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.11-linux-x64-b1207.24.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.11b1207.23",
-      "semver": "17.0.11",
-      "build": 1207.23,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.11-linux-x64-b1207.23.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.3b446.1",
-      "semver": "21.0.3",
-      "build": 446.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b446.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1207.14",
-      "semver": "17.0.10",
-      "build": 1207.14,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.14.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b829.27",
-      "semver": "17.0.10",
-      "build": 829.27,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b829.27.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1087.23",
-      "semver": "17.0.10",
-      "build": 1087.23,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1087.23.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1207.12",
-      "semver": "17.0.10",
-      "build": 1207.12,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.12.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1087.21",
-      "semver": "17.0.10",
-      "build": 1087.21,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1087.21.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1207.6",
-      "semver": "17.0.10",
-      "build": 1207.6,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.6.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.2b375.1",
-      "semver": "21.0.2",
-      "build": 375.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.2-linux-x64-b375.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1207.1",
-      "semver": "17.0.10",
-      "build": 1207.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1186.1",
-      "semver": "17.0.10",
-      "build": 1186.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1186.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1171.14",
-      "semver": "17.0.10",
-      "build": 1171.14,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1171.14.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b829.26",
-      "semver": "17.0.10",
-      "build": 829.26,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b829.26.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.2b346.3",
-      "semver": "21.0.2",
-      "build": 346.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.2-linux-x64-b346.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1000.48",
-      "semver": "17.0.10",
-      "build": 1000.48,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1000.48.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-21.0.2b341.4",
-      "semver": "21.0.2",
-      "build": 341.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.2-linux-x64-b341.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.10b1087.17",
-      "semver": "17.0.10",
-      "build": 1087.17,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1087.17.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1166.2",
-      "semver": "17.0.9",
-      "build": 1166.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1166.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1162.7",
-      "semver": "17.0.9",
-      "build": 1162.7,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1162.7.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1087.11",
-      "semver": "17.0.9",
-      "build": 1087.11,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.11.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1087.9",
-      "semver": "17.0.9",
-      "build": 1087.9,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.9.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1087.7",
-      "semver": "17.0.9",
-      "build": 1087.7,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.7.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1000.47",
-      "semver": "17.0.9",
-      "build": 1000.47,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1000.47.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1000.46",
-      "semver": "17.0.9",
-      "build": 1000.46,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1000.46.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.9b1087.3",
-      "semver": "17.0.9",
-      "build": 1087.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8.1b1080.1",
-      "semver": "17.0.8.1",
-      "build": 1080.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1080.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8.1b1072.1",
-      "semver": "17.0.8.1",
-      "build": 1072.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1072.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8.1b1070.2",
-      "semver": "17.0.8.1",
-      "build": 1070.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1070.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8.1b1063.1",
-      "semver": "17.0.8.1",
-      "build": 1063.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1063.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8.1b1000.32",
-      "semver": "17.0.8.1",
-      "build": 1000.32,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1000.32.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8.1b1059.3",
-      "semver": "17.0.8.1",
-      "build": 1059.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1059.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8b1000.22",
-      "semver": "17.0.8",
-      "build": 1000.22,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8-linux-x64-b1000.22.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.8b1000.8",
-      "semver": "17.0.8",
-      "build": 1000.8,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8-linux-x64-b1000.8.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b1000.6",
-      "semver": "17.0.7",
-      "build": 1000.6,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b1000.6.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b1000.5",
-      "semver": "17.0.7",
-      "build": 1000.5,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b1000.5.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b1000.2",
-      "semver": "17.0.7",
-      "build": 1000.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b1000.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b985.2",
-      "semver": "17.0.7",
-      "build": 985.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b985.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b979.4",
-      "semver": "17.0.7",
-      "build": 979.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b979.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b829.16",
-      "semver": "17.0.7",
-      "build": 829.16,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b829.16.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b966.2",
-      "semver": "17.0.7",
-      "build": 966.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b966.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b964.1",
-      "semver": "17.0.7",
-      "build": 964.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b964.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b829.14",
-      "semver": "17.0.7",
-      "build": 829.14,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b829.14.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.7b953.1",
-      "semver": "17.0.7",
-      "build": 953.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b953.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b829.9",
-      "semver": "17.0.6",
-      "build": 829.9,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.9.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b469.82",
-      "semver": "17.0.6",
-      "build": 469.82,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b469.82.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b829.5",
-      "semver": "17.0.6",
-      "build": 829.5,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.5.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b653.34",
-      "semver": "17.0.6",
-      "build": 653.34,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b653.34.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b829.4",
-      "semver": "17.0.6",
-      "build": 829.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b829.1",
-      "semver": "17.0.6",
-      "build": 829.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b653.32",
-      "semver": "17.0.6",
-      "build": 653.32,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b653.32.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b802.4",
-      "semver": "17.0.6",
-      "build": 802.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b802.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b802.1",
-      "semver": "17.0.6",
-      "build": 802.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b802.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b785.1",
-      "semver": "17.0.6",
-      "build": 785.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b785.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.6b779.1",
-      "semver": "17.0.6",
-      "build": 779.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b779.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b762.1",
-      "semver": "17.0.5",
-      "build": 762.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b762.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b653.25",
-      "semver": "17.0.5",
-      "build": 653.25,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.25.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b759.1",
-      "semver": "17.0.5",
-      "build": 759.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b759.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b653.23",
-      "semver": "17.0.5",
-      "build": 653.23,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.23.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b653.14",
-      "semver": "17.0.5",
-      "build": 653.14,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.14.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b469.71",
-      "semver": "17.0.5",
-      "build": 469.71,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b469.71.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_16b2043.64",
-      "semver": "11.0.16",
-      "build": 2043.64,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_nomod-11_0_16-linux-x64-b2043.64.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b653.6",
-      "semver": "17.0.5",
-      "build": 653.6,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.6.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.5b469.67",
-      "semver": "17.0.5",
-      "build": 469.67,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b469.67.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4.1b653.1",
-      "semver": "17.0.4.1",
-      "build": 653.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b653.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4.1b646.8",
-      "semver": "17.0.4.1",
-      "build": 646.8,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b646.8.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4.1b629.2",
-      "semver": "17.0.4.1",
-      "build": 629.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b629.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4.1b617.2",
-      "semver": "17.0.4.1",
-      "build": 617.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b617.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4.1b469.62",
-      "semver": "17.0.4.1",
-      "build": 469.62,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b469.62.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4.1b597.1",
-      "semver": "17.0.4.1",
-      "build": 597.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b597.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4b469.53",
-      "semver": "17.0.4",
-      "build": 469.53,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4-linux-x64-b469.53.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.4b469.44",
-      "semver": "17.0.4",
-      "build": 469.44,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4-linux-x64-b469.44.tar.gz"
-    },
-    {
-      "tag_name": "jbr-release-17.0.3b469.37",
-      "semver": "17.0.3",
-      "build": 469.37,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.37.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b469.32",
-      "semver": "17.0.3",
-      "build": 469.32,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.32.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b469.30",
-      "semver": "17.0.3",
-      "build": 469.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b469.19",
-      "semver": "17.0.3",
-      "build": 469.19,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.19.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b498.3",
-      "semver": "17.0.3",
-      "build": 498.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b498.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b469.16",
-      "semver": "17.0.3",
-      "build": 469.16,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.16.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b469.12",
-      "semver": "17.0.3",
-      "build": 469.12,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.12.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b469.3",
-      "semver": "17.0.3",
-      "build": 469.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b463.3",
-      "semver": "17.0.3",
-      "build": 463.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b463.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.3b423.10",
-      "semver": "17.0.3",
-      "build": 423.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b423.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_15b2043.56",
-      "semver": "11.0.15",
-      "build": 2043.56,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_nomod-11_0_15-linux-x64-b2043.56.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b2043.45",
-      "semver": "11.0.14.1",
-      "build": 2043.45,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_nomod-11_0_14_1-linux-x64-b2043.45.tar.gz"
-    },
-    {
-      "tag_name": "jbr17.0.2b396.4",
-      "semver": "17.0.2",
-      "build": 396.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.2-linux-x64-b396.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b2043.25",
-      "semver": "11.0.14.1",
-      "build": 2043.25,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.25.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b2043.22",
-      "semver": "11.0.14.1",
-      "build": 2043.22,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.22.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b2043.17",
-      "semver": "11.0.14.1",
-      "build": 2043.17,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.17.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b2043.14",
-      "semver": "11.0.14.1",
-      "build": 2043.14,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.14.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b2043.11",
-      "semver": "11.0.14.1",
-      "build": 2043.11,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.11.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14b2043.2",
-      "semver": "11.0.14",
-      "build": 2043.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14-linux-x64-b2043.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14_1b1751.46",
-      "semver": "11.0.14.1",
-      "build": 1751.46,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b1751.46.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14b1993.2",
-      "semver": "11.0.14",
-      "build": 1993.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14-linux-x64-b1993.2.tar.gz"
-    },
-    {
-      "tag_name": "jbr17_0_2b315.1",
-      "semver": "17.0.2",
-      "build": 315.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17_0_2-linux-x64-b315.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_14b1982.1",
-      "semver": "11.0.14",
-      "build": 1982.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14-linux-x64-b1982.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_13b1890.3",
-      "semver": "11.0.13",
-      "build": 1890.3,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1890.3.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_13b1751.25",
-      "semver": "11.0.13",
-      "build": 1751.25,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.25.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_13b1751.24",
-      "semver": "11.0.13",
-      "build": 1751.24,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.24.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_13b1751.21",
-      "semver": "11.0.13",
-      "build": 1751.21,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.21.tar.gz"
-    },
-    {
-      "tag_name": "jbr17_0_1b164.8",
-      "semver": "17.0.1",
-      "build": 164.8,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17_0_1-linux-x64-b164.8.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_13b1751.19",
-      "semver": "11.0.13",
-      "build": 1751.19,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.19.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_13-b1504.49",
-      "semver": "11.0.13",
-      "build": 1504.49,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1504.49.tar.gz"
-    },
-    {
-      "tag_name": "jbr17_0_1b164.4",
-      "semver": "17.0.1",
-      "build": 164.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17_0_1-linux-x64-b164.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_13b1751.16",
-      "semver": "11.0.13",
-      "build": 1751.16,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.16.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_12b1751.11",
-      "semver": "11.0.12",
-      "build": 1751.11,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1751.11.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_12b1729.1",
-      "semver": "11.0.12",
-      "build": 1729.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1729.1.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_12b1715.4",
-      "semver": "11.0.12",
-      "build": 1715.4,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1715.4.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_12b1692.9",
-      "semver": "11.0.12",
-      "build": 1692.9,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1692.9.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_12-b1504.37",
-      "semver": "11.0.12",
-      "build": 1504.37,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1504.37.tar.gz"
-    },
-    {
-      "tag_name": "jbr11_0_12b1665.1",
-      "semver": "11.0.12",
-      "build": 1665.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1665.1.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_12-b1504.28",
-      "semver": "11.0.12",
-      "build": 1504.28,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1504.28.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_12-b1504.27",
-      "semver": "11.0.12",
-      "build": 1504.27,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1504.27.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_11-b1504.16",
-      "semver": "11.0.11",
-      "build": 1504.16,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.16.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_11-b1504.13",
-      "semver": "11.0.11",
-      "build": 1504.13,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.13.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_11-b1504.12",
-      "semver": "11.0.11",
-      "build": 1504.12,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.12.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_11-b1542.1",
-      "semver": "11.0.11",
-      "build": 1542.1,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1542.1.tar.gz"
-    },
-    {
-      "tag_name": "jb11_0_11-b1504.8",
-      "semver": "11.0.11",
-      "build": 1504.8,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.8.tar.gz"
-    },
-    {
-      "tag_name": "11_0_11b1536.2",
-      "semver": "11.0.11",
-      "build": 1536.2,
-      "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1536.2.tar.gz"
-    }
-  ]
+  {
+    "tag_name": "jbr-release-21.0.3b465.3",
+    "semver": "21.0.3",
+    "build": "465.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b465.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.3b458.1",
+    "semver": "21.0.3",
+    "build": "458.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b458.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.3b453.2",
+    "semver": "21.0.3",
+    "build": "453.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b453.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.11b1207.24",
+    "semver": "17.0.11",
+    "build": "1207.24",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.11-linux-x64-b1207.24.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.11b1207.23",
+    "semver": "17.0.11",
+    "build": "1207.23",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.11-linux-x64-b1207.23.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.3b446.1",
+    "semver": "21.0.3",
+    "build": "446.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b446.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1207.14",
+    "semver": "17.0.10",
+    "build": "1207.14",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.14.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b829.27",
+    "semver": "17.0.10",
+    "build": "829.27",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b829.27.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1087.23",
+    "semver": "17.0.10",
+    "build": "1087.23",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1087.23.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1207.12",
+    "semver": "17.0.10",
+    "build": "1207.12",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.12.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1087.21",
+    "semver": "17.0.10",
+    "build": "1087.21",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1087.21.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1207.6",
+    "semver": "17.0.10",
+    "build": "1207.6",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.6.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.2b375.1",
+    "semver": "21.0.2",
+    "build": "375.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.2-linux-x64-b375.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1207.1",
+    "semver": "17.0.10",
+    "build": "1207.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1186.1",
+    "semver": "17.0.10",
+    "build": "1186.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1186.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1171.14",
+    "semver": "17.0.10",
+    "build": "1171.14",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1171.14.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b829.26",
+    "semver": "17.0.10",
+    "build": "829.26",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b829.26.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.2b346.3",
+    "semver": "21.0.2",
+    "build": "346.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.2-linux-x64-b346.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1000.48",
+    "semver": "17.0.10",
+    "build": "1000.48",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1000.48.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.2b341.4",
+    "semver": "21.0.2",
+    "build": "341.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.2-linux-x64-b341.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1087.17",
+    "semver": "17.0.10",
+    "build": "1087.17",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1087.17.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1166.2",
+    "semver": "17.0.9",
+    "build": "1166.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1166.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1162.7",
+    "semver": "17.0.9",
+    "build": "1162.7",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1162.7.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1087.11",
+    "semver": "17.0.9",
+    "build": "1087.11",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.11.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1087.9",
+    "semver": "17.0.9",
+    "build": "1087.9",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.9.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1087.7",
+    "semver": "17.0.9",
+    "build": "1087.7",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.7.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1000.47",
+    "semver": "17.0.9",
+    "build": "1000.47",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1000.47.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1000.46",
+    "semver": "17.0.9",
+    "build": "1000.46",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1000.46.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1087.3",
+    "semver": "17.0.9",
+    "build": "1087.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8.1b1080.1",
+    "semver": "17.0.8.1",
+    "build": "1080.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1080.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8.1b1072.1",
+    "semver": "17.0.8.1",
+    "build": "1072.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1072.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8.1b1070.2",
+    "semver": "17.0.8.1",
+    "build": "1070.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1070.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8.1b1063.1",
+    "semver": "17.0.8.1",
+    "build": "1063.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1063.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8.1b1000.32",
+    "semver": "17.0.8.1",
+    "build": "1000.32",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1000.32.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8.1b1059.3",
+    "semver": "17.0.8.1",
+    "build": "1059.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1059.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8b1000.22",
+    "semver": "17.0.8",
+    "build": "1000.22",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8-linux-x64-b1000.22.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8b1000.8",
+    "semver": "17.0.8",
+    "build": "1000.8",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8-linux-x64-b1000.8.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b1000.6",
+    "semver": "17.0.7",
+    "build": "1000.6",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b1000.6.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b1000.5",
+    "semver": "17.0.7",
+    "build": "1000.5",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b1000.5.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b1000.2",
+    "semver": "17.0.7",
+    "build": "1000.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b1000.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b985.2",
+    "semver": "17.0.7",
+    "build": "985.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b985.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b979.4",
+    "semver": "17.0.7",
+    "build": "979.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b979.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b829.16",
+    "semver": "17.0.7",
+    "build": "829.16",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b829.16.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b966.2",
+    "semver": "17.0.7",
+    "build": "966.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b966.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b964.1",
+    "semver": "17.0.7",
+    "build": "964.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b964.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b829.14",
+    "semver": "17.0.7",
+    "build": "829.14",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b829.14.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b953.1",
+    "semver": "17.0.7",
+    "build": "953.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b953.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b829.9",
+    "semver": "17.0.6",
+    "build": "829.9",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.9.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b469.82",
+    "semver": "17.0.6",
+    "build": "469.82",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b469.82.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b829.5",
+    "semver": "17.0.6",
+    "build": "829.5",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.5.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b653.34",
+    "semver": "17.0.6",
+    "build": "653.34",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b653.34.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b829.4",
+    "semver": "17.0.6",
+    "build": "829.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b829.1",
+    "semver": "17.0.6",
+    "build": "829.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b653.32",
+    "semver": "17.0.6",
+    "build": "653.32",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b653.32.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b802.4",
+    "semver": "17.0.6",
+    "build": "802.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b802.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b802.1",
+    "semver": "17.0.6",
+    "build": "802.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b802.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b785.1",
+    "semver": "17.0.6",
+    "build": "785.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b785.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b779.1",
+    "semver": "17.0.6",
+    "build": "779.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b779.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b762.1",
+    "semver": "17.0.5",
+    "build": "762.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b762.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b653.25",
+    "semver": "17.0.5",
+    "build": "653.25",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.25.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b759.1",
+    "semver": "17.0.5",
+    "build": "759.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b759.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b653.23",
+    "semver": "17.0.5",
+    "build": "653.23",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.23.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b653.14",
+    "semver": "17.0.5",
+    "build": "653.14",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.14.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b469.71",
+    "semver": "17.0.5",
+    "build": "469.71",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b469.71.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_16b2043.64",
+    "semver": "11.0.16",
+    "build": "2043.64",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_nomod-11_0_16-linux-x64-b2043.64.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b653.6",
+    "semver": "17.0.5",
+    "build": "653.6",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.6.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b469.67",
+    "semver": "17.0.5",
+    "build": "469.67",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b469.67.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4.1b653.1",
+    "semver": "17.0.4.1",
+    "build": "653.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b653.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4.1b646.8",
+    "semver": "17.0.4.1",
+    "build": "646.8",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b646.8.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4.1b629.2",
+    "semver": "17.0.4.1",
+    "build": "629.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b629.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4.1b617.2",
+    "semver": "17.0.4.1",
+    "build": "617.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b617.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4.1b469.62",
+    "semver": "17.0.4.1",
+    "build": "469.62",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b469.62.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4.1b597.1",
+    "semver": "17.0.4.1",
+    "build": "597.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b597.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4b469.53",
+    "semver": "17.0.4",
+    "build": "469.53",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4-linux-x64-b469.53.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4b469.44",
+    "semver": "17.0.4",
+    "build": "469.44",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4-linux-x64-b469.44.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.3b469.37",
+    "semver": "17.0.3",
+    "build": "469.37",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.37.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b469.32",
+    "semver": "17.0.3",
+    "build": "469.32",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.32.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b469.30",
+    "semver": "17.0.3",
+    "build": "469.30",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.30.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b469.19",
+    "semver": "17.0.3",
+    "build": "469.19",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.19.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b498.3",
+    "semver": "17.0.3",
+    "build": "498.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b498.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b469.16",
+    "semver": "17.0.3",
+    "build": "469.16",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.16.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b469.12",
+    "semver": "17.0.3",
+    "build": "469.12",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.12.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b469.3",
+    "semver": "17.0.3",
+    "build": "469.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b463.3",
+    "semver": "17.0.3",
+    "build": "463.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b463.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b423.10",
+    "semver": "17.0.3",
+    "build": "423.10",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b423.10.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_15b2043.56",
+    "semver": "11.0.15",
+    "build": "2043.56",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_nomod-11_0_15-linux-x64-b2043.56.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b2043.45",
+    "semver": "11.0.14.1",
+    "build": "2043.45",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_nomod-11_0_14_1-linux-x64-b2043.45.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.2b396.4",
+    "semver": "17.0.2",
+    "build": "396.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.2-linux-x64-b396.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b2043.25",
+    "semver": "11.0.14.1",
+    "build": "2043.25",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.25.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b2043.22",
+    "semver": "11.0.14.1",
+    "build": "2043.22",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.22.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b2043.17",
+    "semver": "11.0.14.1",
+    "build": "2043.17",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.17.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b2043.14",
+    "semver": "11.0.14.1",
+    "build": "2043.14",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.14.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b2043.11",
+    "semver": "11.0.14.1",
+    "build": "2043.11",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.11.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14b2043.2",
+    "semver": "11.0.14",
+    "build": "2043.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14-linux-x64-b2043.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b1751.46",
+    "semver": "11.0.14.1",
+    "build": "1751.46",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b1751.46.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14b1993.2",
+    "semver": "11.0.14",
+    "build": "1993.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14-linux-x64-b1993.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr17_0_2b315.1",
+    "semver": "17.0.2",
+    "build": "315.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17_0_2-linux-x64-b315.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14b1982.1",
+    "semver": "11.0.14",
+    "build": "1982.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14-linux-x64-b1982.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_13b1890.3",
+    "semver": "11.0.13",
+    "build": "1890.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1890.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_13b1751.25",
+    "semver": "11.0.13",
+    "build": "1751.25",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.25.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_13b1751.24",
+    "semver": "11.0.13",
+    "build": "1751.24",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.24.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_13b1751.21",
+    "semver": "11.0.13",
+    "build": "1751.21",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.21.tar.gz"
+  },
+  {
+    "tag_name": "jbr17_0_1b164.8",
+    "semver": "17.0.1",
+    "build": "164.8",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17_0_1-linux-x64-b164.8.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_13b1751.19",
+    "semver": "11.0.13",
+    "build": "1751.19",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.19.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_13-b1504.49",
+    "semver": "11.0.13",
+    "build": "1504.49",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1504.49.tar.gz"
+  },
+  {
+    "tag_name": "jbr17_0_1b164.4",
+    "semver": "17.0.1",
+    "build": "164.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17_0_1-linux-x64-b164.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_13b1751.16",
+    "semver": "11.0.13",
+    "build": "1751.16",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.16.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_12b1751.11",
+    "semver": "11.0.12",
+    "build": "1751.11",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1751.11.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_12b1729.1",
+    "semver": "11.0.12",
+    "build": "1729.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1729.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_12b1715.4",
+    "semver": "11.0.12",
+    "build": "1715.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1715.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_12b1692.9",
+    "semver": "11.0.12",
+    "build": "1692.9",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1692.9.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_12-b1504.37",
+    "semver": "11.0.12",
+    "build": "1504.37",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1504.37.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_12b1665.1",
+    "semver": "11.0.12",
+    "build": "1665.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1665.1.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_12-b1504.28",
+    "semver": "11.0.12",
+    "build": "1504.28",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1504.28.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_12-b1504.27",
+    "semver": "11.0.12",
+    "build": "1504.27",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1504.27.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_11-b1504.16",
+    "semver": "11.0.11",
+    "build": "1504.16",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.16.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_11-b1504.13",
+    "semver": "11.0.11",
+    "build": "1504.13",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.13.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_11-b1504.12",
+    "semver": "11.0.11",
+    "build": "1504.12",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.12.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_11-b1542.1",
+    "semver": "11.0.11",
+    "build": "1542.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1542.1.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_11-b1504.8",
+    "semver": "11.0.11",
+    "build": "1504.8",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.8.tar.gz"
+  },
+  {
+    "tag_name": "11_0_11b1536.2",
+    "semver": "11.0.11",
+    "build": "1536.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1536.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.3b465.3",
+    "semver": "21.0.3",
+    "build": "465.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b465.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.3b458.1",
+    "semver": "21.0.3",
+    "build": "458.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b458.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.3b453.2",
+    "semver": "21.0.3",
+    "build": "453.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b453.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.11b1207.24",
+    "semver": "17.0.11",
+    "build": "1207.24",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.11-linux-x64-b1207.24.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.11b1207.23",
+    "semver": "17.0.11",
+    "build": "1207.23",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.11-linux-x64-b1207.23.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.3b446.1",
+    "semver": "21.0.3",
+    "build": "446.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.3-linux-x64-b446.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1207.14",
+    "semver": "17.0.10",
+    "build": "1207.14",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.14.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b829.27",
+    "semver": "17.0.10",
+    "build": "829.27",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b829.27.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1087.23",
+    "semver": "17.0.10",
+    "build": "1087.23",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1087.23.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1207.12",
+    "semver": "17.0.10",
+    "build": "1207.12",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.12.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1087.21",
+    "semver": "17.0.10",
+    "build": "1087.21",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1087.21.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1207.6",
+    "semver": "17.0.10",
+    "build": "1207.6",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.6.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.2b375.1",
+    "semver": "21.0.2",
+    "build": "375.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.2-linux-x64-b375.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1207.1",
+    "semver": "17.0.10",
+    "build": "1207.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1207.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1186.1",
+    "semver": "17.0.10",
+    "build": "1186.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1186.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1171.14",
+    "semver": "17.0.10",
+    "build": "1171.14",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1171.14.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b829.26",
+    "semver": "17.0.10",
+    "build": "829.26",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b829.26.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.2b346.3",
+    "semver": "21.0.2",
+    "build": "346.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.2-linux-x64-b346.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1000.48",
+    "semver": "17.0.10",
+    "build": "1000.48",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1000.48.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-21.0.2b341.4",
+    "semver": "21.0.2",
+    "build": "341.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-21.0.2-linux-x64-b341.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.10b1087.17",
+    "semver": "17.0.10",
+    "build": "1087.17",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.10-linux-x64-b1087.17.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1166.2",
+    "semver": "17.0.9",
+    "build": "1166.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1166.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1162.7",
+    "semver": "17.0.9",
+    "build": "1162.7",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1162.7.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1087.11",
+    "semver": "17.0.9",
+    "build": "1087.11",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.11.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1087.9",
+    "semver": "17.0.9",
+    "build": "1087.9",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.9.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1087.7",
+    "semver": "17.0.9",
+    "build": "1087.7",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.7.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1000.47",
+    "semver": "17.0.9",
+    "build": "1000.47",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1000.47.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1000.46",
+    "semver": "17.0.9",
+    "build": "1000.46",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1000.46.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.9b1087.3",
+    "semver": "17.0.9",
+    "build": "1087.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.9-linux-x64-b1087.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8.1b1080.1",
+    "semver": "17.0.8.1",
+    "build": "1080.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1080.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8.1b1072.1",
+    "semver": "17.0.8.1",
+    "build": "1072.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1072.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8.1b1070.2",
+    "semver": "17.0.8.1",
+    "build": "1070.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1070.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8.1b1063.1",
+    "semver": "17.0.8.1",
+    "build": "1063.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1063.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8.1b1000.32",
+    "semver": "17.0.8.1",
+    "build": "1000.32",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1000.32.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8.1b1059.3",
+    "semver": "17.0.8.1",
+    "build": "1059.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8.1-linux-x64-b1059.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8b1000.22",
+    "semver": "17.0.8",
+    "build": "1000.22",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8-linux-x64-b1000.22.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.8b1000.8",
+    "semver": "17.0.8",
+    "build": "1000.8",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.8-linux-x64-b1000.8.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b1000.6",
+    "semver": "17.0.7",
+    "build": "1000.6",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b1000.6.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b1000.5",
+    "semver": "17.0.7",
+    "build": "1000.5",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b1000.5.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b1000.2",
+    "semver": "17.0.7",
+    "build": "1000.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b1000.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b985.2",
+    "semver": "17.0.7",
+    "build": "985.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b985.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b979.4",
+    "semver": "17.0.7",
+    "build": "979.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b979.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b829.16",
+    "semver": "17.0.7",
+    "build": "829.16",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b829.16.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b966.2",
+    "semver": "17.0.7",
+    "build": "966.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b966.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b964.1",
+    "semver": "17.0.7",
+    "build": "964.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b964.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b829.14",
+    "semver": "17.0.7",
+    "build": "829.14",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b829.14.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.7b953.1",
+    "semver": "17.0.7",
+    "build": "953.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.7-linux-x64-b953.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b829.9",
+    "semver": "17.0.6",
+    "build": "829.9",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.9.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b469.82",
+    "semver": "17.0.6",
+    "build": "469.82",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b469.82.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b829.5",
+    "semver": "17.0.6",
+    "build": "829.5",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.5.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b653.34",
+    "semver": "17.0.6",
+    "build": "653.34",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b653.34.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b829.4",
+    "semver": "17.0.6",
+    "build": "829.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b829.1",
+    "semver": "17.0.6",
+    "build": "829.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b829.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b653.32",
+    "semver": "17.0.6",
+    "build": "653.32",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b653.32.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b802.4",
+    "semver": "17.0.6",
+    "build": "802.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b802.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b802.1",
+    "semver": "17.0.6",
+    "build": "802.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b802.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b785.1",
+    "semver": "17.0.6",
+    "build": "785.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b785.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.6b779.1",
+    "semver": "17.0.6",
+    "build": "779.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.6-linux-x64-b779.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b762.1",
+    "semver": "17.0.5",
+    "build": "762.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b762.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b653.25",
+    "semver": "17.0.5",
+    "build": "653.25",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.25.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b759.1",
+    "semver": "17.0.5",
+    "build": "759.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b759.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b653.23",
+    "semver": "17.0.5",
+    "build": "653.23",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.23.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b653.14",
+    "semver": "17.0.5",
+    "build": "653.14",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.14.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b469.71",
+    "semver": "17.0.5",
+    "build": "469.71",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b469.71.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_16b2043.64",
+    "semver": "11.0.16",
+    "build": "2043.64",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_nomod-11_0_16-linux-x64-b2043.64.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b653.6",
+    "semver": "17.0.5",
+    "build": "653.6",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b653.6.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.5b469.67",
+    "semver": "17.0.5",
+    "build": "469.67",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.5-linux-x64-b469.67.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4.1b653.1",
+    "semver": "17.0.4.1",
+    "build": "653.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b653.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4.1b646.8",
+    "semver": "17.0.4.1",
+    "build": "646.8",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b646.8.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4.1b629.2",
+    "semver": "17.0.4.1",
+    "build": "629.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b629.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4.1b617.2",
+    "semver": "17.0.4.1",
+    "build": "617.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b617.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4.1b469.62",
+    "semver": "17.0.4.1",
+    "build": "469.62",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b469.62.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4.1b597.1",
+    "semver": "17.0.4.1",
+    "build": "597.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4.1-linux-x64-b597.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4b469.53",
+    "semver": "17.0.4",
+    "build": "469.53",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4-linux-x64-b469.53.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.4b469.44",
+    "semver": "17.0.4",
+    "build": "469.44",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.4-linux-x64-b469.44.tar.gz"
+  },
+  {
+    "tag_name": "jbr-release-17.0.3b469.37",
+    "semver": "17.0.3",
+    "build": "469.37",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.37.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b469.32",
+    "semver": "17.0.3",
+    "build": "469.32",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.32.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b469.30",
+    "semver": "17.0.3",
+    "build": "469.30",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.30.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b469.19",
+    "semver": "17.0.3",
+    "build": "469.19",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.19.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b498.3",
+    "semver": "17.0.3",
+    "build": "498.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b498.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b469.16",
+    "semver": "17.0.3",
+    "build": "469.16",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.16.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b469.12",
+    "semver": "17.0.3",
+    "build": "469.12",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.12.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b469.3",
+    "semver": "17.0.3",
+    "build": "469.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b469.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b463.3",
+    "semver": "17.0.3",
+    "build": "463.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b463.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.3b423.10",
+    "semver": "17.0.3",
+    "build": "423.10",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.3-linux-x64-b423.10.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_15b2043.56",
+    "semver": "11.0.15",
+    "build": "2043.56",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_nomod-11_0_15-linux-x64-b2043.56.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b2043.45",
+    "semver": "11.0.14.1",
+    "build": "2043.45",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_nomod-11_0_14_1-linux-x64-b2043.45.tar.gz"
+  },
+  {
+    "tag_name": "jbr17.0.2b396.4",
+    "semver": "17.0.2",
+    "build": "396.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17.0.2-linux-x64-b396.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b2043.25",
+    "semver": "11.0.14.1",
+    "build": "2043.25",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.25.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b2043.22",
+    "semver": "11.0.14.1",
+    "build": "2043.22",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.22.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b2043.17",
+    "semver": "11.0.14.1",
+    "build": "2043.17",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.17.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b2043.14",
+    "semver": "11.0.14.1",
+    "build": "2043.14",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.14.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b2043.11",
+    "semver": "11.0.14.1",
+    "build": "2043.11",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b2043.11.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14b2043.2",
+    "semver": "11.0.14",
+    "build": "2043.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14-linux-x64-b2043.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14_1b1751.46",
+    "semver": "11.0.14.1",
+    "build": "1751.46",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14_1-linux-x64-b1751.46.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14b1993.2",
+    "semver": "11.0.14",
+    "build": "1993.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14-linux-x64-b1993.2.tar.gz"
+  },
+  {
+    "tag_name": "jbr17_0_2b315.1",
+    "semver": "17.0.2",
+    "build": "315.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17_0_2-linux-x64-b315.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_14b1982.1",
+    "semver": "11.0.14",
+    "build": "1982.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_14-linux-x64-b1982.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_13b1890.3",
+    "semver": "11.0.13",
+    "build": "1890.3",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1890.3.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_13b1751.25",
+    "semver": "11.0.13",
+    "build": "1751.25",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.25.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_13b1751.24",
+    "semver": "11.0.13",
+    "build": "1751.24",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.24.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_13b1751.21",
+    "semver": "11.0.13",
+    "build": "1751.21",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.21.tar.gz"
+  },
+  {
+    "tag_name": "jbr17_0_1b164.8",
+    "semver": "17.0.1",
+    "build": "164.8",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17_0_1-linux-x64-b164.8.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_13b1751.19",
+    "semver": "11.0.13",
+    "build": "1751.19",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.19.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_13-b1504.49",
+    "semver": "11.0.13",
+    "build": "1504.49",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1504.49.tar.gz"
+  },
+  {
+    "tag_name": "jbr17_0_1b164.4",
+    "semver": "17.0.1",
+    "build": "164.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-17_0_1-linux-x64-b164.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_13b1751.16",
+    "semver": "11.0.13",
+    "build": "1751.16",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_13-linux-x64-b1751.16.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_12b1751.11",
+    "semver": "11.0.12",
+    "build": "1751.11",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1751.11.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_12b1729.1",
+    "semver": "11.0.12",
+    "build": "1729.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1729.1.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_12b1715.4",
+    "semver": "11.0.12",
+    "build": "1715.4",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1715.4.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_12b1692.9",
+    "semver": "11.0.12",
+    "build": "1692.9",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1692.9.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_12-b1504.37",
+    "semver": "11.0.12",
+    "build": "1504.37",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1504.37.tar.gz"
+  },
+  {
+    "tag_name": "jbr11_0_12b1665.1",
+    "semver": "11.0.12",
+    "build": "1665.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1665.1.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_12-b1504.28",
+    "semver": "11.0.12",
+    "build": "1504.28",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1504.28.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_12-b1504.27",
+    "semver": "11.0.12",
+    "build": "1504.27",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_12-linux-x64-b1504.27.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_11-b1504.16",
+    "semver": "11.0.11",
+    "build": "1504.16",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.16.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_11-b1504.13",
+    "semver": "11.0.11",
+    "build": "1504.13",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.13.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_11-b1504.12",
+    "semver": "11.0.11",
+    "build": "1504.12",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.12.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_11-b1542.1",
+    "semver": "11.0.11",
+    "build": "1542.1",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1542.1.tar.gz"
+  },
+  {
+    "tag_name": "jb11_0_11-b1504.8",
+    "semver": "11.0.11",
+    "build": "1504.8",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1504.8.tar.gz"
+  },
+  {
+    "tag_name": "11_0_11b1536.2",
+    "semver": "11.0.11",
+    "build": "1536.2",
+    "url": "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-11_0_11-linux-x64-b1536.2.tar.gz"
+  }
+]
