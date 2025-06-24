@@ -1,0 +1,26 @@
+#!/usr/bin/env sh
+# This is a wrapper script that automatically downloads Mill from GitHub.
+set -e
+
+if [ -z "$MILL_VERSION" ] ; then
+    MILL_VERSION="$(head -n 1 .mill-version 2> /dev/null)"
+fi
+
+MILL_DOWNLOAD_PATH="$HOME/.cache/mill/download"
+MILL_EXEC_PATH="${MILL_DOWNLOAD_PATH}/$MILL_VERSION"
+
+if [ ! -x "$MILL_EXEC_PATH" ] ; then
+    mkdir -p "${MILL_DOWNLOAD_PATH}"
+    DOWNLOAD_FILE=$MILL_EXEC_PATH-tmp-download
+    MILL_DOWNLOAD_URL="https://github.com/lihaoyi/mill/releases/download/${MILL_VERSION%%-*}/$MILL_VERSION-assembly"
+    curl --fail -L -o "$DOWNLOAD_FILE" "$MILL_DOWNLOAD_URL"
+    chmod +x "$DOWNLOAD_FILE"
+    mv "$DOWNLOAD_FILE" "$MILL_EXEC_PATH"
+    unset DOWNLOAD_FILE
+    unset MILL_DOWNLOAD_URL
+fi
+
+unset MILL_DOWNLOAD_PATH
+unset MILL_VERSION
+
+exec "${MILL_EXEC_PATH}" "$@"
