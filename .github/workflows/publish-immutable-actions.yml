@@ -2,8 +2,7 @@ name: 'Publish Immutable Action Version'
 
 on:
   release:
-    types: [released]
-  workflow_dispatch:
+    types: [published]
 
 jobs:
   publish:
