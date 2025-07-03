@@ -93676,8 +93676,8 @@ function convertVersionToSemver(version) {
     return mainVersion;
 }
 exports.convertVersionToSemver = convertVersionToSemver;
-function getGitHubHttpHeaders(token) {
-    const resolvedToken = token || core.getInput('token');
+function getGitHubHttpHeaders() {
+    const resolvedToken = process.env.GITHUB_TOKEN || core.getInput('token');
     const auth = !resolvedToken ? undefined : `token ${resolvedToken}`;
     const headers = {
         accept: 'application/vnd.github.VERSION.raw'

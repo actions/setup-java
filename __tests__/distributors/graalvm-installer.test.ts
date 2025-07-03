@@ -114,7 +114,7 @@ describe('GraalVMDistribution', () => {
 
       const osType = distribution.getPlatform();
       if (osType === 'windows' && distroArch === 'aarch64') {
-        return; // skip, aarch64 is not available for Windows
+        test.skip('Skipping test: aarch64 is not available for Windows');
       }
 
       const archiveType = getDownloadArchiveExtension();
