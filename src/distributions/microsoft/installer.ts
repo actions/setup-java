@@ -116,7 +116,7 @@ export class MicrosoftDistributions extends JavaBase {
       }
     } catch (err) {
       core.debug(
-        `Http request for microsoft-openjdk-versions.json failed with status code: ${response?.statusCode}`
+        `Http request for microsoft-openjdk-versions.json failed with status code: ${response?.statusCode}. Error: ${err}`
       );
       return null;
     }
