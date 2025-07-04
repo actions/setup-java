@@ -614,5 +614,14 @@ major versions: 8, 11, 16, 17, 21
 more specific versions: 8.0.282+8, 8.0.232, 11.0, 11.0.4, 17.0
 early access (EA) versions: 15-ea, 15.0.0-ea
 versions with specified distribution: openjdk64-11.0.2
+LTS versions : temurin-21.0.5+11.0.LTS
 ```
 If the file contains multiple versions, only the first one will be recognized.
+```
+Note:
+In some complex version strings containing multiple version-like segments (e.g., java semeru-openj9-11.0.15+10_openj9-0.32.0),
+the regular expression may extract the last version segment (0.32.0) instead of the intended main version (11.0.15+10).
+Additionally, the regex is designed to support standard semantic versioning (semver) formats 
+and may not correctly parse non-standard formats such as jetbrains-21b212.1. 
+Users are encouraged to provide clear, semver-compliant version specifications to ensure accurate extraction.
+```
