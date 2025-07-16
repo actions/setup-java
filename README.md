@@ -14,6 +14,7 @@ The `setup-java` action provides the following functionality for GitHub Actions 
 - Caching dependencies managed by Apache Maven.
 - Caching dependencies managed by Gradle.
 - Caching dependencies managed by sbt.
+- Caching dependencies managed by Mill.
 - [Maven Toolchains declaration](https://maven.apache.org/guides/mini/guide-using-toolchains.html) for specified JDK versions.
 
 This action allows you to work with Java and Scala projects.
@@ -39,7 +40,7 @@ This action allows you to work with Java and Scala projects.
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
-  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
+  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle", "sbt", or "mill".
 
   - `cache-dependency-path`: The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.
 
@@ -121,11 +122,12 @@ Currently, the following distributions are supported:
 **NOTE:** To comply with the GraalVM Free Terms and Conditions (GFTC) license, it is recommended to use GraalVM JDK 17 version 17.0.12, as this is the only version of GraalVM JDK 17 available under the GFTC license. Additionally, it is encouraged to consider upgrading to GraalVM JDK 21, which offers the latest features and improvements.
 
 ### Caching packages dependencies
-The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
+The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are Gradle, Maven, sbt, and Mill. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
 
-- gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, and `**/versions.properties`
-- maven: `**/pom.xml`
+- Gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, and `**/versions.properties`
+- Maven: `**/pom.xml`
 - sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.scala`, `**/project/**.sbt`
+- Mill: `**/build.sc`, `**/*.sc`, `**/mill`, `**/.mill-version`, and `**/.config/mill-version`
 
 When the option `cache-dependency-path` is specified, the hash is based on the matching file. This option supports wildcards and a list of file names, and is especially useful for monorepos.
 
@@ -133,7 +135,7 @@ The workflow output `cache-hit` is set to indicate if an exact match was found f
 
 The cache input is optional, and caching is turned off by default.
 
-#### Caching gradle dependencies
+#### Caching Gradle dependencies
 ```yaml
 steps:
 - uses: actions/checkout@v4
@@ -148,7 +150,7 @@ steps:
 - run: ./gradlew build --no-daemon
 ```
 
-#### Caching maven dependencies
+#### Caching Maven dependencies
 ```yaml
 steps:
 - uses: actions/checkout@v4
@@ -176,6 +178,21 @@ steps:
       sub-project/project/build.properties
 - name: Build with SBT
   run: sbt package
+```
+
+#### Caching Mill dependencies
+```yaml
+steps:
+- uses: actions/checkout@v4
+- uses: actions/setup-java@v4
+  with:
+    distribution: 'temurin'
+    java-version: '21'
+    cache: 'mill'
+    cache-dependency-path: | # optional
+      sub-project/build.sc
+- name: Build with Mill
+  run: ./mill _.compile
 ```
 
 #### Cache segment restore timeout
