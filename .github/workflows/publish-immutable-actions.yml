@@ -4,6 +4,7 @@ on:
   release:
     types: [released]
   workflow_dispatch:
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -17,5 +18,4 @@ jobs:
         uses: actions/checkout@v4
       - name: Publish
         id: publish
-
         uses: actions/publish-immutable-action@v0.0.4
