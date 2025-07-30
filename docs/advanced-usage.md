@@ -617,7 +617,8 @@ versions with specified distribution: openjdk64-11.0.2
 LTS versions : temurin-21.0.5+11.0.LTS
 ```
 If the file contains multiple versions, only the first one will be recognized.
-***NOTE:
+
+***NOTE***:
 In some complex version strings containing multiple version-like segments (e.g., java semeru-openj9-11.0.15+10_openj9-0.32.0),
 the regular expression may extract the last version segment (0.32.0) instead of the intended main version (11.0.15+10).
 Additionally, Recommended to use supported standard semantic versioning (semver) formats 
