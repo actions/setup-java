@@ -3,7 +3,7 @@ name: Validate cache
 on:
   push:
     branches:
-      - main
+      - test-macos-x64-runner
       - releases/*
     paths-ignore:
       - '**.md'
@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-14-large]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-14-large]
     needs: gradle-save
     steps:
       - name: Checkout
@@ -70,7 +70,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-14-large]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -93,7 +93,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-14-large]
     needs: maven-save
     steps:
       - name: Checkout
@@ -121,7 +121,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-22.04]
+        os: [macos-14-large]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -133,7 +133,7 @@ jobs:
           java-version: '11'
           cache: sbt
       - name: Setup SBT
-        if: matrix.os == 'macos-13'
+        if: matrix.os == 'macos-14-large'
         run: |
           echo ""Installing SBT...""
           brew install sbt
@@ -141,7 +141,7 @@ jobs:
         run: sbt update
 
       - name: Check files to cache on macos-latest
-        if: matrix.os == 'macos-13'
+        if: matrix.os == 'macos-14-large'
         run: |
           if [ ! -d ~/Library/Caches/Coursier ]; then
             echo "::error::The ~/Library/Caches/Coursier directory does not exist unexpectedly"
@@ -170,7 +170,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-22.04]
+        os: [macos-14-large]
     needs: sbt-save
     steps:
       - name: Checkout
@@ -184,7 +184,7 @@ jobs:
           cache: sbt
 
       - name: Confirm that ~/Library/Caches/Coursier directory has been made
-        if: matrix.os == 'macos-13'
+        if: matrix.os == 'macos-14-large'
         run: |
           if [ ! -d ~/Library/Caches/Coursier ]; then
             echo "::error::The ~/Library/Caches/Coursier directory does not exist unexpectedly"
