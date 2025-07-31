@@ -6,7 +6,8 @@ import * as io from '@actions/io';
 import * as toolchains from '../src/toolchains';
 import {M2_DIR, MVN_TOOLCHAINS_FILE} from '../src/constants';
 
-const m2Dir = path.join(__dirname, M2_DIR);
+const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'setup-java-test-'));
+const m2Dir = path.join(tempDir, M2_DIR);
 const toolchainsFile = path.join(m2Dir, MVN_TOOLCHAINS_FILE);
 
 describe('toolchains tests', () => {
@@ -16,7 +17,7 @@ describe('toolchains tests', () => {
   beforeEach(async () => {
     await io.rmRF(m2Dir);
     spyOSHomedir = jest.spyOn(os, 'homedir');
-    spyOSHomedir.mockReturnValue(__dirname);
+    spyOSHomedir.mockReturnValue(tempDir);
     spyInfo = jest.spyOn(core, 'info');
     spyInfo.mockImplementation(() => null);
   }, 300000);
@@ -24,6 +25,7 @@ describe('toolchains tests', () => {
   afterAll(async () => {
     try {
       await io.rmRF(m2Dir);
+      await io.rmRF(tempDir);
     } catch {
       console.log('Failed to remove test directories');
     }
@@ -40,7 +42,7 @@ describe('toolchains tests', () => {
       jdkHome: '/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.1-12/x64'
     };
 
-    const altHome = path.join(__dirname, 'runner', 'toolchains');
+    const altHome = path.join(tempDir, 'runner', 'toolchains');
     const altToolchainsFile = path.join(altHome, MVN_TOOLCHAINS_FILE);
     await io.rmRF(altHome); // ensure it doesn't already exist
 
