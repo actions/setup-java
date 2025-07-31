@@ -1,5 +1,9 @@
 import {HttpClient} from '@actions/http-client';
 import os from 'os';
+
+function mockArchitecture(arch: string): NodeJS.Architecture {
+  return arch as NodeJS.Architecture;
+}
 import {
   TemurinDistribution,
   TemurinImplementation
@@ -147,7 +151,7 @@ describe('getAvailableVersions', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: string) => {
-      jest.spyOn(os, 'arch').mockReturnValue(distroArch);
+      jest.spyOn(os, 'arch').mockReturnValue(mockArchitecture(distroArch));
 
       const installerOptions: JavaInstallerOptions = {
         version: '17',

@@ -6,6 +6,10 @@ import * as util from '../../src/util';
 import os from 'os';
 import {isGeneratorFunction} from 'util/types';
 
+function mockArchitecture(arch: string): NodeJS.Architecture {
+  return arch as NodeJS.Architecture;
+}
+
 import manifestData from '../data/corretto.json';
 
 describe('getAvailableVersions', () => {
@@ -208,7 +212,7 @@ describe('getAvailableVersions', () => {
     ])(
       'defaults to os.arch(): %s mapped to distro arch: %s',
       async (osArch: string, distroArch: string) => {
-        jest.spyOn(os, 'arch').mockReturnValue(osArch);
+        jest.spyOn(os, 'arch').mockReturnValue(mockArchitecture(osArch));
 
         const version = '17';
         const installerOptions: JavaInstallerOptions = {

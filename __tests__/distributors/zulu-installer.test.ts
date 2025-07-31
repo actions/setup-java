@@ -5,6 +5,10 @@ import {IZuluVersions} from '../../src/distributions/zulu/models';
 import * as utils from '../../src/util';
 import os from 'os';
 
+function mockArchitecture(arch: string): NodeJS.Architecture {
+  return arch as NodeJS.Architecture;
+}
+
 import manifestData from '../data/zulu-releases-default.json';
 
 describe('getAvailableVersions', () => {
@@ -126,7 +130,7 @@ describe('getAvailableVersions', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: DistroArch) => {
-      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+      jest.spyOn(os, 'arch').mockReturnValue(mockArchitecture(osArch));
 
       const distribution = new ZuluDistribution({
         version: '17',

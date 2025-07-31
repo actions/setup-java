@@ -14,6 +14,10 @@ import {
 
 import os from 'os';
 
+function mockArchitecture(arch: string): NodeJS.Architecture {
+  return arch as NodeJS.Architecture;
+}
+
 class EmptyJavaBase extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('Empty', installerOptions);
@@ -287,7 +291,7 @@ describe('setupJava', () => {
     spyCoreSetOutput = jest.spyOn(core, 'setOutput');
     spyCoreSetOutput.mockImplementation(() => undefined);
 
-    jest.spyOn(os, 'arch').mockReturnValue('x86');
+    jest.spyOn(os, 'arch').mockReturnValue(mockArchitecture('x86'));
   });
 
   afterEach(() => {
