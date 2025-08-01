@@ -214,7 +214,7 @@ describe('setupJava', () => {
     );
   });
 
-  it('java is resolved from toolcache including Contents/Home on MacOS', async () => {
+  it('java is resolved from toolcache including Contents/Home on macOS', async () => {
     const inputs = {
       version: actualJavaVersion,
       architecture: 'x86',
@@ -257,7 +257,7 @@ describe('setupJava', () => {
     });
   });
 
-  it('java is unpacked from jdkfile including Contents/Home on MacOS', async () => {
+  it('java is unpacked from jdkfile including Contents/Home on macOS', async () => {
     const inputs = {
       version: '11.0.289',
       architecture: 'x86',
