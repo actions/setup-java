@@ -287,7 +287,7 @@ describe('setupJava', () => {
     spyCoreSetOutput = jest.spyOn(core, 'setOutput');
     spyCoreSetOutput.mockImplementation(() => undefined);
 
-    jest.spyOn(os, 'arch').mockReturnValue('x86');
+    jest.spyOn(os, 'arch').mockReturnValue('x86' as ReturnType<typeof os.arch>);
   });
 
   afterEach(() => {

@@ -191,7 +191,9 @@ describe('getAvailableVersions', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: string) => {
-      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+      jest
+        .spyOn(os, 'arch')
+        .mockReturnValue(osArch as ReturnType<typeof os.arch>);
 
       const installerOptions: JavaInstallerOptions = {
         version: '17',
