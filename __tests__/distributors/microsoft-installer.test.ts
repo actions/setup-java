@@ -1,9 +1,5 @@
 import {MicrosoftDistributions} from '../../src/distributions/microsoft/installer';
 import os from 'os';
-
-function mockArchitecture(arch: string): NodeJS.Architecture {
-  return arch as NodeJS.Architecture;
-}
 import data from '../data/microsoft.json';
 import * as httpm from '@actions/http-client';
 import * as core from '@actions/core';
@@ -99,7 +95,7 @@ describe('findPackageForDownload', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: string) => {
-      jest.spyOn(os, 'arch').mockReturnValue(mockArchitecture(osArch));
+      jest.spyOn(os, 'arch').mockReturnValue(osArch as ReturnType<typeof os.arch>);
       jest.spyOn(os, 'platform').mockReturnValue('darwin');
 
       const version = '17';
@@ -123,7 +119,7 @@ describe('findPackageForDownload', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: string) => {
-      jest.spyOn(os, 'arch').mockReturnValue(mockArchitecture(osArch));
+      jest.spyOn(os, 'arch').mockReturnValue(osArch as ReturnType<typeof os.arch>);
       jest.spyOn(os, 'platform').mockReturnValue('linux');
 
       const version = '17';
@@ -147,7 +143,7 @@ describe('findPackageForDownload', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: string) => {
-      jest.spyOn(os, 'arch').mockReturnValue(mockArchitecture(osArch));
+      jest.spyOn(os, 'arch').mockReturnValue(osArch as ReturnType<typeof os.arch>);
       jest.spyOn(os, 'platform').mockReturnValue('win32');
 
       const version = '17';

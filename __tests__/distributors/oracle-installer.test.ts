@@ -1,9 +1,5 @@
 import {OracleDistribution} from '../../src/distributions/oracle/installer';
 import os from 'os';
-
-function mockArchitecture(arch: string): NodeJS.Architecture {
-  return arch as NodeJS.Architecture;
-}
 import * as core from '@actions/core';
 import {getDownloadArchiveExtension} from '../../src/util';
 import {HttpClient} from '@actions/http-client';
@@ -99,7 +95,7 @@ describe('findPackageForDownload', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: string) => {
-      jest.spyOn(os, 'arch').mockReturnValue(mockArchitecture(osArch));
+      jest.spyOn(os, 'arch').mockReturnValue(osArch as ReturnType<typeof os.arch>);
       jest.spyOn(os, 'platform').mockReturnValue('linux');
 
       const version = '18';

@@ -6,10 +6,6 @@ import {
 import {HttpClient} from '@actions/http-client';
 import os from 'os';
 
-function mockArchitecture(arch: string): NodeJS.Architecture {
-  return arch as NodeJS.Architecture;
-}
-
 import manifestData from '../data/liberica.json';
 
 describe('getAvailableVersions', () => {
@@ -109,9 +105,9 @@ describe('getAvailableVersions', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: DistroArch) => {
-      jest.spyOn(os, 'arch').mockReturnValue(mockArchitecture(osArch));
+      jest.spyOn(os, 'arch').mockReturnValue(osArch as ReturnType<typeof os.arch>);
 
-      const distribution = new LibericaDistributions({
+      const distributions = new LibericaDistributions({
         version: '17',
         architecture: '', // to get default value
         packageType: 'jdk',
@@ -121,11 +117,11 @@ describe('getAvailableVersions', () => {
       const additionalParams =
         '&installation-type=archive&fields=downloadUrl%2Cversion%2CfeatureVersion%2CinterimVersion%2C' +
         'updateVersion%2CbuildVersion';
-      distribution['getPlatformOption'] = () => 'macos';
+      distributions['getPlatformOption'] = () => 'macos';
 
       const buildUrl = `https://api.bell-sw.com/v1/liberica/releases?os=macos&bundle-type=jdk&bitness=${distroArch.bitness}&arch=${distroArch.arch}&build-type=all${additionalParams}`;
 
-      await distribution['getAvailableVersions']();
+      await distributions['getAvailableVersions']();
 
       expect(spyHttpClient.mock.calls).toHaveLength(1);
       expect(spyHttpClient.mock.calls[0][0]).toBe(buildUrl);
