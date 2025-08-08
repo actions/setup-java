@@ -103,7 +103,9 @@ describe('findPackageForDownload', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArchs: string[]) => {
-      jest.spyOn(os, 'arch').mockReturnValue(osArch as ReturnType<typeof os.arch>);
+      jest
+        .spyOn(os, 'arch')
+        .mockReturnValue(osArch as ReturnType<typeof os.arch>);
 
       const distribution = new GraalVMDistribution({
         version: '21',
@@ -119,8 +121,9 @@ describe('findPackageForDownload', () => {
       const archiveType = getDownloadArchiveExtension();
       const result = await distribution['findPackageForDownload']('21');
 
-      const expectedUrls = distroArchs.map(distroArch =>
-        `https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_${osType}-${distroArch}_bin.${archiveType}`
+      const expectedUrls = distroArchs.map(
+        distroArch =>
+          `https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_${osType}-${distroArch}_bin.${archiveType}`
       );
 
       expect(expectedUrls).toContain(result.url);
