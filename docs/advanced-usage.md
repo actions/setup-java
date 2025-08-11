@@ -619,9 +619,4 @@ LTS versions : temurin-21.0.5+11.0.LTS
 If the file contains multiple versions, only the first one will be recognized.
 
 ***NOTE***:
-In some complex version strings containing multiple version-like segments (e.g., java semeru-openj9-11.0.15+10_openj9-0.32.0),
-the regular expression may extract the last version segment (0.32.0) instead of the intended main version (11.0.15+10).
-Additionally, Recommended to use supported standard semantic versioning (semver) formats 
-and may not correctly parse non-standard formats such as jetbrains-21b212.1. 
-Users are encouraged to provide clear, semver-compliant version specifications to ensure accurate extraction.
-
+For the tool-version file, ensure that you use standard semantic versioning (semver) formats, as non-standard formats (such as jetbrains-21b212.1) may not be parsed correctly. Additionally, for complex version strings containing multiple version-like segments (for example, java semeru-openj9-11.0.15+10_openj9-0.32.0), the extraction logic may incorrectly capture the last segment (0.32.0) instead of the main version (11.0.15+10).
