@@ -30,7 +30,7 @@ jobs:
         id: setup-java
         with:
           distribution: 'adopt'
-          java-version: '11'
+          java-version: '17'
           cache: gradle
           cache-dependency-path: __tests__/cache/gradle1/*.gradle*
       - name: Create files to cache
