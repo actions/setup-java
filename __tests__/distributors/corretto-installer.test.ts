@@ -218,6 +218,7 @@ describe('getAvailableVersions', () => {
           packageType: 'jdk',
           checkLatest: false
         });
+        mockPlatform(distribution, 'macos');
 
         const expectedLink = `https://corretto.aws/downloads/resources/17.0.2.8.1/amazon-corretto-17.0.2.8.1-macosx-${distroArch}.tar.gz`;
 
