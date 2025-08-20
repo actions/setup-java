@@ -126,7 +126,9 @@ describe('getAvailableVersions', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: DistroArch) => {
-      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+      jest
+        .spyOn(os, 'arch')
+        .mockReturnValue(osArch as ReturnType<typeof os.arch>);
 
       const distribution = new ZuluDistribution({
         version: '17',
@@ -135,7 +137,9 @@ describe('getAvailableVersions', () => {
         checkLatest: false
       });
       distribution['getPlatformOption'] = () => 'linux';
-      const buildUrl = `https://api.azul.com/zulu/download/community/v1.0/bundles/?os=linux&ext=zip&bundle_type=jdk&javafx=false&arch=${distroArch.arch}&hw_bitness=${distroArch.bitness}&release_status=ga`;
+      // Override extension for linux default arch case to match util behavior
+      spyUtilGetDownloadArchiveExtension.mockReturnValue('tar.gz');
+      const buildUrl = `https://api.azul.com/zulu/download/community/v1.0/bundles/?os=linux&ext=tar.gz&bundle_type=jdk&javafx=false&arch=${distroArch.arch}&hw_bitness=${distroArch.bitness}&release_status=ga`;
 
       await distribution['getAvailableVersions']();
 
