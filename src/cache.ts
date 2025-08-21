@@ -13,7 +13,7 @@ const CACHE_MATCHED_KEY = 'cache-matched-key';
 const CACHE_KEY_PREFIX = 'setup-java';
 
 interface PackageManager {
-  id: 'maven' | 'gradle' | 'sbt';
+  id: 'maven' | 'gradle' | 'sbt' | 'mill';
   /**
    * Paths of the file that specify the files to cache.
    */
@@ -59,6 +59,21 @@ const supportedPackageManager: PackageManager[] = [
       '**/project/build.properties',
       '**/project/**.scala',
       '**/project/**.sbt'
+    ]
+  },
+  {
+    id: 'mill',
+    path: [
+      join(os.homedir(), '.cache', 'mill')
+    ],
+    pattern: [
+      // https://github.com/coursier/cache-action/blob/4e2615869d13561d626ed48655e1a39e5b192b3c/README.md?plain=1#L28-L38
+      '**/build.sc',
+      '**/*.sc',
+      '**/mill',
+      '**/.mill-version',
+      // https://github.com/com-lihaoyi/mill/blob/5b88d1e268e6264e44589c5ac82c0fdbd680fd63/mill#L6-L11
+      '**/.config/mill-version'
     ]
   }
 ];
