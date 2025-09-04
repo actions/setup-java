@@ -203,28 +203,27 @@ describe('getAvailableVersions', () => {
     });
 
     it.each([
-      ['arm64', 'aarch64'],
-      ['amd64', 'x64']
+      ['amd64', 'x64'],
+      ['arm64', 'aarch64']
     ])(
       'defaults to os.arch(): %s mapped to distro arch: %s',
       async (osArch: string, distroArch: string) => {
-        jest.spyOn(os, 'arch').mockReturnValue(osArch);
+        jest
+          .spyOn(os, 'arch')
+          .mockReturnValue(osArch as ReturnType<typeof os.arch>);
 
-        const version = '17';
-        const installerOptions: JavaInstallerOptions = {
-          version,
+        const distribution = new CorrettoDistribution({
+          version: '17',
           architecture: '', // to get default value
           packageType: 'jdk',
           checkLatest: false
-        };
-
-        const distribution = new CorrettoDistribution(installerOptions);
+        });
         mockPlatform(distribution, 'macos');
 
         const expectedLink = `https://corretto.aws/downloads/resources/17.0.2.8.1/amazon-corretto-17.0.2.8.1-macosx-${distroArch}.tar.gz`;
 
         const availableVersion = await distribution['findPackageForDownload'](
-          version
+          '17'
         );
         expect(availableVersion).not.toBeNull();
         expect(availableVersion.url).toBe(expectedLink);
