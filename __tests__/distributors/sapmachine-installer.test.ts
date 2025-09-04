@@ -250,7 +250,7 @@ describe('getAvailableVersions', () => {
       ['21.0.3+8-ea', 'linux', 'x64', '21.0.3+8'],
       ['17', 'linux-muse', 'aarch64']
     ])(
-      'should throw when required version of JDK can not be found in the JSON',
+      'should throw when required version of JDK cannot be found in the JSON',
       async (
         version: string,
         platform: string,
