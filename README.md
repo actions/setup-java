@@ -18,6 +18,16 @@ The `setup-java` action provides the following functionality for GitHub Actions 
 
 This action allows you to work with Java and Scala projects.
 
+## Breaking changes in V5
+
+- Upgrade to node 24 in [#888](https://github.com/actions/setup-java/pull/888)
+Make sure your runner is updated to this version or newer to use this release. v2.327.1 [Release Notes](https://github.com/actions/runner/releases/tag/v2.327.1)
+
+For more detailed release notes with documntation updates and dependency upgrades, please track [release notes](https://github.com/actions/setup-java/releases/tag/v5.0.0)
+
+
+
+
 ## V2 vs V1
 
 - V2 supports custom distributions and provides support for Azul Zulu OpenJDK, Eclipse Temurin and AdoptOpenJDK  out of the box. V1 supports only Azul Zulu OpenJDK.

@@ -76,9 +76,8 @@ describe('findPackageForDownload', () => {
         checkLatest: false
       });
       distribution['getAvailableVersions'] = async () => manifestData as any;
-      const resolvedVersion = await distribution['findPackageForDownload'](
-        input
-      );
+      const resolvedVersion =
+        await distribution['findPackageForDownload'](input);
       const url = resolvedVersion.url;
       const options = {method: 'HEAD'};
 
