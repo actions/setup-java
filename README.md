@@ -25,9 +25,6 @@ Make sure your runner is updated to this version or newer to use this release. v
 
 For more detailed release notes with documntation updates and dependency upgrades, please track [release notes](https://github.com/actions/setup-java/releases/tag/v5.0.0)
 
-
-
-
 ## V2 vs V1
 
 - V2 supports custom distributions and provides support for Azul Zulu OpenJDK, Eclipse Temurin and AdoptOpenJDK  out of the box. V1 supports only Azul Zulu OpenJDK.
