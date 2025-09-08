@@ -23,7 +23,7 @@ This action allows you to work with Java and Scala projects.
 - Upgraded action from node20 to node24
   > Make sure your runner is on version v2.327.1 or later to ensure compatibility with this release [Release Notes](https://github.com/actions/runner/releases/tag/v2.327.1)
 
-For more detailed release notes,  see the full release notes on the [releases page](https://github.com/actions/setup-java/releases/tag/v5.0.0)
+For more details,  see the full release notes on the [releases page](https://github.com/actions/setup-java/releases/tag/v5.0.0)
 
 ## V2 vs V1
 
