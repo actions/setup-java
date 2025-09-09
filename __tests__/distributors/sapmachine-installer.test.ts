@@ -61,9 +61,8 @@ describe('getAvailableVersions', () => {
 
       mockPlatform(distribution, 'linux');
 
-      const availableVersion = await distribution['findPackageForDownload'](
-        version
-      );
+      const availableVersion =
+        await distribution['findPackageForDownload'](version);
       expect(availableVersion).not.toBeNull();
       expect(availableVersion.url).toBe(
         'https://github.com/SAP/SapMachine/releases/download/sapmachine-17.0.10/sapmachine-jdk-17.0.10_linux-x64_bin.tar.gz'
@@ -230,9 +229,8 @@ describe('getAvailableVersions', () => {
         });
         mockPlatform(distribution, platform);
 
-        const availableVersion = await distribution['findPackageForDownload'](
-          normalizedVersion
-        );
+        const availableVersion =
+          await distribution['findPackageForDownload'](normalizedVersion);
         expect(availableVersion).not.toBeNull();
         expect(availableVersion.url).toBe(expectedLink);
       }
