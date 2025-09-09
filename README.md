@@ -18,6 +18,13 @@ The `setup-java` action provides the following functionality for GitHub Actions 
 
 This action allows you to work with Java and Scala projects.
 
+## V2 vs V1
+
+- V2 supports custom distributions and provides support for Azul Zulu OpenJDK, Eclipse Temurin and AdoptOpenJDK  out of the box. V1 supports only Azul Zulu OpenJDK.
+- V2 requires you to specify distribution along with the version. V1 defaults to Azul Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2.
+
+For information about the latest releases, recent updates, and newly supported distributions, please refer to the `setup-java` [Releases](https://github.com/actions/setup-java/releases).
+
 ## Usage
 
   - `java-version`: The Java version that is going to be set up. Takes a whole or [semver](#supported-version-syntax) Java version. If not specified, the action will expect `java-version-file` input to be specified.
@@ -64,8 +71,8 @@ This action allows you to work with Java and Scala projects.
 #### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v5
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
     java-version: '21'
@@ -75,8 +82,8 @@ steps:
 #### Azul Zulu OpenJDK
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v5
+- uses: actions/setup-java@v5
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
     java-version: '21'
@@ -131,8 +138,8 @@ The cache input is optional, and caching is turned off by default.
 #### Caching gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v5
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
     java-version: '21'
@@ -146,8 +153,8 @@ steps:
 #### Caching maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v5
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
     java-version: '21'
@@ -160,8 +167,8 @@ steps:
 #### Caching sbt dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v5
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
     java-version: '21'
@@ -180,8 +187,8 @@ Usually, cache gets downloaded in multiple segments of fixed sizes. Sometimes, a
 env:
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v5
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
     java-version: '21'
@@ -200,8 +207,8 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v5
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
     java-version: '21'
@@ -219,9 +226,9 @@ jobs:
         java: [ '8', '11', '17', '21' ]
     name: Java ${{ matrix.Java }} sample
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
@@ -234,7 +241,7 @@ All versions are added to the PATH. The last version will be used and available 
 
 ```yaml
     steps:
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: '<distribution>'
           java-version: |

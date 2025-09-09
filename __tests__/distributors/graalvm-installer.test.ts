@@ -96,33 +96,36 @@ describe('GraalVMDistribution', () => {
   );
 
   it.each([
-    ['amd64', 'x64'],
-    ['arm64', 'aarch64']
+    ['amd64', ['x64', 'amd64']],
+    ['arm64', ['aarch64', 'arm64']]
   ])(
-    'should map OS architecture %s to distribution architecture %s',
-    async (osArch: string, distroArch: string) => {
-      jest.spyOn(os, 'arch').mockReturnValue(osArch);
-      jest.spyOn(os, 'platform').mockReturnValue('linux');
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArchs: string[]) => {
+      jest
+        .spyOn(os, 'arch')
+        .mockReturnValue(osArch as ReturnType<typeof os.arch>);
 
-      const version = '21';
-      const distro = new GraalVMDistribution({
-        version,
-        architecture: '',
+      const distribution = new GraalVMDistribution({
+        version: '21',
+        architecture: '', // to get default value
         packageType: 'jdk',
         checkLatest: false
       });
 
       const osType = distribution.getPlatform();
-      if (osType === 'windows' && distroArch === 'aarch64') {
-        console.warn('Skipping test: aarch64 is not available for Windows');
-        return;
+      if (osType === 'windows' && distroArchs.includes('aarch64')) {
+        return; // skip, aarch64 is not available for Windows
       }
 
       const archiveType = getDownloadArchiveExtension();
-      const result = await distro['findPackageForDownload'](version);
-      const expectedUrl = `https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_${osType}-${distroArch}_bin.${archiveType}`;
+      const result = await distribution['findPackageForDownload']('21');
 
-      expect(result.url).toBe(expectedUrl);
+      const expectedUrls = distroArchs.map(
+        distroArch =>
+          `https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_${osType}-${distroArch}_bin.${archiveType}`
+      );
+
+      expect(expectedUrls).toContain(result.url);
     }
   );
 

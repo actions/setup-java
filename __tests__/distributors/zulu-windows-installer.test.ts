@@ -126,7 +126,9 @@ describe('getAvailableVersions', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: DistroArch) => {
-      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+      jest
+        .spyOn(os, 'arch')
+        .mockReturnValue(osArch as ReturnType<typeof os.arch>);
 
       const distribution = new ZuluDistribution({
         version: '17',

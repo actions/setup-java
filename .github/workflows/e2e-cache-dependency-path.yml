@@ -24,13 +24,13 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Run setup-java with the cache for gradle
         uses: ./
         id: setup-java
         with:
           distribution: 'adopt'
-          java-version: '11'
+          java-version: '17'
           cache: gradle
           cache-dependency-path: __tests__/cache/gradle1/*.gradle*
       - name: Create files to cache
@@ -51,7 +51,7 @@ jobs:
     needs: gradle1-save
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Run setup-java with the cache for gradle
         uses: ./
         id: setup-java
@@ -76,7 +76,7 @@ jobs:
     needs: gradle1-save
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Run setup-java with the cache for gradle
         uses: ./
         id: setup-java
