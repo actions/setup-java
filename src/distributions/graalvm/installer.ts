@@ -1,10 +1,10 @@
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
-
 import fs from 'fs';
 import path from 'path';
-
 import {JavaBase} from '../base-installer';
+import {HttpCodes} from '@actions/http-client';
+import {GraalVMEAVersion} from './models';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
@@ -16,8 +16,6 @@ import {
   getGitHubHttpHeaders,
   renameWinArchive
 } from '../../util';
-import {HttpCodes} from '@actions/http-client';
-import {GraalVMEAVersion} from './models';
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm';
 const IS_WINDOWS = process.platform === 'win32';
@@ -38,13 +36,14 @@ export class GraalVMDistribution extends JavaBase {
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
-    if (process.platform === 'win32') {
+    if (IS_WINDOWS) {
       javaArchivePath = renameWinArchive(javaArchivePath);
     }
     const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
-
-    const archiveName = fs.readdirSync(extractedJavaPath)[0];
-    const archivePath = path.join(extractedJavaPath, archiveName);
+    const archivePath = path.join(
+      extractedJavaPath,
+      fs.readdirSync(extractedJavaPath)[0]
+    );
     const version = this.getToolcacheVersionName(javaRelease.version);
 
     const javaPath = await tc.cacheDir(
@@ -53,7 +52,6 @@ export class GraalVMDistribution extends JavaBase {
       version,
       this.architecture
     );
-
     return {version: javaRelease.version, path: javaPath};
   }
 
@@ -61,7 +59,7 @@ export class GraalVMDistribution extends JavaBase {
     range: string
   ): Promise<JavaDownloadRelease> {
     const arch = this.distributionArchitecture();
-    if (arch !== 'x64' && arch !== 'aarch64') {
+    if (!['x64', 'aarch64'].includes(arch)) {
       throw new Error(`Unsupported architecture: ${this.architecture}`);
     }
 
@@ -75,33 +73,46 @@ export class GraalVMDistribution extends JavaBase {
 
     const platform = this.getPlatform();
     const extension = getDownloadArchiveExtension();
-    let major;
-    let fileUrl;
-    if (range.includes('.')) {
-      major = range.split('.')[0];
-      fileUrl = `${GRAALVM_DL_BASE}/${major}/archive/graalvm-jdk-${range}_${platform}-${arch}_bin.${extension}`;
-    } else {
-      major = range;
-      fileUrl = `${GRAALVM_DL_BASE}/${range}/latest/graalvm-jdk-${range}_${platform}-${arch}_bin.${extension}`;
-    }
+    const major = range.includes('.') ? range.split('.')[0] : range;
+    const fileUrl = this.constructFileUrl(
+      range,
+      major,
+      platform,
+      arch,
+      extension
+    );
 
     if (parseInt(major) < 17) {
       throw new Error('GraalVM is only supported for JDK 17 and later');
     }
 
     const response = await this.http.head(fileUrl);
+    this.handleHttpResponse(response, range);
 
+    return {url: fileUrl, version: range};
+  }
+
+  private constructFileUrl(
+    range: string,
+    major: string,
+    platform: string,
+    arch: string,
+    extension: string
+  ): string {
+    return range.includes('.')
+      ? `${GRAALVM_DL_BASE}/${major}/archive/graalvm-jdk-${range}_${platform}-${arch}_bin.${extension}`
+      : `${GRAALVM_DL_BASE}/${range}/latest/graalvm-jdk-${range}_${platform}-${arch}_bin.${extension}`;
+  }
+
+  private handleHttpResponse(response: any, range: string): void {
     if (response.message.statusCode === HttpCodes.NotFound) {
       throw new Error(`Could not find GraalVM for SemVer ${range}`);
     }
-
     if (response.message.statusCode !== HttpCodes.OK) {
       throw new Error(
         `Http request for GraalVM failed with status code: ${response.message.statusCode}`
       );
     }
-
-    return {url: fileUrl, version: range};
   }
 
   private async findEABuildDownloadUrl(
@@ -112,6 +123,7 @@ export class GraalVMDistribution extends JavaBase {
     if (!latestVersion) {
       throw new Error(`Unable to find latest version for '${javaEaVersion}'`);
     }
+
     const arch = this.distributionArchitecture();
     const file = latestVersion.files.find(
       f => f.arch === arch && f.platform === GRAALVM_PLATFORM
@@ -119,6 +131,7 @@ export class GraalVMDistribution extends JavaBase {
     if (!file || !file.filename.startsWith('graalvm-jdk-')) {
       throw new Error(`Unable to find file metadata for '${javaEaVersion}'`);
     }
+
     return {
       url: `${latestVersion.download_base_url}${file.filename}`,
       version: latestVersion.version
@@ -128,49 +141,37 @@ export class GraalVMDistribution extends JavaBase {
   private async fetchEAJson(
     javaEaVersion: string
   ): Promise<GraalVMEAVersion[]> {
-    const owner = 'graalvm';
-    const repository = 'oracle-graalvm-ea-builds';
-    const branch = 'main';
-    const filePath = `versions/${javaEaVersion}.json`;
-
-    const url = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
-
+    const url = `https://api.github.com/repos/graalvm/oracle-graalvm-ea-builds/contents/versions/${javaEaVersion}.json?ref=main`;
     const headers = getGitHubHttpHeaders();
 
     core.debug(
       `Trying to fetch available version info for GraalVM EA builds from '${url}'`
     );
-    let fetchedJson;
-    try {
-      fetchedJson = (await this.http.getJson<GraalVMEAVersion[]>(url, headers))
-        .result;
-    } catch (err) {
-      throw Error(
-        `Fetching version info for GraalVM EA builds from '${url}' failed with the error: ${
-          (err as Error).message
-        }`
-      );
-    }
-    if (fetchedJson === null) {
-      throw Error(
-        `No GraalVM EA build found. Are you sure java-version: '${javaEaVersion}' is correct?`
+    const fetchedJson = await this.http
+      .getJson<GraalVMEAVersion[]>(url, headers)
+      .then(res => res.result);
+
+    if (!fetchedJson) {
+      throw new Error(
+        `No GraalVM EA build found for version '${javaEaVersion}'. Please check if the version is correct.`
       );
     }
     return fetchedJson;
   }
 
   public getPlatform(platform: NodeJS.Platform = process.platform): OsVersions {
-    switch (platform) {
-      case 'darwin':
-        return 'macos';
-      case 'win32':
-        return 'windows';
-      case 'linux':
-        return 'linux';
-      default:
-        throw new Error(
-          `Platform '${platform}' is not supported. Supported platforms: 'linux', 'macos', 'windows'`
-        );
+    const platformMap: Record<string, OsVersions> = {
+      darwin: 'macos',
+      win32: 'windows',
+      linux: 'linux'
+    };
+
+    const result = platformMap[platform];
+    if (!result) {
+      throw new Error(
+        `Platform '${platform}' is not supported. Supported platforms: 'linux', 'macos', 'windows'`
+      );
     }
+    return result;
   }
 }
