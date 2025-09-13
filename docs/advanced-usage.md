@@ -601,14 +601,19 @@ steps:
 ## Java version file
   If the `java-version-file` input is specified, the action will extract the version from the file and install it.
   
-  Supported files are .java-version and .tool-versions.
-  In .java-version file, only the version should be specified (e.g., 17.0.7).
-  In .tool-versions file, java version should be preceded by the java keyword (e.g., java 17.0.7).
-  The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv). Similarly, the `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)).
+  Supported files are `.java-version`, `.tool-versions` and `.sdkmanrc`.
+  In `.java-version` file, only the version should be specified (e.g., 17.0.7).
+  In `.tool-versions` file, java version should be preceded by the java keyword (e.g., java 17.0.7).
+  In `.sdkmanrc` file, java version should be preceded by the `java=` prefix (e.g., java=17.0.7-tem) and include the distribution.
+  The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv).
+  Similarly, the `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf)
+  standards, adhering to Semantic Versioning ([semver](https://semver.org/)).
+  The `.sdkmanrc` file supports version specifications in accordance with [file format](https://sdkman.io/usage#env-command),
+  see [Sdkman! documentation](https://sdkman.io/jdks) for more information.
   
   If both java-version and java-version-file inputs are provided, the java-version input will be used.
 
-Valid entry options:
+Valid entry options (does not apply to `.sdkmanrc`):
 ```
 major versions: 8, 11, 16, 17, 21
 more specific versions: 8.0.282+8, 8.0.232, 11.0, 11.0.4, 17.0
