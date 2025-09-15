@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {GraalVMDistribution} from '../../src/distributions/graalvm/installer';
 import {JavaInstallerOptions} from '../../src/distributions/base-models';
+import * as util from '../../src/util';
 
 jest.mock('@actions/core');
 jest.mock('@actions/tool-cache');
@@ -24,18 +25,13 @@ jest.mock('fs', () => ({
 }));
 
 beforeAll(() => {
-  // Ensure we're in test mode
   process.env.NODE_ENV = 'test';
 
-  // Disable any real network calls
-  const HttpClient = require('@actions/http-client').HttpClient;
-  if (!jest.isMockFunction(HttpClient)) {
+  if (!jest.isMockFunction(http.HttpClient)) {
     throw new Error('HTTP client must be mocked in tests!');
   }
 
-  // Optional: Add more safety checks
-  const toolCache = require('@actions/tool-cache');
-  if (!jest.isMockFunction(toolCache.downloadTool)) {
+  if (!jest.isMockFunction(tc.downloadTool)) {
     throw new Error('Tool cache downloadTool must be mocked in tests!');
   }
 
@@ -61,13 +57,14 @@ describe('GraalVMDistribution', () => {
     mockHttpClient = new http.HttpClient() as jest.Mocked<http.HttpClient>;
     (distribution as any).http = mockHttpClient;
 
-    const util = require('../../src/util');
-    util.getDownloadArchiveExtension.mockReturnValue('tar.gz');
+    (util.getDownloadArchiveExtension as jest.Mock).mockReturnValue('tar.gz');
   });
 
   afterAll(() => {
-    const HttpClient = require('@actions/http-client').HttpClient;
-    expect(jest.isMockFunction(HttpClient)).toBe(true);
+    expect(jest.isMockFunction(http.HttpClient)).toBe(true);
+
+    expect(jest.isMockFunction(tc.downloadTool)).toBe(true);
+    expect(jest.isMockFunction(tc.cacheDir)).toBe(true);
   });
 
   describe('getPlatform', () => {
@@ -103,10 +100,11 @@ describe('GraalVMDistribution', () => {
       (tc.downloadTool as jest.Mock).mockResolvedValue('/tmp/archive.tar.gz');
       (tc.cacheDir as jest.Mock).mockResolvedValue('/cached/java/path');
 
-      const util = require('../../src/util');
-      util.extractJdkFile.mockResolvedValue('/tmp/extracted');
-      util.renameWinArchive.mockImplementation((p: string) => p + '.renamed');
-      util.getDownloadArchiveExtension.mockReturnValue('tar.gz');
+      (util.extractJdkFile as jest.Mock).mockResolvedValue('/tmp/extracted');
+      (util.renameWinArchive as jest.Mock).mockImplementation(
+        (p: string) => p + '.renamed'
+      );
+      (util.getDownloadArchiveExtension as jest.Mock).mockReturnValue('tar.gz');
 
       (fs.readdirSync as jest.Mock).mockReturnValue(['graalvm-jdk-17.0.5']);
 
@@ -120,7 +118,7 @@ describe('GraalVMDistribution', () => {
 
       expect(tc.downloadTool).toHaveBeenCalledWith(javaRelease.url);
 
-      expect(require('../../src/util').extractJdkFile).toHaveBeenCalledWith(
+      expect(util.extractJdkFile).toHaveBeenCalledWith(
         '/tmp/archive.tar.gz',
         'tar.gz'
       );
@@ -146,11 +144,10 @@ describe('GraalVMDistribution', () => {
     });
 
     it('should verify Windows-specific rename logic', () => {
-      const util = require('../../src/util');
       const originalPath = '/tmp/archive.tar.gz';
       const renamedPath = '/tmp/archive.tar.gz.renamed';
 
-      util.renameWinArchive.mockReturnValue(renamedPath);
+      (util.renameWinArchive as jest.Mock).mockReturnValue(renamedPath);
 
       const result = util.renameWinArchive(originalPath);
 
