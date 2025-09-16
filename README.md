@@ -244,7 +244,7 @@ jobs:
 
 ### Install multiple JDKs
 
-All versions are added to the PATH. The last version will be used and available globally. Other Java versions can be accessed through env variables with such specification as 'JAVA_HOME_{{ MAJOR_VERSION }}_{{ ARCHITECTURE }}'.
+All configured Java versions are added to the PATH. The last one added to the PATH (i.e., the last JDK set up by this action) will be used as the default and available globally. Other Java versions can be accessed through environment variables such as 'JAVA_HOME_{{ MAJOR_VERSION }}_{{ ARCHITECTURE }}'. To use a specific Java version, set the JAVA_HOME environment variable accordingly and prepend its bin directory to the PATH to ensure it takes priority during execution.
 
 ```yaml
     steps:
