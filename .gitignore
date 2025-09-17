@@ -1,3 +1,6 @@
+# Ignore Scala IDE files
+.metals/
+
 # Ignore node_modules, ncc is used to compile nodejs modules into a single file
 node_modules/
 __tests__/runner/*
