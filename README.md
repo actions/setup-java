@@ -83,7 +83,6 @@ steps:
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
     java-version: '21'
-- run: java HelloWorldApp.java
 ```
 
 #### Azul Zulu OpenJDK
@@ -94,7 +93,6 @@ steps:
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
     java-version: '21'
-- run: java HelloWorldApp.java
 ```
 
 #### Supported version syntax
@@ -220,7 +218,6 @@ steps:
     distribution: 'temurin'
     java-version: '21'
     check-latest: true
-- run: java HelloWorldApp.java
 ```
 
 ### Testing against different Java versions
@@ -239,7 +236,6 @@ jobs:
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
-      - run: java HelloWorldApp.java
 ```
 
 ### Install multiple JDKs
