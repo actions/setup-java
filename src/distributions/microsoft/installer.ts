@@ -7,14 +7,12 @@ import {
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
-  getGitHubHttpHeaders,
   renameWinArchive
 } from '../../util';
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
-import {TypedResponse} from '@actions/http-client/lib/interfaces';
 
 export class MicrosoftDistributions extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -90,49 +88,118 @@ export class MicrosoftDistributions extends JavaBase {
   }
 
   private async getAvailableVersions(): Promise<tc.IToolRelease[] | null> {
-    // TODO get these dynamically!
-    // We will need Microsoft to add an endpoint where we can query for versions.
-    const owner = 'actions';
-    const repository = 'setup-java';
-    const branch = 'main';
-    const filePath =
-      'src/distributions/microsoft/microsoft-openjdk-versions.json';
-
-    let releases: tc.IToolRelease[] | null = null;
-    const fileUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
-
-    const headers = getGitHubHttpHeaders();
-
-    let response: TypedResponse<tc.IToolRelease[]> | null = null;
+    const learnUrl =
+      'https://learn.microsoft.com/en-us/java/openjdk/download';
 
     if (core.isDebug()) {
       console.time('Retrieving available versions for Microsoft took'); // eslint-disable-line no-console
     }
 
     try {
-      response = await this.http.getJson<tc.IToolRelease[]>(fileUrl, headers);
-      if (!response.result) {
-        return null;
+      const response = await this.http.get(learnUrl);
+      const body = await response.readBody();
+
+      const releases = this.parseVersionsFromHtml(body);
+
+      if (core.isDebug() && releases) {
+        core.startGroup('Print information about available versions');
+        console.timeEnd('Retrieving available versions for Microsoft took'); // eslint-disable-line no-console
+        core.debug(`Available versions: [${releases.length}]`);
+        core.debug(releases.map(item => item.version).join(', '));
+        core.endGroup();
       }
+
+      return releases;
     } catch (err) {
       core.debug(
-        `Http request for microsoft-openjdk-versions.json failed with status code: ${response?.statusCode}. Error: ${err}`
+        `Failed to fetch versions from Microsoft Learn: ${err}`
       );
       return null;
     }
+  }
 
-    if (response.result) {
-      releases = response.result;
+  private parseVersionsFromHtml(html: string): tc.IToolRelease[] {
+    const releases: tc.IToolRelease[] = [];
+    
+    // Pattern to match version headings like "OpenJDK 25.0.0 LTS", "OpenJDK 21.0.8 LTS", etc.
+    const versionHeaderRegex = /OpenJDK\s+(\d+\.\d+\.\d+)(?:\s+LTS)?/gi;
+    
+    let match: RegExpExecArray | null;
+    const versions = new Set<string>();
+    
+    while ((match = versionHeaderRegex.exec(html)) !== null) {
+      const version = match[1];
+      versions.add(version);
     }
 
-    if (core.isDebug() && releases) {
-      core.startGroup('Print information about available versions');
-      console.timeEnd('Retrieving available versions for Microsoft took'); // eslint-disable-line no-console
-      core.debug(`Available versions: [${releases.length}]`);
-      core.debug(releases.map(item => item.version).join(', '));
-      core.endGroup();
+    // Convert versions to releases with download URLs
+    for (const version of versions) {
+      const majorVersion = version.split('.')[0];
+      
+      releases.push({
+        version: version,
+        stable: true,
+        release_url: 'https://aka.ms/download-jdk',
+        files: this.generateDownloadFiles(version, majorVersion)
+      });
     }
+
+    // Sort releases by version (newest first)
+    releases.sort((a, b) => {
+      const aParts = a.version.split('.').map(Number);
+      const bParts = b.version.split('.').map(Number);
+      
+      for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+        const aVal = aParts[i] || 0;
+        const bVal = bParts[i] || 0;
+        if (aVal !== bVal) {
+          return bVal - aVal;
+        }
+      }
+      return 0;
+    });
 
     return releases;
+  }
+
+  private generateDownloadFiles(
+    version: string,
+    majorVersion: string
+  ): Array<{
+    filename: string;
+    arch: string;
+    platform: string;
+    download_url: string;
+  }> {
+    const files = [];
+    const platforms = [
+      {platform: 'linux', archName: 'x64', extension: 'tar.gz'},
+      {platform: 'darwin', archName: 'x64', extension: 'tar.gz'},
+      {platform: 'win32', archName: 'x64', extension: 'zip'},
+      {platform: 'linux', archName: 'aarch64', extension: 'tar.gz'},
+      {platform: 'darwin', archName: 'aarch64', extension: 'tar.gz'},
+      {platform: 'win32', archName: 'aarch64', extension: 'zip'}
+    ];
+
+    for (const {platform, archName, extension} of platforms) {
+      const osName =
+        platform === 'darwin'
+          ? 'macos'
+          : platform === 'win32'
+          ? 'windows'
+          : 'linux';
+      
+      const filename = `microsoft-jdk-${version}-${osName}-${archName}.${extension}`;
+      const download_url = `https://aka.ms/download-jdk/${filename}`;
+
+      files.push({
+        filename,
+        arch: archName,
+        platform,
+        download_url
+      });
+    }
+
+    return files;
   }
 }
