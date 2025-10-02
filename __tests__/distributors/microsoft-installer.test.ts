@@ -1,13 +1,23 @@
 import {MicrosoftDistributions} from '../../src/distributions/microsoft/installer';
 import os from 'os';
-import data from '../data/microsoft.json';
 import * as httpm from '@actions/http-client';
 import * as core from '@actions/core';
 
 describe('findPackageForDownload', () => {
   let distribution: MicrosoftDistributions;
-  let spyGetManifestFromRepo: jest.SpyInstance;
+  let spyHttpGet: jest.SpyInstance;
   let spyDebug: jest.SpyInstance;
+
+  const mockHtmlResponse = `
+    <html>
+      <body>
+        <h3>OpenJDK 25.0.0 LTS</h3>
+        <h3>OpenJDK 21.0.8 LTS</h3>
+        <h3>OpenJDK 17.0.16 LTS</h3>
+        <h3>OpenJDK 11.0.28 LTS</h3>
+      </body>
+    </html>
+  `;
 
   beforeEach(() => {
     distribution = new MicrosoftDistributions({
@@ -17,12 +27,10 @@ describe('findPackageForDownload', () => {
       checkLatest: false
     });
 
-    spyGetManifestFromRepo = jest.spyOn(httpm.HttpClient.prototype, 'getJson');
-    spyGetManifestFromRepo.mockReturnValue({
-      result: data,
-      statusCode: 200,
-      headers: {}
-    });
+    spyHttpGet = jest.spyOn(httpm.HttpClient.prototype, 'get');
+    spyHttpGet.mockResolvedValue({
+      readBody: jest.fn().mockResolvedValue(mockHtmlResponse)
+    } as any);
 
     spyDebug = jest.spyOn(core, 'debug');
     spyDebug.mockImplementation(() => {});
@@ -30,39 +38,24 @@ describe('findPackageForDownload', () => {
 
   it.each([
     [
-      '21.x',
-      '21.0.0',
-      'https://aka.ms/download-jdk/microsoft-jdk-21.0.0-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+      '25.x',
+      '25.0.0',
+      'https://aka.ms/download-jdk/microsoft-jdk-25.0.0-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ],
     [
-      '17.0.1',
-      '17.0.1+12.1',
-      'https://aka.ms/download-jdk/microsoft-jdk-17.0.1.12.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+      '21.x',
+      '21.0.8',
+      'https://aka.ms/download-jdk/microsoft-jdk-21.0.8-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ],
     [
       '17.x',
-      '17.0.7',
-      'https://aka.ms/download-jdk/microsoft-jdk-17.0.7-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
-    ],
-    [
-      '16.0.x',
-      '16.0.2+7.1',
-      'https://aka.ms/download-jdk/microsoft-jdk-16.0.2.7.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
-    ],
-    [
-      '11.0.13',
-      '11.0.13+8.1',
-      'https://aka.ms/download-jdk/microsoft-jdk-11.0.13.8.1-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
-    ],
-    [
-      '11.0.15',
-      '11.0.15',
-      'https://aka.ms/download-jdk/microsoft-jdk-11.0.15-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+      '17.0.16',
+      'https://aka.ms/download-jdk/microsoft-jdk-17.0.16-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ],
     [
       '11.x',
-      '11.0.19',
-      'https://aka.ms/download-jdk/microsoft-jdk-11.0.19-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+      '11.0.28',
+      'https://aka.ms/download-jdk/microsoft-jdk-11.0.28-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ]
   ])('version is %s -> %s', async (input, expectedVersion, expectedUrl) => {
     const result = await distribution['findPackageForDownload'](input);
@@ -93,7 +86,7 @@ describe('findPackageForDownload', () => {
     ['amd64', 'x64'],
     ['arm64', 'aarch64']
   ])(
-    'defaults to os.arch(): %s mapped to distro arch: %s',
+    'macOS: defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: string) => {
       jest
         .spyOn(os, 'arch')
@@ -109,7 +102,7 @@ describe('findPackageForDownload', () => {
       });
 
       const result = await distro['findPackageForDownload'](version);
-      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.7-macos-${distroArch}.tar.gz`;
+      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.16-macos-${distroArch}.tar.gz`;
 
       expect(result.url).toBe(expectedUrl);
     }
@@ -119,7 +112,7 @@ describe('findPackageForDownload', () => {
     ['amd64', 'x64'],
     ['arm64', 'aarch64']
   ])(
-    'defaults to os.arch(): %s mapped to distro arch: %s',
+    'Linux: defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: string) => {
       jest
         .spyOn(os, 'arch')
@@ -135,7 +128,7 @@ describe('findPackageForDownload', () => {
       });
 
       const result = await distro['findPackageForDownload'](version);
-      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.7-linux-${distroArch}.tar.gz`;
+      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.16-linux-${distroArch}.tar.gz`;
 
       expect(result.url).toBe(expectedUrl);
     }
@@ -145,7 +138,7 @@ describe('findPackageForDownload', () => {
     ['amd64', 'x64'],
     ['arm64', 'aarch64']
   ])(
-    'defaults to os.arch(): %s mapped to distro arch: %s',
+    'Windows: defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: string) => {
       jest
         .spyOn(os, 'arch')
@@ -161,7 +154,7 @@ describe('findPackageForDownload', () => {
       });
 
       const result = await distro['findPackageForDownload'](version);
-      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.7-windows-${distroArch}.zip`;
+      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.16-windows-${distroArch}.zip`;
 
       expect(result.url).toBe(expectedUrl);
     }
