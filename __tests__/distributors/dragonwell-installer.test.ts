@@ -206,9 +206,8 @@ describe('getAvailableVersions', () => {
         });
         mockPlatform(distribution, platform);
 
-        const availableVersion = await distribution['findPackageForDownload'](
-          jdkVersion
-        );
+        const availableVersion =
+          await distribution['findPackageForDownload'](jdkVersion);
         expect(availableVersion).not.toBeNull();
         expect(availableVersion.url).toBe(expectedLink);
       }
