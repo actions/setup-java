@@ -150,9 +150,8 @@ describe('getAvailableVersions', () => {
       });
       mockPlatform(distribution, platform);
 
-      const availableVersion = await distribution['findPackageForDownload'](
-        version
-      );
+      const availableVersion =
+        await distribution['findPackageForDownload'](version);
       expect(availableVersion).not.toBeNull();
       expect(availableVersion.url).toBe(expectedLink);
     });
@@ -222,9 +221,8 @@ describe('getAvailableVersions', () => {
 
         const expectedLink = `https://corretto.aws/downloads/resources/17.0.2.8.1/amazon-corretto-17.0.2.8.1-macosx-${distroArch}.tar.gz`;
 
-        const availableVersion = await distribution['findPackageForDownload'](
-          '17'
-        );
+        const availableVersion =
+          await distribution['findPackageForDownload']('17');
         expect(availableVersion).not.toBeNull();
         expect(availableVersion.url).toBe(expectedLink);
       }
