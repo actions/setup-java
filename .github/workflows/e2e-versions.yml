@@ -41,6 +41,15 @@ jobs:
           - distribution: dragonwell
             os: macos-13
         include:
+          - distribution: microsoft
+            os: windows-latest
+            version: 25
+          - distribution: microsoft
+            os: ubuntu-latest
+            version: 25
+          - distribution: microsoft
+            os: macos-latest
+            version: 25
           - distribution: oracle
             os: macos-13
             version: 17
