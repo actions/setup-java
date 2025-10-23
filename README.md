@@ -118,8 +118,8 @@ Currently, the following distributions are supported:
 #### Supported version syntax
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
 - major versions: `8`, `11`, `17`, `21`, `25`
-- more specific versions: `8.0.462+8`, `8.0.462`, `11.0.28`, `17.0`, `21.0`, `21.0.8`
-- early access (EA) versions: `25-ea`, `26-ea`, `26.0.0-ea`
+- more specific versions: `8.0.472`, `11.0.29`, `17.0`, `21.0`, `21.0.9`, `25.0.1` 
+- early access (EA) versions: `21-ea`, `25-ea`, `26-ea`, `26.0.0-ea`
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 
