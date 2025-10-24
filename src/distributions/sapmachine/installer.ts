@@ -69,8 +69,7 @@ export class SapMachineDistribution extends JavaBase {
 
     if (!fetchedReleasesJson) {
       fetchedReleasesJson = await this.fetchReleasesFromUrl(
-        'https://sap.github.io/SapMachine/assets/data/sapmachine-releases-all.json',
-        getGitHubHttpHeaders()
+        'https://backup.sapmachine.io/assets/data/sapmachine-releases-all.json'
       );
     }
 
