@@ -21,7 +21,8 @@ jest.mock('../../src/util', () => ({
 
 jest.mock('fs', () => ({
   ...jest.requireActual('fs'),
-  readdirSync: jest.fn()
+  readdirSync: jest.fn(),
+  existsSync: jest.fn()
 }));
 
 beforeAll(() => {
@@ -106,10 +107,12 @@ describe('GraalVMDistribution', () => {
       (util.extractJdkFile as jest.Mock).mockResolvedValue('/tmp/extracted');
 
       // Mock renameWinArchive - it returns the same path (no renaming)
-      // But it appears the implementation might not even call this
       (util.renameWinArchive as jest.Mock).mockImplementation((p: string) => p);
 
       (util.getDownloadArchiveExtension as jest.Mock).mockReturnValue('tar.gz');
+
+      // Mock fs.existsSync to return true for extracted path
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
 
       (fs.readdirSync as jest.Mock).mockReturnValue(['graalvm-jdk-17.0.5']);
 
@@ -129,6 +132,9 @@ describe('GraalVMDistribution', () => {
         '/tmp/archive.tar.gz', // Original path
         'tar.gz'
       );
+
+      // Verify path existence check
+      expect(fs.existsSync).toHaveBeenCalledWith('/tmp/extracted');
 
       // Verify directory reading
       expect(fs.readdirSync).toHaveBeenCalledWith('/tmp/extracted');
@@ -154,16 +160,59 @@ describe('GraalVMDistribution', () => {
       expect(core.info).toHaveBeenCalledWith('Extracting Java archive...');
     });
 
-    it('should verify that renameWinArchive is available but may not be called', () => {
-      // Just verify the mock is set up correctly
-      const originalPath = '/tmp/archive.tar.gz';
+    it('should throw error when extracted path does not exist', async () => {
+      (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-      // Call the mock directly to verify it works
-      const result = util.renameWinArchive(originalPath);
+      await expect(
+        (distribution as any).downloadTool(javaRelease)
+      ).rejects.toThrow(
+        'Extraction failed: path /tmp/extracted does not exist'
+      );
 
-      // Verify it returns the same path (no renaming)
-      expect(result).toBe(originalPath);
-      expect(util.renameWinArchive).toHaveBeenCalledWith(originalPath);
+      expect(core.error).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to download and extract GraalVM:')
+      );
+    });
+
+    it('should throw error when extracted directory is empty', async () => {
+      (fs.existsSync as jest.Mock).mockReturnValue(true);
+      (fs.readdirSync as jest.Mock).mockReturnValue([]);
+
+      await expect(
+        (distribution as any).downloadTool(javaRelease)
+      ).rejects.toThrow(
+        'Extraction failed: no files found in extracted directory'
+      );
+
+      expect(core.error).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to download and extract GraalVM:')
+      );
+    });
+
+    it('should handle download errors', async () => {
+      const downloadError = new Error('Network error during download');
+      (tc.downloadTool as jest.Mock).mockRejectedValue(downloadError);
+
+      await expect(
+        (distribution as any).downloadTool(javaRelease)
+      ).rejects.toThrow('Network error during download');
+
+      expect(core.error).toHaveBeenCalledWith(
+        'Failed to download and extract GraalVM: Error: Network error during download'
+      );
+    });
+
+    it('should handle extraction errors', async () => {
+      const extractError = new Error('Failed to extract archive');
+      (util.extractJdkFile as jest.Mock).mockRejectedValue(extractError);
+
+      await expect(
+        (distribution as any).downloadTool(javaRelease)
+      ).rejects.toThrow('Failed to extract archive');
+
+      expect(core.error).toHaveBeenCalledWith(
+        'Failed to download and extract GraalVM: Error: Failed to extract archive'
+      );
     });
 
     it('should handle different archive extensions', async () => {
@@ -193,6 +242,38 @@ describe('GraalVMDistribution', () => {
   describe('findPackageForDownload', () => {
     beforeEach(() => {
       jest.spyOn(distribution, 'getPlatform').mockReturnValue('linux');
+    });
+
+    describe('input validation', () => {
+      it('should throw error for null version range', async () => {
+        await expect(
+          (distribution as any).findPackageForDownload(null)
+        ).rejects.toThrow('Version range is required and must be a string');
+      });
+
+      it('should throw error for undefined version range', async () => {
+        await expect(
+          (distribution as any).findPackageForDownload(undefined)
+        ).rejects.toThrow('Version range is required and must be a string');
+      });
+
+      it('should throw error for empty string version range', async () => {
+        await expect(
+          (distribution as any).findPackageForDownload('')
+        ).rejects.toThrow('Version range is required and must be a string');
+      });
+
+      it('should throw error for non-string version range', async () => {
+        await expect(
+          (distribution as any).findPackageForDownload(123)
+        ).rejects.toThrow('Version range is required and must be a string');
+      });
+
+      it('should throw error for invalid version format', async () => {
+        await expect(
+          (distribution as any).findPackageForDownload('abc')
+        ).rejects.toThrow('Invalid version format: abc');
+      });
     });
 
     describe('stable builds', () => {
@@ -236,13 +317,17 @@ describe('GraalVMDistribution', () => {
 
         await expect(
           (distribution as any).findPackageForDownload('17')
-        ).rejects.toThrow('Unsupported architecture: x86');
+        ).rejects.toThrow(
+          'Unsupported architecture: x86. Supported architectures are: x64, aarch64'
+        );
       });
 
       it('should throw error for JDK versions less than 17', async () => {
         await expect(
           (distribution as any).findPackageForDownload('11')
-        ).rejects.toThrow('GraalVM is only supported for JDK 17 and later');
+        ).rejects.toThrow(
+          'GraalVM is only supported for JDK 17 and later. Requested version: 11'
+        );
       });
 
       it('should throw error for non-jdk package types', async () => {
@@ -265,10 +350,54 @@ describe('GraalVMDistribution', () => {
 
         await expect(
           (distribution as any).findPackageForDownload('17.0.99')
-        ).rejects.toThrow('Could not find GraalVM for SemVer 17.0.99');
+        ).rejects.toThrow(
+          'Could not find GraalVM for SemVer 17.0.99. Please check if this version is available at https://download.oracle.com/graalvm'
+        );
       });
 
-      it('should throw error for other HTTP errors', async () => {
+      it('should throw error for unauthorized access (401)', async () => {
+        const mockResponse = {
+          message: {statusCode: 401}
+        } as http.HttpClientResponse;
+        mockHttpClient.head.mockResolvedValue(mockResponse);
+
+        await expect(
+          (distribution as any).findPackageForDownload('17')
+        ).rejects.toThrow(
+          'Access denied when downloading GraalVM. Status code: 401. Please check your credentials or permissions.'
+        );
+      });
+
+      it('should throw error for forbidden access (403)', async () => {
+        const mockResponse = {
+          message: {statusCode: 403}
+        } as http.HttpClientResponse;
+        mockHttpClient.head.mockResolvedValue(mockResponse);
+
+        await expect(
+          (distribution as any).findPackageForDownload('17')
+        ).rejects.toThrow(
+          'Access denied when downloading GraalVM. Status code: 403. Please check your credentials or permissions.'
+        );
+      });
+
+      it('should throw error for other HTTP errors with status message', async () => {
+        const mockResponse = {
+          message: {
+            statusCode: 500,
+            statusMessage: 'Internal Server Error'
+          }
+        } as http.HttpClientResponse;
+        mockHttpClient.head.mockResolvedValue(mockResponse);
+
+        await expect(
+          (distribution as any).findPackageForDownload('17')
+        ).rejects.toThrow(
+          'HTTP request for GraalVM failed with status code: 500 (Internal Server Error)'
+        );
+      });
+
+      it('should throw error for other HTTP errors without status message', async () => {
         const mockResponse = {
           message: {statusCode: 500}
         } as http.HttpClientResponse;
@@ -277,7 +406,7 @@ describe('GraalVMDistribution', () => {
         await expect(
           (distribution as any).findPackageForDownload('17')
         ).rejects.toThrow(
-          'Http request for GraalVM failed with status code: 500'
+          'HTTP request for GraalVM failed with status code: 500 (Unknown error)'
         );
       });
     });
@@ -368,6 +497,11 @@ describe('GraalVMDistribution', () => {
         await expect(
           (distribution as any).findPackageForDownload('23')
         ).rejects.toThrow("Unable to find latest version for '23-ea'");
+
+        // Verify error logging
+        expect(core.error).toHaveBeenCalledWith(
+          'Available versions: 23-ea-20240716'
+        );
       });
 
       it('should throw error when no matching file for architecture in EA build', async () => {
@@ -401,7 +535,14 @@ describe('GraalVMDistribution', () => {
 
         await expect(
           (distribution as any).findPackageForDownload('23')
-        ).rejects.toThrow("Unable to find file metadata for '23-ea'");
+        ).rejects.toThrow(
+          `Unable to find file for architecture 'x64' and platform '${currentPlatform}'`
+        );
+
+        // Verify error logging
+        expect(core.error).toHaveBeenCalledWith(
+          expect.stringContaining('Available files for architecture x64:')
+        );
       });
 
       it('should throw error when no matching platform in EA build', async () => {
@@ -430,9 +571,14 @@ describe('GraalVMDistribution', () => {
           .spyOn(distribution as any, 'distributionArchitecture')
           .mockReturnValue('x64');
 
+        const currentPlatform =
+          process.platform === 'win32' ? 'windows' : process.platform;
+
         await expect(
           (distribution as any).findPackageForDownload('23')
-        ).rejects.toThrow("Unable to find file metadata for '23-ea'");
+        ).rejects.toThrow(
+          `Unable to find file for architecture 'x64' and platform '${currentPlatform}'`
+        );
       });
 
       it('should throw error when filename does not start with graalvm-jdk-', async () => {
@@ -466,7 +612,9 @@ describe('GraalVMDistribution', () => {
 
         await expect(
           (distribution as any).findPackageForDownload('23')
-        ).rejects.toThrow("Unable to find file metadata for '23-ea'");
+        ).rejects.toThrow(
+          "Invalid filename format: wrong-prefix-23_linux-x64_bin.tar.gz. Expected to start with 'graalvm-jdk-'"
+        );
       });
 
       it('should throw error when EA version JSON is not found', async () => {
@@ -478,7 +626,9 @@ describe('GraalVMDistribution', () => {
 
         await expect(
           (distribution as any).findPackageForDownload('23')
-        ).rejects.toThrow("No GraalVM EA build found for version '23-ea'");
+        ).rejects.toThrow(
+          "No GraalVM EA build found for version '23-ea'. Please check if the version is correct."
+        );
       });
     });
   });
@@ -540,6 +690,16 @@ describe('GraalVMDistribution', () => {
         url: 'https://example.com/download/graalvm-jdk-23_linux-x64_bin.tar.gz',
         version: '23-ea-20240716'
       });
+
+      // Verify debug logging
+      expect(core.debug).toHaveBeenCalledWith('Searching for EA build: 23-ea');
+      expect(core.debug).toHaveBeenCalledWith('Found 2 EA versions');
+      expect(core.debug).toHaveBeenCalledWith(
+        'Latest version found: 23-ea-20240716'
+      );
+      expect(core.debug).toHaveBeenCalledWith(
+        'Download URL: https://example.com/download/graalvm-jdk-23_linux-x64_bin.tar.gz'
+      );
     });
 
     it('should throw error when no latest version found', async () => {
@@ -549,6 +709,10 @@ describe('GraalVMDistribution', () => {
       await expect(
         (distribution as any).findEABuildDownloadUrl('23-ea')
       ).rejects.toThrow("Unable to find latest version for '23-ea'");
+
+      expect(core.error).toHaveBeenCalledWith(
+        'Available versions: 23-ea-20240716, 23-ea-20240709'
+      );
     });
 
     it('should throw error when no matching file for architecture', async () => {
@@ -570,7 +734,13 @@ describe('GraalVMDistribution', () => {
 
       await expect(
         (distribution as any).findEABuildDownloadUrl('23-ea')
-      ).rejects.toThrow("Unable to find file metadata for '23-ea'");
+      ).rejects.toThrow(
+        `Unable to find file for architecture 'x64' and platform '${currentPlatform}'`
+      );
+
+      expect(core.error).toHaveBeenCalledWith(
+        expect.stringContaining('Available files for architecture x64:')
+      );
     });
 
     it('should throw error when filename does not start with graalvm-jdk-', async () => {
@@ -592,7 +762,9 @@ describe('GraalVMDistribution', () => {
 
       await expect(
         (distribution as any).findEABuildDownloadUrl('23-ea')
-      ).rejects.toThrow("Unable to find file metadata for '23-ea'");
+      ).rejects.toThrow(
+        "Invalid filename format: wrong-name.tar.gz. Expected to start with 'graalvm-jdk-'"
+      );
     });
 
     it('should work with aarch64 architecture', async () => {
@@ -631,7 +803,9 @@ describe('GraalVMDistribution', () => {
 
       await expect(
         (distribution as any).findEABuildDownloadUrl('23-ea')
-      ).rejects.toThrow("Unable to find file metadata for '23-ea'");
+      ).rejects.toThrow(
+        `Unable to find file for architecture 'x64' and platform '${currentPlatform}'`
+      );
     });
   });
 
@@ -666,11 +840,29 @@ describe('GraalVMDistribution', () => {
       );
     });
 
-    it('should handle HTTP errors properly', async () => {
-      mockHttpClient.getJson.mockRejectedValue(new Error('Network error'));
+    it('should handle 404 errors with specific message', async () => {
+      const error404 = new Error('Not Found: 404');
+      mockHttpClient.getJson.mockRejectedValue(error404);
 
       await expect((distribution as any).fetchEAJson('23-ea')).rejects.toThrow(
-        'Network error'
+        "GraalVM EA version '23-ea' not found. Please verify the version exists in the EA builds repository."
+      );
+    });
+
+    it('should handle generic HTTP errors with context', async () => {
+      const networkError = new Error('Network timeout');
+      mockHttpClient.getJson.mockRejectedValue(networkError);
+
+      await expect((distribution as any).fetchEAJson('23-ea')).rejects.toThrow(
+        "Failed to fetch GraalVM EA version information for '23-ea': Network timeout"
+      );
+    });
+
+    it('should handle non-Error exceptions', async () => {
+      mockHttpClient.getJson.mockRejectedValue('String error');
+
+      await expect((distribution as any).fetchEAJson('23-ea')).rejects.toThrow(
+        "Failed to fetch GraalVM EA version information for '23-ea'"
       );
     });
   });
