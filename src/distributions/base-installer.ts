@@ -51,17 +51,19 @@ export abstract class JavaBase {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
       core.info('Trying to resolve the latest version from remote');
-      let retries = 4;
+      const MAX_RETRIES = 4;
+      const RETRY_DELAY_MS = 2000;
       const retryableCodes = [
         'ETIMEDOUT',
         'ECONNRESET',
         'ENOTFOUND',
         'ECONNREFUSED'
       ];
+      let retries = MAX_RETRIES;
       while (retries > 0) {
         try {
           // Clear console timers before each attempt to prevent conflicts
-          if (retries < 4 && core.isDebug()) {
+          if (retries < MAX_RETRIES && core.isDebug()) {
             const consoleAny = console as any;
             consoleAny._times?.clear?.();
           }
@@ -92,7 +94,7 @@ export abstract class JavaBase {
             core.debug(
               `Attempt failed due to network or timeout issues, initiating retry... (${retries} attempts left)`
             );
-            await new Promise(r => setTimeout(r, 2000));
+            await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
             continue;
           }
           if (error instanceof tc.HTTPError) {
@@ -116,7 +118,14 @@ export abstract class JavaBase {
               const endpoint = err?.address || err?.hostname || '';
               const port = err?.port ? `:${err.port}` : '';
               const message = err?.message || 'Aggregate error';
-              const logMessage = `${message}${!message.includes(endpoint) ? ` ${endpoint}${port}` : ''}${err.localAddress && err.localPort ? ` - Local (${err.localAddress}:${err.localPort})` : ''}`;
+              const endpointInfo = !message.includes(endpoint)
+                ? ` ${endpoint}${port}`
+                : '';
+              const localInfo =
+                err.localAddress && err.localPort
+                  ? ` - Local (${err.localAddress}:${err.localPort})`
+                  : '';
+              const logMessage = `${message}${endpointInfo}${localInfo}`;
               core.error(logMessage);
               core.debug(`${err.stack || err.message}`);
               Object.entries(err).forEach(([key, value]) => {
@@ -135,7 +144,10 @@ export abstract class JavaBase {
               message: error.message,
               ...Object.getOwnPropertyNames(error)
                 .filter(prop => !['name', 'message', 'stack'].includes(prop))
-                .reduce((acc, prop) => ({...acc, [prop]: error[prop]}), {})
+                .reduce<{[key: string]: any}>((acc, prop) => {
+                  acc[prop] = error[prop];
+                  return acc;
+                }, {})
             };
             Object.entries(errorDetails).forEach(([key, value]) => {
               core.debug(`"${key}": ${JSON.stringify(value)}`);
