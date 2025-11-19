@@ -144,7 +144,9 @@ export function getVersionFromFileContent(
     ? (content.match(javaVersionRegExp)?.groups?.version as string)
     : '';
 
-  core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
+  core.debug(
+    `Parsed version '${capturedVersion}' from file '${versionFileName}'`
+  );
   if (!capturedVersion) {
     return null;
   }

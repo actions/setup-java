@@ -220,7 +220,7 @@ function restoreCacheV2(paths, primaryKey, restoreKeys, options, enableCrossOsAr
             };
             const response = yield twirpClient.GetCacheEntryDownloadURL(request);
             if (!response.ok) {
-                core.debug(`Cache not found for version ${request.version} of keys: ${keys.join(', ')}`);
+                core.warning(`Cache not found for keys: ${keys.join(', ')}`);
                 return undefined;
             }
             core.info(`Cache hit for: ${request.key}`);
@@ -412,20 +412,12 @@ function saveCacheV2(paths, key, options, enableCrossOsArchive = false) {
                 key,
                 version
             };
-            let signedUploadUrl;
-            try {
-                const response = yield twirpClient.CreateCacheEntry(request);
-                if (!response.ok) {
-                    throw new Error('Response was not ok');
-                }
-                signedUploadUrl = response.signedUploadUrl;
-            }
-            catch (error) {
-                core.debug(`Failed to reserve cache: ${error}`);
+            const response = yield twirpClient.CreateCacheEntry(request);
+            if (!response.ok) {
                 throw new ReserveCacheError(`Unable to reserve cache with key ${key}, another job may be creating this cache.`);
             }
             core.debug(`Attempting to upload cache located at: ${archivePath}`);
-            yield cacheHttpClient.saveCache(cacheId, archivePath, signedUploadUrl, options);
+            yield cacheHttpClient.saveCache(cacheId, archivePath, response.signedUploadUrl, options);
             const finalizeRequest = {
                 key,
                 version,
@@ -466,13 +458,156 @@ function saveCacheV2(paths, key, options, enableCrossOsArchive = false) {
 
 /***/ }),
 
+/***/ 4469:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Timestamp = void 0;
+const runtime_1 = __nccwpck_require__(4061);
+const runtime_2 = __nccwpck_require__(4061);
+const runtime_3 = __nccwpck_require__(4061);
+const runtime_4 = __nccwpck_require__(4061);
+const runtime_5 = __nccwpck_require__(4061);
+const runtime_6 = __nccwpck_require__(4061);
+const runtime_7 = __nccwpck_require__(4061);
+// @generated message type with reflection information, may provide speed optimized methods
+class Timestamp$Type extends runtime_7.MessageType {
+    constructor() {
+        super("google.protobuf.Timestamp", [
+            { no: 1, name: "seconds", kind: "scalar", T: 3 /*ScalarType.INT64*/ },
+            { no: 2, name: "nanos", kind: "scalar", T: 5 /*ScalarType.INT32*/ }
+        ]);
+    }
+    /**
+     * Creates a new `Timestamp` for the current time.
+     */
+    now() {
+        const msg = this.create();
+        const ms = Date.now();
+        msg.seconds = runtime_6.PbLong.from(Math.floor(ms / 1000)).toString();
+        msg.nanos = (ms % 1000) * 1000000;
+        return msg;
+    }
+    /**
+     * Converts a `Timestamp` to a JavaScript Date.
+     */
+    toDate(message) {
+        return new Date(runtime_6.PbLong.from(message.seconds).toNumber() * 1000 + Math.ceil(message.nanos / 1000000));
+    }
+    /**
+     * Converts a JavaScript Date to a `Timestamp`.
+     */
+    fromDate(date) {
+        const msg = this.create();
+        const ms = date.getTime();
+        msg.seconds = runtime_6.PbLong.from(Math.floor(ms / 1000)).toString();
+        msg.nanos = (ms % 1000) * 1000000;
+        return msg;
+    }
+    /**
+     * In JSON format, the `Timestamp` type is encoded as a string
+     * in the RFC 3339 format.
+     */
+    internalJsonWrite(message, options) {
+        let ms = runtime_6.PbLong.from(message.seconds).toNumber() * 1000;
+        if (ms < Date.parse("0001-01-01T00:00:00Z") || ms > Date.parse("9999-12-31T23:59:59Z"))
+            throw new Error("Unable to encode Timestamp to JSON. Must be from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z inclusive.");
+        if (message.nanos < 0)
+            throw new Error("Unable to encode invalid Timestamp to JSON. Nanos must not be negative.");
+        let z = "Z";
+        if (message.nanos > 0) {
+            let nanosStr = (message.nanos + 1000000000).toString().substring(1);
+            if (nanosStr.substring(3) === "000000")
+                z = "." + nanosStr.substring(0, 3) + "Z";
+            else if (nanosStr.substring(6) === "000")
+                z = "." + nanosStr.substring(0, 6) + "Z";
+            else
+                z = "." + nanosStr + "Z";
+        }
+        return new Date(ms).toISOString().replace(".000Z", z);
+    }
+    /**
+     * In JSON format, the `Timestamp` type is encoded as a string
+     * in the RFC 3339 format.
+     */
+    internalJsonRead(json, options, target) {
+        if (typeof json !== "string")
+            throw new Error("Unable to parse Timestamp from JSON " + (0, runtime_5.typeofJsonValue)(json) + ".");
+        let matches = json.match(/^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(?:Z|\.([0-9]{3,9})Z|([+-][0-9][0-9]:[0-9][0-9]))$/);
+        if (!matches)
+            throw new Error("Unable to parse Timestamp from JSON. Invalid format.");
+        let ms = Date.parse(matches[1] + "-" + matches[2] + "-" + matches[3] + "T" + matches[4] + ":" + matches[5] + ":" + matches[6] + (matches[8] ? matches[8] : "Z"));
+        if (Number.isNaN(ms))
+            throw new Error("Unable to parse Timestamp from JSON. Invalid value.");
+        if (ms < Date.parse("0001-01-01T00:00:00Z") || ms > Date.parse("9999-12-31T23:59:59Z"))
+            throw new globalThis.Error("Unable to parse Timestamp from JSON. Must be from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z inclusive.");
+        if (!target)
+            target = this.create();
+        target.seconds = runtime_6.PbLong.from(ms / 1000).toString();
+        target.nanos = 0;
+        if (matches[7])
+            target.nanos = (parseInt("1" + matches[7] + "0".repeat(9 - matches[7].length)) - 1000000000);
+        return target;
+    }
+    create(value) {
+        const message = { seconds: "0", nanos: 0 };
+        globalThis.Object.defineProperty(message, runtime_4.MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            (0, runtime_3.reflectionMergePartial)(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader, length, options, target) {
+        let message = target !== null && target !== void 0 ? target : this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* int64 seconds */ 1:
+                    message.seconds = reader.int64().toString();
+                    break;
+                case /* int32 nanos */ 2:
+                    message.nanos = reader.int32();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? runtime_2.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message, writer, options) {
+        /* int64 seconds = 1; */
+        if (message.seconds !== "0")
+            writer.tag(1, runtime_1.WireType.Varint).int64(message.seconds);
+        /* int32 nanos = 2; */
+        if (message.nanos !== 0)
+            writer.tag(2, runtime_1.WireType.Varint).int32(message.nanos);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? runtime_2.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message google.protobuf.Timestamp
+ */
+exports.Timestamp = new Timestamp$Type();
+//# sourceMappingURL=timestamp.js.map
+
+/***/ }),
+
 /***/ 4388:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CacheService = exports.GetCacheEntryDownloadURLResponse = exports.GetCacheEntryDownloadURLRequest = exports.FinalizeCacheEntryUploadResponse = exports.FinalizeCacheEntryUploadRequest = exports.CreateCacheEntryResponse = exports.CreateCacheEntryRequest = void 0;
+exports.CacheService = exports.LookupCacheEntryResponse = exports.LookupCacheEntryRequest = exports.ListCacheEntriesResponse = exports.ListCacheEntriesRequest = exports.DeleteCacheEntryResponse = exports.DeleteCacheEntryRequest = exports.GetCacheEntryDownloadURLResponse = exports.GetCacheEntryDownloadURLRequest = exports.FinalizeCacheEntryUploadResponse = exports.FinalizeCacheEntryUploadRequest = exports.CreateCacheEntryResponse = exports.CreateCacheEntryRequest = void 0;
 // @generated by protobuf-ts 2.9.1 with parameter long_type_string,client_none,generate_dependencies
 // @generated from protobuf file "results/api/v1/cache.proto" (package "github.actions.results.api.v1", syntax proto3)
 // tslint:disable
@@ -482,6 +617,7 @@ const runtime_2 = __nccwpck_require__(4061);
 const runtime_3 = __nccwpck_require__(4061);
 const runtime_4 = __nccwpck_require__(4061);
 const runtime_5 = __nccwpck_require__(4061);
+const cacheentry_1 = __nccwpck_require__(3639);
 const cachemetadata_1 = __nccwpck_require__(7988);
 // @generated message type with reflection information, may provide speed optimized methods
 class CreateCacheEntryRequest$Type extends runtime_5.MessageType {
@@ -849,25 +985,376 @@ class GetCacheEntryDownloadURLResponse$Type extends runtime_5.MessageType {
  * @generated MessageType for protobuf message github.actions.results.api.v1.GetCacheEntryDownloadURLResponse
  */
 exports.GetCacheEntryDownloadURLResponse = new GetCacheEntryDownloadURLResponse$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class DeleteCacheEntryRequest$Type extends runtime_5.MessageType {
+    constructor() {
+        super("github.actions.results.api.v1.DeleteCacheEntryRequest", [
+            { no: 1, name: "metadata", kind: "message", T: () => cachemetadata_1.CacheMetadata },
+            { no: 2, name: "key", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value) {
+        const message = { key: "" };
+        globalThis.Object.defineProperty(message, runtime_4.MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            (0, runtime_3.reflectionMergePartial)(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader, length, options, target) {
+        let message = target !== null && target !== void 0 ? target : this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* github.actions.results.entities.v1.CacheMetadata metadata */ 1:
+                    message.metadata = cachemetadata_1.CacheMetadata.internalBinaryRead(reader, reader.uint32(), options, message.metadata);
+                    break;
+                case /* string key */ 2:
+                    message.key = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? runtime_2.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message, writer, options) {
+        /* github.actions.results.entities.v1.CacheMetadata metadata = 1; */
+        if (message.metadata)
+            cachemetadata_1.CacheMetadata.internalBinaryWrite(message.metadata, writer.tag(1, runtime_1.WireType.LengthDelimited).fork(), options).join();
+        /* string key = 2; */
+        if (message.key !== "")
+            writer.tag(2, runtime_1.WireType.LengthDelimited).string(message.key);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? runtime_2.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message github.actions.results.api.v1.DeleteCacheEntryRequest
+ */
+exports.DeleteCacheEntryRequest = new DeleteCacheEntryRequest$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class DeleteCacheEntryResponse$Type extends runtime_5.MessageType {
+    constructor() {
+        super("github.actions.results.api.v1.DeleteCacheEntryResponse", [
+            { no: 1, name: "ok", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
+            { no: 2, name: "entry_id", kind: "scalar", T: 3 /*ScalarType.INT64*/ }
+        ]);
+    }
+    create(value) {
+        const message = { ok: false, entryId: "0" };
+        globalThis.Object.defineProperty(message, runtime_4.MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            (0, runtime_3.reflectionMergePartial)(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader, length, options, target) {
+        let message = target !== null && target !== void 0 ? target : this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* bool ok */ 1:
+                    message.ok = reader.bool();
+                    break;
+                case /* int64 entry_id */ 2:
+                    message.entryId = reader.int64().toString();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? runtime_2.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message, writer, options) {
+        /* bool ok = 1; */
+        if (message.ok !== false)
+            writer.tag(1, runtime_1.WireType.Varint).bool(message.ok);
+        /* int64 entry_id = 2; */
+        if (message.entryId !== "0")
+            writer.tag(2, runtime_1.WireType.Varint).int64(message.entryId);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? runtime_2.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message github.actions.results.api.v1.DeleteCacheEntryResponse
+ */
+exports.DeleteCacheEntryResponse = new DeleteCacheEntryResponse$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class ListCacheEntriesRequest$Type extends runtime_5.MessageType {
+    constructor() {
+        super("github.actions.results.api.v1.ListCacheEntriesRequest", [
+            { no: 1, name: "metadata", kind: "message", T: () => cachemetadata_1.CacheMetadata },
+            { no: 2, name: "key", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "restore_keys", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value) {
+        const message = { key: "", restoreKeys: [] };
+        globalThis.Object.defineProperty(message, runtime_4.MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            (0, runtime_3.reflectionMergePartial)(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader, length, options, target) {
+        let message = target !== null && target !== void 0 ? target : this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* github.actions.results.entities.v1.CacheMetadata metadata */ 1:
+                    message.metadata = cachemetadata_1.CacheMetadata.internalBinaryRead(reader, reader.uint32(), options, message.metadata);
+                    break;
+                case /* string key */ 2:
+                    message.key = reader.string();
+                    break;
+                case /* repeated string restore_keys */ 3:
+                    message.restoreKeys.push(reader.string());
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? runtime_2.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message, writer, options) {
+        /* github.actions.results.entities.v1.CacheMetadata metadata = 1; */
+        if (message.metadata)
+            cachemetadata_1.CacheMetadata.internalBinaryWrite(message.metadata, writer.tag(1, runtime_1.WireType.LengthDelimited).fork(), options).join();
+        /* string key = 2; */
+        if (message.key !== "")
+            writer.tag(2, runtime_1.WireType.LengthDelimited).string(message.key);
+        /* repeated string restore_keys = 3; */
+        for (let i = 0; i < message.restoreKeys.length; i++)
+            writer.tag(3, runtime_1.WireType.LengthDelimited).string(message.restoreKeys[i]);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? runtime_2.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message github.actions.results.api.v1.ListCacheEntriesRequest
+ */
+exports.ListCacheEntriesRequest = new ListCacheEntriesRequest$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class ListCacheEntriesResponse$Type extends runtime_5.MessageType {
+    constructor() {
+        super("github.actions.results.api.v1.ListCacheEntriesResponse", [
+            { no: 1, name: "entries", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => cacheentry_1.CacheEntry }
+        ]);
+    }
+    create(value) {
+        const message = { entries: [] };
+        globalThis.Object.defineProperty(message, runtime_4.MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            (0, runtime_3.reflectionMergePartial)(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader, length, options, target) {
+        let message = target !== null && target !== void 0 ? target : this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* repeated github.actions.results.entities.v1.CacheEntry entries */ 1:
+                    message.entries.push(cacheentry_1.CacheEntry.internalBinaryRead(reader, reader.uint32(), options));
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? runtime_2.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message, writer, options) {
+        /* repeated github.actions.results.entities.v1.CacheEntry entries = 1; */
+        for (let i = 0; i < message.entries.length; i++)
+            cacheentry_1.CacheEntry.internalBinaryWrite(message.entries[i], writer.tag(1, runtime_1.WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? runtime_2.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message github.actions.results.api.v1.ListCacheEntriesResponse
+ */
+exports.ListCacheEntriesResponse = new ListCacheEntriesResponse$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class LookupCacheEntryRequest$Type extends runtime_5.MessageType {
+    constructor() {
+        super("github.actions.results.api.v1.LookupCacheEntryRequest", [
+            { no: 1, name: "metadata", kind: "message", T: () => cachemetadata_1.CacheMetadata },
+            { no: 2, name: "key", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "restore_keys", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "version", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value) {
+        const message = { key: "", restoreKeys: [], version: "" };
+        globalThis.Object.defineProperty(message, runtime_4.MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            (0, runtime_3.reflectionMergePartial)(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader, length, options, target) {
+        let message = target !== null && target !== void 0 ? target : this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* github.actions.results.entities.v1.CacheMetadata metadata */ 1:
+                    message.metadata = cachemetadata_1.CacheMetadata.internalBinaryRead(reader, reader.uint32(), options, message.metadata);
+                    break;
+                case /* string key */ 2:
+                    message.key = reader.string();
+                    break;
+                case /* repeated string restore_keys */ 3:
+                    message.restoreKeys.push(reader.string());
+                    break;
+                case /* string version */ 4:
+                    message.version = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? runtime_2.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message, writer, options) {
+        /* github.actions.results.entities.v1.CacheMetadata metadata = 1; */
+        if (message.metadata)
+            cachemetadata_1.CacheMetadata.internalBinaryWrite(message.metadata, writer.tag(1, runtime_1.WireType.LengthDelimited).fork(), options).join();
+        /* string key = 2; */
+        if (message.key !== "")
+            writer.tag(2, runtime_1.WireType.LengthDelimited).string(message.key);
+        /* repeated string restore_keys = 3; */
+        for (let i = 0; i < message.restoreKeys.length; i++)
+            writer.tag(3, runtime_1.WireType.LengthDelimited).string(message.restoreKeys[i]);
+        /* string version = 4; */
+        if (message.version !== "")
+            writer.tag(4, runtime_1.WireType.LengthDelimited).string(message.version);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? runtime_2.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message github.actions.results.api.v1.LookupCacheEntryRequest
+ */
+exports.LookupCacheEntryRequest = new LookupCacheEntryRequest$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class LookupCacheEntryResponse$Type extends runtime_5.MessageType {
+    constructor() {
+        super("github.actions.results.api.v1.LookupCacheEntryResponse", [
+            { no: 1, name: "exists", kind: "scalar", T: 8 /*ScalarType.BOOL*/ },
+            { no: 2, name: "entry", kind: "message", T: () => cacheentry_1.CacheEntry }
+        ]);
+    }
+    create(value) {
+        const message = { exists: false };
+        globalThis.Object.defineProperty(message, runtime_4.MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            (0, runtime_3.reflectionMergePartial)(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader, length, options, target) {
+        let message = target !== null && target !== void 0 ? target : this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* bool exists */ 1:
+                    message.exists = reader.bool();
+                    break;
+                case /* github.actions.results.entities.v1.CacheEntry entry */ 2:
+                    message.entry = cacheentry_1.CacheEntry.internalBinaryRead(reader, reader.uint32(), options, message.entry);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? runtime_2.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message, writer, options) {
+        /* bool exists = 1; */
+        if (message.exists !== false)
+            writer.tag(1, runtime_1.WireType.Varint).bool(message.exists);
+        /* github.actions.results.entities.v1.CacheEntry entry = 2; */
+        if (message.entry)
+            cacheentry_1.CacheEntry.internalBinaryWrite(message.entry, writer.tag(2, runtime_1.WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? runtime_2.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message github.actions.results.api.v1.LookupCacheEntryResponse
+ */
+exports.LookupCacheEntryResponse = new LookupCacheEntryResponse$Type();
 /**
  * @generated ServiceType for protobuf service github.actions.results.api.v1.CacheService
  */
 exports.CacheService = new runtime_rpc_1.ServiceType("github.actions.results.api.v1.CacheService", [
     { name: "CreateCacheEntry", options: {}, I: exports.CreateCacheEntryRequest, O: exports.CreateCacheEntryResponse },
     { name: "FinalizeCacheEntryUpload", options: {}, I: exports.FinalizeCacheEntryUploadRequest, O: exports.FinalizeCacheEntryUploadResponse },
-    { name: "GetCacheEntryDownloadURL", options: {}, I: exports.GetCacheEntryDownloadURLRequest, O: exports.GetCacheEntryDownloadURLResponse }
+    { name: "GetCacheEntryDownloadURL", options: {}, I: exports.GetCacheEntryDownloadURLRequest, O: exports.GetCacheEntryDownloadURLResponse },
+    { name: "DeleteCacheEntry", options: {}, I: exports.DeleteCacheEntryRequest, O: exports.DeleteCacheEntryResponse },
+    { name: "ListCacheEntries", options: {}, I: exports.ListCacheEntriesRequest, O: exports.ListCacheEntriesResponse },
+    { name: "LookupCacheEntry", options: {}, I: exports.LookupCacheEntryRequest, O: exports.LookupCacheEntryResponse }
 ]);
 //# sourceMappingURL=cache.js.map
 
 /***/ }),
 
-/***/ 2655:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+/***/ 267:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.CacheServiceClientProtobuf = exports.CacheServiceClientJSON = void 0;
+exports.createCacheServiceServer = exports.CacheServiceMethodList = exports.CacheServiceMethod = exports.CacheServiceClientProtobuf = exports.CacheServiceClientJSON = void 0;
+const twirp_ts_1 = __nccwpck_require__(6465);
 const cache_1 = __nccwpck_require__(4388);
 class CacheServiceClientJSON {
     constructor(rpc) {
@@ -875,6 +1362,9 @@ class CacheServiceClientJSON {
         this.CreateCacheEntry.bind(this);
         this.FinalizeCacheEntryUpload.bind(this);
         this.GetCacheEntryDownloadURL.bind(this);
+        this.DeleteCacheEntry.bind(this);
+        this.ListCacheEntries.bind(this);
+        this.LookupCacheEntry.bind(this);
     }
     CreateCacheEntry(request) {
         const data = cache_1.CreateCacheEntryRequest.toJson(request, {
@@ -906,6 +1396,36 @@ class CacheServiceClientJSON {
             ignoreUnknownFields: true,
         }));
     }
+    DeleteCacheEntry(request) {
+        const data = cache_1.DeleteCacheEntryRequest.toJson(request, {
+            useProtoFieldName: true,
+            emitDefaultValues: false,
+        });
+        const promise = this.rpc.request("github.actions.results.api.v1.CacheService", "DeleteCacheEntry", "application/json", data);
+        return promise.then((data) => cache_1.DeleteCacheEntryResponse.fromJson(data, {
+            ignoreUnknownFields: true,
+        }));
+    }
+    ListCacheEntries(request) {
+        const data = cache_1.ListCacheEntriesRequest.toJson(request, {
+            useProtoFieldName: true,
+            emitDefaultValues: false,
+        });
+        const promise = this.rpc.request("github.actions.results.api.v1.CacheService", "ListCacheEntries", "application/json", data);
+        return promise.then((data) => cache_1.ListCacheEntriesResponse.fromJson(data, {
+            ignoreUnknownFields: true,
+        }));
+    }
+    LookupCacheEntry(request) {
+        const data = cache_1.LookupCacheEntryRequest.toJson(request, {
+            useProtoFieldName: true,
+            emitDefaultValues: false,
+        });
+        const promise = this.rpc.request("github.actions.results.api.v1.CacheService", "LookupCacheEntry", "application/json", data);
+        return promise.then((data) => cache_1.LookupCacheEntryResponse.fromJson(data, {
+            ignoreUnknownFields: true,
+        }));
+    }
 }
 exports.CacheServiceClientJSON = CacheServiceClientJSON;
 class CacheServiceClientProtobuf {
@@ -914,6 +1434,9 @@ class CacheServiceClientProtobuf {
         this.CreateCacheEntry.bind(this);
         this.FinalizeCacheEntryUpload.bind(this);
         this.GetCacheEntryDownloadURL.bind(this);
+        this.DeleteCacheEntry.bind(this);
+        this.ListCacheEntries.bind(this);
+        this.LookupCacheEntry.bind(this);
     }
     CreateCacheEntry(request) {
         const data = cache_1.CreateCacheEntryRequest.toBinary(request);
@@ -930,9 +1453,610 @@ class CacheServiceClientProtobuf {
         const promise = this.rpc.request("github.actions.results.api.v1.CacheService", "GetCacheEntryDownloadURL", "application/protobuf", data);
         return promise.then((data) => cache_1.GetCacheEntryDownloadURLResponse.fromBinary(data));
     }
+    DeleteCacheEntry(request) {
+        const data = cache_1.DeleteCacheEntryRequest.toBinary(request);
+        const promise = this.rpc.request("github.actions.results.api.v1.CacheService", "DeleteCacheEntry", "application/protobuf", data);
+        return promise.then((data) => cache_1.DeleteCacheEntryResponse.fromBinary(data));
+    }
+    ListCacheEntries(request) {
+        const data = cache_1.ListCacheEntriesRequest.toBinary(request);
+        const promise = this.rpc.request("github.actions.results.api.v1.CacheService", "ListCacheEntries", "application/protobuf", data);
+        return promise.then((data) => cache_1.ListCacheEntriesResponse.fromBinary(data));
+    }
+    LookupCacheEntry(request) {
+        const data = cache_1.LookupCacheEntryRequest.toBinary(request);
+        const promise = this.rpc.request("github.actions.results.api.v1.CacheService", "LookupCacheEntry", "application/protobuf", data);
+        return promise.then((data) => cache_1.LookupCacheEntryResponse.fromBinary(data));
+    }
 }
 exports.CacheServiceClientProtobuf = CacheServiceClientProtobuf;
-//# sourceMappingURL=cache.twirp-client.js.map
+var CacheServiceMethod;
+(function (CacheServiceMethod) {
+    CacheServiceMethod["CreateCacheEntry"] = "CreateCacheEntry";
+    CacheServiceMethod["FinalizeCacheEntryUpload"] = "FinalizeCacheEntryUpload";
+    CacheServiceMethod["GetCacheEntryDownloadURL"] = "GetCacheEntryDownloadURL";
+    CacheServiceMethod["DeleteCacheEntry"] = "DeleteCacheEntry";
+    CacheServiceMethod["ListCacheEntries"] = "ListCacheEntries";
+    CacheServiceMethod["LookupCacheEntry"] = "LookupCacheEntry";
+})(CacheServiceMethod || (exports.CacheServiceMethod = CacheServiceMethod = {}));
+exports.CacheServiceMethodList = [
+    CacheServiceMethod.CreateCacheEntry,
+    CacheServiceMethod.FinalizeCacheEntryUpload,
+    CacheServiceMethod.GetCacheEntryDownloadURL,
+    CacheServiceMethod.DeleteCacheEntry,
+    CacheServiceMethod.ListCacheEntries,
+    CacheServiceMethod.LookupCacheEntry,
+];
+function createCacheServiceServer(service) {
+    return new twirp_ts_1.TwirpServer({
+        service,
+        packageName: "github.actions.results.api.v1",
+        serviceName: "CacheService",
+        methodList: exports.CacheServiceMethodList,
+        matchRoute: matchCacheServiceRoute,
+    });
+}
+exports.createCacheServiceServer = createCacheServiceServer;
+function matchCacheServiceRoute(method, events) {
+    switch (method) {
+        case "CreateCacheEntry":
+            return (ctx, service, data, interceptors) => __awaiter(this, void 0, void 0, function* () {
+                ctx = Object.assign(Object.assign({}, ctx), { methodName: "CreateCacheEntry" });
+                yield events.onMatch(ctx);
+                return handleCacheServiceCreateCacheEntryRequest(ctx, service, data, interceptors);
+            });
+        case "FinalizeCacheEntryUpload":
+            return (ctx, service, data, interceptors) => __awaiter(this, void 0, void 0, function* () {
+                ctx = Object.assign(Object.assign({}, ctx), { methodName: "FinalizeCacheEntryUpload" });
+                yield events.onMatch(ctx);
+                return handleCacheServiceFinalizeCacheEntryUploadRequest(ctx, service, data, interceptors);
+            });
+        case "GetCacheEntryDownloadURL":
+            return (ctx, service, data, interceptors) => __awaiter(this, void 0, void 0, function* () {
+                ctx = Object.assign(Object.assign({}, ctx), { methodName: "GetCacheEntryDownloadURL" });
+                yield events.onMatch(ctx);
+                return handleCacheServiceGetCacheEntryDownloadURLRequest(ctx, service, data, interceptors);
+            });
+        case "DeleteCacheEntry":
+            return (ctx, service, data, interceptors) => __awaiter(this, void 0, void 0, function* () {
+                ctx = Object.assign(Object.assign({}, ctx), { methodName: "DeleteCacheEntry" });
+                yield events.onMatch(ctx);
+                return handleCacheServiceDeleteCacheEntryRequest(ctx, service, data, interceptors);
+            });
+        case "ListCacheEntries":
+            return (ctx, service, data, interceptors) => __awaiter(this, void 0, void 0, function* () {
+                ctx = Object.assign(Object.assign({}, ctx), { methodName: "ListCacheEntries" });
+                yield events.onMatch(ctx);
+                return handleCacheServiceListCacheEntriesRequest(ctx, service, data, interceptors);
+            });
+        case "LookupCacheEntry":
+            return (ctx, service, data, interceptors) => __awaiter(this, void 0, void 0, function* () {
+                ctx = Object.assign(Object.assign({}, ctx), { methodName: "LookupCacheEntry" });
+                yield events.onMatch(ctx);
+                return handleCacheServiceLookupCacheEntryRequest(ctx, service, data, interceptors);
+            });
+        default:
+            events.onNotFound();
+            const msg = `no handler found`;
+            throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.BadRoute, msg);
+    }
+}
+function handleCacheServiceCreateCacheEntryRequest(ctx, service, data, interceptors) {
+    switch (ctx.contentType) {
+        case twirp_ts_1.TwirpContentType.JSON:
+            return handleCacheServiceCreateCacheEntryJSON(ctx, service, data, interceptors);
+        case twirp_ts_1.TwirpContentType.Protobuf:
+            return handleCacheServiceCreateCacheEntryProtobuf(ctx, service, data, interceptors);
+        default:
+            const msg = "unexpected Content-Type";
+            throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.BadRoute, msg);
+    }
+}
+function handleCacheServiceFinalizeCacheEntryUploadRequest(ctx, service, data, interceptors) {
+    switch (ctx.contentType) {
+        case twirp_ts_1.TwirpContentType.JSON:
+            return handleCacheServiceFinalizeCacheEntryUploadJSON(ctx, service, data, interceptors);
+        case twirp_ts_1.TwirpContentType.Protobuf:
+            return handleCacheServiceFinalizeCacheEntryUploadProtobuf(ctx, service, data, interceptors);
+        default:
+            const msg = "unexpected Content-Type";
+            throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.BadRoute, msg);
+    }
+}
+function handleCacheServiceGetCacheEntryDownloadURLRequest(ctx, service, data, interceptors) {
+    switch (ctx.contentType) {
+        case twirp_ts_1.TwirpContentType.JSON:
+            return handleCacheServiceGetCacheEntryDownloadURLJSON(ctx, service, data, interceptors);
+        case twirp_ts_1.TwirpContentType.Protobuf:
+            return handleCacheServiceGetCacheEntryDownloadURLProtobuf(ctx, service, data, interceptors);
+        default:
+            const msg = "unexpected Content-Type";
+            throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.BadRoute, msg);
+    }
+}
+function handleCacheServiceDeleteCacheEntryRequest(ctx, service, data, interceptors) {
+    switch (ctx.contentType) {
+        case twirp_ts_1.TwirpContentType.JSON:
+            return handleCacheServiceDeleteCacheEntryJSON(ctx, service, data, interceptors);
+        case twirp_ts_1.TwirpContentType.Protobuf:
+            return handleCacheServiceDeleteCacheEntryProtobuf(ctx, service, data, interceptors);
+        default:
+            const msg = "unexpected Content-Type";
+            throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.BadRoute, msg);
+    }
+}
+function handleCacheServiceListCacheEntriesRequest(ctx, service, data, interceptors) {
+    switch (ctx.contentType) {
+        case twirp_ts_1.TwirpContentType.JSON:
+            return handleCacheServiceListCacheEntriesJSON(ctx, service, data, interceptors);
+        case twirp_ts_1.TwirpContentType.Protobuf:
+            return handleCacheServiceListCacheEntriesProtobuf(ctx, service, data, interceptors);
+        default:
+            const msg = "unexpected Content-Type";
+            throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.BadRoute, msg);
+    }
+}
+function handleCacheServiceLookupCacheEntryRequest(ctx, service, data, interceptors) {
+    switch (ctx.contentType) {
+        case twirp_ts_1.TwirpContentType.JSON:
+            return handleCacheServiceLookupCacheEntryJSON(ctx, service, data, interceptors);
+        case twirp_ts_1.TwirpContentType.Protobuf:
+            return handleCacheServiceLookupCacheEntryProtobuf(ctx, service, data, interceptors);
+        default:
+            const msg = "unexpected Content-Type";
+            throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.BadRoute, msg);
+    }
+}
+function handleCacheServiceCreateCacheEntryJSON(ctx, service, data, interceptors) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let request;
+        let response;
+        try {
+            const body = JSON.parse(data.toString() || "{}");
+            request = cache_1.CreateCacheEntryRequest.fromJson(body, {
+                ignoreUnknownFields: true,
+            });
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                const msg = "the json request could not be decoded";
+                throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+            }
+        }
+        if (interceptors && interceptors.length > 0) {
+            const interceptor = (0, twirp_ts_1.chainInterceptors)(...interceptors);
+            response = yield interceptor(ctx, request, (ctx, inputReq) => {
+                return service.CreateCacheEntry(ctx, inputReq);
+            });
+        }
+        else {
+            response = yield service.CreateCacheEntry(ctx, request);
+        }
+        return JSON.stringify(cache_1.CreateCacheEntryResponse.toJson(response, {
+            useProtoFieldName: true,
+            emitDefaultValues: false,
+        }));
+    });
+}
+function handleCacheServiceFinalizeCacheEntryUploadJSON(ctx, service, data, interceptors) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let request;
+        let response;
+        try {
+            const body = JSON.parse(data.toString() || "{}");
+            request = cache_1.FinalizeCacheEntryUploadRequest.fromJson(body, {
+                ignoreUnknownFields: true,
+            });
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                const msg = "the json request could not be decoded";
+                throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+            }
+        }
+        if (interceptors && interceptors.length > 0) {
+            const interceptor = (0, twirp_ts_1.chainInterceptors)(...interceptors);
+            response = yield interceptor(ctx, request, (ctx, inputReq) => {
+                return service.FinalizeCacheEntryUpload(ctx, inputReq);
+            });
+        }
+        else {
+            response = yield service.FinalizeCacheEntryUpload(ctx, request);
+        }
+        return JSON.stringify(cache_1.FinalizeCacheEntryUploadResponse.toJson(response, {
+            useProtoFieldName: true,
+            emitDefaultValues: false,
+        }));
+    });
+}
+function handleCacheServiceGetCacheEntryDownloadURLJSON(ctx, service, data, interceptors) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let request;
+        let response;
+        try {
+            const body = JSON.parse(data.toString() || "{}");
+            request = cache_1.GetCacheEntryDownloadURLRequest.fromJson(body, {
+                ignoreUnknownFields: true,
+            });
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                const msg = "the json request could not be decoded";
+                throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+            }
+        }
+        if (interceptors && interceptors.length > 0) {
+            const interceptor = (0, twirp_ts_1.chainInterceptors)(...interceptors);
+            response = yield interceptor(ctx, request, (ctx, inputReq) => {
+                return service.GetCacheEntryDownloadURL(ctx, inputReq);
+            });
+        }
+        else {
+            response = yield service.GetCacheEntryDownloadURL(ctx, request);
+        }
+        return JSON.stringify(cache_1.GetCacheEntryDownloadURLResponse.toJson(response, {
+            useProtoFieldName: true,
+            emitDefaultValues: false,
+        }));
+    });
+}
+function handleCacheServiceDeleteCacheEntryJSON(ctx, service, data, interceptors) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let request;
+        let response;
+        try {
+            const body = JSON.parse(data.toString() || "{}");
+            request = cache_1.DeleteCacheEntryRequest.fromJson(body, {
+                ignoreUnknownFields: true,
+            });
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                const msg = "the json request could not be decoded";
+                throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+            }
+        }
+        if (interceptors && interceptors.length > 0) {
+            const interceptor = (0, twirp_ts_1.chainInterceptors)(...interceptors);
+            response = yield interceptor(ctx, request, (ctx, inputReq) => {
+                return service.DeleteCacheEntry(ctx, inputReq);
+            });
+        }
+        else {
+            response = yield service.DeleteCacheEntry(ctx, request);
+        }
+        return JSON.stringify(cache_1.DeleteCacheEntryResponse.toJson(response, {
+            useProtoFieldName: true,
+            emitDefaultValues: false,
+        }));
+    });
+}
+function handleCacheServiceListCacheEntriesJSON(ctx, service, data, interceptors) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let request;
+        let response;
+        try {
+            const body = JSON.parse(data.toString() || "{}");
+            request = cache_1.ListCacheEntriesRequest.fromJson(body, {
+                ignoreUnknownFields: true,
+            });
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                const msg = "the json request could not be decoded";
+                throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+            }
+        }
+        if (interceptors && interceptors.length > 0) {
+            const interceptor = (0, twirp_ts_1.chainInterceptors)(...interceptors);
+            response = yield interceptor(ctx, request, (ctx, inputReq) => {
+                return service.ListCacheEntries(ctx, inputReq);
+            });
+        }
+        else {
+            response = yield service.ListCacheEntries(ctx, request);
+        }
+        return JSON.stringify(cache_1.ListCacheEntriesResponse.toJson(response, {
+            useProtoFieldName: true,
+            emitDefaultValues: false,
+        }));
+    });
+}
+function handleCacheServiceLookupCacheEntryJSON(ctx, service, data, interceptors) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let request;
+        let response;
+        try {
+            const body = JSON.parse(data.toString() || "{}");
+            request = cache_1.LookupCacheEntryRequest.fromJson(body, {
+                ignoreUnknownFields: true,
+            });
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                const msg = "the json request could not be decoded";
+                throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+            }
+        }
+        if (interceptors && interceptors.length > 0) {
+            const interceptor = (0, twirp_ts_1.chainInterceptors)(...interceptors);
+            response = yield interceptor(ctx, request, (ctx, inputReq) => {
+                return service.LookupCacheEntry(ctx, inputReq);
+            });
+        }
+        else {
+            response = yield service.LookupCacheEntry(ctx, request);
+        }
+        return JSON.stringify(cache_1.LookupCacheEntryResponse.toJson(response, {
+            useProtoFieldName: true,
+            emitDefaultValues: false,
+        }));
+    });
+}
+function handleCacheServiceCreateCacheEntryProtobuf(ctx, service, data, interceptors) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let request;
+        let response;
+        try {
+            request = cache_1.CreateCacheEntryRequest.fromBinary(data);
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                const msg = "the protobuf request could not be decoded";
+                throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+            }
+        }
+        if (interceptors && interceptors.length > 0) {
+            const interceptor = (0, twirp_ts_1.chainInterceptors)(...interceptors);
+            response = yield interceptor(ctx, request, (ctx, inputReq) => {
+                return service.CreateCacheEntry(ctx, inputReq);
+            });
+        }
+        else {
+            response = yield service.CreateCacheEntry(ctx, request);
+        }
+        return Buffer.from(cache_1.CreateCacheEntryResponse.toBinary(response));
+    });
+}
+function handleCacheServiceFinalizeCacheEntryUploadProtobuf(ctx, service, data, interceptors) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let request;
+        let response;
+        try {
+            request = cache_1.FinalizeCacheEntryUploadRequest.fromBinary(data);
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                const msg = "the protobuf request could not be decoded";
+                throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+            }
+        }
+        if (interceptors && interceptors.length > 0) {
+            const interceptor = (0, twirp_ts_1.chainInterceptors)(...interceptors);
+            response = yield interceptor(ctx, request, (ctx, inputReq) => {
+                return service.FinalizeCacheEntryUpload(ctx, inputReq);
+            });
+        }
+        else {
+            response = yield service.FinalizeCacheEntryUpload(ctx, request);
+        }
+        return Buffer.from(cache_1.FinalizeCacheEntryUploadResponse.toBinary(response));
+    });
+}
+function handleCacheServiceGetCacheEntryDownloadURLProtobuf(ctx, service, data, interceptors) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let request;
+        let response;
+        try {
+            request = cache_1.GetCacheEntryDownloadURLRequest.fromBinary(data);
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                const msg = "the protobuf request could not be decoded";
+                throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+            }
+        }
+        if (interceptors && interceptors.length > 0) {
+            const interceptor = (0, twirp_ts_1.chainInterceptors)(...interceptors);
+            response = yield interceptor(ctx, request, (ctx, inputReq) => {
+                return service.GetCacheEntryDownloadURL(ctx, inputReq);
+            });
+        }
+        else {
+            response = yield service.GetCacheEntryDownloadURL(ctx, request);
+        }
+        return Buffer.from(cache_1.GetCacheEntryDownloadURLResponse.toBinary(response));
+    });
+}
+function handleCacheServiceDeleteCacheEntryProtobuf(ctx, service, data, interceptors) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let request;
+        let response;
+        try {
+            request = cache_1.DeleteCacheEntryRequest.fromBinary(data);
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                const msg = "the protobuf request could not be decoded";
+                throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+            }
+        }
+        if (interceptors && interceptors.length > 0) {
+            const interceptor = (0, twirp_ts_1.chainInterceptors)(...interceptors);
+            response = yield interceptor(ctx, request, (ctx, inputReq) => {
+                return service.DeleteCacheEntry(ctx, inputReq);
+            });
+        }
+        else {
+            response = yield service.DeleteCacheEntry(ctx, request);
+        }
+        return Buffer.from(cache_1.DeleteCacheEntryResponse.toBinary(response));
+    });
+}
+function handleCacheServiceListCacheEntriesProtobuf(ctx, service, data, interceptors) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let request;
+        let response;
+        try {
+            request = cache_1.ListCacheEntriesRequest.fromBinary(data);
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                const msg = "the protobuf request could not be decoded";
+                throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+            }
+        }
+        if (interceptors && interceptors.length > 0) {
+            const interceptor = (0, twirp_ts_1.chainInterceptors)(...interceptors);
+            response = yield interceptor(ctx, request, (ctx, inputReq) => {
+                return service.ListCacheEntries(ctx, inputReq);
+            });
+        }
+        else {
+            response = yield service.ListCacheEntries(ctx, request);
+        }
+        return Buffer.from(cache_1.ListCacheEntriesResponse.toBinary(response));
+    });
+}
+function handleCacheServiceLookupCacheEntryProtobuf(ctx, service, data, interceptors) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let request;
+        let response;
+        try {
+            request = cache_1.LookupCacheEntryRequest.fromBinary(data);
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                const msg = "the protobuf request could not be decoded";
+                throw new twirp_ts_1.TwirpError(twirp_ts_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+            }
+        }
+        if (interceptors && interceptors.length > 0) {
+            const interceptor = (0, twirp_ts_1.chainInterceptors)(...interceptors);
+            response = yield interceptor(ctx, request, (ctx, inputReq) => {
+                return service.LookupCacheEntry(ctx, inputReq);
+            });
+        }
+        else {
+            response = yield service.LookupCacheEntry(ctx, request);
+        }
+        return Buffer.from(cache_1.LookupCacheEntryResponse.toBinary(response));
+    });
+}
+//# sourceMappingURL=cache.twirp.js.map
+
+/***/ }),
+
+/***/ 3639:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.CacheEntry = void 0;
+const runtime_1 = __nccwpck_require__(4061);
+const runtime_2 = __nccwpck_require__(4061);
+const runtime_3 = __nccwpck_require__(4061);
+const runtime_4 = __nccwpck_require__(4061);
+const runtime_5 = __nccwpck_require__(4061);
+const timestamp_1 = __nccwpck_require__(4469);
+// @generated message type with reflection information, may provide speed optimized methods
+class CacheEntry$Type extends runtime_5.MessageType {
+    constructor() {
+        super("github.actions.results.entities.v1.CacheEntry", [
+            { no: 1, name: "key", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "hash", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "size_bytes", kind: "scalar", T: 3 /*ScalarType.INT64*/ },
+            { no: 4, name: "scope", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 5, name: "version", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 6, name: "created_at", kind: "message", T: () => timestamp_1.Timestamp },
+            { no: 7, name: "last_accessed_at", kind: "message", T: () => timestamp_1.Timestamp },
+            { no: 8, name: "expires_at", kind: "message", T: () => timestamp_1.Timestamp }
+        ]);
+    }
+    create(value) {
+        const message = { key: "", hash: "", sizeBytes: "0", scope: "", version: "" };
+        globalThis.Object.defineProperty(message, runtime_4.MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            (0, runtime_3.reflectionMergePartial)(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader, length, options, target) {
+        let message = target !== null && target !== void 0 ? target : this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string key */ 1:
+                    message.key = reader.string();
+                    break;
+                case /* string hash */ 2:
+                    message.hash = reader.string();
+                    break;
+                case /* int64 size_bytes */ 3:
+                    message.sizeBytes = reader.int64().toString();
+                    break;
+                case /* string scope */ 4:
+                    message.scope = reader.string();
+                    break;
+                case /* string version */ 5:
+                    message.version = reader.string();
+                    break;
+                case /* google.protobuf.Timestamp created_at */ 6:
+                    message.createdAt = timestamp_1.Timestamp.internalBinaryRead(reader, reader.uint32(), options, message.createdAt);
+                    break;
+                case /* google.protobuf.Timestamp last_accessed_at */ 7:
+                    message.lastAccessedAt = timestamp_1.Timestamp.internalBinaryRead(reader, reader.uint32(), options, message.lastAccessedAt);
+                    break;
+                case /* google.protobuf.Timestamp expires_at */ 8:
+                    message.expiresAt = timestamp_1.Timestamp.internalBinaryRead(reader, reader.uint32(), options, message.expiresAt);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? runtime_2.UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message, writer, options) {
+        /* string key = 1; */
+        if (message.key !== "")
+            writer.tag(1, runtime_1.WireType.LengthDelimited).string(message.key);
+        /* string hash = 2; */
+        if (message.hash !== "")
+            writer.tag(2, runtime_1.WireType.LengthDelimited).string(message.hash);
+        /* int64 size_bytes = 3; */
+        if (message.sizeBytes !== "0")
+            writer.tag(3, runtime_1.WireType.Varint).int64(message.sizeBytes);
+        /* string scope = 4; */
+        if (message.scope !== "")
+            writer.tag(4, runtime_1.WireType.LengthDelimited).string(message.scope);
+        /* string version = 5; */
+        if (message.version !== "")
+            writer.tag(5, runtime_1.WireType.LengthDelimited).string(message.version);
+        /* google.protobuf.Timestamp created_at = 6; */
+        if (message.createdAt)
+            timestamp_1.Timestamp.internalBinaryWrite(message.createdAt, writer.tag(6, runtime_1.WireType.LengthDelimited).fork(), options).join();
+        /* google.protobuf.Timestamp last_accessed_at = 7; */
+        if (message.lastAccessedAt)
+            timestamp_1.Timestamp.internalBinaryWrite(message.lastAccessedAt, writer.tag(7, runtime_1.WireType.LengthDelimited).fork(), options).join();
+        /* google.protobuf.Timestamp expires_at = 8; */
+        if (message.expiresAt)
+            timestamp_1.Timestamp.internalBinaryWrite(message.expiresAt, writer.tag(8, runtime_1.WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? runtime_2.UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message github.actions.results.entities.v1.CacheEntry
+ */
+exports.CacheEntry = new CacheEntry$Type();
+//# sourceMappingURL=cacheentry.js.map
 
 /***/ }),
 
@@ -2203,8 +3327,7 @@ const config_1 = __nccwpck_require__(5147);
 const cacheUtils_1 = __nccwpck_require__(1518);
 const auth_1 = __nccwpck_require__(5526);
 const http_client_1 = __nccwpck_require__(6255);
-const cache_twirp_client_1 = __nccwpck_require__(2655);
-const util_1 = __nccwpck_require__(1953);
+const cache_twirp_1 = __nccwpck_require__(267);
 /**
  * This class is a wrapper around the CacheServiceClientJSON class generated by Twirp.
  *
@@ -2264,7 +3387,6 @@ class CacheServiceClient {
                     (0, core_1.debug)(`[Response] - ${response.message.statusCode}`);
                     (0, core_1.debug)(`Headers: ${JSON.stringify(response.message.headers, null, 2)}`);
                     const body = JSON.parse(rawBody);
-                    (0, util_1.maskSecretUrls)(body);
                     (0, core_1.debug)(`Body: ${JSON.stringify(body, null, 2)}`);
                     if (this.isSuccessStatusCode(statusCode)) {
                         return { response, body };
@@ -2342,7 +3464,7 @@ class CacheServiceClient {
 }
 function internalCacheTwirpClient(options) {
     const client = new CacheServiceClient((0, user_agent_1.getUserAgentString)(), options === null || options === void 0 ? void 0 : options.maxAttempts, options === null || options === void 0 ? void 0 : options.retryIntervalMs, options === null || options === void 0 ? void 0 : options.retryMultiplier);
-    return new cache_twirp_client_1.CacheServiceClientJSON(client);
+    return new cache_twirp_1.CacheServiceClientJSON(client);
 }
 exports.internalCacheTwirpClient = internalCacheTwirpClient;
 //# sourceMappingURL=cacheTwirpClient.js.map
@@ -2443,87 +3565,6 @@ function getUserAgentString() {
 }
 exports.getUserAgentString = getUserAgentString;
 //# sourceMappingURL=user-agent.js.map
-
-/***/ }),
-
-/***/ 1953:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.maskSecretUrls = exports.maskSigUrl = void 0;
-const core_1 = __nccwpck_require__(2186);
-/**
- * Masks the `sig` parameter in a URL and sets it as a secret.
- *
- * @param url - The URL containing the signature parameter to mask
- * @remarks
- * This function attempts to parse the provided URL and identify the 'sig' query parameter.
- * If found, it registers both the raw and URL-encoded signature values as secrets using
- * the Actions `setSecret` API, which prevents them from being displayed in logs.
- *
- * The function handles errors gracefully if URL parsing fails, logging them as debug messages.
- *
- * @example
- * ```typescript
- * // Mask a signature in an Azure SAS token URL
- * maskSigUrl('https://example.blob.core.windows.net/container/file.txt?sig=abc123&se=2023-01-01');
- * ```
- */
-function maskSigUrl(url) {
-    if (!url)
-        return;
-    try {
-        const parsedUrl = new URL(url);
-        const signature = parsedUrl.searchParams.get('sig');
-        if (signature) {
-            (0, core_1.setSecret)(signature);
-            (0, core_1.setSecret)(encodeURIComponent(signature));
-        }
-    }
-    catch (error) {
-        (0, core_1.debug)(`Failed to parse URL: ${url} ${error instanceof Error ? error.message : String(error)}`);
-    }
-}
-exports.maskSigUrl = maskSigUrl;
-/**
- * Masks sensitive information in URLs containing signature parameters.
- * Currently supports masking 'sig' parameters in the 'signed_upload_url'
- * and 'signed_download_url' properties of the provided object.
- *
- * @param body - The object should contain a signature
- * @remarks
- * This function extracts URLs from the object properties and calls maskSigUrl
- * on each one to redact sensitive signature information. The function doesn't
- * modify the original object; it only marks the signatures as secrets for
- * logging purposes.
- *
- * @example
- * ```typescript
- * const responseBody = {
- *   signed_upload_url: 'https://blob.core.windows.net/?sig=abc123',
- *   signed_download_url: 'https://blob.core/windows.net/?sig=def456'
- * };
- * maskSecretUrls(responseBody);
- * ```
- */
-function maskSecretUrls(body) {
-    if (typeof body !== 'object' || body === null) {
-        (0, core_1.debug)('body is not an object or is null');
-        return;
-    }
-    if ('signed_upload_url' in body &&
-        typeof body.signed_upload_url === 'string') {
-        maskSigUrl(body.signed_upload_url);
-    }
-    if ('signed_download_url' in body &&
-        typeof body.signed_download_url === 'string') {
-        maskSigUrl(body.signed_download_url);
-    }
-}
-exports.maskSecretUrls = maskSecretUrls;
-//# sourceMappingURL=util.js.map
 
 /***/ }),
 
@@ -7711,7 +8752,7 @@ function hashFiles(patterns, currentWorkspace = '', options, verbose = false) {
             followSymbolicLinks = options.followSymbolicLinks;
         }
         const globber = yield create(patterns, { followSymbolicLinks });
-        return (0, internal_hash_files_1.hashFiles)(globber, currentWorkspace, verbose);
+        return internal_hash_files_1.hashFiles(globber, currentWorkspace, verbose);
     });
 }
 exports.hashFiles = hashFiles;
@@ -7726,11 +8767,7 @@ exports.hashFiles = hashFiles;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -7743,7 +8780,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -7758,8 +8795,7 @@ function getOptions(copy) {
         followSymbolicLinks: true,
         implicitDescendants: true,
         matchDirectories: true,
-        omitBrokenSymbolicLinks: true,
-        excludeHiddenFiles: false
+        omitBrokenSymbolicLinks: true
     };
     if (copy) {
         if (typeof copy.followSymbolicLinks === 'boolean') {
@@ -7778,10 +8814,6 @@ function getOptions(copy) {
             result.omitBrokenSymbolicLinks = copy.omitBrokenSymbolicLinks;
             core.debug(`omitBrokenSymbolicLinks '${result.omitBrokenSymbolicLinks}'`);
         }
-        if (typeof copy.excludeHiddenFiles === 'boolean') {
-            result.excludeHiddenFiles = copy.excludeHiddenFiles;
-            core.debug(`excludeHiddenFiles '${result.excludeHiddenFiles}'`);
-        }
     }
     return result;
 }
@@ -7797,11 +8829,7 @@ exports.getOptions = getOptions;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -7814,7 +8842,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -7868,21 +8896,19 @@ class DefaultGlobber {
         return this.searchPaths.slice();
     }
     glob() {
-        var _a, e_1, _b, _c;
+        var e_1, _a;
         return __awaiter(this, void 0, void 0, function* () {
             const result = [];
             try {
-                for (var _d = true, _e = __asyncValues(this.globGenerator()), _f; _f = yield _e.next(), _a = _f.done, !_a; _d = true) {
-                    _c = _f.value;
-                    _d = false;
-                    const itemPath = _c;
+                for (var _b = __asyncValues(this.globGenerator()), _c; _c = yield _b.next(), !_c.done;) {
+                    const itemPath = _c.value;
                     result.push(itemPath);
                 }
             }
             catch (e_1_1) { e_1 = { error: e_1_1 }; }
             finally {
                 try {
-                    if (!_d && !_a && (_b = _e.return)) yield _b.call(_e);
+                    if (_c && !_c.done && (_a = _b.return)) yield _a.call(_b);
                 }
                 finally { if (e_1) throw e_1.error; }
             }
@@ -7938,10 +8964,6 @@ class DefaultGlobber {
                 );
                 // Broken symlink, or symlink cycle detected, or no longer exists
                 if (!stats) {
-                    continue;
-                }
-                // Hidden file or directory?
-                if (options.excludeHiddenFiles && path.basename(item.path).match(/^\./)) {
                     continue;
                 }
                 // Directory
@@ -8049,11 +9071,7 @@ exports.DefaultGlobber = DefaultGlobber;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -8066,7 +9084,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -8095,21 +9113,19 @@ const stream = __importStar(__nccwpck_require__(2781));
 const util = __importStar(__nccwpck_require__(3837));
 const path = __importStar(__nccwpck_require__(1017));
 function hashFiles(globber, currentWorkspace, verbose = false) {
-    var _a, e_1, _b, _c;
-    var _d;
+    var e_1, _a;
+    var _b;
     return __awaiter(this, void 0, void 0, function* () {
         const writeDelegate = verbose ? core.info : core.debug;
         let hasMatch = false;
         const githubWorkspace = currentWorkspace
             ? currentWorkspace
-            : (_d = process.env['GITHUB_WORKSPACE']) !== null && _d !== void 0 ? _d : process.cwd();
+            : (_b = process.env['GITHUB_WORKSPACE']) !== null && _b !== void 0 ? _b : process.cwd();
         const result = crypto.createHash('sha256');
         let count = 0;
         try {
-            for (var _e = true, _f = __asyncValues(globber.globGenerator()), _g; _g = yield _f.next(), _a = _g.done, !_a; _e = true) {
-                _c = _g.value;
-                _e = false;
-                const file = _c;
+            for (var _c = __asyncValues(globber.globGenerator()), _d; _d = yield _c.next(), !_d.done;) {
+                const file = _d.value;
                 writeDelegate(file);
                 if (!file.startsWith(`${githubWorkspace}${path.sep}`)) {
                     writeDelegate(`Ignore '${file}' since it is not under GITHUB_WORKSPACE.`);
@@ -8132,7 +9148,7 @@ function hashFiles(globber, currentWorkspace, verbose = false) {
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (!_e && !_a && (_b = _f.return)) yield _b.call(_f);
+                if (_d && !_d.done && (_a = _c.return)) yield _a.call(_c);
             }
             finally { if (e_1) throw e_1.error; }
         }
@@ -8172,7 +9188,7 @@ var MatchKind;
     MatchKind[MatchKind["File"] = 2] = "File";
     /** Matched */
     MatchKind[MatchKind["All"] = 3] = "All";
-})(MatchKind || (exports.MatchKind = MatchKind = {}));
+})(MatchKind = exports.MatchKind || (exports.MatchKind = {}));
 //# sourceMappingURL=internal-match-kind.js.map
 
 /***/ }),
@@ -8184,11 +9200,7 @@ var MatchKind;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -8201,7 +9213,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -8251,8 +9263,8 @@ exports.dirname = dirname;
  * or `C:` are expanded based on the current working directory.
  */
 function ensureAbsoluteRoot(root, itemPath) {
-    (0, assert_1.default)(root, `ensureAbsoluteRoot parameter 'root' must not be empty`);
-    (0, assert_1.default)(itemPath, `ensureAbsoluteRoot parameter 'itemPath' must not be empty`);
+    assert_1.default(root, `ensureAbsoluteRoot parameter 'root' must not be empty`);
+    assert_1.default(itemPath, `ensureAbsoluteRoot parameter 'itemPath' must not be empty`);
     // Already rooted
     if (hasAbsoluteRoot(itemPath)) {
         return itemPath;
@@ -8262,7 +9274,7 @@ function ensureAbsoluteRoot(root, itemPath) {
         // Check for itemPath like C: or C:foo
         if (itemPath.match(/^[A-Z]:[^\\/]|^[A-Z]:$/i)) {
             let cwd = process.cwd();
-            (0, assert_1.default)(cwd.match(/^[A-Z]:\\/i), `Expected current directory to start with an absolute drive root. Actual '${cwd}'`);
+            assert_1.default(cwd.match(/^[A-Z]:\\/i), `Expected current directory to start with an absolute drive root. Actual '${cwd}'`);
             // Drive letter matches cwd? Expand to cwd
             if (itemPath[0].toUpperCase() === cwd[0].toUpperCase()) {
                 // Drive only, e.g. C:
@@ -8287,11 +9299,11 @@ function ensureAbsoluteRoot(root, itemPath) {
         // Check for itemPath like \ or \foo
         else if (normalizeSeparators(itemPath).match(/^\\$|^\\[^\\]/)) {
             const cwd = process.cwd();
-            (0, assert_1.default)(cwd.match(/^[A-Z]:\\/i), `Expected current directory to start with an absolute drive root. Actual '${cwd}'`);
+            assert_1.default(cwd.match(/^[A-Z]:\\/i), `Expected current directory to start with an absolute drive root. Actual '${cwd}'`);
             return `${cwd[0]}:\\${itemPath.substr(1)}`;
         }
     }
-    (0, assert_1.default)(hasAbsoluteRoot(root), `ensureAbsoluteRoot parameter 'root' must have an absolute root`);
+    assert_1.default(hasAbsoluteRoot(root), `ensureAbsoluteRoot parameter 'root' must have an absolute root`);
     // Otherwise ensure root ends with a separator
     if (root.endsWith('/') || (IS_WINDOWS && root.endsWith('\\'))) {
         // Intentionally empty
@@ -8308,7 +9320,7 @@ exports.ensureAbsoluteRoot = ensureAbsoluteRoot;
  * `\\hello\share` and `C:\hello` (and using alternate separator).
  */
 function hasAbsoluteRoot(itemPath) {
-    (0, assert_1.default)(itemPath, `hasAbsoluteRoot parameter 'itemPath' must not be empty`);
+    assert_1.default(itemPath, `hasAbsoluteRoot parameter 'itemPath' must not be empty`);
     // Normalize separators
     itemPath = normalizeSeparators(itemPath);
     // Windows
@@ -8325,7 +9337,7 @@ exports.hasAbsoluteRoot = hasAbsoluteRoot;
  * `\`, `\hello`, `\\hello\share`, `C:`, and `C:\hello` (and using alternate separator).
  */
 function hasRoot(itemPath) {
-    (0, assert_1.default)(itemPath, `isRooted parameter 'itemPath' must not be empty`);
+    assert_1.default(itemPath, `isRooted parameter 'itemPath' must not be empty`);
     // Normalize separators
     itemPath = normalizeSeparators(itemPath);
     // Windows
@@ -8393,11 +9405,7 @@ exports.safeTrimTrailingSeparator = safeTrimTrailingSeparator;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -8410,7 +9418,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -8435,7 +9443,7 @@ class Path {
         this.segments = [];
         // String
         if (typeof itemPath === 'string') {
-            (0, assert_1.default)(itemPath, `Parameter 'itemPath' must not be empty`);
+            assert_1.default(itemPath, `Parameter 'itemPath' must not be empty`);
             // Normalize slashes and trim unnecessary trailing slash
             itemPath = pathHelper.safeTrimTrailingSeparator(itemPath);
             // Not rooted
@@ -8462,24 +9470,24 @@ class Path {
         // Array
         else {
             // Must not be empty
-            (0, assert_1.default)(itemPath.length > 0, `Parameter 'itemPath' must not be an empty array`);
+            assert_1.default(itemPath.length > 0, `Parameter 'itemPath' must not be an empty array`);
             // Each segment
             for (let i = 0; i < itemPath.length; i++) {
                 let segment = itemPath[i];
                 // Must not be empty
-                (0, assert_1.default)(segment, `Parameter 'itemPath' must not contain any empty segments`);
+                assert_1.default(segment, `Parameter 'itemPath' must not contain any empty segments`);
                 // Normalize slashes
                 segment = pathHelper.normalizeSeparators(itemPath[i]);
                 // Root segment
                 if (i === 0 && pathHelper.hasRoot(segment)) {
                     segment = pathHelper.safeTrimTrailingSeparator(segment);
-                    (0, assert_1.default)(segment === pathHelper.dirname(segment), `Parameter 'itemPath' root segment contains information for multiple segments`);
+                    assert_1.default(segment === pathHelper.dirname(segment), `Parameter 'itemPath' root segment contains information for multiple segments`);
                     this.segments.push(segment);
                 }
                 // All other segments
                 else {
                     // Must not contain slash
-                    (0, assert_1.default)(!segment.includes(path.sep), `Parameter 'itemPath' contains unexpected path separators`);
+                    assert_1.default(!segment.includes(path.sep), `Parameter 'itemPath' contains unexpected path separators`);
                     this.segments.push(segment);
                 }
             }
@@ -8517,11 +9525,7 @@ exports.Path = Path;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -8534,7 +9538,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -8622,11 +9626,7 @@ exports.partialMatch = partialMatch;
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -8639,7 +9639,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -8671,9 +9671,9 @@ class Pattern {
         else {
             // Convert to pattern
             segments = segments || [];
-            (0, assert_1.default)(segments.length, `Parameter 'segments' must not empty`);
+            assert_1.default(segments.length, `Parameter 'segments' must not empty`);
             const root = Pattern.getLiteral(segments[0]);
-            (0, assert_1.default)(root && pathHelper.hasAbsoluteRoot(root), `Parameter 'segments' first element must be a root path`);
+            assert_1.default(root && pathHelper.hasAbsoluteRoot(root), `Parameter 'segments' first element must be a root path`);
             pattern = new internal_path_1.Path(segments).toString().trim();
             if (patternOrNegate) {
                 pattern = `!${pattern}`;
@@ -8767,13 +9767,13 @@ class Pattern {
      */
     static fixupPattern(pattern, homedir) {
         // Empty
-        (0, assert_1.default)(pattern, 'pattern cannot be empty');
+        assert_1.default(pattern, 'pattern cannot be empty');
         // Must not contain `.` segment, unless first segment
         // Must not contain `..` segment
         const literalSegments = new internal_path_1.Path(pattern).segments.map(x => Pattern.getLiteral(x));
-        (0, assert_1.default)(literalSegments.every((x, i) => (x !== '.' || i === 0) && x !== '..'), `Invalid pattern '${pattern}'. Relative pathing '.' and '..' is not allowed.`);
+        assert_1.default(literalSegments.every((x, i) => (x !== '.' || i === 0) && x !== '..'), `Invalid pattern '${pattern}'. Relative pathing '.' and '..' is not allowed.`);
         // Must not contain globs in root, e.g. Windows UNC path \\foo\b*r
-        (0, assert_1.default)(!pathHelper.hasRoot(pattern) || literalSegments[0], `Invalid pattern '${pattern}'. Root segment must not contain globs.`);
+        assert_1.default(!pathHelper.hasRoot(pattern) || literalSegments[0], `Invalid pattern '${pattern}'. Root segment must not contain globs.`);
         // Normalize slashes
         pattern = pathHelper.normalizeSeparators(pattern);
         // Replace leading `.` segment
@@ -8783,8 +9783,8 @@ class Pattern {
         // Replace leading `~` segment
         else if (pattern === '~' || pattern.startsWith(`~${path.sep}`)) {
             homedir = homedir || os.homedir();
-            (0, assert_1.default)(homedir, 'Unable to determine HOME directory');
-            (0, assert_1.default)(pathHelper.hasAbsoluteRoot(homedir), `Expected HOME directory to be a rooted path. Actual '${homedir}'`);
+            assert_1.default(homedir, 'Unable to determine HOME directory');
+            assert_1.default(pathHelper.hasAbsoluteRoot(homedir), `Expected HOME directory to be a rooted path. Actual '${homedir}'`);
             pattern = Pattern.globEscape(homedir) + pattern.substr(1);
         }
         // Replace relative drive root, e.g. pattern is C: or C:foo
@@ -9554,7 +10554,7 @@ class HttpClient {
         }
         const usingSsl = parsedUrl.protocol === 'https:';
         proxyAgent = new undici_1.ProxyAgent(Object.assign({ uri: proxyUrl.href, pipelining: !this._keepAlive ? 0 : 1 }, ((proxyUrl.username || proxyUrl.password) && {
-            token: `Basic ${Buffer.from(`${proxyUrl.username}:${proxyUrl.password}`).toString('base64')}`
+            token: `${proxyUrl.username}:${proxyUrl.password}`
         })));
         this._proxyAgentDispatcher = proxyAgent;
         if (usingSsl && this._ignoreSslError) {
@@ -9668,11 +10668,11 @@ function getProxyUrl(reqUrl) {
     })();
     if (proxyVar) {
         try {
-            return new DecodedURL(proxyVar);
+            return new URL(proxyVar);
         }
         catch (_a) {
             if (!proxyVar.startsWith('http://') && !proxyVar.startsWith('https://'))
-                return new DecodedURL(`http://${proxyVar}`);
+                return new URL(`http://${proxyVar}`);
         }
     }
     else {
@@ -9730,19 +10730,6 @@ function isLoopbackAddress(host) {
         hostLower.startsWith('127.') ||
         hostLower.startsWith('[::1]') ||
         hostLower.startsWith('[0:0:0:0:0:0:0:1]'));
-}
-class DecodedURL extends URL {
-    constructor(url, base) {
-        super(url, base);
-        this._decodedUsername = decodeURIComponent(super.username);
-        this._decodedPassword = decodeURIComponent(super.password);
-    }
-    get username() {
-        return this._decodedUsername;
-    }
-    get password() {
-        return this._decodedPassword;
-    }
 }
 //# sourceMappingURL=proxy.js.map
 
@@ -18700,9 +19687,6 @@ exports.userAgentPolicy = userAgentPolicy;
 /***/ 6279:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-"use strict";
-
-
 var CombinedStream = __nccwpck_require__(5443);
 var util = __nccwpck_require__(3837);
 var path = __nccwpck_require__(1017);
@@ -18711,12 +19695,15 @@ var https = __nccwpck_require__(5687);
 var parseUrl = (__nccwpck_require__(7310).parse);
 var fs = __nccwpck_require__(7147);
 var Stream = (__nccwpck_require__(2781).Stream);
-var crypto = __nccwpck_require__(6113);
 var mime = __nccwpck_require__(3583);
 var asynckit = __nccwpck_require__(4812);
-var setToStringTag = __nccwpck_require__(1770);
-var hasOwn = __nccwpck_require__(2157);
 var populate = __nccwpck_require__(3971);
+
+// Public API
+module.exports = FormData;
+
+// make it a Stream
+util.inherits(FormData, CombinedStream);
 
 /**
  * Create readable "multipart/form-data" streams.
@@ -18724,7 +19711,7 @@ var populate = __nccwpck_require__(3971);
  * and file uploads to other web applications.
  *
  * @constructor
- * @param {object} options - Properties to be added/overriden for FormData and CombinedStream
+ * @param {Object} options - Properties to be added/overriden for FormData and CombinedStream
  */
 function FormData(options) {
   if (!(this instanceof FormData)) {
@@ -18737,39 +19724,35 @@ function FormData(options) {
 
   CombinedStream.call(this);
 
-  options = options || {}; // eslint-disable-line no-param-reassign
-  for (var option in options) { // eslint-disable-line no-restricted-syntax
+  options = options || {};
+  for (var option in options) {
     this[option] = options[option];
   }
 }
 
-// make it a Stream
-util.inherits(FormData, CombinedStream);
-
 FormData.LINE_BREAK = '\r\n';
 FormData.DEFAULT_CONTENT_TYPE = 'application/octet-stream';
 
-FormData.prototype.append = function (field, value, options) {
-  options = options || {}; // eslint-disable-line no-param-reassign
+FormData.prototype.append = function(field, value, options) {
+
+  options = options || {};
 
   // allow filename as single option
-  if (typeof options === 'string') {
-    options = { filename: options }; // eslint-disable-line no-param-reassign
+  if (typeof options == 'string') {
+    options = {filename: options};
   }
 
   var append = CombinedStream.prototype.append.bind(this);
 
   // all that streamy business can't handle numbers
-  if (typeof value === 'number' || value == null) {
-    value = String(value); // eslint-disable-line no-param-reassign
+  if (typeof value == 'number') {
+    value = '' + value;
   }
 
   // https://github.com/felixge/node-form-data/issues/38
-  if (Array.isArray(value)) {
-    /*
-     * Please convert your array into string
-     * the way web server expects it
-     */
+  if (util.isArray(value)) {
+    // Please convert your array into string
+    // the way web server expects it
     this._error(new Error('Arrays are not supported.'));
     return;
   }
@@ -18785,17 +19768,15 @@ FormData.prototype.append = function (field, value, options) {
   this._trackLength(header, value, options);
 };
 
-FormData.prototype._trackLength = function (header, value, options) {
+FormData.prototype._trackLength = function(header, value, options) {
   var valueLength = 0;
 
-  /*
-   * used w/ getLengthSync(), when length is known.
-   * e.g. for streaming directly from a remote server,
-   * w/ a known file a size, and not wanting to wait for
-   * incoming file to finish to get its size.
-   */
+  // used w/ getLengthSync(), when length is known.
+  // e.g. for streaming directly from a remote server,
+  // w/ a known file a size, and not wanting to wait for
+  // incoming file to finish to get its size.
   if (options.knownLength != null) {
-    valueLength += Number(options.knownLength);
+    valueLength += +options.knownLength;
   } else if (Buffer.isBuffer(value)) {
     valueLength = value.length;
   } else if (typeof value === 'string') {
@@ -18805,10 +19786,12 @@ FormData.prototype._trackLength = function (header, value, options) {
   this._valueLength += valueLength;
 
   // @check why add CRLF? does this account for custom/multiple CRLFs?
-  this._overheadLength += Buffer.byteLength(header) + FormData.LINE_BREAK.length;
+  this._overheadLength +=
+    Buffer.byteLength(header) +
+    FormData.LINE_BREAK.length;
 
   // empty or either doesn't have path or not an http response or not a stream
-  if (!value || (!value.path && !(value.readable && hasOwn(value, 'httpVersion')) && !(value instanceof Stream))) {
+  if (!value || ( !value.path && !(value.readable && value.hasOwnProperty('httpVersion')) && !(value instanceof Stream))) {
     return;
   }
 
@@ -18818,8 +19801,10 @@ FormData.prototype._trackLength = function (header, value, options) {
   }
 };
 
-FormData.prototype._lengthRetriever = function (value, callback) {
-  if (hasOwn(value, 'fd')) {
+FormData.prototype._lengthRetriever = function(value, callback) {
+
+  if (value.hasOwnProperty('fd')) {
+
     // take read range into a account
     // `end` = Infinity –> read file till the end
     //
@@ -18828,52 +19813,54 @@ FormData.prototype._lengthRetriever = function (value, callback) {
     // Fix it when node fixes it.
     // https://github.com/joyent/node/issues/7819
     if (value.end != undefined && value.end != Infinity && value.start != undefined) {
+
       // when end specified
       // no need to calculate range
       // inclusive, starts with 0
-      callback(null, value.end + 1 - (value.start ? value.start : 0)); // eslint-disable-line callback-return
+      callback(null, value.end + 1 - (value.start ? value.start : 0));
 
-      // not that fast snoopy
+    // not that fast snoopy
     } else {
       // still need to fetch file size from fs
-      fs.stat(value.path, function (err, stat) {
+      fs.stat(value.path, function(err, stat) {
+
+        var fileSize;
+
         if (err) {
           callback(err);
           return;
         }
 
         // update final size based on the range options
-        var fileSize = stat.size - (value.start ? value.start : 0);
+        fileSize = stat.size - (value.start ? value.start : 0);
         callback(null, fileSize);
       });
     }
 
-    // or http response
-  } else if (hasOwn(value, 'httpVersion')) {
-    callback(null, Number(value.headers['content-length'])); // eslint-disable-line callback-return
+  // or http response
+  } else if (value.hasOwnProperty('httpVersion')) {
+    callback(null, +value.headers['content-length']);
 
-    // or request stream http://github.com/mikeal/request
-  } else if (hasOwn(value, 'httpModule')) {
+  // or request stream http://github.com/mikeal/request
+  } else if (value.hasOwnProperty('httpModule')) {
     // wait till response come back
-    value.on('response', function (response) {
+    value.on('response', function(response) {
       value.pause();
-      callback(null, Number(response.headers['content-length']));
+      callback(null, +response.headers['content-length']);
     });
     value.resume();
 
-    // something else
+  // something else
   } else {
-    callback('Unknown stream'); // eslint-disable-line callback-return
+    callback('Unknown stream');
   }
 };
 
-FormData.prototype._multiPartHeader = function (field, value, options) {
-  /*
-   * custom header specified (as string)?
-   * it becomes responsible for boundary
-   * (e.g. to handle extra CRLFs on .NET servers)
-   */
-  if (typeof options.header === 'string') {
+FormData.prototype._multiPartHeader = function(field, value, options) {
+  // custom header specified (as string)?
+  // it becomes responsible for boundary
+  // (e.g. to handle extra CRLFs on .NET servers)
+  if (typeof options.header == 'string') {
     return options.header;
   }
 
@@ -18881,7 +19868,7 @@ FormData.prototype._multiPartHeader = function (field, value, options) {
   var contentType = this._getContentType(value, options);
 
   var contents = '';
-  var headers = {
+  var headers  = {
     // add custom disposition as third element or keep it two elements if not
     'Content-Disposition': ['form-data', 'name="' + field + '"'].concat(contentDisposition || []),
     // if no content type. allow it to be empty array
@@ -18889,74 +19876,77 @@ FormData.prototype._multiPartHeader = function (field, value, options) {
   };
 
   // allow custom headers.
-  if (typeof options.header === 'object') {
+  if (typeof options.header == 'object') {
     populate(headers, options.header);
   }
 
   var header;
-  for (var prop in headers) { // eslint-disable-line no-restricted-syntax
-    if (hasOwn(headers, prop)) {
-      header = headers[prop];
+  for (var prop in headers) {
+    if (!headers.hasOwnProperty(prop)) continue;
+    header = headers[prop];
 
-      // skip nullish headers.
-      if (header == null) {
-        continue; // eslint-disable-line no-restricted-syntax, no-continue
-      }
+    // skip nullish headers.
+    if (header == null) {
+      continue;
+    }
 
-      // convert all headers to arrays.
-      if (!Array.isArray(header)) {
-        header = [header];
-      }
+    // convert all headers to arrays.
+    if (!Array.isArray(header)) {
+      header = [header];
+    }
 
-      // add non-empty headers.
-      if (header.length) {
-        contents += prop + ': ' + header.join('; ') + FormData.LINE_BREAK;
-      }
+    // add non-empty headers.
+    if (header.length) {
+      contents += prop + ': ' + header.join('; ') + FormData.LINE_BREAK;
     }
   }
 
   return '--' + this.getBoundary() + FormData.LINE_BREAK + contents + FormData.LINE_BREAK;
 };
 
-FormData.prototype._getContentDisposition = function (value, options) { // eslint-disable-line consistent-return
-  var filename;
+FormData.prototype._getContentDisposition = function(value, options) {
+
+  var filename
+    , contentDisposition
+    ;
 
   if (typeof options.filepath === 'string') {
     // custom filepath for relative paths
     filename = path.normalize(options.filepath).replace(/\\/g, '/');
-  } else if (options.filename || (value && (value.name || value.path))) {
-    /*
-     * custom filename take precedence
-     * formidable and the browser add a name property
-     * fs- and request- streams have path property
-     */
-    filename = path.basename(options.filename || (value && (value.name || value.path)));
-  } else if (value && value.readable && hasOwn(value, 'httpVersion')) {
+  } else if (options.filename || value.name || value.path) {
+    // custom filename take precedence
+    // formidable and the browser add a name property
+    // fs- and request- streams have path property
+    filename = path.basename(options.filename || value.name || value.path);
+  } else if (value.readable && value.hasOwnProperty('httpVersion')) {
     // or try http response
     filename = path.basename(value.client._httpMessage.path || '');
   }
 
   if (filename) {
-    return 'filename="' + filename + '"';
+    contentDisposition = 'filename="' + filename + '"';
   }
+
+  return contentDisposition;
 };
 
-FormData.prototype._getContentType = function (value, options) {
+FormData.prototype._getContentType = function(value, options) {
+
   // use custom content-type above all
   var contentType = options.contentType;
 
   // or try `name` from formidable, browser
-  if (!contentType && value && value.name) {
+  if (!contentType && value.name) {
     contentType = mime.lookup(value.name);
   }
 
   // or try `path` from fs-, request- streams
-  if (!contentType && value && value.path) {
+  if (!contentType && value.path) {
     contentType = mime.lookup(value.path);
   }
 
   // or if it's http-reponse
-  if (!contentType && value && value.readable && hasOwn(value, 'httpVersion')) {
+  if (!contentType && value.readable && value.hasOwnProperty('httpVersion')) {
     contentType = value.headers['content-type'];
   }
 
@@ -18966,18 +19956,18 @@ FormData.prototype._getContentType = function (value, options) {
   }
 
   // fallback to the default content type if `value` is not simple value
-  if (!contentType && value && typeof value === 'object') {
+  if (!contentType && typeof value == 'object') {
     contentType = FormData.DEFAULT_CONTENT_TYPE;
   }
 
   return contentType;
 };
 
-FormData.prototype._multiPartFooter = function () {
-  return function (next) {
+FormData.prototype._multiPartFooter = function() {
+  return function(next) {
     var footer = FormData.LINE_BREAK;
 
-    var lastPart = this._streams.length === 0;
+    var lastPart = (this._streams.length === 0);
     if (lastPart) {
       footer += this._lastBoundary();
     }
@@ -18986,18 +19976,18 @@ FormData.prototype._multiPartFooter = function () {
   }.bind(this);
 };
 
-FormData.prototype._lastBoundary = function () {
+FormData.prototype._lastBoundary = function() {
   return '--' + this.getBoundary() + '--' + FormData.LINE_BREAK;
 };
 
-FormData.prototype.getHeaders = function (userHeaders) {
+FormData.prototype.getHeaders = function(userHeaders) {
   var header;
   var formHeaders = {
     'content-type': 'multipart/form-data; boundary=' + this.getBoundary()
   };
 
-  for (header in userHeaders) { // eslint-disable-line no-restricted-syntax
-    if (hasOwn(userHeaders, header)) {
+  for (header in userHeaders) {
+    if (userHeaders.hasOwnProperty(header)) {
       formHeaders[header.toLowerCase()] = userHeaders[header];
     }
   }
@@ -19005,14 +19995,11 @@ FormData.prototype.getHeaders = function (userHeaders) {
   return formHeaders;
 };
 
-FormData.prototype.setBoundary = function (boundary) {
-  if (typeof boundary !== 'string') {
-    throw new TypeError('FormData boundary must be a string');
-  }
+FormData.prototype.setBoundary = function(boundary) {
   this._boundary = boundary;
 };
 
-FormData.prototype.getBoundary = function () {
+FormData.prototype.getBoundary = function() {
   if (!this._boundary) {
     this._generateBoundary();
   }
@@ -19020,55 +20007,60 @@ FormData.prototype.getBoundary = function () {
   return this._boundary;
 };
 
-FormData.prototype.getBuffer = function () {
-  var dataBuffer = new Buffer.alloc(0); // eslint-disable-line new-cap
+FormData.prototype.getBuffer = function() {
+  var dataBuffer = new Buffer.alloc( 0 );
   var boundary = this.getBoundary();
 
   // Create the form content. Add Line breaks to the end of data.
   for (var i = 0, len = this._streams.length; i < len; i++) {
     if (typeof this._streams[i] !== 'function') {
+
       // Add content to the buffer.
-      if (Buffer.isBuffer(this._streams[i])) {
-        dataBuffer = Buffer.concat([dataBuffer, this._streams[i]]);
-      } else {
-        dataBuffer = Buffer.concat([dataBuffer, Buffer.from(this._streams[i])]);
+      if(Buffer.isBuffer(this._streams[i])) {
+        dataBuffer = Buffer.concat( [dataBuffer, this._streams[i]]);
+      }else {
+        dataBuffer = Buffer.concat( [dataBuffer, Buffer.from(this._streams[i])]);
       }
 
       // Add break after content.
-      if (typeof this._streams[i] !== 'string' || this._streams[i].substring(2, boundary.length + 2) !== boundary) {
-        dataBuffer = Buffer.concat([dataBuffer, Buffer.from(FormData.LINE_BREAK)]);
+      if (typeof this._streams[i] !== 'string' || this._streams[i].substring( 2, boundary.length + 2 ) !== boundary) {
+        dataBuffer = Buffer.concat( [dataBuffer, Buffer.from(FormData.LINE_BREAK)] );
       }
     }
   }
 
   // Add the footer and return the Buffer object.
-  return Buffer.concat([dataBuffer, Buffer.from(this._lastBoundary())]);
+  return Buffer.concat( [dataBuffer, Buffer.from(this._lastBoundary())] );
 };
 
-FormData.prototype._generateBoundary = function () {
+FormData.prototype._generateBoundary = function() {
   // This generates a 50 character boundary similar to those used by Firefox.
-
   // They are optimized for boyer-moore parsing.
-  this._boundary = '--------------------------' + crypto.randomBytes(12).toString('hex');
+  var boundary = '--------------------------';
+  for (var i = 0; i < 24; i++) {
+    boundary += Math.floor(Math.random() * 10).toString(16);
+  }
+
+  this._boundary = boundary;
 };
 
 // Note: getLengthSync DOESN'T calculate streams length
-// As workaround one can calculate file size manually and add it as knownLength option
-FormData.prototype.getLengthSync = function () {
+// As workaround one can calculate file size manually
+// and add it as knownLength option
+FormData.prototype.getLengthSync = function() {
   var knownLength = this._overheadLength + this._valueLength;
 
-  // Don't get confused, there are 3 "internal" streams for each keyval pair so it basically checks if there is any value added to the form
+  // Don't get confused, there are 3 "internal" streams for each keyval pair
+  // so it basically checks if there is any value added to the form
   if (this._streams.length) {
     knownLength += this._lastBoundary().length;
   }
 
   // https://github.com/form-data/form-data/issues/40
   if (!this.hasKnownLength()) {
-    /*
-     * Some async length retrievers are present
-     * therefore synchronous length calculation is false.
-     * Please use getLength(callback) to get proper length
-     */
+    // Some async length retrievers are present
+    // therefore synchronous length calculation is false.
+    // Please use getLength(callback) to get proper length
     this._error(new Error('Cannot calculate proper length in synchronous way.'));
   }
 
@@ -19078,7 +20070,7 @@ FormData.prototype.getLengthSync = function () {
 // Public API to check if length of added values is known
 // https://github.com/form-data/form-data/issues/196
 // https://github.com/form-data/form-data/issues/262
-FormData.prototype.hasKnownLength = function () {
+FormData.prototype.hasKnownLength = function() {
   var hasKnownLength = true;
 
   if (this._valuesToMeasure.length) {
@@ -19088,7 +20080,7 @@ FormData.prototype.hasKnownLength = function () {
   return hasKnownLength;
 };
 
-FormData.prototype.getLength = function (cb) {
+FormData.prototype.getLength = function(cb) {
   var knownLength = this._overheadLength + this._valueLength;
 
   if (this._streams.length) {
@@ -19100,13 +20092,13 @@ FormData.prototype.getLength = function (cb) {
     return;
   }
 
-  asynckit.parallel(this._valuesToMeasure, this._lengthRetriever, function (err, values) {
+  asynckit.parallel(this._valuesToMeasure, this._lengthRetriever, function(err, values) {
     if (err) {
       cb(err);
       return;
     }
 
-    values.forEach(function (length) {
+    values.forEach(function(length) {
       knownLength += length;
     });
 
@@ -19114,26 +20106,31 @@ FormData.prototype.getLength = function (cb) {
   });
 };
 
-FormData.prototype.submit = function (params, cb) {
-  var request;
-  var options;
-  var defaults = { method: 'post' };
+FormData.prototype.submit = function(params, cb) {
+  var request
+    , options
+    , defaults = {method: 'post'}
+    ;
 
-  // parse provided url if it's string or treat it as options object
-  if (typeof params === 'string') {
-    params = parseUrl(params); // eslint-disable-line no-param-reassign
-    /* eslint sort-keys: 0 */
+  // parse provided url if it's string
+  // or treat it as options object
+  if (typeof params == 'string') {
+
+    params = parseUrl(params);
     options = populate({
       port: params.port,
       path: params.pathname,
       host: params.hostname,
       protocol: params.protocol
     }, defaults);
-  } else { // use custom params
+
+  // use custom params
+  } else {
+
     options = populate(params, defaults);
     // if no port provided use default one
     if (!options.port) {
-      options.port = options.protocol === 'https:' ? 443 : 80;
+      options.port = options.protocol == 'https:' ? 443 : 80;
     }
   }
 
@@ -19141,14 +20138,14 @@ FormData.prototype.submit = function (params, cb) {
   options.headers = this.getHeaders(params.headers);
 
   // https if specified, fallback to http in any other case
-  if (options.protocol === 'https:') {
+  if (options.protocol == 'https:') {
     request = https.request(options);
   } else {
     request = http.request(options);
   }
 
   // get content length and fire away
-  this.getLength(function (err, length) {
+  this.getLength(function(err, length) {
     if (err && err !== 'Unknown stream') {
       this._error(err);
       return;
@@ -19167,7 +20164,7 @@ FormData.prototype.submit = function (params, cb) {
         request.removeListener('error', callback);
         request.removeListener('response', onResponse);
 
-        return cb.call(this, error, responce); // eslint-disable-line no-invalid-this
+        return cb.call(this, error, responce);
       };
 
       onResponse = callback.bind(this, null);
@@ -19180,7 +20177,7 @@ FormData.prototype.submit = function (params, cb) {
   return request;
 };
 
-FormData.prototype._error = function (err) {
+FormData.prototype._error = function(err) {
   if (!this.error) {
     this.error = err;
     this.pause();
@@ -19191,10 +20188,6 @@ FormData.prototype._error = function (err) {
 FormData.prototype.toString = function () {
   return '[object FormData]';
 };
-setToStringTag(FormData, 'FormData');
-
-// Public API
-module.exports = FormData;
 
 
 /***/ }),
@@ -19202,13 +20195,12 @@ module.exports = FormData;
 /***/ 3971:
 /***/ ((module) => {
 
-"use strict";
-
-
 // populates missing values
-module.exports = function (dst, src) {
-  Object.keys(src).forEach(function (prop) {
-    dst[prop] = dst[prop] || src[prop]; // eslint-disable-line no-param-reassign
+module.exports = function(dst, src) {
+
+  Object.keys(src).forEach(function(prop)
+  {
+    dst[prop] = dst[prop] || src[prop];
   });
 
   return dst;
@@ -53918,16 +54910,12 @@ class ReflectionJsonReader {
                         target[localName] = field.T().internalJsonRead(jsonValue, options, target[localName]);
                         break;
                     case "enum":
-                        if (jsonValue === null)
-                            continue;
                         let val = this.enum(field.T(), jsonValue, field.name, options.ignoreUnknownFields);
                         if (val === false)
                             continue;
                         target[localName] = val;
                         break;
                     case "scalar":
-                        if (jsonValue === null)
-                            continue;
                         target[localName] = this.scalar(jsonValue, field.T, field.L, field.name);
                         break;
                 }
@@ -55365,7 +56353,7 @@ function expand(str, isTop) {
   var isOptions = m.body.indexOf(',') >= 0;
   if (!isSequence && !isOptions) {
     // {a},b}
-    if (m.post.match(/,(?!,).*\}/)) {
+    if (m.post.match(/,.*\}/)) {
       str = m.pre + '{' + m.body + escClose + m.post;
       return expand(str);
     }
@@ -55455,83 +56443,6 @@ function expand(str, isTop) {
   return expansions;
 }
 
-
-
-/***/ }),
-
-/***/ 9227:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var bind = __nccwpck_require__(8334);
-
-var $apply = __nccwpck_require__(4177);
-var $call = __nccwpck_require__(2808);
-var $reflectApply = __nccwpck_require__(8309);
-
-/** @type {import('./actualApply')} */
-module.exports = $reflectApply || bind.call($call, $apply);
-
-
-/***/ }),
-
-/***/ 4177:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./functionApply')} */
-module.exports = Function.prototype.apply;
-
-
-/***/ }),
-
-/***/ 2808:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./functionCall')} */
-module.exports = Function.prototype.call;
-
-
-/***/ }),
-
-/***/ 6815:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var bind = __nccwpck_require__(8334);
-var $TypeError = __nccwpck_require__(6361);
-
-var $call = __nccwpck_require__(2808);
-var $actualApply = __nccwpck_require__(9227);
-
-/** @type {(args: [Function, thisArg?: unknown, ...args: unknown[]]) => Function} TODO FIXME, find a way to use import('.') */
-module.exports = function callBindBasic(args) {
-	if (args.length < 1 || typeof args[0] !== 'function') {
-		throw new $TypeError('a function is required');
-	}
-	return $actualApply(bind, $call, args);
-};
-
-
-/***/ }),
-
-/***/ 8309:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./reflectApply')} */
-module.exports = typeof Reflect !== 'undefined' && Reflect && Reflect.apply;
 
 
 /***/ }),
@@ -55885,1000 +56796,595 @@ DelayedStream.prototype._checkIfMaxDataSizeExceeded = function() {
 
 /***/ }),
 
-/***/ 2693:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+/***/ 4365:
+/***/ ((module) => {
 
 "use strict";
 
 
-var callBind = __nccwpck_require__(6815);
-var gOPD = __nccwpck_require__(8501);
+function _process (v, mod) {
+  var i
+  var r
 
-var hasProtoAccessor;
-try {
-	// eslint-disable-next-line no-extra-parens, no-proto
-	hasProtoAccessor = /** @type {{ __proto__?: typeof Array.prototype }} */ ([]).__proto__ === Array.prototype;
-} catch (e) {
-	if (!e || typeof e !== 'object' || !('code' in e) || e.code !== 'ERR_PROTO_ACCESS') {
-		throw e;
-	}
+  if (typeof mod === 'function') {
+    r = mod(v)
+    if (r !== undefined) {
+      v = r
+    }
+  } else if (Array.isArray(mod)) {
+    for (i = 0; i < mod.length; i++) {
+      r = mod[i](v)
+      if (r !== undefined) {
+        v = r
+      }
+    }
+  }
+
+  return v
 }
 
-// eslint-disable-next-line no-extra-parens
-var desc = !!hasProtoAccessor && gOPD && gOPD(Object.prototype, /** @type {keyof typeof Object.prototype} */ ('__proto__'));
-
-var $Object = Object;
-var $getPrototypeOf = $Object.getPrototypeOf;
-
-/** @type {import('./get')} */
-module.exports = desc && typeof desc.get === 'function'
-	? callBind([desc.get])
-	: typeof $getPrototypeOf === 'function'
-		? /** @type {import('./get')} */ function getDunder(value) {
-			// eslint-disable-next-line eqeqeq
-			return $getPrototypeOf(value == null ? value : $Object(value));
-		}
-		: false;
-
-
-/***/ }),
-
-/***/ 6123:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('.')} */
-var $defineProperty = Object.defineProperty || false;
-if ($defineProperty) {
-	try {
-		$defineProperty({}, 'a', { value: 1 });
-	} catch (e) {
-		// IE 8 has a broken defineProperty
-		$defineProperty = false;
-	}
+function parseKey (key, val) {
+  // detect negative index notation
+  if (key[0] === '-' && Array.isArray(val) && /^-\d+$/.test(key)) {
+    return val.length + parseInt(key, 10)
+  }
+  return key
 }
 
-module.exports = $defineProperty;
-
-
-/***/ }),
-
-/***/ 1933:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./eval')} */
-module.exports = EvalError;
-
-
-/***/ }),
-
-/***/ 8015:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('.')} */
-module.exports = Error;
-
-
-/***/ }),
-
-/***/ 4415:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./range')} */
-module.exports = RangeError;
-
-
-/***/ }),
-
-/***/ 9246:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./ref')} */
-module.exports = ReferenceError;
-
-
-/***/ }),
-
-/***/ 5474:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./syntax')} */
-module.exports = SyntaxError;
-
-
-/***/ }),
-
-/***/ 6361:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./type')} */
-module.exports = TypeError;
-
-
-/***/ }),
-
-/***/ 5065:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./uri')} */
-module.exports = URIError;
-
-
-/***/ }),
-
-/***/ 8308:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('.')} */
-module.exports = Object;
-
-
-/***/ }),
-
-/***/ 1770:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var GetIntrinsic = __nccwpck_require__(4538);
-
-var $defineProperty = GetIntrinsic('%Object.defineProperty%', true);
-
-var hasToStringTag = __nccwpck_require__(9038)();
-var hasOwn = __nccwpck_require__(2157);
-var $TypeError = __nccwpck_require__(6361);
-
-var toStringTag = hasToStringTag ? Symbol.toStringTag : null;
-
-/** @type {import('.')} */
-module.exports = function setToStringTag(object, value) {
-	var overrideIfSet = arguments.length > 2 && !!arguments[2] && arguments[2].force;
-	var nonConfigurable = arguments.length > 2 && !!arguments[2] && arguments[2].nonConfigurable;
-	if (
-		(typeof overrideIfSet !== 'undefined' && typeof overrideIfSet !== 'boolean')
-		|| (typeof nonConfigurable !== 'undefined' && typeof nonConfigurable !== 'boolean')
-	) {
-		throw new $TypeError('if provided, the `overrideIfSet` and `nonConfigurable` options must be booleans');
-	}
-	if (toStringTag && (overrideIfSet || !hasOwn(object, toStringTag))) {
-		if ($defineProperty) {
-			$defineProperty(object, toStringTag, {
-				configurable: !nonConfigurable,
-				enumerable: false,
-				value: value,
-				writable: false
-			});
-		} else {
-			object[toStringTag] = value; // eslint-disable-line no-param-reassign
-		}
-	}
-};
-
-
-/***/ }),
-
-/***/ 9320:
-/***/ ((module) => {
-
-"use strict";
-
-
-/* eslint no-invalid-this: 1 */
-
-var ERROR_MESSAGE = 'Function.prototype.bind called on incompatible ';
-var toStr = Object.prototype.toString;
-var max = Math.max;
-var funcType = '[object Function]';
-
-var concatty = function concatty(a, b) {
-    var arr = [];
-
-    for (var i = 0; i < a.length; i += 1) {
-        arr[i] = a[i];
-    }
-    for (var j = 0; j < b.length; j += 1) {
-        arr[j + a.length] = b[j];
-    }
-
-    return arr;
-};
-
-var slicy = function slicy(arrLike, offset) {
-    var arr = [];
-    for (var i = offset || 0, j = 0; i < arrLike.length; i += 1, j += 1) {
-        arr[j] = arrLike[i];
-    }
-    return arr;
-};
-
-var joiny = function (arr, joiner) {
-    var str = '';
-    for (var i = 0; i < arr.length; i += 1) {
-        str += arr[i];
-        if (i + 1 < arr.length) {
-            str += joiner;
+function isIndex (k) {
+  return /^\d+$/.test(k)
+}
+
+function isObject (val) {
+  return Object.prototype.toString.call(val) === '[object Object]'
+}
+
+function isArrayOrObject (val) {
+  return Object(val) === val
+}
+
+function isEmptyObject (val) {
+  return Object.keys(val).length === 0
+}
+
+var blacklist = ['__proto__', 'prototype', 'constructor']
+var blacklistFilter = function (part) { return blacklist.indexOf(part) === -1 }
+
+function parsePath (path, sep) {
+  if (path.indexOf('[') >= 0) {
+    path = path.replace(/\[/g, sep).replace(/]/g, '')
+  }
+
+  var parts = path.split(sep)
+
+  var check = parts.filter(blacklistFilter)
+
+  if (check.length !== parts.length) {
+    throw Error('Refusing to update blacklisted property ' + path)
+  }
+
+  return parts
+}
+
+var hasOwnProperty = Object.prototype.hasOwnProperty
+
+function DotObject (separator, override, useArray, useBrackets) {
+  if (!(this instanceof DotObject)) {
+    return new DotObject(separator, override, useArray, useBrackets)
+  }
+
+  if (typeof override === 'undefined') override = false
+  if (typeof useArray === 'undefined') useArray = true
+  if (typeof useBrackets === 'undefined') useBrackets = true
+  this.separator = separator || '.'
+  this.override = override
+  this.useArray = useArray
+  this.useBrackets = useBrackets
+  this.keepArray = false
+
+  // contains touched arrays
+  this.cleanup = []
+}
+
+var dotDefault = new DotObject('.', false, true, true)
+function wrap (method) {
+  return function () {
+    return dotDefault[method].apply(dotDefault, arguments)
+  }
+}
+
+DotObject.prototype._fill = function (a, obj, v, mod) {
+  var k = a.shift()
+
+  if (a.length > 0) {
+    obj[k] = obj[k] || (this.useArray && isIndex(a[0]) ? [] : {})
+
+    if (!isArrayOrObject(obj[k])) {
+      if (this.override) {
+        obj[k] = {}
+      } else {
+        if (!(isArrayOrObject(v) && isEmptyObject(v))) {
+          throw new Error(
+            'Trying to redefine `' + k + '` which is a ' + typeof obj[k]
+          )
         }
-    }
-    return str;
-};
 
-module.exports = function bind(that) {
-    var target = this;
-    if (typeof target !== 'function' || toStr.apply(target) !== funcType) {
-        throw new TypeError(ERROR_MESSAGE + target);
+        return
+      }
     }
-    var args = slicy(arguments, 1);
 
-    var bound;
-    var binder = function () {
-        if (this instanceof bound) {
-            var result = target.apply(
-                this,
-                concatty(args, arguments)
-            );
-            if (Object(result) === result) {
-                return result;
+    this._fill(a, obj[k], v, mod)
+  } else {
+    if (!this.override && isArrayOrObject(obj[k]) && !isEmptyObject(obj[k])) {
+      if (!(isArrayOrObject(v) && isEmptyObject(v))) {
+        throw new Error("Trying to redefine non-empty obj['" + k + "']")
+      }
+
+      return
+    }
+
+    obj[k] = _process(v, mod)
+  }
+}
+
+/**
+ *
+ * Converts an object with dotted-key/value pairs to it's expanded version
+ *
+ * Optionally transformed by a set of modifiers.
+ *
+ * Usage:
+ *
+ *   var row = {
+ *     'nr': 200,
+ *     'doc.name': '  My Document  '
+ *   }
+ *
+ *   var mods = {
+ *     'doc.name': [_s.trim, _s.underscored]
+ *   }
+ *
+ *   dot.object(row, mods)
+ *
+ * @param {Object} obj
+ * @param {Object} mods
+ */
+DotObject.prototype.object = function (obj, mods) {
+  var self = this
+
+  Object.keys(obj).forEach(function (k) {
+    var mod = mods === undefined ? null : mods[k]
+    // normalize array notation.
+    var ok = parsePath(k, self.separator).join(self.separator)
+
+    if (ok.indexOf(self.separator) !== -1) {
+      self._fill(ok.split(self.separator), obj, obj[k], mod)
+      delete obj[k]
+    } else {
+      obj[k] = _process(obj[k], mod)
+    }
+  })
+
+  return obj
+}
+
+/**
+ * @param {String} path dotted path
+ * @param {String} v value to be set
+ * @param {Object} obj object to be modified
+ * @param {Function|Array} mod optional modifier
+ */
+DotObject.prototype.str = function (path, v, obj, mod) {
+  var ok = parsePath(path, this.separator).join(this.separator)
+
+  if (path.indexOf(this.separator) !== -1) {
+    this._fill(ok.split(this.separator), obj, v, mod)
+  } else {
+    obj[path] = _process(v, mod)
+  }
+
+  return obj
+}
+
+/**
+ *
+ * Pick a value from an object using dot notation.
+ *
+ * Optionally remove the value
+ *
+ * @param {String} path
+ * @param {Object} obj
+ * @param {Boolean} remove
+ */
+DotObject.prototype.pick = function (path, obj, remove, reindexArray) {
+  var i
+  var keys
+  var val
+  var key
+  var cp
+
+  keys = parsePath(path, this.separator)
+  for (i = 0; i < keys.length; i++) {
+    key = parseKey(keys[i], obj)
+    if (obj && typeof obj === 'object' && key in obj) {
+      if (i === keys.length - 1) {
+        if (remove) {
+          val = obj[key]
+          if (reindexArray && Array.isArray(obj)) {
+            obj.splice(key, 1)
+          } else {
+            delete obj[key]
+          }
+          if (Array.isArray(obj)) {
+            cp = keys.slice(0, -1).join('.')
+            if (this.cleanup.indexOf(cp) === -1) {
+              this.cleanup.push(cp)
             }
-            return this;
+          }
+          return val
+        } else {
+          return obj[key]
         }
-        return target.apply(
-            that,
-            concatty(args, arguments)
-        );
-
-    };
-
-    var boundLength = max(0, target.length - args.length);
-    var boundArgs = [];
-    for (var i = 0; i < boundLength; i++) {
-        boundArgs[i] = '$' + i;
+      } else {
+        obj = obj[key]
+      }
+    } else {
+      return undefined
     }
-
-    bound = Function('binder', 'return function (' + joiny(boundArgs, ',') + '){ return binder.apply(this,arguments); }')(binder);
-
-    if (target.prototype) {
-        var Empty = function Empty() {};
-        Empty.prototype = target.prototype;
-        bound.prototype = new Empty();
-        Empty.prototype = null;
-    }
-
-    return bound;
-};
-
-
-/***/ }),
-
-/***/ 8334:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var implementation = __nccwpck_require__(9320);
-
-module.exports = Function.prototype.bind || implementation;
-
-
-/***/ }),
-
-/***/ 4538:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var undefined;
-
-var $Object = __nccwpck_require__(8308);
-
-var $Error = __nccwpck_require__(8015);
-var $EvalError = __nccwpck_require__(1933);
-var $RangeError = __nccwpck_require__(4415);
-var $ReferenceError = __nccwpck_require__(9246);
-var $SyntaxError = __nccwpck_require__(5474);
-var $TypeError = __nccwpck_require__(6361);
-var $URIError = __nccwpck_require__(5065);
-
-var abs = __nccwpck_require__(9775);
-var floor = __nccwpck_require__(924);
-var max = __nccwpck_require__(2419);
-var min = __nccwpck_require__(3373);
-var pow = __nccwpck_require__(8029);
-var round = __nccwpck_require__(9396);
-var sign = __nccwpck_require__(9091);
-
-var $Function = Function;
-
-// eslint-disable-next-line consistent-return
-var getEvalledConstructor = function (expressionSyntax) {
-	try {
-		return $Function('"use strict"; return (' + expressionSyntax + ').constructor;')();
-	} catch (e) {}
-};
-
-var $gOPD = __nccwpck_require__(8501);
-var $defineProperty = __nccwpck_require__(6123);
-
-var throwTypeError = function () {
-	throw new $TypeError();
-};
-var ThrowTypeError = $gOPD
-	? (function () {
-		try {
-			// eslint-disable-next-line no-unused-expressions, no-caller, no-restricted-properties
-			arguments.callee; // IE 8 does not throw here
-			return throwTypeError;
-		} catch (calleeThrows) {
-			try {
-				// IE 8 throws on Object.getOwnPropertyDescriptor(arguments, '')
-				return $gOPD(arguments, 'callee').get;
-			} catch (gOPDthrows) {
-				return throwTypeError;
-			}
-		}
-	}())
-	: throwTypeError;
-
-var hasSymbols = __nccwpck_require__(587)();
-
-var getProto = __nccwpck_require__(3592);
-var $ObjectGPO = __nccwpck_require__(5045);
-var $ReflectGPO = __nccwpck_require__(8859);
-
-var $apply = __nccwpck_require__(4177);
-var $call = __nccwpck_require__(2808);
-
-var needsEval = {};
-
-var TypedArray = typeof Uint8Array === 'undefined' || !getProto ? undefined : getProto(Uint8Array);
-
-var INTRINSICS = {
-	__proto__: null,
-	'%AggregateError%': typeof AggregateError === 'undefined' ? undefined : AggregateError,
-	'%Array%': Array,
-	'%ArrayBuffer%': typeof ArrayBuffer === 'undefined' ? undefined : ArrayBuffer,
-	'%ArrayIteratorPrototype%': hasSymbols && getProto ? getProto([][Symbol.iterator]()) : undefined,
-	'%AsyncFromSyncIteratorPrototype%': undefined,
-	'%AsyncFunction%': needsEval,
-	'%AsyncGenerator%': needsEval,
-	'%AsyncGeneratorFunction%': needsEval,
-	'%AsyncIteratorPrototype%': needsEval,
-	'%Atomics%': typeof Atomics === 'undefined' ? undefined : Atomics,
-	'%BigInt%': typeof BigInt === 'undefined' ? undefined : BigInt,
-	'%BigInt64Array%': typeof BigInt64Array === 'undefined' ? undefined : BigInt64Array,
-	'%BigUint64Array%': typeof BigUint64Array === 'undefined' ? undefined : BigUint64Array,
-	'%Boolean%': Boolean,
-	'%DataView%': typeof DataView === 'undefined' ? undefined : DataView,
-	'%Date%': Date,
-	'%decodeURI%': decodeURI,
-	'%decodeURIComponent%': decodeURIComponent,
-	'%encodeURI%': encodeURI,
-	'%encodeURIComponent%': encodeURIComponent,
-	'%Error%': $Error,
-	'%eval%': eval, // eslint-disable-line no-eval
-	'%EvalError%': $EvalError,
-	'%Float16Array%': typeof Float16Array === 'undefined' ? undefined : Float16Array,
-	'%Float32Array%': typeof Float32Array === 'undefined' ? undefined : Float32Array,
-	'%Float64Array%': typeof Float64Array === 'undefined' ? undefined : Float64Array,
-	'%FinalizationRegistry%': typeof FinalizationRegistry === 'undefined' ? undefined : FinalizationRegistry,
-	'%Function%': $Function,
-	'%GeneratorFunction%': needsEval,
-	'%Int8Array%': typeof Int8Array === 'undefined' ? undefined : Int8Array,
-	'%Int16Array%': typeof Int16Array === 'undefined' ? undefined : Int16Array,
-	'%Int32Array%': typeof Int32Array === 'undefined' ? undefined : Int32Array,
-	'%isFinite%': isFinite,
-	'%isNaN%': isNaN,
-	'%IteratorPrototype%': hasSymbols && getProto ? getProto(getProto([][Symbol.iterator]())) : undefined,
-	'%JSON%': typeof JSON === 'object' ? JSON : undefined,
-	'%Map%': typeof Map === 'undefined' ? undefined : Map,
-	'%MapIteratorPrototype%': typeof Map === 'undefined' || !hasSymbols || !getProto ? undefined : getProto(new Map()[Symbol.iterator]()),
-	'%Math%': Math,
-	'%Number%': Number,
-	'%Object%': $Object,
-	'%Object.getOwnPropertyDescriptor%': $gOPD,
-	'%parseFloat%': parseFloat,
-	'%parseInt%': parseInt,
-	'%Promise%': typeof Promise === 'undefined' ? undefined : Promise,
-	'%Proxy%': typeof Proxy === 'undefined' ? undefined : Proxy,
-	'%RangeError%': $RangeError,
-	'%ReferenceError%': $ReferenceError,
-	'%Reflect%': typeof Reflect === 'undefined' ? undefined : Reflect,
-	'%RegExp%': RegExp,
-	'%Set%': typeof Set === 'undefined' ? undefined : Set,
-	'%SetIteratorPrototype%': typeof Set === 'undefined' || !hasSymbols || !getProto ? undefined : getProto(new Set()[Symbol.iterator]()),
-	'%SharedArrayBuffer%': typeof SharedArrayBuffer === 'undefined' ? undefined : SharedArrayBuffer,
-	'%String%': String,
-	'%StringIteratorPrototype%': hasSymbols && getProto ? getProto(''[Symbol.iterator]()) : undefined,
-	'%Symbol%': hasSymbols ? Symbol : undefined,
-	'%SyntaxError%': $SyntaxError,
-	'%ThrowTypeError%': ThrowTypeError,
-	'%TypedArray%': TypedArray,
-	'%TypeError%': $TypeError,
-	'%Uint8Array%': typeof Uint8Array === 'undefined' ? undefined : Uint8Array,
-	'%Uint8ClampedArray%': typeof Uint8ClampedArray === 'undefined' ? undefined : Uint8ClampedArray,
-	'%Uint16Array%': typeof Uint16Array === 'undefined' ? undefined : Uint16Array,
-	'%Uint32Array%': typeof Uint32Array === 'undefined' ? undefined : Uint32Array,
-	'%URIError%': $URIError,
-	'%WeakMap%': typeof WeakMap === 'undefined' ? undefined : WeakMap,
-	'%WeakRef%': typeof WeakRef === 'undefined' ? undefined : WeakRef,
-	'%WeakSet%': typeof WeakSet === 'undefined' ? undefined : WeakSet,
-
-	'%Function.prototype.call%': $call,
-	'%Function.prototype.apply%': $apply,
-	'%Object.defineProperty%': $defineProperty,
-	'%Object.getPrototypeOf%': $ObjectGPO,
-	'%Math.abs%': abs,
-	'%Math.floor%': floor,
-	'%Math.max%': max,
-	'%Math.min%': min,
-	'%Math.pow%': pow,
-	'%Math.round%': round,
-	'%Math.sign%': sign,
-	'%Reflect.getPrototypeOf%': $ReflectGPO
-};
-
-if (getProto) {
-	try {
-		null.error; // eslint-disable-line no-unused-expressions
-	} catch (e) {
-		// https://github.com/tc39/proposal-shadowrealm/pull/384#issuecomment-1364264229
-		var errorProto = getProto(getProto(e));
-		INTRINSICS['%Error.prototype%'] = errorProto;
-	}
+  }
+  if (remove && Array.isArray(obj)) {
+    obj = obj.filter(function (n) {
+      return n !== undefined
+    })
+  }
+  return obj
+}
+/**
+ *
+ * Delete value from an object using dot notation.
+ *
+ * @param {String} path
+ * @param {Object} obj
+ * @return {any} The removed value
+ */
+DotObject.prototype.delete = function (path, obj) {
+  return this.remove(path, obj, true)
 }
 
-var doEval = function doEval(name) {
-	var value;
-	if (name === '%AsyncFunction%') {
-		value = getEvalledConstructor('async function () {}');
-	} else if (name === '%GeneratorFunction%') {
-		value = getEvalledConstructor('function* () {}');
-	} else if (name === '%AsyncGeneratorFunction%') {
-		value = getEvalledConstructor('async function* () {}');
-	} else if (name === '%AsyncGenerator%') {
-		var fn = doEval('%AsyncGeneratorFunction%');
-		if (fn) {
-			value = fn.prototype;
-		}
-	} else if (name === '%AsyncIteratorPrototype%') {
-		var gen = doEval('%AsyncGenerator%');
-		if (gen && getProto) {
-			value = getProto(gen.prototype);
-		}
-	}
+/**
+ *
+ * Remove value from an object using dot notation.
+ *
+ * Will remove multiple items if path is an array.
+ * In this case array indexes will be retained until all
+ * removals have been processed.
+ *
+ * Use dot.delete() to automatically  re-index arrays.
+ *
+ * @param {String|Array<String>} path
+ * @param {Object} obj
+ * @param {Boolean} reindexArray
+ * @return {any} The removed value
+ */
+DotObject.prototype.remove = function (path, obj, reindexArray) {
+  var i
 
-	INTRINSICS[name] = value;
-
-	return value;
-};
-
-var LEGACY_ALIASES = {
-	__proto__: null,
-	'%ArrayBufferPrototype%': ['ArrayBuffer', 'prototype'],
-	'%ArrayPrototype%': ['Array', 'prototype'],
-	'%ArrayProto_entries%': ['Array', 'prototype', 'entries'],
-	'%ArrayProto_forEach%': ['Array', 'prototype', 'forEach'],
-	'%ArrayProto_keys%': ['Array', 'prototype', 'keys'],
-	'%ArrayProto_values%': ['Array', 'prototype', 'values'],
-	'%AsyncFunctionPrototype%': ['AsyncFunction', 'prototype'],
-	'%AsyncGenerator%': ['AsyncGeneratorFunction', 'prototype'],
-	'%AsyncGeneratorPrototype%': ['AsyncGeneratorFunction', 'prototype', 'prototype'],
-	'%BooleanPrototype%': ['Boolean', 'prototype'],
-	'%DataViewPrototype%': ['DataView', 'prototype'],
-	'%DatePrototype%': ['Date', 'prototype'],
-	'%ErrorPrototype%': ['Error', 'prototype'],
-	'%EvalErrorPrototype%': ['EvalError', 'prototype'],
-	'%Float32ArrayPrototype%': ['Float32Array', 'prototype'],
-	'%Float64ArrayPrototype%': ['Float64Array', 'prototype'],
-	'%FunctionPrototype%': ['Function', 'prototype'],
-	'%Generator%': ['GeneratorFunction', 'prototype'],
-	'%GeneratorPrototype%': ['GeneratorFunction', 'prototype', 'prototype'],
-	'%Int8ArrayPrototype%': ['Int8Array', 'prototype'],
-	'%Int16ArrayPrototype%': ['Int16Array', 'prototype'],
-	'%Int32ArrayPrototype%': ['Int32Array', 'prototype'],
-	'%JSONParse%': ['JSON', 'parse'],
-	'%JSONStringify%': ['JSON', 'stringify'],
-	'%MapPrototype%': ['Map', 'prototype'],
-	'%NumberPrototype%': ['Number', 'prototype'],
-	'%ObjectPrototype%': ['Object', 'prototype'],
-	'%ObjProto_toString%': ['Object', 'prototype', 'toString'],
-	'%ObjProto_valueOf%': ['Object', 'prototype', 'valueOf'],
-	'%PromisePrototype%': ['Promise', 'prototype'],
-	'%PromiseProto_then%': ['Promise', 'prototype', 'then'],
-	'%Promise_all%': ['Promise', 'all'],
-	'%Promise_reject%': ['Promise', 'reject'],
-	'%Promise_resolve%': ['Promise', 'resolve'],
-	'%RangeErrorPrototype%': ['RangeError', 'prototype'],
-	'%ReferenceErrorPrototype%': ['ReferenceError', 'prototype'],
-	'%RegExpPrototype%': ['RegExp', 'prototype'],
-	'%SetPrototype%': ['Set', 'prototype'],
-	'%SharedArrayBufferPrototype%': ['SharedArrayBuffer', 'prototype'],
-	'%StringPrototype%': ['String', 'prototype'],
-	'%SymbolPrototype%': ['Symbol', 'prototype'],
-	'%SyntaxErrorPrototype%': ['SyntaxError', 'prototype'],
-	'%TypedArrayPrototype%': ['TypedArray', 'prototype'],
-	'%TypeErrorPrototype%': ['TypeError', 'prototype'],
-	'%Uint8ArrayPrototype%': ['Uint8Array', 'prototype'],
-	'%Uint8ClampedArrayPrototype%': ['Uint8ClampedArray', 'prototype'],
-	'%Uint16ArrayPrototype%': ['Uint16Array', 'prototype'],
-	'%Uint32ArrayPrototype%': ['Uint32Array', 'prototype'],
-	'%URIErrorPrototype%': ['URIError', 'prototype'],
-	'%WeakMapPrototype%': ['WeakMap', 'prototype'],
-	'%WeakSetPrototype%': ['WeakSet', 'prototype']
-};
-
-var bind = __nccwpck_require__(8334);
-var hasOwn = __nccwpck_require__(2157);
-var $concat = bind.call($call, Array.prototype.concat);
-var $spliceApply = bind.call($apply, Array.prototype.splice);
-var $replace = bind.call($call, String.prototype.replace);
-var $strSlice = bind.call($call, String.prototype.slice);
-var $exec = bind.call($call, RegExp.prototype.exec);
-
-/* adapted from https://github.com/lodash/lodash/blob/4.17.15/dist/lodash.js#L6735-L6744 */
-var rePropName = /[^%.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|%$))/g;
-var reEscapeChar = /\\(\\)?/g; /** Used to match backslashes in property paths. */
-var stringToPath = function stringToPath(string) {
-	var first = $strSlice(string, 0, 1);
-	var last = $strSlice(string, -1);
-	if (first === '%' && last !== '%') {
-		throw new $SyntaxError('invalid intrinsic syntax, expected closing `%`');
-	} else if (last === '%' && first !== '%') {
-		throw new $SyntaxError('invalid intrinsic syntax, expected opening `%`');
-	}
-	var result = [];
-	$replace(string, rePropName, function (match, number, quote, subString) {
-		result[result.length] = quote ? $replace(subString, reEscapeChar, '$1') : number || match;
-	});
-	return result;
-};
-/* end adaptation */
-
-var getBaseIntrinsic = function getBaseIntrinsic(name, allowMissing) {
-	var intrinsicName = name;
-	var alias;
-	if (hasOwn(LEGACY_ALIASES, intrinsicName)) {
-		alias = LEGACY_ALIASES[intrinsicName];
-		intrinsicName = '%' + alias[0] + '%';
-	}
-
-	if (hasOwn(INTRINSICS, intrinsicName)) {
-		var value = INTRINSICS[intrinsicName];
-		if (value === needsEval) {
-			value = doEval(intrinsicName);
-		}
-		if (typeof value === 'undefined' && !allowMissing) {
-			throw new $TypeError('intrinsic ' + name + ' exists, but is not available. Please file an issue!');
-		}
-
-		return {
-			alias: alias,
-			name: intrinsicName,
-			value: value
-		};
-	}
-
-	throw new $SyntaxError('intrinsic ' + name + ' does not exist!');
-};
-
-module.exports = function GetIntrinsic(name, allowMissing) {
-	if (typeof name !== 'string' || name.length === 0) {
-		throw new $TypeError('intrinsic name must be a non-empty string');
-	}
-	if (arguments.length > 1 && typeof allowMissing !== 'boolean') {
-		throw new $TypeError('"allowMissing" argument must be a boolean');
-	}
-
-	if ($exec(/^%?[^%]*%?$/, name) === null) {
-		throw new $SyntaxError('`%` may not be present anywhere but at the beginning and end of the intrinsic name');
-	}
-	var parts = stringToPath(name);
-	var intrinsicBaseName = parts.length > 0 ? parts[0] : '';
-
-	var intrinsic = getBaseIntrinsic('%' + intrinsicBaseName + '%', allowMissing);
-	var intrinsicRealName = intrinsic.name;
-	var value = intrinsic.value;
-	var skipFurtherCaching = false;
-
-	var alias = intrinsic.alias;
-	if (alias) {
-		intrinsicBaseName = alias[0];
-		$spliceApply(parts, $concat([0, 1], alias));
-	}
-
-	for (var i = 1, isOwn = true; i < parts.length; i += 1) {
-		var part = parts[i];
-		var first = $strSlice(part, 0, 1);
-		var last = $strSlice(part, -1);
-		if (
-			(
-				(first === '"' || first === "'" || first === '`')
-				|| (last === '"' || last === "'" || last === '`')
-			)
-			&& first !== last
-		) {
-			throw new $SyntaxError('property names with quotes must have matching quotes');
-		}
-		if (part === 'constructor' || !isOwn) {
-			skipFurtherCaching = true;
-		}
-
-		intrinsicBaseName += '.' + part;
-		intrinsicRealName = '%' + intrinsicBaseName + '%';
-
-		if (hasOwn(INTRINSICS, intrinsicRealName)) {
-			value = INTRINSICS[intrinsicRealName];
-		} else if (value != null) {
-			if (!(part in value)) {
-				if (!allowMissing) {
-					throw new $TypeError('base intrinsic for ' + name + ' exists, but the property is not available.');
-				}
-				return void undefined;
-			}
-			if ($gOPD && (i + 1) >= parts.length) {
-				var desc = $gOPD(value, part);
-				isOwn = !!desc;
-
-				// By convention, when a data property is converted to an accessor
-				// property to emulate a data property that does not suffer from
-				// the override mistake, that accessor's getter is marked with
-				// an `originalValue` property. Here, when we detect this, we
-				// uphold the illusion by pretending to see that original data
-				// property, i.e., returning the value rather than the getter
-				// itself.
-				if (isOwn && 'get' in desc && !('originalValue' in desc.get)) {
-					value = desc.get;
-				} else {
-					value = value[part];
-				}
-			} else {
-				isOwn = hasOwn(value, part);
-				value = value[part];
-			}
-
-			if (isOwn && !skipFurtherCaching) {
-				INTRINSICS[intrinsicRealName] = value;
-			}
-		}
-	}
-	return value;
-};
-
-
-/***/ }),
-
-/***/ 5045:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var $Object = __nccwpck_require__(8308);
-
-/** @type {import('./Object.getPrototypeOf')} */
-module.exports = $Object.getPrototypeOf || null;
-
-
-/***/ }),
-
-/***/ 8859:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./Reflect.getPrototypeOf')} */
-module.exports = (typeof Reflect !== 'undefined' && Reflect.getPrototypeOf) || null;
-
-
-/***/ }),
-
-/***/ 3592:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var reflectGetProto = __nccwpck_require__(8859);
-var originalGetProto = __nccwpck_require__(5045);
-
-var getDunderProto = __nccwpck_require__(2693);
-
-/** @type {import('.')} */
-module.exports = reflectGetProto
-	? function getProto(O) {
-		// @ts-expect-error TS can't narrow inside a closure, for some reason
-		return reflectGetProto(O);
-	}
-	: originalGetProto
-		? function getProto(O) {
-			if (!O || (typeof O !== 'object' && typeof O !== 'function')) {
-				throw new TypeError('getProto: not an object');
-			}
-			// @ts-expect-error TS can't narrow inside a closure, for some reason
-			return originalGetProto(O);
-		}
-		: getDunderProto
-			? function getProto(O) {
-				// @ts-expect-error TS can't narrow inside a closure, for some reason
-				return getDunderProto(O);
-			}
-			: null;
-
-
-/***/ }),
-
-/***/ 7087:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./gOPD')} */
-module.exports = Object.getOwnPropertyDescriptor;
-
-
-/***/ }),
-
-/***/ 8501:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-/** @type {import('.')} */
-var $gOPD = __nccwpck_require__(7087);
-
-if ($gOPD) {
-	try {
-		$gOPD([], 'length');
-	} catch (e) {
-		// IE 8 has a broken gOPD
-		$gOPD = null;
-	}
+  this.cleanup = []
+  if (Array.isArray(path)) {
+    for (i = 0; i < path.length; i++) {
+      this.pick(path[i], obj, true, reindexArray)
+    }
+    if (!reindexArray) {
+      this._cleanup(obj)
+    }
+    return obj
+  } else {
+    return this.pick(path, obj, true, reindexArray)
+  }
 }
 
-module.exports = $gOPD;
-
-
-/***/ }),
-
-/***/ 587:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var origSymbol = typeof Symbol !== 'undefined' && Symbol;
-var hasSymbolSham = __nccwpck_require__(7747);
-
-/** @type {import('.')} */
-module.exports = function hasNativeSymbols() {
-	if (typeof origSymbol !== 'function') { return false; }
-	if (typeof Symbol !== 'function') { return false; }
-	if (typeof origSymbol('foo') !== 'symbol') { return false; }
-	if (typeof Symbol('bar') !== 'symbol') { return false; }
-
-	return hasSymbolSham();
-};
-
-
-/***/ }),
-
-/***/ 7747:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./shams')} */
-/* eslint complexity: [2, 18], max-statements: [2, 33] */
-module.exports = function hasSymbols() {
-	if (typeof Symbol !== 'function' || typeof Object.getOwnPropertySymbols !== 'function') { return false; }
-	if (typeof Symbol.iterator === 'symbol') { return true; }
-
-	/** @type {{ [k in symbol]?: unknown }} */
-	var obj = {};
-	var sym = Symbol('test');
-	var symObj = Object(sym);
-	if (typeof sym === 'string') { return false; }
-
-	if (Object.prototype.toString.call(sym) !== '[object Symbol]') { return false; }
-	if (Object.prototype.toString.call(symObj) !== '[object Symbol]') { return false; }
-
-	// temp disabled per https://github.com/ljharb/object.assign/issues/17
-	// if (sym instanceof Symbol) { return false; }
-	// temp disabled per https://github.com/WebReflection/get-own-property-symbols/issues/4
-	// if (!(symObj instanceof Symbol)) { return false; }
-
-	// if (typeof Symbol.prototype.toString !== 'function') { return false; }
-	// if (String(sym) !== Symbol.prototype.toString.call(sym)) { return false; }
-
-	var symVal = 42;
-	obj[sym] = symVal;
-	for (var _ in obj) { return false; } // eslint-disable-line no-restricted-syntax, no-unreachable-loop
-	if (typeof Object.keys === 'function' && Object.keys(obj).length !== 0) { return false; }
-
-	if (typeof Object.getOwnPropertyNames === 'function' && Object.getOwnPropertyNames(obj).length !== 0) { return false; }
-
-	var syms = Object.getOwnPropertySymbols(obj);
-	if (syms.length !== 1 || syms[0] !== sym) { return false; }
-
-	if (!Object.prototype.propertyIsEnumerable.call(obj, sym)) { return false; }
-
-	if (typeof Object.getOwnPropertyDescriptor === 'function') {
-		// eslint-disable-next-line no-extra-parens
-		var descriptor = /** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(obj, sym));
-		if (descriptor.value !== symVal || descriptor.enumerable !== true) { return false; }
-	}
-
-	return true;
-};
-
-
-/***/ }),
-
-/***/ 9038:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var hasSymbols = __nccwpck_require__(7747);
-
-/** @type {import('.')} */
-module.exports = function hasToStringTagShams() {
-	return hasSymbols() && !!Symbol.toStringTag;
-};
-
-
-/***/ }),
-
-/***/ 2157:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var call = Function.prototype.call;
-var $hasOwn = Object.prototype.hasOwnProperty;
-var bind = __nccwpck_require__(8334);
-
-/** @type {import('.')} */
-module.exports = bind.call(call, $hasOwn);
-
-
-/***/ }),
-
-/***/ 9775:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./abs')} */
-module.exports = Math.abs;
-
-
-/***/ }),
-
-/***/ 924:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./floor')} */
-module.exports = Math.floor;
-
-
-/***/ }),
-
-/***/ 7661:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./isNaN')} */
-module.exports = Number.isNaN || function isNaN(a) {
-	return a !== a;
-};
-
-
-/***/ }),
-
-/***/ 2419:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./max')} */
-module.exports = Math.max;
-
-
-/***/ }),
-
-/***/ 3373:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./min')} */
-module.exports = Math.min;
-
-
-/***/ }),
-
-/***/ 8029:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./pow')} */
-module.exports = Math.pow;
-
-
-/***/ }),
-
-/***/ 9396:
-/***/ ((module) => {
-
-"use strict";
-
-
-/** @type {import('./round')} */
-module.exports = Math.round;
-
-
-/***/ }),
-
-/***/ 9091:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-"use strict";
-
-
-var $isNaN = __nccwpck_require__(7661);
-
-/** @type {import('./sign')} */
-module.exports = function sign(number) {
-	if ($isNaN(number) || number === 0) {
-		return number;
-	}
-	return number < 0 ? -1 : +1;
-};
+DotObject.prototype._cleanup = function (obj) {
+  var ret
+  var i
+  var keys
+  var root
+  if (this.cleanup.length) {
+    for (i = 0; i < this.cleanup.length; i++) {
+      keys = this.cleanup[i].split('.')
+      root = keys.splice(0, -1).join('.')
+      ret = root ? this.pick(root, obj) : obj
+      ret = ret[keys[0]].filter(function (v) {
+        return v !== undefined
+      })
+      this.set(this.cleanup[i], ret, obj)
+    }
+    this.cleanup = []
+  }
+}
+
+/**
+ * Alias method  for `dot.remove`
+ *
+ * Note: this is not an alias for dot.delete()
+ *
+ * @param {String|Array<String>} path
+ * @param {Object} obj
+ * @param {Boolean} reindexArray
+ * @return {any} The removed value
+ */
+DotObject.prototype.del = DotObject.prototype.remove
+
+/**
+ *
+ * Move a property from one place to the other.
+ *
+ * If the source path does not exist (undefined)
+ * the target property will not be set.
+ *
+ * @param {String} source
+ * @param {String} target
+ * @param {Object} obj
+ * @param {Function|Array} mods
+ * @param {Boolean} merge
+ */
+DotObject.prototype.move = function (source, target, obj, mods, merge) {
+  if (typeof mods === 'function' || Array.isArray(mods)) {
+    this.set(target, _process(this.pick(source, obj, true), mods), obj, merge)
+  } else {
+    merge = mods
+    this.set(target, this.pick(source, obj, true), obj, merge)
+  }
+
+  return obj
+}
+
+/**
+ *
+ * Transfer a property from one object to another object.
+ *
+ * If the source path does not exist (undefined)
+ * the property on the other object will not be set.
+ *
+ * @param {String} source
+ * @param {String} target
+ * @param {Object} obj1
+ * @param {Object} obj2
+ * @param {Function|Array} mods
+ * @param {Boolean} merge
+ */
+DotObject.prototype.transfer = function (
+  source,
+  target,
+  obj1,
+  obj2,
+  mods,
+  merge
+) {
+  if (typeof mods === 'function' || Array.isArray(mods)) {
+    this.set(
+      target,
+      _process(this.pick(source, obj1, true), mods),
+      obj2,
+      merge
+    )
+  } else {
+    merge = mods
+    this.set(target, this.pick(source, obj1, true), obj2, merge)
+  }
+
+  return obj2
+}
+
+/**
+ *
+ * Copy a property from one object to another object.
+ *
+ * If the source path does not exist (undefined)
+ * the property on the other object will not be set.
+ *
+ * @param {String} source
+ * @param {String} target
+ * @param {Object} obj1
+ * @param {Object} obj2
+ * @param {Function|Array} mods
+ * @param {Boolean} merge
+ */
+DotObject.prototype.copy = function (source, target, obj1, obj2, mods, merge) {
+  if (typeof mods === 'function' || Array.isArray(mods)) {
+    this.set(
+      target,
+      _process(
+        // clone what is picked
+        JSON.parse(JSON.stringify(this.pick(source, obj1, false))),
+        mods
+      ),
+      obj2,
+      merge
+    )
+  } else {
+    merge = mods
+    this.set(target, this.pick(source, obj1, false), obj2, merge)
+  }
+
+  return obj2
+}
+
+/**
+ *
+ * Set a property on an object using dot notation.
+ *
+ * @param {String} path
+ * @param {any} val
+ * @param {Object} obj
+ * @param {Boolean} merge
+ */
+DotObject.prototype.set = function (path, val, obj, merge) {
+  var i
+  var k
+  var keys
+  var key
+
+  // Do not operate if the value is undefined.
+  if (typeof val === 'undefined') {
+    return obj
+  }
+  keys = parsePath(path, this.separator)
+
+  for (i = 0; i < keys.length; i++) {
+    key = keys[i]
+    if (i === keys.length - 1) {
+      if (merge && isObject(val) && isObject(obj[key])) {
+        for (k in val) {
+          if (hasOwnProperty.call(val, k)) {
+            obj[key][k] = val[k]
+          }
+        }
+      } else if (merge && Array.isArray(obj[key]) && Array.isArray(val)) {
+        for (var j = 0; j < val.length; j++) {
+          obj[keys[i]].push(val[j])
+        }
+      } else {
+        obj[key] = val
+      }
+    } else if (
+      // force the value to be an object
+      !hasOwnProperty.call(obj, key) ||
+      (!isObject(obj[key]) && !Array.isArray(obj[key]))
+    ) {
+      // initialize as array if next key is numeric
+      if (/^\d+$/.test(keys[i + 1])) {
+        obj[key] = []
+      } else {
+        obj[key] = {}
+      }
+    }
+    obj = obj[key]
+  }
+  return obj
+}
+
+/**
+ *
+ * Transform an object
+ *
+ * Usage:
+ *
+ *   var obj = {
+ *     "id": 1,
+ *    "some": {
+ *      "thing": "else"
+ *    }
+ *   }
+ *
+ *   var transform = {
+ *     "id": "nr",
+ *    "some.thing": "name"
+ *   }
+ *
+ *   var tgt = dot.transform(transform, obj)
+ *
+ * @param {Object} recipe Transform recipe
+ * @param {Object} obj Object to be transformed
+ * @param {Array} mods modifiers for the target
+ */
+DotObject.prototype.transform = function (recipe, obj, tgt) {
+  obj = obj || {}
+  tgt = tgt || {}
+  Object.keys(recipe).forEach(
+    function (key) {
+      this.set(recipe[key], this.pick(key, obj), tgt)
+    }.bind(this)
+  )
+  return tgt
+}
+
+/**
+ *
+ * Convert object to dotted-key/value pair
+ *
+ * Usage:
+ *
+ *   var tgt = dot.dot(obj)
+ *
+ *   or
+ *
+ *   var tgt = {}
+ *   dot.dot(obj, tgt)
+ *
+ * @param {Object} obj source object
+ * @param {Object} tgt target object
+ * @param {Array} path path array (internal)
+ */
+DotObject.prototype.dot = function (obj, tgt, path) {
+  tgt = tgt || {}
+  path = path || []
+  var isArray = Array.isArray(obj)
+
+  Object.keys(obj).forEach(
+    function (key) {
+      var index = isArray && this.useBrackets ? '[' + key + ']' : key
+      if (
+        isArrayOrObject(obj[key]) &&
+        ((isObject(obj[key]) && !isEmptyObject(obj[key])) ||
+          (Array.isArray(obj[key]) && !this.keepArray && obj[key].length !== 0))
+      ) {
+        if (isArray && this.useBrackets) {
+          var previousKey = path[path.length - 1] || ''
+          return this.dot(
+            obj[key],
+            tgt,
+            path.slice(0, -1).concat(previousKey + index)
+          )
+        } else {
+          return this.dot(obj[key], tgt, path.concat(index))
+        }
+      } else {
+        if (isArray && this.useBrackets) {
+          tgt[path.join(this.separator).concat('[' + key + ']')] = obj[key]
+        } else {
+          tgt[path.concat(index).join(this.separator)] = obj[key]
+        }
+      }
+    }.bind(this)
+  )
+  return tgt
+}
+
+DotObject.pick = wrap('pick')
+DotObject.move = wrap('move')
+DotObject.transfer = wrap('transfer')
+DotObject.transform = wrap('transform')
+DotObject.copy = wrap('copy')
+DotObject.object = wrap('object')
+DotObject.str = wrap('str')
+DotObject.set = wrap('set')
+DotObject.delete = wrap('delete')
+DotObject.del = DotObject.remove = wrap('remove')
+DotObject.dot = wrap('dot');
+['override', 'overwrite'].forEach(function (prop) {
+  Object.defineProperty(DotObject, prop, {
+    get: function () {
+      return dotDefault.override
+    },
+    set: function (val) {
+      dotDefault.override = !!val
+    }
+  })
+});
+['useArray', 'keepArray', 'useBrackets'].forEach(function (prop) {
+  Object.defineProperty(DotObject, prop, {
+    get: function () {
+      return dotDefault[prop]
+    },
+    set: function (val) {
+      dotDefault[prop] = val
+    }
+  })
+})
+
+DotObject._process = _process
+
+module.exports = DotObject
 
 
 /***/ }),
@@ -63741,8 +64247,6 @@ const Range = __nccwpck_require__(9828)
 /***/ 9828:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
-const SPACE_CHARACTERS = /\s+/g
-
 // hoisted class for cyclic dependency
 class Range {
   constructor (range, options) {
@@ -63763,7 +64267,7 @@ class Range {
       // just put it in the set and return
       this.raw = range.value
       this.set = [[range]]
-      this.formatted = undefined
+      this.format()
       return this
     }
 
@@ -63774,7 +64278,10 @@ class Range {
     // First reduce all whitespace as much as possible so we do not have to rely
     // on potentially slow regexes like \s*. This is then stored and used for
     // future error messages as well.
-    this.raw = range.trim().replace(SPACE_CHARACTERS, ' ')
+    this.raw = range
+      .trim()
+      .split(/\s+/)
+      .join(' ')
 
     // First, split on ||
     this.set = this.raw
@@ -63808,29 +64315,14 @@ class Range {
       }
     }
 
-    this.formatted = undefined
-  }
-
-  get range () {
-    if (this.formatted === undefined) {
-      this.formatted = ''
-      for (let i = 0; i < this.set.length; i++) {
-        if (i > 0) {
-          this.formatted += '||'
-        }
-        const comps = this.set[i]
-        for (let k = 0; k < comps.length; k++) {
-          if (k > 0) {
-            this.formatted += ' '
-          }
-          this.formatted += comps[k].toString().trim()
-        }
-      }
-    }
-    return this.formatted
+    this.format()
   }
 
   format () {
+    this.range = this.set
+      .map((comps) => comps.join(' ').trim())
+      .join('||')
+      .trim()
     return this.range
   }
 
@@ -63955,8 +64447,8 @@ class Range {
 
 module.exports = Range
 
-const LRU = __nccwpck_require__(5339)
-const cache = new LRU()
+const LRU = __nccwpck_require__(1196)
+const cache = new LRU({ max: 1000 })
 
 const parseOptions = __nccwpck_require__(785)
 const Comparator = __nccwpck_require__(1532)
@@ -64227,10 +64719,9 @@ const replaceGTE0 = (comp, options) => {
 // 1.2 - 3.4.5 => >=1.2.0 <=3.4.5
 // 1.2.3 - 3.4 => >=1.2.0 <3.5.0-0 Any 3.4.x will do
 // 1.2 - 3.4 => >=1.2.0 <3.5.0-0
-// TODO build?
 const hyphenReplace = incPr => ($0,
   from, fM, fm, fp, fpr, fb,
-  to, tM, tm, tp, tpr) => {
+  to, tM, tm, tp, tpr, tb) => {
   if (isX(fM)) {
     from = ''
   } else if (isX(fm)) {
@@ -64304,7 +64795,7 @@ const testSet = (set, version, options) => {
 
 const debug = __nccwpck_require__(427)
 const { MAX_LENGTH, MAX_SAFE_INTEGER } = __nccwpck_require__(2293)
-const { safeRe: re, safeSrc: src, t } = __nccwpck_require__(9523)
+const { safeRe: re, t } = __nccwpck_require__(9523)
 
 const parseOptions = __nccwpck_require__(785)
 const { compareIdentifiers } = __nccwpck_require__(2463)
@@ -64314,7 +64805,7 @@ class SemVer {
 
     if (version instanceof SemVer) {
       if (version.loose === !!options.loose &&
-        version.includePrerelease === !!options.includePrerelease) {
+          version.includePrerelease === !!options.includePrerelease) {
         return version
       } else {
         version = version.version
@@ -64462,7 +64953,7 @@ class SemVer {
     do {
       const a = this.build[i]
       const b = other.build[i]
-      debug('build compare', i, a, b)
+      debug('prerelease compare', i, a, b)
       if (a === undefined && b === undefined) {
         return 0
       } else if (b === undefined) {
@@ -64480,20 +64971,6 @@ class SemVer {
   // preminor will bump the version up to the next minor release, and immediately
   // down to pre-release. premajor and prepatch work the same way.
   inc (release, identifier, identifierBase) {
-    if (release.startsWith('pre')) {
-      if (!identifier && identifierBase === false) {
-        throw new Error('invalid increment argument: identifier is empty')
-      }
-      // Avoid an invalid semver results
-      if (identifier) {
-        const r = new RegExp(`^${this.options.loose ? src[t.PRERELEASELOOSE] : src[t.PRERELEASE]}$`)
-        const match = `-${identifier}`.match(r)
-        if (!match || match[1] !== identifier) {
-          throw new Error(`invalid identifier: ${identifier}`)
-        }
-      }
-    }
-
     switch (release) {
       case 'premajor':
         this.prerelease.length = 0
@@ -64523,12 +65000,6 @@ class SemVer {
           this.inc('patch', identifier, identifierBase)
         }
         this.inc('pre', identifier, identifierBase)
-        break
-      case 'release':
-        if (this.prerelease.length === 0) {
-          throw new Error(`version ${this.raw} is not a prerelease`)
-        }
-        this.prerelease.length = 0
         break
 
       case 'major':
@@ -64572,6 +65043,10 @@ class SemVer {
       // 1.0.0 'pre' would become 1.0.0-0 which is the wrong direction.
       case 'pre': {
         const base = Number(identifierBase) ? 1 : 0
+
+        if (!identifier && identifierBase === false) {
+          throw new Error('invalid increment argument: identifier is empty')
+        }
 
         if (this.prerelease.length === 0) {
           this.prerelease = [base]
@@ -64831,13 +65306,20 @@ const diff = (version1, version2) => {
       return 'major'
     }
 
-    // If the main part has no difference
-    if (lowVersion.compareMain(highVersion) === 0) {
-      if (lowVersion.minor && !lowVersion.patch) {
-        return 'minor'
-      }
+    // Otherwise it can be determined by checking the high version
+
+    if (highVersion.patch) {
+      // anything higher than a patch bump would result in the wrong version
       return 'patch'
     }
+
+    if (highVersion.minor) {
+      // anything higher than a minor bump would result in the wrong version
+      return 'minor'
+    }
+
+    // bumping major/minor/patch all have same result
+    return 'major'
   }
 
   // add the `pre` prefix if we are going to a prerelease version
@@ -65260,53 +65742,6 @@ module.exports = {
 
 /***/ }),
 
-/***/ 5339:
-/***/ ((module) => {
-
-class LRUCache {
-  constructor () {
-    this.max = 1000
-    this.map = new Map()
-  }
-
-  get (key) {
-    const value = this.map.get(key)
-    if (value === undefined) {
-      return undefined
-    } else {
-      // Remove the key from the map and add it to the end
-      this.map.delete(key)
-      this.map.set(key, value)
-      return value
-    }
-  }
-
-  delete (key) {
-    return this.map.delete(key)
-  }
-
-  set (key, value) {
-    const deleted = this.delete(key)
-
-    if (!deleted && value !== undefined) {
-      // If cache is full, delete the least recently used item
-      if (this.map.size >= this.max) {
-        const firstKey = this.map.keys().next().value
-        this.delete(firstKey)
-      }
-
-      this.map.set(key, value)
-    }
-
-    return this
-  }
-}
-
-module.exports = LRUCache
-
-
-/***/ }),
-
 /***/ 785:
 /***/ ((module) => {
 
@@ -65344,7 +65779,6 @@ exports = module.exports = {}
 const re = exports.re = []
 const safeRe = exports.safeRe = []
 const src = exports.src = []
-const safeSrc = exports.safeSrc = []
 const t = exports.t = {}
 let R = 0
 
@@ -65377,7 +65811,6 @@ const createToken = (name, value, isGlobal) => {
   debug(name, index, value)
   t[name] = index
   src[index] = value
-  safeSrc[index] = safe
   re[index] = new RegExp(value, isGlobal ? 'g' : undefined)
   safeRe[index] = new RegExp(safe, isGlobal ? 'g' : undefined)
 }
@@ -65551,6 +65984,798 @@ createToken('STAR', '(<|>)?=?\\s*\\*')
 // >=0.0.0 is like a star
 createToken('GTE0', '^\\s*>=\\s*0\\.0\\.0\\s*$')
 createToken('GTE0PRE', '^\\s*>=\\s*0\\.0\\.0-0\\s*$')
+
+
+/***/ }),
+
+/***/ 1196:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+
+// A linked list to keep track of recently-used-ness
+const Yallist = __nccwpck_require__(220)
+
+const MAX = Symbol('max')
+const LENGTH = Symbol('length')
+const LENGTH_CALCULATOR = Symbol('lengthCalculator')
+const ALLOW_STALE = Symbol('allowStale')
+const MAX_AGE = Symbol('maxAge')
+const DISPOSE = Symbol('dispose')
+const NO_DISPOSE_ON_SET = Symbol('noDisposeOnSet')
+const LRU_LIST = Symbol('lruList')
+const CACHE = Symbol('cache')
+const UPDATE_AGE_ON_GET = Symbol('updateAgeOnGet')
+
+const naiveLength = () => 1
+
+// lruList is a yallist where the head is the youngest
+// item, and the tail is the oldest.  the list contains the Hit
+// objects as the entries.
+// Each Hit object has a reference to its Yallist.Node.  This
+// never changes.
+//
+// cache is a Map (or PseudoMap) that matches the keys to
+// the Yallist.Node object.
+class LRUCache {
+  constructor (options) {
+    if (typeof options === 'number')
+      options = { max: options }
+
+    if (!options)
+      options = {}
+
+    if (options.max && (typeof options.max !== 'number' || options.max < 0))
+      throw new TypeError('max must be a non-negative number')
+    // Kind of weird to have a default max of Infinity, but oh well.
+    const max = this[MAX] = options.max || Infinity
+
+    const lc = options.length || naiveLength
+    this[LENGTH_CALCULATOR] = (typeof lc !== 'function') ? naiveLength : lc
+    this[ALLOW_STALE] = options.stale || false
+    if (options.maxAge && typeof options.maxAge !== 'number')
+      throw new TypeError('maxAge must be a number')
+    this[MAX_AGE] = options.maxAge || 0
+    this[DISPOSE] = options.dispose
+    this[NO_DISPOSE_ON_SET] = options.noDisposeOnSet || false
+    this[UPDATE_AGE_ON_GET] = options.updateAgeOnGet || false
+    this.reset()
+  }
+
+  // resize the cache when the max changes.
+  set max (mL) {
+    if (typeof mL !== 'number' || mL < 0)
+      throw new TypeError('max must be a non-negative number')
+
+    this[MAX] = mL || Infinity
+    trim(this)
+  }
+  get max () {
+    return this[MAX]
+  }
+
+  set allowStale (allowStale) {
+    this[ALLOW_STALE] = !!allowStale
+  }
+  get allowStale () {
+    return this[ALLOW_STALE]
+  }
+
+  set maxAge (mA) {
+    if (typeof mA !== 'number')
+      throw new TypeError('maxAge must be a non-negative number')
+
+    this[MAX_AGE] = mA
+    trim(this)
+  }
+  get maxAge () {
+    return this[MAX_AGE]
+  }
+
+  // resize the cache when the lengthCalculator changes.
+  set lengthCalculator (lC) {
+    if (typeof lC !== 'function')
+      lC = naiveLength
+
+    if (lC !== this[LENGTH_CALCULATOR]) {
+      this[LENGTH_CALCULATOR] = lC
+      this[LENGTH] = 0
+      this[LRU_LIST].forEach(hit => {
+        hit.length = this[LENGTH_CALCULATOR](hit.value, hit.key)
+        this[LENGTH] += hit.length
+      })
+    }
+    trim(this)
+  }
+  get lengthCalculator () { return this[LENGTH_CALCULATOR] }
+
+  get length () { return this[LENGTH] }
+  get itemCount () { return this[LRU_LIST].length }
+
+  rforEach (fn, thisp) {
+    thisp = thisp || this
+    for (let walker = this[LRU_LIST].tail; walker !== null;) {
+      const prev = walker.prev
+      forEachStep(this, fn, walker, thisp)
+      walker = prev
+    }
+  }
+
+  forEach (fn, thisp) {
+    thisp = thisp || this
+    for (let walker = this[LRU_LIST].head; walker !== null;) {
+      const next = walker.next
+      forEachStep(this, fn, walker, thisp)
+      walker = next
+    }
+  }
+
+  keys () {
+    return this[LRU_LIST].toArray().map(k => k.key)
+  }
+
+  values () {
+    return this[LRU_LIST].toArray().map(k => k.value)
+  }
+
+  reset () {
+    if (this[DISPOSE] &&
+        this[LRU_LIST] &&
+        this[LRU_LIST].length) {
+      this[LRU_LIST].forEach(hit => this[DISPOSE](hit.key, hit.value))
+    }
+
+    this[CACHE] = new Map() // hash of items by key
+    this[LRU_LIST] = new Yallist() // list of items in order of use recency
+    this[LENGTH] = 0 // length of items in the list
+  }
+
+  dump () {
+    return this[LRU_LIST].map(hit =>
+      isStale(this, hit) ? false : {
+        k: hit.key,
+        v: hit.value,
+        e: hit.now + (hit.maxAge || 0)
+      }).toArray().filter(h => h)
+  }
+
+  dumpLru () {
+    return this[LRU_LIST]
+  }
+
+  set (key, value, maxAge) {
+    maxAge = maxAge || this[MAX_AGE]
+
+    if (maxAge && typeof maxAge !== 'number')
+      throw new TypeError('maxAge must be a number')
+
+    const now = maxAge ? Date.now() : 0
+    const len = this[LENGTH_CALCULATOR](value, key)
+
+    if (this[CACHE].has(key)) {
+      if (len > this[MAX]) {
+        del(this, this[CACHE].get(key))
+        return false
+      }
+
+      const node = this[CACHE].get(key)
+      const item = node.value
+
+      // dispose of the old one before overwriting
+      // split out into 2 ifs for better coverage tracking
+      if (this[DISPOSE]) {
+        if (!this[NO_DISPOSE_ON_SET])
+          this[DISPOSE](key, item.value)
+      }
+
+      item.now = now
+      item.maxAge = maxAge
+      item.value = value
+      this[LENGTH] += len - item.length
+      item.length = len
+      this.get(key)
+      trim(this)
+      return true
+    }
+
+    const hit = new Entry(key, value, len, now, maxAge)
+
+    // oversized objects fall out of cache automatically.
+    if (hit.length > this[MAX]) {
+      if (this[DISPOSE])
+        this[DISPOSE](key, value)
+
+      return false
+    }
+
+    this[LENGTH] += hit.length
+    this[LRU_LIST].unshift(hit)
+    this[CACHE].set(key, this[LRU_LIST].head)
+    trim(this)
+    return true
+  }
+
+  has (key) {
+    if (!this[CACHE].has(key)) return false
+    const hit = this[CACHE].get(key).value
+    return !isStale(this, hit)
+  }
+
+  get (key) {
+    return get(this, key, true)
+  }
+
+  peek (key) {
+    return get(this, key, false)
+  }
+
+  pop () {
+    const node = this[LRU_LIST].tail
+    if (!node)
+      return null
+
+    del(this, node)
+    return node.value
+  }
+
+  del (key) {
+    del(this, this[CACHE].get(key))
+  }
+
+  load (arr) {
+    // reset the cache
+    this.reset()
+
+    const now = Date.now()
+    // A previous serialized cache has the most recent items first
+    for (let l = arr.length - 1; l >= 0; l--) {
+      const hit = arr[l]
+      const expiresAt = hit.e || 0
+      if (expiresAt === 0)
+        // the item was created without expiration in a non aged cache
+        this.set(hit.k, hit.v)
+      else {
+        const maxAge = expiresAt - now
+        // dont add already expired items
+        if (maxAge > 0) {
+          this.set(hit.k, hit.v, maxAge)
+        }
+      }
+    }
+  }
+
+  prune () {
+    this[CACHE].forEach((value, key) => get(this, key, false))
+  }
+}
+
+const get = (self, key, doUse) => {
+  const node = self[CACHE].get(key)
+  if (node) {
+    const hit = node.value
+    if (isStale(self, hit)) {
+      del(self, node)
+      if (!self[ALLOW_STALE])
+        return undefined
+    } else {
+      if (doUse) {
+        if (self[UPDATE_AGE_ON_GET])
+          node.value.now = Date.now()
+        self[LRU_LIST].unshiftNode(node)
+      }
+    }
+    return hit.value
+  }
+}
+
+const isStale = (self, hit) => {
+  if (!hit || (!hit.maxAge && !self[MAX_AGE]))
+    return false
+
+  const diff = Date.now() - hit.now
+  return hit.maxAge ? diff > hit.maxAge
+    : self[MAX_AGE] && (diff > self[MAX_AGE])
+}
+
+const trim = self => {
+  if (self[LENGTH] > self[MAX]) {
+    for (let walker = self[LRU_LIST].tail;
+      self[LENGTH] > self[MAX] && walker !== null;) {
+      // We know that we're about to delete this one, and also
+      // what the next least recently used key will be, so just
+      // go ahead and set it now.
+      const prev = walker.prev
+      del(self, walker)
+      walker = prev
+    }
+  }
+}
+
+const del = (self, node) => {
+  if (node) {
+    const hit = node.value
+    if (self[DISPOSE])
+      self[DISPOSE](hit.key, hit.value)
+
+    self[LENGTH] -= hit.length
+    self[CACHE].delete(hit.key)
+    self[LRU_LIST].removeNode(node)
+  }
+}
+
+class Entry {
+  constructor (key, value, length, now, maxAge) {
+    this.key = key
+    this.value = value
+    this.length = length
+    this.now = now
+    this.maxAge = maxAge || 0
+  }
+}
+
+const forEachStep = (self, fn, node, thisp) => {
+  let hit = node.value
+  if (isStale(self, hit)) {
+    del(self, node)
+    if (!self[ALLOW_STALE])
+      hit = undefined
+  }
+  if (hit)
+    fn.call(thisp, hit.value, hit.key, self)
+}
+
+module.exports = LRUCache
+
+
+/***/ }),
+
+/***/ 5327:
+/***/ ((module) => {
+
+"use strict";
+
+module.exports = function (Yallist) {
+  Yallist.prototype[Symbol.iterator] = function* () {
+    for (let walker = this.head; walker; walker = walker.next) {
+      yield walker.value
+    }
+  }
+}
+
+
+/***/ }),
+
+/***/ 220:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+"use strict";
+
+module.exports = Yallist
+
+Yallist.Node = Node
+Yallist.create = Yallist
+
+function Yallist (list) {
+  var self = this
+  if (!(self instanceof Yallist)) {
+    self = new Yallist()
+  }
+
+  self.tail = null
+  self.head = null
+  self.length = 0
+
+  if (list && typeof list.forEach === 'function') {
+    list.forEach(function (item) {
+      self.push(item)
+    })
+  } else if (arguments.length > 0) {
+    for (var i = 0, l = arguments.length; i < l; i++) {
+      self.push(arguments[i])
+    }
+  }
+
+  return self
+}
+
+Yallist.prototype.removeNode = function (node) {
+  if (node.list !== this) {
+    throw new Error('removing node which does not belong to this list')
+  }
+
+  var next = node.next
+  var prev = node.prev
+
+  if (next) {
+    next.prev = prev
+  }
+
+  if (prev) {
+    prev.next = next
+  }
+
+  if (node === this.head) {
+    this.head = next
+  }
+  if (node === this.tail) {
+    this.tail = prev
+  }
+
+  node.list.length--
+  node.next = null
+  node.prev = null
+  node.list = null
+
+  return next
+}
+
+Yallist.prototype.unshiftNode = function (node) {
+  if (node === this.head) {
+    return
+  }
+
+  if (node.list) {
+    node.list.removeNode(node)
+  }
+
+  var head = this.head
+  node.list = this
+  node.next = head
+  if (head) {
+    head.prev = node
+  }
+
+  this.head = node
+  if (!this.tail) {
+    this.tail = node
+  }
+  this.length++
+}
+
+Yallist.prototype.pushNode = function (node) {
+  if (node === this.tail) {
+    return
+  }
+
+  if (node.list) {
+    node.list.removeNode(node)
+  }
+
+  var tail = this.tail
+  node.list = this
+  node.prev = tail
+  if (tail) {
+    tail.next = node
+  }
+
+  this.tail = node
+  if (!this.head) {
+    this.head = node
+  }
+  this.length++
+}
+
+Yallist.prototype.push = function () {
+  for (var i = 0, l = arguments.length; i < l; i++) {
+    push(this, arguments[i])
+  }
+  return this.length
+}
+
+Yallist.prototype.unshift = function () {
+  for (var i = 0, l = arguments.length; i < l; i++) {
+    unshift(this, arguments[i])
+  }
+  return this.length
+}
+
+Yallist.prototype.pop = function () {
+  if (!this.tail) {
+    return undefined
+  }
+
+  var res = this.tail.value
+  this.tail = this.tail.prev
+  if (this.tail) {
+    this.tail.next = null
+  } else {
+    this.head = null
+  }
+  this.length--
+  return res
+}
+
+Yallist.prototype.shift = function () {
+  if (!this.head) {
+    return undefined
+  }
+
+  var res = this.head.value
+  this.head = this.head.next
+  if (this.head) {
+    this.head.prev = null
+  } else {
+    this.tail = null
+  }
+  this.length--
+  return res
+}
+
+Yallist.prototype.forEach = function (fn, thisp) {
+  thisp = thisp || this
+  for (var walker = this.head, i = 0; walker !== null; i++) {
+    fn.call(thisp, walker.value, i, this)
+    walker = walker.next
+  }
+}
+
+Yallist.prototype.forEachReverse = function (fn, thisp) {
+  thisp = thisp || this
+  for (var walker = this.tail, i = this.length - 1; walker !== null; i--) {
+    fn.call(thisp, walker.value, i, this)
+    walker = walker.prev
+  }
+}
+
+Yallist.prototype.get = function (n) {
+  for (var i = 0, walker = this.head; walker !== null && i < n; i++) {
+    // abort out of the list early if we hit a cycle
+    walker = walker.next
+  }
+  if (i === n && walker !== null) {
+    return walker.value
+  }
+}
+
+Yallist.prototype.getReverse = function (n) {
+  for (var i = 0, walker = this.tail; walker !== null && i < n; i++) {
+    // abort out of the list early if we hit a cycle
+    walker = walker.prev
+  }
+  if (i === n && walker !== null) {
+    return walker.value
+  }
+}
+
+Yallist.prototype.map = function (fn, thisp) {
+  thisp = thisp || this
+  var res = new Yallist()
+  for (var walker = this.head; walker !== null;) {
+    res.push(fn.call(thisp, walker.value, this))
+    walker = walker.next
+  }
+  return res
+}
+
+Yallist.prototype.mapReverse = function (fn, thisp) {
+  thisp = thisp || this
+  var res = new Yallist()
+  for (var walker = this.tail; walker !== null;) {
+    res.push(fn.call(thisp, walker.value, this))
+    walker = walker.prev
+  }
+  return res
+}
+
+Yallist.prototype.reduce = function (fn, initial) {
+  var acc
+  var walker = this.head
+  if (arguments.length > 1) {
+    acc = initial
+  } else if (this.head) {
+    walker = this.head.next
+    acc = this.head.value
+  } else {
+    throw new TypeError('Reduce of empty list with no initial value')
+  }
+
+  for (var i = 0; walker !== null; i++) {
+    acc = fn(acc, walker.value, i)
+    walker = walker.next
+  }
+
+  return acc
+}
+
+Yallist.prototype.reduceReverse = function (fn, initial) {
+  var acc
+  var walker = this.tail
+  if (arguments.length > 1) {
+    acc = initial
+  } else if (this.tail) {
+    walker = this.tail.prev
+    acc = this.tail.value
+  } else {
+    throw new TypeError('Reduce of empty list with no initial value')
+  }
+
+  for (var i = this.length - 1; walker !== null; i--) {
+    acc = fn(acc, walker.value, i)
+    walker = walker.prev
+  }
+
+  return acc
+}
+
+Yallist.prototype.toArray = function () {
+  var arr = new Array(this.length)
+  for (var i = 0, walker = this.head; walker !== null; i++) {
+    arr[i] = walker.value
+    walker = walker.next
+  }
+  return arr
+}
+
+Yallist.prototype.toArrayReverse = function () {
+  var arr = new Array(this.length)
+  for (var i = 0, walker = this.tail; walker !== null; i++) {
+    arr[i] = walker.value
+    walker = walker.prev
+  }
+  return arr
+}
+
+Yallist.prototype.slice = function (from, to) {
+  to = to || this.length
+  if (to < 0) {
+    to += this.length
+  }
+  from = from || 0
+  if (from < 0) {
+    from += this.length
+  }
+  var ret = new Yallist()
+  if (to < from || to < 0) {
+    return ret
+  }
+  if (from < 0) {
+    from = 0
+  }
+  if (to > this.length) {
+    to = this.length
+  }
+  for (var i = 0, walker = this.head; walker !== null && i < from; i++) {
+    walker = walker.next
+  }
+  for (; walker !== null && i < to; i++, walker = walker.next) {
+    ret.push(walker.value)
+  }
+  return ret
+}
+
+Yallist.prototype.sliceReverse = function (from, to) {
+  to = to || this.length
+  if (to < 0) {
+    to += this.length
+  }
+  from = from || 0
+  if (from < 0) {
+    from += this.length
+  }
+  var ret = new Yallist()
+  if (to < from || to < 0) {
+    return ret
+  }
+  if (from < 0) {
+    from = 0
+  }
+  if (to > this.length) {
+    to = this.length
+  }
+  for (var i = this.length, walker = this.tail; walker !== null && i > to; i--) {
+    walker = walker.prev
+  }
+  for (; walker !== null && i > from; i--, walker = walker.prev) {
+    ret.push(walker.value)
+  }
+  return ret
+}
+
+Yallist.prototype.splice = function (start, deleteCount, ...nodes) {
+  if (start > this.length) {
+    start = this.length - 1
+  }
+  if (start < 0) {
+    start = this.length + start;
+  }
+
+  for (var i = 0, walker = this.head; walker !== null && i < start; i++) {
+    walker = walker.next
+  }
+
+  var ret = []
+  for (var i = 0; walker && i < deleteCount; i++) {
+    ret.push(walker.value)
+    walker = this.removeNode(walker)
+  }
+  if (walker === null) {
+    walker = this.tail
+  }
+
+  if (walker !== this.head && walker !== this.tail) {
+    walker = walker.prev
+  }
+
+  for (var i = 0; i < nodes.length; i++) {
+    walker = insert(this, walker, nodes[i])
+  }
+  return ret;
+}
+
+Yallist.prototype.reverse = function () {
+  var head = this.head
+  var tail = this.tail
+  for (var walker = head; walker !== null; walker = walker.prev) {
+    var p = walker.prev
+    walker.prev = walker.next
+    walker.next = p
+  }
+  this.head = tail
+  this.tail = head
+  return this
+}
+
+function insert (self, node, value) {
+  var inserted = node === self.head ?
+    new Node(value, null, node, self) :
+    new Node(value, node, node.next, self)
+
+  if (inserted.next === null) {
+    self.tail = inserted
+  }
+  if (inserted.prev === null) {
+    self.head = inserted
+  }
+
+  self.length++
+
+  return inserted
+}
+
+function push (self, item) {
+  self.tail = new Node(item, self.tail, null, self)
+  if (!self.head) {
+    self.head = self.tail
+  }
+  self.length++
+}
+
+function unshift (self, item) {
+  self.head = new Node(item, null, self.head, self)
+  if (!self.tail) {
+    self.tail = self.head
+  }
+  self.length++
+}
+
+function Node (value, prev, next, list) {
+  if (!(this instanceof Node)) {
+    return new Node(value, prev, next, list)
+  }
+
+  this.list = list
+  this.value = value
+
+  if (prev) {
+    prev.next = this
+    this.prev = prev
+  } else {
+    this.prev = null
+  }
+
+  if (next) {
+    next.prev = this
+    this.next = next
+  } else {
+    this.next = null
+  }
+}
+
+try {
+  // add if support for Symbol.iterator is present
+  __nccwpck_require__(5327)(Yallist)
+} catch (er) {}
 
 
 /***/ }),
@@ -66854,6 +68079,1152 @@ if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
   debug = function() {};
 }
 exports.debug = debug; // for test
+
+
+/***/ }),
+
+/***/ 1524:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+
+
+/***/ }),
+
+/***/ 6647:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isValidErrorCode = exports.httpStatusFromErrorCode = exports.TwirpErrorCode = exports.BadRouteError = exports.InternalServerErrorWith = exports.InternalServerError = exports.RequiredArgumentError = exports.InvalidArgumentError = exports.NotFoundError = exports.TwirpError = void 0;
+/**
+ * Represents a twirp error
+ */
+class TwirpError extends Error {
+    constructor(code, msg) {
+        super(msg);
+        this.code = TwirpErrorCode.Internal;
+        this.meta = {};
+        this.code = code;
+        this.msg = msg;
+        Object.setPrototypeOf(this, TwirpError.prototype);
+    }
+    /**
+     * Adds a metadata kv to the error
+     * @param key
+     * @param value
+     */
+    withMeta(key, value) {
+        this.meta[key] = value;
+        return this;
+    }
+    /**
+     * Returns a single metadata value
+     * return "" if not found
+     * @param key
+     */
+    getMeta(key) {
+        return this.meta[key] || "";
+    }
+    /**
+     * Add the original error cause
+     * @param err
+     * @param addMeta
+     */
+    withCause(err, addMeta = false) {
+        this._originalCause = err;
+        if (addMeta) {
+            this.withMeta("cause", err.message);
+        }
+        return this;
+    }
+    cause() {
+        return this._originalCause;
+    }
+    /**
+     * Returns the error representation to JSON
+     */
+    toJSON() {
+        try {
+            return JSON.stringify({
+                code: this.code,
+                msg: this.msg,
+                meta: this.meta,
+            });
+        }
+        catch (e) {
+            return `{"code": "internal", "msg": "There was an error but it could not be serialized into JSON"}`;
+        }
+    }
+    /**
+     * Create a twirp error from an object
+     * @param obj
+     */
+    static fromObject(obj) {
+        const code = obj["code"] || TwirpErrorCode.Unknown;
+        const msg = obj["msg"] || "unknown";
+        const error = new TwirpError(code, msg);
+        if (obj["meta"]) {
+            Object.keys(obj["meta"]).forEach((key) => {
+                error.withMeta(key, obj["meta"][key]);
+            });
+        }
+        return error;
+    }
+}
+exports.TwirpError = TwirpError;
+/**
+ * NotFoundError constructor for the common NotFound error.
+ */
+class NotFoundError extends TwirpError {
+    constructor(msg) {
+        super(TwirpErrorCode.NotFound, msg);
+    }
+}
+exports.NotFoundError = NotFoundError;
+/**
+ * InvalidArgumentError constructor for the common InvalidArgument error. Can be
+ * used when an argument has invalid format, is a number out of range, is a bad
+ * option, etc).
+ */
+class InvalidArgumentError extends TwirpError {
+    constructor(argument, validationMsg) {
+        super(TwirpErrorCode.InvalidArgument, argument + " " + validationMsg);
+        this.withMeta("argument", argument);
+    }
+}
+exports.InvalidArgumentError = InvalidArgumentError;
+/**
+ * RequiredArgumentError is a more specific constructor for InvalidArgument
+ * error. Should be used when the argument is required (expected to have a
+ * non-zero value).
+ */
+class RequiredArgumentError extends InvalidArgumentError {
+    constructor(argument) {
+        super(argument, "is required");
+    }
+}
+exports.RequiredArgumentError = RequiredArgumentError;
+/**
+ * InternalError constructor for the common Internal error. Should be used to
+ * specify that something bad or unexpected happened.
+ */
+class InternalServerError extends TwirpError {
+    constructor(msg) {
+        super(TwirpErrorCode.Internal, msg);
+    }
+}
+exports.InternalServerError = InternalServerError;
+/**
+ * InternalErrorWith makes an internal error, wrapping the original error and using it
+ * for the error message, and with metadata "cause" with the original error type.
+ * This function is used by Twirp services to wrap non-Twirp errors as internal errors.
+ * The wrapped error can be extracted later with err.cause()
+ */
+class InternalServerErrorWith extends InternalServerError {
+    constructor(err) {
+        super(err.message);
+        this.withMeta("cause", err.name);
+        this.withCause(err);
+    }
+}
+exports.InternalServerErrorWith = InternalServerErrorWith;
+/**
+ * A standard BadRoute Error
+ */
+class BadRouteError extends TwirpError {
+    constructor(msg, method, url) {
+        super(TwirpErrorCode.BadRoute, msg);
+        this.withMeta("twirp_invalid_route", method + " " + url);
+    }
+}
+exports.BadRouteError = BadRouteError;
+var TwirpErrorCode;
+(function (TwirpErrorCode) {
+    // Canceled indicates the operation was cancelled (typically by the caller).
+    TwirpErrorCode["Canceled"] = "canceled";
+    // Unknown error. For example when handling errors raised by APIs that do not
+    // return enough error information.
+    TwirpErrorCode["Unknown"] = "unknown";
+    // InvalidArgument indicates client specified an invalid argument. It
+    // indicates arguments that are problematic regardless of the state of the
+    // system (i.e. a malformed file name, required argument, number out of range,
+    // etc.).
+    TwirpErrorCode["InvalidArgument"] = "invalid_argument";
+    // Malformed indicates an error occurred while decoding the client's request.
+    // This may mean that the message was encoded improperly, or that there is a
+    // disagreement in message format between the client and server.
+    TwirpErrorCode["Malformed"] = "malformed";
+    // DeadlineExceeded means operation expired before completion. For operations
+    // that change the state of the system, this error may be returned even if the
+    // operation has completed successfully (timeout).
+    TwirpErrorCode["DeadlineExceeded"] = "deadline_exceeded";
+    // NotFound means some requested entity was not found.
+    TwirpErrorCode["NotFound"] = "not_found";
+    // BadRoute means that the requested URL path wasn't routable to a Twirp
+    // service and method. This is returned by the generated server, and usually
+    // shouldn't be returned by applications. Instead, applications should use
+    // NotFound or Unimplemented.
+    TwirpErrorCode["BadRoute"] = "bad_route";
+    // AlreadyExists means an attempt to create an entity failed because one
+    // already exists.
+    TwirpErrorCode["AlreadyExists"] = "already_exists";
+    // PermissionDenied indicates the caller does not have permission to execute
+    // the specified operation. It must not be used if the caller cannot be
+    // identified (Unauthenticated).
+    TwirpErrorCode["PermissionDenied"] = "permission_denied";
+    // Unauthenticated indicates the request does not have valid authentication
+    // credentials for the operation.
+    TwirpErrorCode["Unauthenticated"] = "unauthenticated";
+    // ResourceExhausted indicates some resource has been exhausted, perhaps a
+    // per-user quota, or perhaps the entire file system is out of space.
+    TwirpErrorCode["ResourceExhausted"] = "resource_exhausted";
+    // FailedPrecondition indicates operation was rejected because the system is
+    // not in a state required for the operation's execution. For example, doing
+    // an rmdir operation on a directory that is non-empty, or on a non-directory
+    // object, or when having conflicting read-modify-write on the same resource.
+    TwirpErrorCode["FailedPrecondition"] = "failed_precondition";
+    // Aborted indicates the operation was aborted, typically due to a concurrency
+    // issue like sequencer check failures, transaction aborts, etc.
+    TwirpErrorCode["Aborted"] = "aborted";
+    // OutOfRange means operation was attempted past the valid range. For example,
+    // seeking or reading past end of a paginated collection.
+    //
+    // Unlike InvalidArgument, this error indicates a problem that may be fixed if
+    // the system state changes (i.e. adding more items to the collection).
+    //
+    // There is a fair bit of overlap between FailedPrecondition and OutOfRange.
+    // We recommend using OutOfRange (the more specific error) when it applies so
+    // that callers who are iterating through a space can easily look for an
+    // OutOfRange error to detect when they are done.
+    TwirpErrorCode["OutOfRange"] = "out_of_range";
+    // Unimplemented indicates operation is not implemented or not
+    // supported/enabled in this service.
+    TwirpErrorCode["Unimplemented"] = "unimplemented";
+    // Internal errors. When some invariants expected by the underlying system
+    // have been broken. In other words, something bad happened in the library or
+    // backend service. Do not confuse with HTTP Internal Server Error; an
+    // Internal error could also happen on the client code, i.e. when parsing a
+    // server response.
+    TwirpErrorCode["Internal"] = "internal";
+    // Unavailable indicates the service is currently unavailable. This is a most
+    // likely a transient condition and may be corrected by retrying with a
+    // backoff.
+    TwirpErrorCode["Unavailable"] = "unavailable";
+    // DataLoss indicates unrecoverable data loss or corruption.
+    TwirpErrorCode["DataLoss"] = "data_loss";
+})(TwirpErrorCode = exports.TwirpErrorCode || (exports.TwirpErrorCode = {}));
+// ServerHTTPStatusFromErrorCode maps a Twirp error type into a similar HTTP
+// response status. It is used by the Twirp server handler to set the HTTP
+// response status code. Returns 0 if the ErrorCode is invalid.
+function httpStatusFromErrorCode(code) {
+    switch (code) {
+        case TwirpErrorCode.Canceled:
+            return 408; // RequestTimeout
+        case TwirpErrorCode.Unknown:
+            return 500; // Internal Server Error
+        case TwirpErrorCode.InvalidArgument:
+            return 400; // BadRequest
+        case TwirpErrorCode.Malformed:
+            return 400; // BadRequest
+        case TwirpErrorCode.DeadlineExceeded:
+            return 408; // RequestTimeout
+        case TwirpErrorCode.NotFound:
+            return 404; // Not Found
+        case TwirpErrorCode.BadRoute:
+            return 404; // Not Found
+        case TwirpErrorCode.AlreadyExists:
+            return 409; // Conflict
+        case TwirpErrorCode.PermissionDenied:
+            return 403; // Forbidden
+        case TwirpErrorCode.Unauthenticated:
+            return 401; // Unauthorized
+        case TwirpErrorCode.ResourceExhausted:
+            return 429; // Too Many Requests
+        case TwirpErrorCode.FailedPrecondition:
+            return 412; // Precondition Failed
+        case TwirpErrorCode.Aborted:
+            return 409; // Conflict
+        case TwirpErrorCode.OutOfRange:
+            return 400; // Bad Request
+        case TwirpErrorCode.Unimplemented:
+            return 501; // Not Implemented
+        case TwirpErrorCode.Internal:
+            return 500; // Internal Server Error
+        case TwirpErrorCode.Unavailable:
+            return 503; // Service Unavailable
+        case TwirpErrorCode.DataLoss:
+            return 500; // Internal Server Error
+        default:
+            return 0; // Invalid!
+    }
+}
+exports.httpStatusFromErrorCode = httpStatusFromErrorCode;
+// IsValidErrorCode returns true if is one of the valid predefined constants.
+function isValidErrorCode(code) {
+    return httpStatusFromErrorCode(code) != 0;
+}
+exports.isValidErrorCode = isValidErrorCode;
+
+
+/***/ }),
+
+/***/ 6748:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Gateway = exports.Pattern = void 0;
+const querystring_1 = __nccwpck_require__(3477);
+const dotObject = __importStar(__nccwpck_require__(4365));
+const request_1 = __nccwpck_require__(8347);
+const errors_1 = __nccwpck_require__(6647);
+const http_client_1 = __nccwpck_require__(4091);
+const server_1 = __nccwpck_require__(6604);
+var Pattern;
+(function (Pattern) {
+    Pattern["POST"] = "post";
+    Pattern["GET"] = "get";
+    Pattern["PATCH"] = "patch";
+    Pattern["PUT"] = "put";
+    Pattern["DELETE"] = "delete";
+})(Pattern = exports.Pattern || (exports.Pattern = {}));
+/**
+ * The Gateway proxies http requests to Twirp Compliant
+ * handlers
+ */
+class Gateway {
+    constructor(routes) {
+        this.routes = routes;
+    }
+    /**
+     * Middleware that rewrite the current request
+     * to a Twirp compliant request
+     */
+    twirpRewrite(prefix = "/twirp") {
+        return (req, resp, next) => {
+            this.rewrite(req, resp, prefix)
+                .then(() => next())
+                .catch((e) => {
+                if (e instanceof errors_1.TwirpError) {
+                    if (e.code !== errors_1.TwirpErrorCode.NotFound) {
+                        server_1.writeError(resp, e);
+                    }
+                    else {
+                        next();
+                    }
+                }
+            });
+        };
+    }
+    /**
+     * Rewrite an incoming request to a Twirp compliant request
+     * @param req
+     * @param resp
+     * @param prefix
+     */
+    rewrite(req, resp, prefix = "/twirp") {
+        return __awaiter(this, void 0, void 0, function* () {
+            const [match, route] = this.matchRoute(req);
+            const body = yield this.prepareTwirpBody(req, match, route);
+            const twirpUrl = `${prefix}/${route.packageName}.${route.serviceName}/${route.methodName}`;
+            req.url = twirpUrl;
+            req.originalUrl = twirpUrl;
+            req.method = "POST";
+            req.headers["content-type"] = "application/json";
+            req.rawBody = Buffer.from(JSON.stringify(body));
+            if (route.responseBodyKey) {
+                const endFn = resp.end.bind(resp);
+                resp.end = function (chunk) {
+                    if (resp.statusCode === 200) {
+                        endFn(`{ "${route.responseBodyKey}": ${chunk} }`);
+                    }
+                    else {
+                        endFn(chunk);
+                    }
+                };
+            }
+        });
+    }
+    /**
+     * Create a reverse proxy handler to
+     * proxy http requests to Twirp Compliant handlers
+     * @param httpClientOption
+     */
+    reverseProxy(httpClientOption) {
+        const client = http_client_1.NodeHttpRPC(httpClientOption);
+        return (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const [match, route] = this.matchRoute(req);
+                const body = yield this.prepareTwirpBody(req, match, route);
+                const response = yield client.request(`${route.packageName}.${route.serviceName}`, route.methodName, "application/json", body);
+                res.statusCode = 200;
+                res.setHeader("content-type", "application/json");
+                let jsonResponse;
+                if (route.responseBodyKey) {
+                    jsonResponse = JSON.stringify({ [route.responseBodyKey]: response });
+                }
+                else {
+                    jsonResponse = JSON.stringify(response);
+                }
+                res.end(jsonResponse);
+            }
+            catch (e) {
+                server_1.writeError(res, e);
+            }
+        });
+    }
+    /**
+     * Prepares twirp body requests using http.google.annotions
+     * compliant spec
+     *
+     * @param req
+     * @param match
+     * @param route
+     * @protected
+     */
+    prepareTwirpBody(req, match, route) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const _a = match.params, { query_string } = _a, params = __rest(_a, ["query_string"]);
+            let requestBody = Object.assign({}, params);
+            if (query_string && route.bodyKey !== "*") {
+                const queryParams = this.parseQueryString(query_string);
+                requestBody = Object.assign(Object.assign({}, queryParams), requestBody);
+            }
+            let body = {};
+            if (route.bodyKey) {
+                const data = yield request_1.getRequestData(req);
+                try {
+                    const jsonBody = JSON.parse(data.toString() || "{}");
+                    if (route.bodyKey === "*") {
+                        body = jsonBody;
+                    }
+                    else {
+                        body[route.bodyKey] = jsonBody;
+                    }
+                }
+                catch (e) {
+                    const msg = "the json request could not be decoded";
+                    throw new errors_1.TwirpError(errors_1.TwirpErrorCode.Malformed, msg).withCause(e, true);
+                }
+            }
+            return Object.assign(Object.assign({}, body), requestBody);
+        });
+    }
+    /**
+     * Matches a route
+     * @param req
+     */
+    matchRoute(req) {
+        var _a;
+        const httpMethod = (_a = req.method) === null || _a === void 0 ? void 0 : _a.toLowerCase();
+        if (!httpMethod) {
+            throw new errors_1.BadRouteError(`method not allowed`, req.method || "", req.url || "");
+        }
+        const routes = this.routes[httpMethod];
+        for (const route of routes) {
+            const match = route.matcher(req.url || "/");
+            if (match) {
+                return [match, route];
+            }
+        }
+        throw new errors_1.NotFoundError(`url ${req.url} not found`);
+    }
+    /**
+     * Parse query string
+     * @param queryString
+     */
+    parseQueryString(queryString) {
+        const queryParams = querystring_1.parse(queryString.replace("?", ""));
+        return dotObject.object(queryParams);
+    }
+}
+exports.Gateway = Gateway;
+
+
+/***/ }),
+
+/***/ 4263:
+/***/ (function(__unused_webpack_module, exports) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.isHook = exports.chainHooks = void 0;
+// ChainHooks creates a new ServerHook which chains the callbacks in
+// each of the constituent hooks passed in. Each hook function will be
+// called in the order of the ServerHooks values passed in.
+//
+// For the erroring hooks, RequestReceived and RequestRouted, any returned
+// errors prevent processing by later hooks.
+function chainHooks(...hooks) {
+    if (hooks.length === 0) {
+        return null;
+    }
+    if (hooks.length === 1) {
+        return hooks[0];
+    }
+    const serverHook = {
+        requestReceived(ctx) {
+            return __awaiter(this, void 0, void 0, function* () {
+                for (const hook of hooks) {
+                    if (!hook.requestReceived) {
+                        continue;
+                    }
+                    yield hook.requestReceived(ctx);
+                }
+            });
+        },
+        requestPrepared(ctx) {
+            return __awaiter(this, void 0, void 0, function* () {
+                for (const hook of hooks) {
+                    if (!hook.requestPrepared) {
+                        continue;
+                    }
+                    console.warn("hook requestPrepared is deprecated and will be removed in the next release. " +
+                        "Please use responsePrepared instead.");
+                    yield hook.requestPrepared(ctx);
+                }
+            });
+        },
+        responsePrepared(ctx) {
+            return __awaiter(this, void 0, void 0, function* () {
+                for (const hook of hooks) {
+                    if (!hook.responsePrepared) {
+                        continue;
+                    }
+                    yield hook.responsePrepared(ctx);
+                }
+            });
+        },
+        requestSent(ctx) {
+            return __awaiter(this, void 0, void 0, function* () {
+                for (const hook of hooks) {
+                    if (!hook.requestSent) {
+                        continue;
+                    }
+                    console.warn("hook requestSent is deprecated and will be removed in the next release. " +
+                        "Please use responseSent instead.");
+                    yield hook.requestSent(ctx);
+                }
+            });
+        },
+        responseSent(ctx) {
+            return __awaiter(this, void 0, void 0, function* () {
+                for (const hook of hooks) {
+                    if (!hook.responseSent) {
+                        continue;
+                    }
+                    yield hook.responseSent(ctx);
+                }
+            });
+        },
+        requestRouted(ctx) {
+            return __awaiter(this, void 0, void 0, function* () {
+                for (const hook of hooks) {
+                    if (!hook.requestRouted) {
+                        continue;
+                    }
+                    yield hook.requestRouted(ctx);
+                }
+            });
+        },
+        error(ctx, err) {
+            return __awaiter(this, void 0, void 0, function* () {
+                for (const hook of hooks) {
+                    if (!hook.error) {
+                        continue;
+                    }
+                    yield hook.error(ctx, err);
+                }
+            });
+        },
+    };
+    return serverHook;
+}
+exports.chainHooks = chainHooks;
+function isHook(object) {
+    return ("requestReceived" in object ||
+        "requestPrepared" in object ||
+        "requestSent" in object ||
+        "requestRouted" in object ||
+        "responsePrepared" in object ||
+        "responseSent" in object ||
+        "error" in object);
+}
+exports.isHook = isHook;
+
+
+/***/ }),
+
+/***/ 4091:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.FetchRPC = exports.wrapErrorResponseToTwirpError = exports.NodeHttpRPC = void 0;
+const http = __importStar(__nccwpck_require__(3685));
+const https = __importStar(__nccwpck_require__(5687));
+const url_1 = __nccwpck_require__(7310);
+const errors_1 = __nccwpck_require__(6647);
+/**
+ * a node HTTP RPC implementation
+ * @param options
+ * @constructor
+ */
+const NodeHttpRPC = (options) => ({
+    request(service, method, contentType, data) {
+        let client;
+        return new Promise((resolve, rejected) => {
+            const responseChunks = [];
+            const requestData = contentType === "application/protobuf"
+                ? Buffer.from(data)
+                : JSON.stringify(data);
+            const url = new url_1.URL(options.baseUrl);
+            const isHttps = url.protocol === "https:";
+            if (isHttps) {
+                client = https;
+            }
+            else {
+                client = http;
+            }
+            const prefix = url.pathname !== "/" ? url.pathname : "";
+            const req = client
+                .request(Object.assign(Object.assign({}, (options ? options : {})), { method: "POST", protocol: url.protocol, host: url.hostname, port: url.port ? url.port : isHttps ? 443 : 80, path: `${prefix}/${service}/${method}`, headers: Object.assign(Object.assign({}, (options.headers ? options.headers : {})), { "Content-Type": contentType, "Content-Length": contentType === "application/protobuf"
+                        ? Buffer.byteLength(requestData)
+                        : Buffer.from(requestData).byteLength }) }), (res) => {
+                res.on("data", (chunk) => responseChunks.push(chunk));
+                res.on("end", () => {
+                    const data = Buffer.concat(responseChunks);
+                    if (res.statusCode != 200) {
+                        rejected(wrapErrorResponseToTwirpError(data.toString()));
+                    }
+                    else {
+                        if (contentType === "application/json") {
+                            resolve(JSON.parse(data.toString()));
+                        }
+                        else {
+                            resolve(data);
+                        }
+                    }
+                });
+                res.on("error", (err) => {
+                    rejected(err);
+                });
+            })
+                .on("error", (err) => {
+                rejected(err);
+            });
+            req.end(requestData);
+        });
+    },
+});
+exports.NodeHttpRPC = NodeHttpRPC;
+function wrapErrorResponseToTwirpError(errorResponse) {
+    return errors_1.TwirpError.fromObject(JSON.parse(errorResponse));
+}
+exports.wrapErrorResponseToTwirpError = wrapErrorResponseToTwirpError;
+/**
+ * a browser fetch RPC implementation
+ */
+const FetchRPC = (options) => ({
+    request(service, method, contentType, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const headers = new Headers(options.headers);
+            headers.set("content-type", contentType);
+            const response = yield fetch(`${options.baseUrl}/${service}/${method}`, Object.assign(Object.assign({}, options), { method: "POST", headers, body: data instanceof Uint8Array ? data : JSON.stringify(data) }));
+            if (response.status === 200) {
+                if (contentType === "application/json") {
+                    return yield response.json();
+                }
+                return new Uint8Array(yield response.arrayBuffer());
+            }
+            throw errors_1.TwirpError.fromObject(yield response.json());
+        });
+    },
+});
+exports.FetchRPC = FetchRPC;
+
+
+/***/ }),
+
+/***/ 6465:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.TwirpContentType = void 0;
+__exportStar(__nccwpck_require__(1524), exports);
+__exportStar(__nccwpck_require__(6604), exports);
+__exportStar(__nccwpck_require__(8913), exports);
+__exportStar(__nccwpck_require__(4263), exports);
+__exportStar(__nccwpck_require__(6647), exports);
+__exportStar(__nccwpck_require__(6748), exports);
+__exportStar(__nccwpck_require__(4091), exports);
+var request_1 = __nccwpck_require__(8347);
+Object.defineProperty(exports, "TwirpContentType", ({ enumerable: true, get: function () { return request_1.TwirpContentType; } }));
+
+
+/***/ }),
+
+/***/ 8913:
+/***/ (function(__unused_webpack_module, exports) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.chainInterceptors = void 0;
+// chains multiple Interceptors into a single Interceptor.
+// The first interceptor wraps the second one, and so on.
+// Returns null if interceptors is empty.
+function chainInterceptors(...interceptors) {
+    if (interceptors.length === 0) {
+        return;
+    }
+    if (interceptors.length === 1) {
+        return interceptors[0];
+    }
+    const first = interceptors[0];
+    return (ctx, request, handler) => __awaiter(this, void 0, void 0, function* () {
+        let next = handler;
+        for (let i = interceptors.length - 1; i > 0; i--) {
+            next = ((next) => (ctx, typedRequest) => {
+                return interceptors[i](ctx, typedRequest, next);
+            })(next);
+        }
+        return first(ctx, request, next);
+    });
+}
+exports.chainInterceptors = chainInterceptors;
+
+
+/***/ }),
+
+/***/ 8347:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.parseTwirpPath = exports.getRequestData = exports.validateRequest = exports.getContentType = exports.TwirpContentType = void 0;
+const errors_1 = __nccwpck_require__(6647);
+/**
+ * Supported Twirp Content-Type
+ */
+var TwirpContentType;
+(function (TwirpContentType) {
+    TwirpContentType[TwirpContentType["Protobuf"] = 0] = "Protobuf";
+    TwirpContentType[TwirpContentType["JSON"] = 1] = "JSON";
+    TwirpContentType[TwirpContentType["Unknown"] = 2] = "Unknown";
+})(TwirpContentType = exports.TwirpContentType || (exports.TwirpContentType = {}));
+/**
+ * Get supported content-type
+ * @param mimeType
+ */
+function getContentType(mimeType) {
+    switch (mimeType) {
+        case "application/protobuf":
+            return TwirpContentType.Protobuf;
+        case "application/json":
+            return TwirpContentType.JSON;
+        default:
+            return TwirpContentType.Unknown;
+    }
+}
+exports.getContentType = getContentType;
+/**
+ * Validate a twirp request
+ * @param ctx
+ * @param request
+ * @param pathPrefix
+ */
+function validateRequest(ctx, request, pathPrefix) {
+    if (request.method !== "POST") {
+        const msg = `unsupported method ${request.method} (only POST is allowed)`;
+        throw new errors_1.BadRouteError(msg, request.method || "", request.url || "");
+    }
+    const path = parseTwirpPath(request.url || "");
+    if (path.pkgService !==
+        (ctx.packageName ? ctx.packageName + "." : "") + ctx.serviceName) {
+        const msg = `no handler for path ${request.url}`;
+        throw new errors_1.BadRouteError(msg, request.method || "", request.url || "");
+    }
+    if (path.prefix !== pathPrefix) {
+        const msg = `invalid path prefix ${path.prefix}, expected ${pathPrefix}, on path ${request.url}`;
+        throw new errors_1.BadRouteError(msg, request.method || "", request.url || "");
+    }
+    const mimeContentType = request.headers["content-type"] || "";
+    if (ctx.contentType === TwirpContentType.Unknown) {
+        const msg = `unexpected Content-Type: ${request.headers["content-type"]}`;
+        throw new errors_1.BadRouteError(msg, request.method || "", request.url || "");
+    }
+    return Object.assign(Object.assign({}, path), { mimeContentType, contentType: ctx.contentType });
+}
+exports.validateRequest = validateRequest;
+/**
+ * Get request data from the body
+ * @param req
+ */
+function getRequestData(req) {
+    return new Promise((resolve, reject) => {
+        const reqWithRawBody = req;
+        if (reqWithRawBody.rawBody instanceof Buffer) {
+            resolve(reqWithRawBody.rawBody);
+            return;
+        }
+        const chunks = [];
+        req.on("data", (chunk) => chunks.push(chunk));
+        req.on("end", () => __awaiter(this, void 0, void 0, function* () {
+            const data = Buffer.concat(chunks);
+            resolve(data);
+        }));
+        req.on("error", (err) => {
+            if (req.aborted) {
+                reject(new errors_1.TwirpError(errors_1.TwirpErrorCode.DeadlineExceeded, "failed to read request: deadline exceeded"));
+            }
+            else {
+                reject(new errors_1.TwirpError(errors_1.TwirpErrorCode.Malformed, err.message).withCause(err));
+            }
+        });
+        req.on("close", () => {
+            reject(new errors_1.TwirpError(errors_1.TwirpErrorCode.Canceled, "failed to read request: context canceled"));
+        });
+    });
+}
+exports.getRequestData = getRequestData;
+/**
+ * Parses twirp url path
+ * @param path
+ */
+function parseTwirpPath(path) {
+    const parts = path.split("/");
+    if (parts.length < 2) {
+        return {
+            pkgService: "",
+            method: "",
+            prefix: "",
+        };
+    }
+    return {
+        method: parts[parts.length - 1],
+        pkgService: parts[parts.length - 2],
+        prefix: parts.slice(0, parts.length - 2).join("/"),
+    };
+}
+exports.parseTwirpPath = parseTwirpPath;
+
+
+/***/ }),
+
+/***/ 6604:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.writeError = exports.TwirpServer = void 0;
+const hooks_1 = __nccwpck_require__(4263);
+const request_1 = __nccwpck_require__(8347);
+const errors_1 = __nccwpck_require__(6647);
+/**
+ * Runtime server implementation of a TwirpServer
+ */
+class TwirpServer {
+    constructor(options) {
+        this.pathPrefix = "/twirp";
+        this.hooks = [];
+        this.interceptors = [];
+        this.packageName = options.packageName;
+        this.serviceName = options.serviceName;
+        this.methodList = options.methodList;
+        this.matchRoute = options.matchRoute;
+        this.service = options.service;
+    }
+    /**
+     * Returns the prefix for this server
+     */
+    get prefix() {
+        return this.pathPrefix;
+    }
+    /**
+     * The http handler for twirp complaint endpoints
+     * @param options
+     */
+    httpHandler(options) {
+        return (req, resp) => {
+            // setup prefix
+            if ((options === null || options === void 0 ? void 0 : options.prefix) !== undefined) {
+                this.withPrefix(options.prefix);
+            }
+            return this._httpHandler(req, resp);
+        };
+    }
+    /**
+     * Adds interceptors or hooks to the request stack
+     * @param middlewares
+     */
+    use(...middlewares) {
+        middlewares.forEach((middleware) => {
+            if (hooks_1.isHook(middleware)) {
+                this.hooks.push(middleware);
+                return this;
+            }
+            this.interceptors.push(middleware);
+        });
+        return this;
+    }
+    /**
+     * Adds a prefix to the service url path
+     * @param prefix
+     */
+    withPrefix(prefix) {
+        if (prefix === false) {
+            this.pathPrefix = "";
+        }
+        else {
+            this.pathPrefix = prefix;
+        }
+        return this;
+    }
+    /**
+     * Returns the regex matching path for this twirp server
+     */
+    matchingPath() {
+        const baseRegex = this.baseURI().replace(/\./g, "\\.");
+        return new RegExp(`${baseRegex}\/(${this.methodList.join("|")})`);
+    }
+    /**
+     * Returns the base URI for this twirp server
+     */
+    baseURI() {
+        return `${this.pathPrefix}/${this.packageName ? this.packageName + "." : ""}${this.serviceName}`;
+    }
+    /**
+     * Create a twirp context
+     * @param req
+     * @param res
+     * @private
+     */
+    createContext(req, res) {
+        return {
+            packageName: this.packageName,
+            serviceName: this.serviceName,
+            methodName: "",
+            contentType: request_1.getContentType(req.headers["content-type"]),
+            req: req,
+            res: res,
+        };
+    }
+    /**
+     * Twrip server http handler implementation
+     * @param req
+     * @param resp
+     * @private
+     */
+    _httpHandler(req, resp) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const ctx = this.createContext(req, resp);
+            try {
+                yield this.invokeHook("requestReceived", ctx);
+                const { method, mimeContentType } = request_1.validateRequest(ctx, req, this.pathPrefix || "");
+                const handler = this.matchRoute(method, {
+                    onMatch: (ctx) => {
+                        return this.invokeHook("requestRouted", ctx);
+                    },
+                    onNotFound: () => {
+                        const msg = `no handler for path ${req.url}`;
+                        throw new errors_1.BadRouteError(msg, req.method || "", req.url || "");
+                    },
+                });
+                const body = yield request_1.getRequestData(req);
+                const response = yield handler(ctx, this.service, body, this.interceptors);
+                yield Promise.all([
+                    this.invokeHook("responsePrepared", ctx),
+                    // keep backwards compatibility till next release
+                    this.invokeHook("requestPrepared", ctx),
+                ]);
+                resp.statusCode = 200;
+                resp.setHeader("Content-Type", mimeContentType);
+                resp.end(response);
+            }
+            catch (e) {
+                yield this.invokeHook("error", ctx, mustBeTwirpError(e));
+                if (!resp.headersSent) {
+                    writeError(resp, e);
+                }
+            }
+            finally {
+                yield Promise.all([
+                    this.invokeHook("responseSent", ctx),
+                    // keep backwards compatibility till next release
+                    this.invokeHook("requestSent", ctx),
+                ]);
+            }
+        });
+    }
+    /**
+     * Invoke a hook
+     * @param hookName
+     * @param ctx
+     * @param err
+     * @protected
+     */
+    invokeHook(hookName, ctx, err) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.hooks.length === 0) {
+                return;
+            }
+            const chainedHooks = hooks_1.chainHooks(...this.hooks);
+            const hook = chainedHooks === null || chainedHooks === void 0 ? void 0 : chainedHooks[hookName];
+            if (hook) {
+                yield hook(ctx, err || new errors_1.InternalServerError("internal server error"));
+            }
+        });
+    }
+}
+exports.TwirpServer = TwirpServer;
+/**
+ * Write http error response
+ * @param res
+ * @param error
+ */
+function writeError(res, error) {
+    const twirpError = mustBeTwirpError(error);
+    res.setHeader("Content-Type", "application/json");
+    res.statusCode = errors_1.httpStatusFromErrorCode(twirpError.code);
+    res.end(twirpError.toJSON());
+}
+exports.writeError = writeError;
+/**
+ * Make sure that the error passed is a TwirpError
+ * otherwise it will wrap it into an InternalError
+ * @param err
+ */
+function mustBeTwirpError(err) {
+    if (err instanceof errors_1.TwirpError) {
+        return err;
+    }
+    return new errors_1.InternalServerErrorWith(err);
+}
 
 
 /***/ }),
@@ -72186,7 +74557,7 @@ module.exports = {
 
 
 const { parseSetCookie } = __nccwpck_require__(4408)
-const { stringify } = __nccwpck_require__(3121)
+const { stringify, getHeadersList } = __nccwpck_require__(3121)
 const { webidl } = __nccwpck_require__(1744)
 const { Headers } = __nccwpck_require__(554)
 
@@ -72262,13 +74633,14 @@ function getSetCookies (headers) {
 
   webidl.brandCheck(headers, Headers, { strict: false })
 
-  const cookies = headers.getSetCookie()
+  const cookies = getHeadersList(headers).cookies
 
   if (!cookies) {
     return []
   }
 
-  return cookies.map((pair) => parseSetCookie(pair))
+  // In older versions of undici, cookies is a list of name:value.
+  return cookies.map((pair) => parseSetCookie(Array.isArray(pair) ? pair[1] : pair))
 }
 
 /**
@@ -72696,15 +75068,14 @@ module.exports = {
 /***/ }),
 
 /***/ 3121:
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 "use strict";
 
 
-/**
- * @param {string} value
- * @returns {boolean}
- */
+const assert = __nccwpck_require__(9491)
+const { kHeadersList } = __nccwpck_require__(2785)
+
 function isCTLExcludingHtab (value) {
   if (value.length === 0) {
     return false
@@ -72965,13 +75336,31 @@ function stringify (cookie) {
   return out.join('; ')
 }
 
+let kHeadersListNode
+
+function getHeadersList (headers) {
+  if (headers[kHeadersList]) {
+    return headers[kHeadersList]
+  }
+
+  if (!kHeadersListNode) {
+    kHeadersListNode = Object.getOwnPropertySymbols(headers).find(
+      (symbol) => symbol.description === 'headers list'
+    )
+
+    assert(kHeadersListNode, 'Headers cannot be parsed')
+  }
+
+  const headersList = headers[kHeadersListNode]
+  assert(headersList)
+
+  return headersList
+}
+
 module.exports = {
   isCTLExcludingHtab,
-  validateCookieName,
-  validateCookiePath,
-  validateCookieValue,
-  toIMFDate,
-  stringify
+  stringify,
+  getHeadersList
 }
 
 
@@ -74900,14 +77289,6 @@ const { isUint8Array, isArrayBuffer } = __nccwpck_require__(9830)
 const { File: UndiciFile } = __nccwpck_require__(8511)
 const { parseMIMEType, serializeAMimeType } = __nccwpck_require__(685)
 
-let random
-try {
-  const crypto = __nccwpck_require__(6005)
-  random = (max) => crypto.randomInt(0, max)
-} catch {
-  random = (max) => Math.floor(Math.random(max))
-}
-
 let ReadableStream = globalThis.ReadableStream
 
 /** @type {globalThis['File']} */
@@ -74993,7 +77374,7 @@ function extractBody (object, keepalive = false) {
     // Set source to a copy of the bytes held by object.
     source = new Uint8Array(object.buffer.slice(object.byteOffset, object.byteOffset + object.byteLength))
   } else if (util.isFormDataLike(object)) {
-    const boundary = `----formdata-undici-0${`${random(1e11)}`.padStart(11, '0')}`
+    const boundary = `----formdata-undici-0${`${Math.floor(Math.random() * 1e11)}`.padStart(11, '0')}`
     const prefix = `--${boundary}\r\nContent-Disposition: form-data`
 
     /*! formdata-polyfill. MIT License. Jimmy Wärting <https://jimmy.warting.se/opensource> */
@@ -76975,7 +79356,6 @@ const {
   isValidHeaderName,
   isValidHeaderValue
 } = __nccwpck_require__(2538)
-const util = __nccwpck_require__(3837)
 const { webidl } = __nccwpck_require__(1744)
 const assert = __nccwpck_require__(9491)
 
@@ -77529,9 +79909,6 @@ Object.defineProperties(Headers.prototype, {
   [Symbol.toStringTag]: {
     value: 'Headers',
     configurable: true
-  },
-  [util.inspect.custom]: {
-    enumerable: false
   }
 })
 
@@ -86708,20 +89085,6 @@ class Pool extends PoolBase {
       ? { ...options.interceptors }
       : undefined
     this[kFactory] = factory
-
-    this.on('connectionError', (origin, targets, error) => {
-      // If a connection error occurs, we remove the client from the pool,
-      // and emit a connectionError event. They will not be re-used.
-      // Fixes https://github.com/nodejs/undici/issues/3895
-      for (const target of targets) {
-        // Do not use kRemoveClient here, as it will close the client,
-        // but the client cannot be closed in this state.
-        const idx = this[kClients].indexOf(target)
-        if (idx !== -1) {
-          this[kClients].splice(idx, 1)
-        }
-      }
-    })
   }
 
   [kGetDispatcher] () {
@@ -94712,14 +97075,14 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     else {
         javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
     }
-    const fileContent = ((_b = (_a = content.match(javaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version)
+    const capturedVersion = ((_b = (_a = content.match(javaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version)
         ? (_d = (_c = content.match(javaVersionRegExp)) === null || _c === void 0 ? void 0 : _c.groups) === null || _d === void 0 ? void 0 : _d.version
         : '';
-    if (!fileContent) {
+    core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
+    if (!capturedVersion) {
         return null;
     }
-    core.debug(`Version from file '${fileContent}'`);
-    const tentativeVersion = avoidOldNotation(fileContent);
+    const tentativeVersion = avoidOldNotation(capturedVersion);
     const rawVersion = tentativeVersion.split('-')[0];
     let version = semver.validRange(rawVersion)
         ? tentativeVersion
@@ -94885,14 +97248,6 @@ module.exports = require("https");
 
 "use strict";
 module.exports = require("net");
-
-/***/ }),
-
-/***/ 6005:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("node:crypto");
 
 /***/ }),
 
@@ -96663,7 +99018,7 @@ module.exports = parseParams
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"@actions/cache","version":"4.0.3","preview":true,"description":"Actions cache lib","keywords":["github","actions","cache"],"homepage":"https://github.com/actions/toolkit/tree/main/packages/cache","license":"MIT","main":"lib/cache.js","types":"lib/cache.d.ts","directories":{"lib":"lib","test":"__tests__"},"files":["lib","!.DS_Store"],"publishConfig":{"access":"public"},"repository":{"type":"git","url":"git+https://github.com/actions/toolkit.git","directory":"packages/cache"},"scripts":{"audit-moderate":"npm install && npm audit --json --audit-level=moderate > audit.json","test":"echo \\"Error: run tests from root\\" && exit 1","tsc":"tsc"},"bugs":{"url":"https://github.com/actions/toolkit/issues"},"dependencies":{"@actions/core":"^1.11.1","@actions/exec":"^1.0.1","@actions/glob":"^0.1.0","@actions/http-client":"^2.1.1","@actions/io":"^1.0.1","@azure/abort-controller":"^1.1.0","@azure/ms-rest-js":"^2.6.0","@azure/storage-blob":"^12.13.0","@protobuf-ts/plugin":"^2.9.4","semver":"^6.3.1"},"devDependencies":{"@types/node":"^22.13.9","@types/semver":"^6.0.0","typescript":"^5.2.2"}}');
+module.exports = JSON.parse('{"name":"@actions/cache","version":"4.0.0","preview":true,"description":"Actions cache lib","keywords":["github","actions","cache"],"homepage":"https://github.com/actions/toolkit/tree/main/packages/cache","license":"MIT","main":"lib/cache.js","types":"lib/cache.d.ts","directories":{"lib":"lib","test":"__tests__"},"files":["lib","!.DS_Store"],"publishConfig":{"access":"public"},"repository":{"type":"git","url":"git+https://github.com/actions/toolkit.git","directory":"packages/cache"},"scripts":{"audit-moderate":"npm install && npm audit --json --audit-level=moderate > audit.json","test":"echo \\"Error: run tests from root\\" && exit 1","tsc":"tsc"},"bugs":{"url":"https://github.com/actions/toolkit/issues"},"dependencies":{"@actions/core":"^1.11.1","@actions/exec":"^1.0.1","@actions/glob":"^0.1.0","@actions/http-client":"^2.1.1","@actions/io":"^1.0.1","@azure/abort-controller":"^1.1.0","@azure/ms-rest-js":"^2.6.0","@azure/storage-blob":"^12.13.0","@protobuf-ts/plugin":"^2.9.4","semver":"^6.3.1","twirp-ts":"^2.5.0"},"devDependencies":{"@types/semver":"^6.0.0","typescript":"^5.2.2"}}');
 
 /***/ }),
 
