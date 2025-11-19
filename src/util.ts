@@ -188,8 +188,8 @@ export function convertVersionToSemver(version: number[] | string) {
 }
 
 export function getGitHubHttpHeaders(): OutgoingHttpHeaders {
-  const token = core.getInput('token');
-  const auth = !token ? undefined : `token ${token}`;
+  const resolvedToken = core.getInput('token') || process.env.GITHUB_TOKEN;
+  const auth = !resolvedToken ? undefined : `token ${resolvedToken}`;
 
   const headers: OutgoingHttpHeaders = {
     accept: 'application/vnd.github.VERSION.raw'

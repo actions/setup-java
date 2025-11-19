@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-15-intel, windows-latest, ubuntu-latest]
         distribution: [
             'temurin',
             'adopt',
@@ -39,7 +39,7 @@ jobs:
           - distribution: microsoft
             version: 8
           - distribution: dragonwell
-            os: macos-13
+            os: macos-15-intel
         include:
           - distribution: microsoft
             os: windows-latest
@@ -51,7 +51,7 @@ jobs:
             os: macos-latest
             version: 25
           - distribution: oracle
-            os: macos-13
+            os: macos-15-intel
             version: 17
           - distribution: oracle
             os: windows-latest
@@ -229,7 +229,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-15-intel, windows-latest, ubuntu-latest]
         version: ['17-ea', '15.0.0-ea.14']
     steps:
       - name: Checkout
@@ -295,7 +295,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-15-intel, windows-latest, ubuntu-latest]
         distribution:
           ['temurin', 'zulu', 'liberica', 'semeru', 'sapmachine', 'jetbrains']
         java-package: ['jre']
