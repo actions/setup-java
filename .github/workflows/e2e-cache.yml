@@ -30,7 +30,7 @@ jobs:
         id: setup-java
         with:
           distribution: 'adopt'
-          java-version: '11'
+          java-version: '17'
           cache: gradle
       - name: Create files to cache
         # Need to avoid using Gradle daemon to stabilize the save process on Windows
