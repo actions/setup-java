@@ -134,20 +134,24 @@ export function getVersionFromFileContent(
   if (versionFileName == '.tool-versions') {
     javaVersionRegExp =
       /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
+  } else if (versionFileName == '.sdkmanrc') {
+    javaVersionRegExp = /^java\s*=\s*(?<version>[^-]+)/m;
   } else {
     javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
   }
 
-  const fileContent = content.match(javaVersionRegExp)?.groups?.version
+  const capturedVersion = content.match(javaVersionRegExp)?.groups?.version
     ? (content.match(javaVersionRegExp)?.groups?.version as string)
     : '';
-  if (!fileContent) {
+
+  core.debug(
+    `Parsed version '${capturedVersion}' from file '${versionFileName}'`
+  );
+  if (!capturedVersion) {
     return null;
   }
 
-  core.debug(`Version from file '${fileContent}'`);
-
-  const tentativeVersion = avoidOldNotation(fileContent);
+  const tentativeVersion = avoidOldNotation(capturedVersion);
   const rawVersion = tentativeVersion.split('-')[0];
 
   let version = semver.validRange(rawVersion)

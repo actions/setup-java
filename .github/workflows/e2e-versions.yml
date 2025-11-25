@@ -490,14 +490,14 @@ jobs:
         shell: bash
 
   setup-java-version-from-file-major-minor-patch-with-dist:
-    name: ${{ matrix.distribution }} version from file 'openjdk64-17.0.10' - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} version from file '${{ matrix.java-version-file }}' - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['adopt', 'zulu', 'liberica']
-        java-version-file: ['.java-version', '.tool-versions']
+        java-version-file: ['.java-version', '.tool-versions', '.sdkmanrc']
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -507,6 +507,9 @@ jobs:
       - name: Create .tool-versions file
         shell: bash
         run: echo "java openjdk64-17.0.10" > .tool-versions
+      - name: Create .sdkmanrc file
+        shell: bash
+        run: echo "java=17.0.10-tem" > .sdkmanrc
       - name: setup-java
         uses: ./
         id: setup-java

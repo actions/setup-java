@@ -94706,17 +94706,20 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
         javaVersionRegExp =
             /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
     }
+    else if (versionFileName == '.sdkmanrc') {
+        javaVersionRegExp = /^java\s*=\s*(?<version>[^-]+)/m;
+    }
     else {
         javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
     }
-    const fileContent = ((_b = (_a = content.match(javaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version)
+    const capturedVersion = ((_b = (_a = content.match(javaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version)
         ? (_d = (_c = content.match(javaVersionRegExp)) === null || _c === void 0 ? void 0 : _c.groups) === null || _d === void 0 ? void 0 : _d.version
         : '';
-    if (!fileContent) {
+    core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
+    if (!capturedVersion) {
         return null;
     }
-    core.debug(`Version from file '${fileContent}'`);
-    const tentativeVersion = avoidOldNotation(fileContent);
+    const tentativeVersion = avoidOldNotation(capturedVersion);
     const rawVersion = tentativeVersion.split('-')[0];
     let version = semver.validRange(rawVersion)
         ? tentativeVersion
