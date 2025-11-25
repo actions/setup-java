@@ -24,7 +24,7 @@ jobs:
         os: [macos-15-intel, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run setup-java with the cache for gradle
         uses: ./
         id: setup-java
@@ -50,7 +50,7 @@ jobs:
     needs: gradle-save
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run setup-java with the cache for gradle
         uses: ./
         id: setup-java
@@ -73,7 +73,7 @@ jobs:
         os: [macos-15-intel, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run setup-java with the cache for maven
         uses: ./
         id: setup-java
@@ -97,7 +97,7 @@ jobs:
     needs: maven-save
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run setup-java with the cache for maven
         uses: ./
         id: setup-java
@@ -124,7 +124,7 @@ jobs:
         os: [macos-15-intel, windows-latest, ubuntu-22.04]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run setup-java with the cache for sbt
         uses: ./
         id: setup-java
@@ -174,7 +174,7 @@ jobs:
     needs: sbt-save
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Run setup-java with the cache for sbt
         uses: ./
         id: setup-java

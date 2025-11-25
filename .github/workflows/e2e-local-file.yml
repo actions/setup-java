@@ -21,7 +21,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Download Adopt OpenJDK file
         run: |
           if ($IsLinux) {
@@ -58,7 +58,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Download Zulu OpenJDK file
         run: |
           if ($IsLinux) {
@@ -95,7 +95,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Download Eclipse Temurin file
         run: |
           if ($IsLinux) {
