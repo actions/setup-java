@@ -151,3 +151,45 @@ jobs:
           if (-not (Test-Path $path)) {
             throw "settings.xml file is not found in expected location"
           }
+  test-publishing-multiple-repositories-with-gpg-passphrase:
+    name: Validate settings.xml
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          mvn-repositories-len: 2
+          server-id-0: maven-0
+          server-username-0: MAVEN_USERNAME-0
+          server-password-0: MAVEN_CENTRAL_TOKEN-0
+          server-id-1: maven-1
+          server-username-1: MAVEN_USERNAME-1
+          server-password-1: MAVEN_CENTRAL_TOKEN-1
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Validate settings.xml
+        run: |
+          $xmlPath = Join-Path $HOME ".m2" "settings.xml"
+          Get-Content $xmlPath | ForEach-Object { Write-Host $_ }
+
+          [xml]$xml = Get-Content $xmlPath
+          $servers = $xml.settings.servers.server
+          if (($servers[0].id -ne 'maven-0') -or ($servers[0].username -ne '${env.MAVEN_USERNAME-0}') -or ($servers[0].password -ne '${env.MAVEN_CENTRAL_TOKEN-0}')) {
+            throw "Generated XML file is incorrect"
+          }
+
+          if (($servers[1].id -ne 'maven-1') -or ($servers[0].username -ne '${env.MAVEN_PASSWORD-1}') -or ($servers[1].password -ne '${env.MAVEN_CENTRAL_TOKEN-1}')) {
+            throw "Generated XML file is incorrect"
+          }
+
+          if (($servers[1].id -ne 'gpg.passphrase') -or ($servers[1].passphrase -ne '${env.MAVEN_GPG_PASSPHRASE}')) {
+            throw "Generated XML file is incorrect"
+          }
