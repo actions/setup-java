@@ -83,7 +83,7 @@ export abstract class JavaBase {
           const isRetryable =
             (error instanceof tc.HTTPError &&
               error.httpStatusCode &&
-              [429, 502, 503, 504].includes(error.httpStatusCode)) ||
+              [429, 502, 503, 504, 522].includes(error.httpStatusCode)) ||
             retryableCodes.includes(error?.code) ||
             (error?.errors &&
               Array.isArray(error.errors) &&
