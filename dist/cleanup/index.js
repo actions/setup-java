@@ -19167,7 +19167,7 @@ FormData.prototype.submit = function (params, cb) {
         request.removeListener('error', callback);
         request.removeListener('response', onResponse);
 
-        return cb.call(this, error, responce);
+        return cb.call(this, error, responce); // eslint-disable-line no-invalid-this
       };
 
       onResponse = callback.bind(this, null);
@@ -19191,7 +19191,7 @@ FormData.prototype._error = function (err) {
 FormData.prototype.toString = function () {
   return '[object FormData]';
 };
-setToStringTag(FormData.prototype, 'FormData');
+setToStringTag(FormData, 'FormData');
 
 // Public API
 module.exports = FormData;

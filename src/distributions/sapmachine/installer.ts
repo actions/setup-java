@@ -64,13 +64,12 @@ export class SapMachineDistribution extends JavaBase {
     const arch = this.distributionArchitecture();
 
     let fetchedReleasesJson = await this.fetchReleasesFromUrl(
-      'https://sap.github.io/SapMachine/assets/data/sapmachine-releases-all.json'
+      'https://sapmachine.io/assets/data/sapmachine-releases-all.json'
     );
 
     if (!fetchedReleasesJson) {
       fetchedReleasesJson = await this.fetchReleasesFromUrl(
-        'https://api.github.com/repos/SAP/SapMachine/contents/assets/data/sapmachine-releases-all.json?ref=gh-pages',
-        getGitHubHttpHeaders()
+        'https://sap.github.io/SapMachine/assets/data/sapmachine-releases-all.json'
       );
     }
 
