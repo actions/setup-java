@@ -8,7 +8,6 @@ import {
   convertVersionToSemver,
   extractJdkFile,
   getDownloadArchiveExtension,
-  getGitHubHttpHeaders,
   isVersionSatisfies,
   renameWinArchive
 } from '../../util';
