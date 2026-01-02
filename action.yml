@@ -39,6 +39,33 @@ inputs:
        authentication to the Apache Maven repository. Default is $GITHUB_TOKEN'
     required: false
     default: 'GITHUB_TOKEN'
+  mvn-repositories-len:
+    description: 'Number of Maven repositories being configured - Only applicable if more than one Maven repository is being configured'
+    required: false
+  server-id-0:
+    description: 'ID of the first distributionManagement repository in the pom.xml
+       file - Only applicable if more than one Maven repository is being configured'
+    required: false
+  server-username-0:
+    description: 'Environment variable name for the username for authentication
+       to the first Maven repository - Only applicable if more than one Maven repository is being configured'
+    required: false
+  server-password-0:
+    description: 'Environment variable name for password or token for
+       authentication to the first Maven repository - Only applicable if more than one Maven repository is being configured'
+    required: false
+  server-id-1:
+    description: 'ID of the second distributionManagement repository in the pom.xml
+       file - Only applicable if more than one Maven repository is being configured'
+    required: false
+  server-username-1:
+    description: 'Environment variable name for the username for authentication
+       to the second Maven repository - Only applicable if more than one Maven repository is being configured'
+    required: false
+  server-password-1:
+    description: 'Environment variable name for password or token for
+       authentication to the second Maven repository - Only applicable if more than one Maven repository is being configured'
+    required: false
   settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false

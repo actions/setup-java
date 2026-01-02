@@ -43,9 +43,7 @@ describe('auth tests', () => {
     await io.rmRF(altHome); // ensure it doesn't already exist
 
     await auth.createAuthenticationSettings(
-      id,
-      username,
-      password,
+      [{id, username, password}],
       altHome,
       true
     );
@@ -56,7 +54,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(altHome)).toBe(true);
     expect(fs.existsSync(altSettingsFile)).toBe(true);
     expect(fs.readFileSync(altSettingsFile, 'utf-8')).toEqual(
-      auth.generate(id, username, password)
+      auth.generate([{id, username, password}])
     );
 
     await io.rmRF(altHome);
@@ -68,9 +66,7 @@ describe('auth tests', () => {
     const password = 'TOKEN';
 
     await auth.createAuthenticationSettings(
-      id,
-      username,
-      password,
+      [{id, username, password}],
       m2Dir,
       true
     );
@@ -78,7 +74,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(id, username, password)
+      auth.generate([{id, username, password}])
     );
   }, 100000);
 
@@ -89,18 +85,15 @@ describe('auth tests', () => {
     const gpgPassphrase = 'GPG';
 
     await auth.createAuthenticationSettings(
-      id,
-      username,
-      password,
+      [{id, username, password, gpgPassphrase}],
       m2Dir,
-      true,
-      gpgPassphrase
+      true
     );
 
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(id, username, password, gpgPassphrase)
+      auth.generate([{id, username, password, gpgPassphrase}])
     );
   }, 100000);
 
@@ -115,9 +108,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(settingsFile)).toBe(true);
 
     await auth.createAuthenticationSettings(
-      id,
-      username,
-      password,
+      [{id, username, password}],
       m2Dir,
       true
     );
@@ -125,7 +116,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(id, username, password)
+      auth.generate([{id, username, password}])
     );
   }, 100000);
 
@@ -140,9 +131,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(settingsFile)).toBe(true);
 
     await auth.createAuthenticationSettings(
-      id,
-      username,
-      password,
+      [{id, username, password}],
       m2Dir,
       false
     );
@@ -169,7 +158,7 @@ describe('auth tests', () => {
   </servers>
 </settings>`;
 
-    expect(auth.generate(id, username, password)).toEqual(expectedSettings);
+    expect(auth.generate([{id, username, password}])).toEqual(expectedSettings);
   });
 
   it('generates valid settings.xml with additional configuration', () => {
@@ -194,8 +183,50 @@ describe('auth tests', () => {
   </servers>
 </settings>`;
 
-    expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(
-      expectedSettings
-    );
+    expect(
+      auth.generate([
+        {id, username, password},
+        {id: 'gpg.passphrase', gpgPassphrase: gpgPassphrase}
+      ])
+    ).toEqual(expectedSettings);
+  });
+
+  it('generates valid settings.xml for multiple repositories', () => {
+    const id0 = 'packages0';
+    const username0 = 'USER0';
+    const password0 = '&<>"\'\'"><&0';
+    const id1 = 'packages1';
+    const username1 = 'USER1';
+    const password1 = '&<>"\'\'"><&1';
+    const gpgPassphrase = 'PASSPHRASE';
+
+    const expectedSettings = `<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <server>
+      <id>${id0}</id>
+      <username>\${env.${username0}}</username>
+      <password>\${env.&amp;&lt;&gt;"''"&gt;&lt;&amp;0}</password>
+    </server>
+    <server>
+      <id>${id1}</id>
+      <username>\${env.${username1}}</username>
+      <password>\${env.&amp;&lt;&gt;"''"&gt;&lt;&amp;1}</password>
+    </server>
+    <server>
+      <id>gpg.passphrase</id>
+      <passphrase>\${env.${gpgPassphrase}}</passphrase>
+    </server>
+  </servers>
+</settings>`;
+
+    expect(
+      auth.generate([
+        {id: id0, username: username0, password: password0},
+        {id: id1, username: username1, password: password1},
+        {id: 'gpg.passphrase', gpgPassphrase: gpgPassphrase}
+      ])
+    ).toEqual(expectedSettings);
   });
 });
