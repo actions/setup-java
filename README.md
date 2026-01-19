@@ -156,6 +156,11 @@ steps:
       sub-project/**/gradle-wrapper.properties
 - run: ./gradlew build --no-daemon
 ```
+Using the `cache: gradle` provides a simple and effective way to cache Gradle dependencies with minimal configuration.
+
+For projects that require more advanced `Gradle` caching features, such as caching build outputs, support for Gradle configuration cache, encrypted cache storage, fine-grained cache control (including options to enable or disable the cache, set it to read-only or write-only, perform automated cleanup, and define custom cache rules), or optimized performance for complex CI workflows, consider using [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle).  
+
+For setup details and a comprehensive overview of all available features, visit the [setup-gradle documentation](https://github.com/gradle/actions/blob/main/docs/setup-gradle.md).
 
 #### Caching maven dependencies
 ```yaml
