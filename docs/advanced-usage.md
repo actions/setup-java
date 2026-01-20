@@ -31,7 +31,7 @@ Inputs `java-version` and `distribution` are mandatory and needs to be provided.
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
@@ -44,7 +44,7 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'adopt-hotspot'
@@ -56,7 +56,7 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'zulu'
@@ -69,7 +69,7 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'liberica'
@@ -82,7 +82,7 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'microsoft'
@@ -111,7 +111,7 @@ If the runner is not able to access github.com, any Java versions requested duri
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'corretto'
@@ -124,7 +124,7 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'oracle'
@@ -137,7 +137,7 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'dragonwell'
@@ -149,7 +149,7 @@ steps:
 **NOTE:** An OpenJDK release maintained and supported by SAP
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'sapmachine'
@@ -162,7 +162,7 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'graalvm'
@@ -181,7 +181,7 @@ For example, `11.0.24` is not available but `11.0.16` is.
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'jetbrains'
@@ -194,7 +194,7 @@ GitHub token to the action to increase the rate limit. Set the `GITHUB_TOKEN` en
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'jetbrains'
@@ -219,7 +219,7 @@ The available package types are:
 ## Installing custom Java package type
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: '<distribution>'
@@ -232,7 +232,7 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: '<distribution>'
@@ -296,7 +296,7 @@ jobs:
         java: [ '8', '11' ]
     name: Java ${{ matrix.Java }} (${{ matrix.distribution }}) sample
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup java
         uses: actions/setup-java@v5
         with:
@@ -316,7 +316,7 @@ jobs:
         os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
     name: Java ${{ matrix.Java }} (${{ matrix.os }}) sample
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup java
         uses: actions/setup-java@v5
         with:
@@ -333,7 +333,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Set up JDK 11
       uses: actions/setup-java@v5
       with:
@@ -446,7 +446,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Set up JDK 11 for Shared Runner
       uses: actions/setup-java@v5
       with:
@@ -472,7 +472,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: Set up JDK 11
       uses: actions/setup-java@v5
@@ -574,7 +574,7 @@ Each JDK provider will receive a default `id` based on the combination of `distr
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
