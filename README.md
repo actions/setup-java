@@ -82,7 +82,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
-    java-version: '21'
+    java-version: '25'
 - run: java HelloWorldApp.java
 ```
 
@@ -93,13 +93,13 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
-    java-version: '21'
+    java-version: '25'
 - run: java HelloWorldApp.java
 ```
 
 #### Supported version syntax
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
-- major versions: `8`, `11`, `16`, `17`, `21`
+- major versions: `8`, `11`, `16`, `17`, `21`, `25`
 - more specific versions: `8.0.282+8`, `8.0.232`, `11.0`, `11.0.4`, `17.0`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`
 
@@ -149,7 +149,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     cache: 'gradle'
     cache-dependency-path: | # optional
       sub-project/*.gradle*
@@ -169,7 +169,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     cache: 'maven'
     cache-dependency-path: 'sub-project/pom.xml' # optional
 - name: Build with Maven
@@ -183,7 +183,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     cache: 'sbt'
     cache-dependency-path: | # optional
       sub-project/build.sbt
@@ -203,7 +203,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     cache: 'gradle'
 - run: ./gradlew build --no-daemon
 ```
@@ -223,7 +223,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     check-latest: true
 - run: java HelloWorldApp.java
 ```
@@ -235,7 +235,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        java: [ '8', '11', '17', '21' ]
+        java: [ '8', '11', '17', '21', '25' ]
     name: Java ${{ matrix.Java }} sample
     steps:
       - uses: actions/checkout@v6
