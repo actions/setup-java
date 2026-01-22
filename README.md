@@ -78,7 +78,7 @@ For information about the latest releases, recent updates, and newly supported d
 #### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
@@ -89,7 +89,7 @@ steps:
 #### Azul Zulu OpenJDK
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
@@ -145,7 +145,7 @@ The cache input is optional, and caching is turned off by default.
 #### Caching gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
@@ -165,7 +165,7 @@ For setup details and a comprehensive overview of all available features, visit 
 #### Caching maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
@@ -179,7 +179,7 @@ steps:
 #### Caching sbt dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
@@ -199,7 +199,7 @@ Usually, cache gets downloaded in multiple segments of fixed sizes. Sometimes, a
 env:
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
@@ -219,7 +219,7 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 
 ```yaml
 steps:
-- uses: actions/checkout@v5
+- uses: actions/checkout@v6
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
@@ -238,7 +238,7 @@ jobs:
         java: [ '8', '11', '17', '21' ]
     name: Java ${{ matrix.Java }} sample
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup java
         uses: actions/setup-java@v5
         with:
