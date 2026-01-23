@@ -3,6 +3,8 @@ export interface JavaInstallerOptions {
   architecture: string;
   packageType: string;
   checkLatest: boolean;
+  updateEnvJavaHome: boolean;
+  addToEnvPath: boolean;
 }
 
 export interface JavaInstallerResults {
