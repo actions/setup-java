@@ -31,6 +31,13 @@ export async function configureAuthentication() {
   if (gpgPrivateKey) {
     core.setSecret(gpgPrivateKey);
   }
+  const repoId = core.getInput(constants.INPUT_REPO_ID);
+  const repoUrl = core.getInput(constants.INPUT_REPO_URL);
+  const useCentral = core.getBooleanInput(constants.INPUT_USE_CENTRAL);
+  const prioritizeCentral = core.getBooleanInput(
+    constants.INPUT_PRIORITIZE_CENTRAL
+  );
+  const noSnapshots = core.getBooleanInput(constants.INPUT_REPO_NO_SNAPSHOTS);
 
   await createAuthenticationSettings(
     id,
@@ -38,7 +45,13 @@ export async function configureAuthentication() {
     password,
     settingsDirectory,
     overwriteSettings,
-    gpgPassphrase
+    gpgPassphrase,
+    repoId,
+    undefined, // profileId
+    repoUrl,
+    useCentral,
+    prioritizeCentral,
+    noSnapshots
   );
 
   if (gpgPrivateKey) {
@@ -54,15 +67,35 @@ export async function createAuthenticationSettings(
   password: string,
   settingsDirectory: string,
   overwriteSettings: boolean,
-  gpgPassphrase: string | undefined = undefined
+  gpgPassphrase: string | undefined = undefined,
+  repoId?: string,
+  profileId: string | undefined = repoId, // simplifying fallback (entrypoint for multi-profile)
+  repoUrl?: string,
+  useCentral?: boolean,
+  prioritizeCentral?: boolean,
+  noSnapshots?: boolean
 ) {
   core.info(`Creating ${constants.MVN_SETTINGS_FILE} with server-id: ${id}`);
+  if (profileId) {
+    core.info(`Using [${profileId}] to add Dependencies from [${repoUrl}]`);
+  }
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
   await io.mkdirP(settingsDirectory);
   await write(
     settingsDirectory,
-    generate(id, username, password, gpgPassphrase),
+    generate(
+      id,
+      username,
+      password,
+      gpgPassphrase,
+      repoId,
+      profileId,
+      repoUrl,
+      useCentral,
+      prioritizeCentral,
+      noSnapshots
+    ),
     overwriteSettings
   );
 }
@@ -72,14 +105,45 @@ export function generate(
   id: string,
   username: string,
   password: string,
-  gpgPassphrase?: string | undefined
+  gpgPassphrase?: string | undefined,
+  repoId?: string,
+  profileId?: string,
+  repoUrl?: string,
+  useCentral: boolean = true,
+  prioritizeCentral: boolean = true,
+  noSnapshots: boolean = false
 ) {
+  const centralRepo = {
+    repository: {
+      id: 'central',
+      url: 'https://repo1.maven.org/maven2'
+    }
+  };
+  const customRepo = {
+    repository: {
+      id: repoId,
+      url: repoUrl,
+      ...(noSnapshots ? {snapshots: {enabled: false}} : {})
+    }
+  };
+  const profiles = {
+    profile: {
+      id: profileId,
+      repositories: useCentral
+        ? prioritizeCentral
+          ? [centralRepo, customRepo] // faster if more deps from central
+          : [customRepo, centralRepo]
+        : [customRepo] // to exclude central
+    }
+  };
   const xmlObj: {[key: string]: any} = {
     settings: {
       '@xmlns': 'http://maven.apache.org/SETTINGS/1.0.0',
       '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
       '@xsi:schemaLocation':
         'http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd',
+      activeProfiles: profileId ? [{activeProfile: profileId}] : [],
+      profiles: repoId && profileId && repoUrl ? [profiles] : [],
       servers: {
         server: [
           {

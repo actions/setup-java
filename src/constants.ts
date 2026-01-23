@@ -13,6 +13,11 @@ export const INPUT_SETTINGS_PATH = 'settings-path';
 export const INPUT_OVERWRITE_SETTINGS = 'overwrite-settings';
 export const INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 export const INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
+export const INPUT_REPO_ID = 'repo-id';
+export const INPUT_REPO_URL = 'repo-url';
+export const INPUT_REPO_NO_SNAPSHOTS = 'no-snapshots';
+export const INPUT_USE_CENTRAL = 'use-central';
+export const INPUT_PRIORITIZE_CENTRAL = 'prioritize-central';
 
 export const INPUT_DEFAULT_GPG_PRIVATE_KEY = undefined;
 export const INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';

@@ -53,6 +53,24 @@ inputs:
     description: 'Environment variable name for the GPG private key passphrase. Default is
        $GPG_PASSPHRASE.'
     required: false
+     repo-id:
+    description: 'Identifier of a Named Repo - e.g. "github"'
+    required: false
+  repo-url:
+    description: 'URL of a repository where maven will look for Dependencies - e.g. "https://maven.pkg.github.com/<USERNAME_or_ORGANIZATION>/*"'
+    required: false
+  no-snapshots:
+    description: 'Determines whether snapshots for custom repositories are allowed; defaults to allowing snapshots.'
+    required: false
+    default: false
+  use-central:
+    description: 'Sets the Flag, whether to use Maven-Central or not. (default allows Central repo)'
+    required: false
+    default: true
+  prioritize-central:
+    description: 'Allows it to define, which Repo will be chosen first to download Dependencies. (default Central prior Custom)'
+    required: false
+    default: true
   cache:
     description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle" or "sbt".'
     required: false
