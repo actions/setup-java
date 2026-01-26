@@ -207,3 +207,93 @@ jobs:
             exit 1
           fi
           ls ~/.cache/coursier
+  mill-save:
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: __tests__/cache/mill
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-13, windows-latest, ubuntu-22.04]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run setup-java with the cache for mill
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: mill
+      - name: Create files to cache
+        run: ./mill --disable-ticker _.compile
+
+      - name: Check files to cache on macos-latest
+        if: matrix.os == 'macos-13'
+        run: |
+          if [ ! -d ~/.cache/mill/download ]; then
+            echo "::error::The ~/.cache/mill/download directory does not exist unexpectedly"
+            exit 1
+          fi
+      - name: Check files to cache on windows-latest
+        if: matrix.os == 'windows-latest'
+        run: |
+          if [ ! -d %USERPROFILE%/.cache/mill/download ]; then
+            echo "::error::The %USERPROFILE%/.cache/mill/download directory does not exist unexpectedly"
+            exit 1
+          fi
+      - name: Check files to cache on ubuntu-latest
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          if [ ! -d ~/.cache/mill/download ]; then
+            echo "::error::The ~/.cache/mill/download directory does not exist unexpectedly"
+            exit 1
+          fi
+  mill-restore:
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: __tests__/cache/mill
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-13, windows-latest, ubuntu-22.04]
+    needs: mill-save
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run setup-java with the cache for mill
+        uses: ./
+        id: setup-java
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: mill
+
+      - name: Confirm that ~/.cache/mill/download directory has been made
+        if: matrix.os == 'macos-13'
+        run: |
+          if [ ! -d ~/.cache/mill/download ]; then
+            echo "::error::The ~/.cache/mill/download directory does not exist unexpectedly"
+            exit 1
+          fi
+          ls ~/.cache/mill/download
+      - name: Confirm that %USERPROFILE%/.cache/mill/download directory has been made
+        if: matrix.os == 'windows-latest'
+        run: |
+          if [ ! -d %USERPROFILE%/.cache/mill/download ]; then
+            echo "::error::The %USERPROFILE%/.cache/mill/download directory does not exist unexpectedly"
+            exit 1
+          fi
+          ls %USERPROFILE%/.cache/mill/download
+      - name: Confirm that ~/.cache/mill/download directory has been made
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          if [ ! -d ~/.cache/mill/download ]; then
+            echo "::error::The ~/.cache/mill/download directory does not exist unexpectedly"
+            exit 1
+          fi
+          ls ~/.cache/mill/download
