@@ -176,7 +176,7 @@ steps:
 
 **NOTE:** JetBrains is only available for LTS versions on 11 or later (11, 17, 21, etc.).
 
-Not all minor LTS versions are guarenteed to be available, since JetBrains considers what to ship IntelliJ IDEA with, most commonly on JDK 11.
+Not all minor LTS versions are guaranteed to be available, since JetBrains considers what to ship IntelliJ IDEA with, most commonly on JDK 11.
 For example, `11.0.24` is not available but `11.0.16` is.
 
 ```yaml
