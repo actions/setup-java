@@ -97,31 +97,33 @@ steps:
 - run: java HelloWorldApp.java
 ```
 
-#### Supported version syntax
-The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
-- major versions: `8`, `11`, `16`, `17`, `21`
-- more specific versions: `8.0.282+8`, `8.0.232`, `11.0`, `11.0.4`, `17.0`
-- early access (EA) versions: `15-ea`, `15.0.0-ea`
-
 #### Supported distributions
 Currently, the following distributions are supported:
-| Keyword | Distribution | Official site | License
+| Keyword | Distribution | Official site | License |
 |-|-|-|-|
-| `temurin` | Eclipse Temurin | [Link](https://adoptium.net/) | [Link](https://adoptium.net/about.html)
+| `temurin` | Eclipse Temurin | [Link](https://adoptium.net/) | [Link](https://adoptium.net/about.html) |
 | `zulu` | Azul Zulu OpenJDK | [Link](https://www.azul.com/downloads/zulu-community/?package=jdk) | [Link](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
 | `adopt` or `adopt-hotspot` | AdoptOpenJDK Hotspot | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
 | `adopt-openj9` | AdoptOpenJDK OpenJ9 | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
 | `liberica` | Liberica JDK | [Link](https://bell-sw.com/) | [Link](https://bell-sw.com/liberica_eula/) |
-| `microsoft` | Microsoft Build of OpenJDK | [Link](https://www.microsoft.com/openjdk) | [Link](https://docs.microsoft.com/java/openjdk/faq)
-| `corretto` | Amazon Corretto Build of OpenJDK | [Link](https://aws.amazon.com/corretto/) | [Link](https://aws.amazon.com/corretto/faqs/)
+| `microsoft` | Microsoft Build of OpenJDK | [Link](https://www.microsoft.com/openjdk) | [Link](https://docs.microsoft.com/java/openjdk/faq) |
+| `corretto` | Amazon Corretto Build of OpenJDK | [Link](https://aws.amazon.com/corretto/) | [Link](https://aws.amazon.com/corretto/faqs/) |
 | `semeru` | IBM Semeru Runtime Open Edition | [Link](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) | [Link](https://openjdk.java.net/legal/gplv2+ce.html) |
-| `oracle` | Oracle JDK | [Link](https://www.oracle.com/java/technologies/downloads/) | [Link](https://java.com/freeuselicense)
-| `dragonwell` | Alibaba Dragonwell JDK | [Link](https://dragonwell-jdk.io/) | [Link](https://www.aliyun.com/product/dragonwell/)
-| `sapmachine` | SAP SapMachine JDK/JRE | [Link](https://sapmachine.io/) | [Link](https://github.com/SAP/SapMachine/blob/sapmachine/LICENSE)
-| `graalvm` | Oracle GraalVM | [Link](https://www.graalvm.org/) | [Link](https://www.oracle.com/downloads/licenses/graal-free-license.html)
-| `jetbrains` | JetBrains Runtime | [Link](https://github.com/JetBrains/JetBrainsRuntime/) | [Link](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE)
+| `oracle` | Oracle JDK | [Link](https://www.oracle.com/java/technologies/downloads/) | [Link](https://java.com/freeuselicense) |
+| `dragonwell` | Alibaba Dragonwell JDK | [Link](https://dragonwell-jdk.io/) | [Link](https://www.aliyun.com/product/dragonwell/) |
+| `sapmachine` | SAP SapMachine JDK/JRE | [Link](https://sapmachine.io/) | [Link](https://github.com/SAP/SapMachine/blob/sapmachine/LICENSE) |
+| `graalvm` | Oracle GraalVM | [Link](https://www.graalvm.org/) | [Link](https://www.oracle.com/downloads/licenses/graal-free-license.html) |
+| `jetbrains` | JetBrains Runtime | [Link](https://github.com/JetBrains/JetBrainsRuntime/) | [Link](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE) |
+
+#### Supported version syntax
+The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
+- major versions: `8`, `11`, `17`, `21`, `25`
+- more specific versions: `8.0.472`, `11.0.29`, `17.0`, `21.0`, `21.0.9`, `25.0.1` 
+- early access (EA) versions: `21-ea`, `25-ea`, `26-ea`, `26.0.0-ea`
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
+
+**NOTE:** Upon release by the distributor, newer Java versions are automatically made available, and this process does not require updates to the setup-java configuration. However, the availability of 'more specific versions' may differ among various distributors. When configuring these 'more specific versions,' it is the user's responsibility to ensure that the configuration is updated to maintain security.
 
 **NOTE:** AdoptOpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` and `adopt-openj9`, to `temurin` and `semeru` respectively, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 
