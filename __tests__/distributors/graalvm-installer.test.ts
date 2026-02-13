@@ -348,11 +348,17 @@ describe('GraalVMDistribution', () => {
         } as http.HttpClientResponse;
         mockHttpClient.head.mockResolvedValue(mockResponse);
 
+        // Verify the error is thrown with the expected message
         await expect(
           (distribution as any).findPackageForDownload('17.0.99')
         ).rejects.toThrow(
-          'Could not find GraalVM for SemVer 17.0.99. Please check if this version is available at https://download.oracle.com/graalvm'
+          "Could not find satisfied version for SemVer '17.0.99'"
         );
+
+        // Verify the hint about checking the base URL is included
+        await expect(
+          (distribution as any).findPackageForDownload('17.0.99')
+        ).rejects.toThrow('https://download.oracle.com/graalvm');
       });
 
       it('should throw error for unauthorized access (401)', async () => {
@@ -496,12 +502,11 @@ describe('GraalVMDistribution', () => {
 
         await expect(
           (distribution as any).findPackageForDownload('23')
-        ).rejects.toThrow("Unable to find latest version for '23-ea'");
-
-        // Verify error logging
-        expect(core.error).toHaveBeenCalledWith(
-          'Available versions: 23-ea-20240716'
+        ).rejects.toThrow(
+          "Could not find satisfied version for SemVer '23-ea'"
         );
+
+        // Verify error logging - removed as we now use the helper method which doesn't call core.error
       });
 
       it('should throw error when no matching file for architecture in EA build', async () => {
@@ -708,11 +713,9 @@ describe('GraalVMDistribution', () => {
 
       await expect(
         (distribution as any).findEABuildDownloadUrl('23-ea')
-      ).rejects.toThrow("Unable to find latest version for '23-ea'");
+      ).rejects.toThrow("Could not find satisfied version for SemVer '23-ea'");
 
-      expect(core.error).toHaveBeenCalledWith(
-        'Available versions: 23-ea-20240716, 23-ea-20240709'
-      );
+      // Verify error logging - removed as we now use the helper method which doesn't call core.error
     });
 
     it('should throw error when no matching file for architecture', async () => {

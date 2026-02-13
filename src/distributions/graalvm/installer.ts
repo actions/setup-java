@@ -149,9 +149,10 @@ export class GraalVMDistribution extends JavaBase {
     const statusCode = response.message.statusCode;
 
     if (statusCode === HttpCodes.NotFound) {
-      throw new Error(
-        `Could not find GraalVM for SemVer ${range}. Please check if this version is available at ${GRAALVM_DL_BASE}`
-      );
+      // Create the standard error with additional hint about checking the download URL
+      const error = this.createVersionNotFoundError(range);
+      error.message += `\nPlease check if this version is available at ${GRAALVM_DL_BASE}`;
+      throw error;
     }
 
     if (
@@ -180,10 +181,8 @@ export class GraalVMDistribution extends JavaBase {
 
     const latestVersion = versions.find(v => v.latest);
     if (!latestVersion) {
-      core.error(
-        `Available versions: ${versions.map(v => v.version).join(', ')}`
-      );
-      throw new Error(`Unable to find latest version for '${javaEaVersion}'`);
+      const availableVersions = versions.map(v => v.version);
+      throw this.createVersionNotFoundError(javaEaVersion, availableVersions);
     }
 
     core.debug(`Latest version found: ${latestVersion.version}`);

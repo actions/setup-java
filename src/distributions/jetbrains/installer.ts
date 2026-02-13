@@ -44,15 +44,10 @@ export class JetBrainsDistribution extends JavaBase {
     const resolvedFullVersion =
       satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
     if (!resolvedFullVersion) {
-      const availableOptions = versionsRaw
-        .map(item => `${item.tag_name} (${item.semver}+${item.build})`)
-        .join(', ');
-      const availableOptionsMessage = availableOptions
-        ? `\nAvailable versions: ${availableOptions}`
-        : '';
-      throw new Error(
-        `Could not find satisfied version for SemVer '${range}'. ${availableOptionsMessage}`
+      const availableVersionStrings = versionsRaw.map(
+        item => `${item.tag_name} (${item.semver}+${item.build})`
       );
+      throw this.createVersionNotFoundError(range, availableVersionStrings);
     }
 
     return resolvedFullVersion;

@@ -259,6 +259,42 @@ export abstract class JavaBase {
     };
   }
 
+  protected createVersionNotFoundError(
+    versionOrRange: string,
+    availableVersions?: string[],
+    additionalContext?: string
+  ): Error {
+    const parts = [
+      `Could not find satisfied version for SemVer '${versionOrRange}'.`,
+      `Distribution: ${this.distribution}`,
+      `Package type: ${this.packageType}`,
+      `Architecture: ${this.architecture}`
+    ];
+
+    // Add additional context if provided (e.g., platform/OS info)
+    if (additionalContext) {
+      parts.push(additionalContext);
+    }
+
+    if (availableVersions && availableVersions.length > 0) {
+      const maxVersionsToShow = core.isDebug() ? availableVersions.length : 50;
+      const versionsToShow = availableVersions.slice(0, maxVersionsToShow);
+      const truncated = availableVersions.length > maxVersionsToShow;
+
+      parts.push(
+        `Available versions: ${versionsToShow.join(', ')}${truncated ? '...' : ''}`
+      );
+
+      if (truncated) {
+        parts.push(
+          `(showing first ${maxVersionsToShow} of ${availableVersions.length} versions, enable debug mode to see all)`
+        );
+      }
+    }
+
+    return new Error(parts.join('\n'));
+  }
+
   protected setJavaDefault(version: string, toolPath: string) {
     const majorVersion = version.split('.')[0];
     core.exportVariable('JAVA_HOME', toolPath);
