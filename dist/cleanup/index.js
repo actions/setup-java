@@ -49755,8 +49755,9 @@ function isCacheFeatureAvailable() {
 }
 exports.isCacheFeatureAvailable = isCacheFeatureAvailable;
 function getVersionFromFileContent(content, distributionName, versionFile) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c;
     let javaVersionRegExp;
+    let extractedDistribution;
     function getFileName(versionFile) {
         return path_1.default.basename(versionFile);
     }
@@ -49766,14 +49767,22 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
             /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
     }
     else if (versionFileName == '.sdkmanrc') {
-        javaVersionRegExp = /^java\s*=\s*(?<version>[^-]+)/m;
+        // Match both version and optional distribution identifier
+        javaVersionRegExp = /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
     }
     else {
         javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
     }
-    const capturedVersion = ((_b = (_a = content.match(javaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version)
-        ? (_d = (_c = content.match(javaVersionRegExp)) === null || _c === void 0 ? void 0 : _c.groups) === null || _d === void 0 ? void 0 : _d.version
+    const match = content.match(javaVersionRegExp);
+    const capturedVersion = ((_a = match === null || match === void 0 ? void 0 : match.groups) === null || _a === void 0 ? void 0 : _a.version)
+        ? match.groups.version
         : '';
+    // Extract distribution from .sdkmanrc file
+    if (versionFileName == '.sdkmanrc' && ((_b = match === null || match === void 0 ? void 0 : match.groups) === null || _b === void 0 ? void 0 : _b.distribution)) {
+        const sdkmanDist = match.groups.distribution;
+        extractedDistribution = mapSdkmanDistribution(sdkmanDist);
+        core.debug(`Parsed distribution '${extractedDistribution}' from SDKMAN identifier '${sdkmanDist}'`);
+    }
     core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
     if (!capturedVersion) {
         return null;
@@ -49787,13 +49796,40 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     if (!version) {
         return null;
     }
-    if (constants_1.DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(distributionName)) {
-        const coerceVersion = (_e = semver.coerce(version)) !== null && _e !== void 0 ? _e : version;
+    // Apply DISTRIBUTIONS_ONLY_MAJOR_VERSION logic whenever the effective distribution
+    // (either explicitly provided or extracted from the version file) is in the list.
+    if (constants_1.DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(extractedDistribution || distributionName)) {
+        const coerceVersion = (_c = semver.coerce(version)) !== null && _c !== void 0 ? _c : version;
         version = semver.major(coerceVersion).toString();
     }
-    return version.toString();
+    return {
+        version: version.toString(),
+        distribution: extractedDistribution
+    };
 }
 exports.getVersionFromFileContent = getVersionFromFileContent;
+// Map SDKMAN distribution identifiers to setup-java distribution names
+function mapSdkmanDistribution(sdkmanDist) {
+    const distributionMap = {
+        'tem': 'temurin',
+        'sem': 'temurin',
+        'zulu': 'zulu',
+        'amzn': 'corretto',
+        'graal': 'graalvm',
+        'graalce': 'graalvm',
+        'librca': 'liberica',
+        'ms': 'microsoft',
+        'oracle': 'oracle',
+        'sapmchn': 'sapmachine',
+        'jbr': 'jetbrains',
+        'dragonwell': 'dragonwell'
+    };
+    const mapped = distributionMap[sdkmanDist.toLowerCase()];
+    if (!mapped) {
+        core.warning(`Unknown SDKMAN distribution identifier '${sdkmanDist}'. Please specify the distribution explicitly.`);
+    }
+    return mapped;
+}
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
 function avoidOldNotation(content) {
     return content.startsWith('1.') ? content.substring(2) : content;
