@@ -1,12 +1,14 @@
 import {HttpClient} from '@actions/http-client';
 import {SapMachineDistribution} from '../../src/distributions/sapmachine/installer';
 import * as utils from '../../src/util';
+import * as core from '@actions/core';
 
 import manifestData from '../data/sapmachine.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
   let spyUtilGetDownloadArchiveExtension: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -21,6 +23,10 @@ describe('getAvailableVersions', () => {
       'getDownloadArchiveExtension'
     );
     spyUtilGetDownloadArchiveExtension.mockReturnValue('tar.gz');
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {

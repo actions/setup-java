@@ -248,6 +248,7 @@ describe('setupJava', () => {
   let spyCoreExportVariable: jest.SpyInstance;
   let spyCoreAddPath: jest.SpyInstance;
   let spyCoreSetOutput: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyGetToolcachePath = jest.spyOn(util, 'getToolcachePath');
@@ -286,6 +287,10 @@ describe('setupJava', () => {
 
     spyCoreSetOutput = jest.spyOn(core, 'setOutput');
     spyCoreSetOutput.mockImplementation(() => undefined);
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => undefined);
 
     jest.spyOn(os, 'arch').mockReturnValue('x86' as ReturnType<typeof os.arch>);
   });

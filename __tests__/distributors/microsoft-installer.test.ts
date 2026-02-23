@@ -8,6 +8,7 @@ describe('findPackageForDownload', () => {
   let distribution: MicrosoftDistributions;
   let spyGetManifestFromRepo: jest.SpyInstance;
   let spyDebug: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     distribution = new MicrosoftDistributions({
@@ -26,6 +27,10 @@ describe('findPackageForDownload', () => {
 
     spyDebug = jest.spyOn(core, 'debug');
     spyDebug.mockImplementation(() => {});
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   it.each([

@@ -42,6 +42,7 @@ beforeAll(() => {
 describe('GraalVMDistribution', () => {
   let distribution: GraalVMDistribution;
   let mockHttpClient: jest.Mocked<http.HttpClient>;
+  let spyCoreError: jest.SpyInstance;
 
   const defaultOptions: JavaInstallerOptions = {
     version: '17',
@@ -59,6 +60,10 @@ describe('GraalVMDistribution', () => {
     (distribution as any).http = mockHttpClient;
 
     (util.getDownloadArchiveExtension as jest.Mock).mockReturnValue('tar.gz');
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterAll(() => {

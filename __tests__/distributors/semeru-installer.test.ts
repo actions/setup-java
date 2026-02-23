@@ -4,9 +4,11 @@ import {JavaInstallerOptions} from '../../src/distributions/base-models';
 import {SemeruDistribution} from '../../src/distributions/semeru/installer';
 
 import manifestData from '../data/semeru.json';
+import * as core from '@actions/core';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -15,6 +17,9 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: []
     });
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {

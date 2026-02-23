@@ -9,9 +9,11 @@ import {JavaInstallerOptions} from '../../src/distributions/base-models';
 import os from 'os';
 
 import manifestData from '../data/adopt.json';
+import * as core from '@actions/core';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -20,6 +22,10 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: []
     });
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {

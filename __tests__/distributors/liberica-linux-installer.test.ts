@@ -5,11 +5,13 @@ import {
 } from '../../src/distributions/liberica/models';
 import {HttpClient} from '@actions/http-client';
 import os from 'os';
+import * as core from '@actions/core';
 
 import manifestData from '../data/liberica-linux.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -18,6 +20,10 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: manifestData as LibericaVersion[]
     });
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {

@@ -3,12 +3,14 @@ import {ZuluDistribution} from '../../src/distributions/zulu/installer';
 import {IZuluVersions} from '../../src/distributions/zulu/models';
 import * as utils from '../../src/util';
 import os from 'os';
+import * as core from '@actions/core';
 
 import manifestData from '../data/zulu-releases-default.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
   let spyUtilGetDownloadArchiveExtension: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -23,6 +25,10 @@ describe('getAvailableVersions', () => {
       'getDownloadArchiveExtension'
     );
     spyUtilGetDownloadArchiveExtension.mockReturnValue('tar.gz');
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {

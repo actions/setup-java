@@ -4,13 +4,14 @@ import {JavaInstallerOptions} from '../../src/distributions/base-models';
 import {CorrettoDistribution} from '../../src/distributions/corretto/installer';
 import * as util from '../../src/util';
 import os from 'os';
-import {isGeneratorFunction} from 'util/types';
+import * as core from '@actions/core';
 
 import manifestData from '../data/corretto.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
   let spyGetDownloadArchiveExtension: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -23,6 +24,10 @@ describe('getAvailableVersions', () => {
       util,
       'getDownloadArchiveExtension'
     );
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {
