@@ -59,6 +59,10 @@ inputs:
   cache-dependency-path:
     description: 'The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.'
     required: false
+  cache-write:
+    description: 'Whether to save the cache at the end of the workflow. Set to false for cache read-only mode, useful for preventing cache poisoning from untrusted PR builds.'
+    required: false
+    default: true
   job-status:
     description: 'Workaround to pass job status to post job step. This variable is not intended for manual setting'
     default: ${{ job.status }}
