@@ -119,12 +119,18 @@ export function isCacheFeatureAvailable(): boolean {
   return false;
 }
 
+export interface VersionInfo {
+  version: string;
+  distribution?: string;
+}
+
 export function getVersionFromFileContent(
   content: string,
   distributionName: string,
   versionFile: string
-): string | null {
+): VersionInfo | null {
   let javaVersionRegExp: RegExp;
+  let extractedDistribution: string | undefined;
 
   function getFileName(versionFile: string) {
     return path.basename(versionFile);
@@ -135,14 +141,25 @@ export function getVersionFromFileContent(
     javaVersionRegExp =
       /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
   } else if (versionFileName == '.sdkmanrc') {
-    javaVersionRegExp = /^java\s*=\s*(?<version>[^-]+)/m;
+    // Match both version and optional distribution identifier
+    javaVersionRegExp = /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
   } else {
     javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
   }
 
-  const capturedVersion = content.match(javaVersionRegExp)?.groups?.version
-    ? (content.match(javaVersionRegExp)?.groups?.version as string)
+  const match = content.match(javaVersionRegExp);
+  const capturedVersion = match?.groups?.version
+    ? (match.groups.version as string)
     : '';
+
+  // Extract distribution from .sdkmanrc file
+  if (versionFileName == '.sdkmanrc' && match?.groups?.distribution) {
+    const sdkmanDist = match.groups.distribution;
+    extractedDistribution = mapSdkmanDistribution(sdkmanDist);
+    core.debug(
+      `Parsed distribution '${extractedDistribution}' from SDKMAN identifier '${sdkmanDist}'`
+    );
+  }
 
   core.debug(
     `Parsed version '${capturedVersion}' from file '${versionFileName}'`
@@ -164,12 +181,43 @@ export function getVersionFromFileContent(
     return null;
   }
 
-  if (DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(distributionName)) {
+  // Apply DISTRIBUTIONS_ONLY_MAJOR_VERSION logic whenever the effective distribution
+  // (either explicitly provided or extracted from the version file) is in the list.
+  if (DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(extractedDistribution || distributionName)) {
     const coerceVersion = semver.coerce(version) ?? version;
     version = semver.major(coerceVersion).toString();
   }
 
-  return version.toString();
+  return {
+    version: version.toString(),
+    distribution: extractedDistribution
+  };
+}
+
+// Map SDKMAN distribution identifiers to setup-java distribution names
+function mapSdkmanDistribution(sdkmanDist: string): string | undefined {
+  const distributionMap: Record<string, string> = {
+    'tem': 'temurin',
+    'sem': 'temurin',
+    'zulu': 'zulu',
+    'amzn': 'corretto',
+    'graal': 'graalvm',
+    'graalce': 'graalvm',
+    'librca': 'liberica',
+    'ms': 'microsoft',
+    'oracle': 'oracle',
+    'sapmchn': 'sapmachine',
+    'jbr': 'jetbrains',
+    'dragonwell': 'dragonwell'
+  };
+
+  const mapped = distributionMap[sdkmanDist.toLowerCase()];
+  if (!mapped) {
+    core.warning(
+      `Unknown SDKMAN distribution identifier '${sdkmanDist}'. Please specify the distribution explicitly.`
+    );
+  }
+  return mapped;
 }
 
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
