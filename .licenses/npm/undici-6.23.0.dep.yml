@@ -1,16 +1,16 @@
 ---
-name: fast-xml-parser
-version: 5.4.1
+name: undici
+version: 6.23.0
 type: npm
-summary: Validate XML, Parse XML, Build XML without C/C++ based libraries
-homepage:
+summary: An HTTP/1.1 client, written from scratch for Node.js
+homepage: https://undici.nodejs.org
 license: mit
 licenses:
 - sources: LICENSE
   text: |
     MIT License
 
-    Copyright (c) 2017 Amit Kumar Gupta
+    Copyright (c) Matteo Collina and Undici contributors
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,5 @@ licenses:
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
 - sources: README.md
-  text: |-
-    * MIT License
-
-    ![Donate $5](static/img/donation_quote.png)
+  text: MIT
 notices: []
