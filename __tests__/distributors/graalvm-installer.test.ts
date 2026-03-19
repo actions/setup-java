@@ -508,7 +508,7 @@ describe('GraalVMDistribution', () => {
         await expect(
           (distribution as any).findPackageForDownload('23')
         ).rejects.toThrow(
-          "Could not find satisfied version for SemVer '23-ea'"
+          "No EA build is marked as 'latest' for version range '23-ea'. Available EA versions: 23-ea-20240716."
         );
 
         // Verify error logging - removed as we now use the helper method which doesn't call core.error
@@ -718,7 +718,9 @@ describe('GraalVMDistribution', () => {
 
       await expect(
         (distribution as any).findEABuildDownloadUrl('23-ea')
-      ).rejects.toThrow("Could not find satisfied version for SemVer '23-ea'");
+      ).rejects.toThrow(
+        "No EA build is marked as 'latest' for version range '23-ea'. Available EA versions: 23-ea-20240716, 23-ea-20240709."
+      );
 
       // Verify error logging - removed as we now use the helper method which doesn't call core.error
     });

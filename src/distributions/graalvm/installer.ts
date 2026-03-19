@@ -182,7 +182,11 @@ export class GraalVMDistribution extends JavaBase {
     const latestVersion = versions.find(v => v.latest);
     if (!latestVersion) {
       const availableVersions = versions.map(v => v.version);
-      throw this.createVersionNotFoundError(javaEaVersion, availableVersions);
+      let message = `No EA build is marked as 'latest' for version range '${javaEaVersion}'.`;
+      if (availableVersions.length > 0) {
+        message += ` Available EA versions: ${availableVersions.join(', ')}.`;
+      }
+      throw new Error(message);
     }
 
     core.debug(`Latest version found: ${latestVersion.version}`);

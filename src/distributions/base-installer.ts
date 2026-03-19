@@ -282,7 +282,7 @@ export abstract class JavaBase {
       const truncated = availableVersions.length > maxVersionsToShow;
 
       parts.push(
-        `Available versions: ${versionsToShow.join(', ')}${truncated ? '...' : ''}`
+        `Available versions: ${versionsToShow.join(', ')}${truncated ? ', ...' : ''}`
       );
 
       if (truncated) {
