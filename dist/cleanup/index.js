@@ -49768,7 +49768,8 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     }
     else if (versionFileName == '.sdkmanrc') {
         // Match both version and optional distribution identifier
-        javaVersionRegExp = /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
+        javaVersionRegExp =
+            /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
     }
     else {
         javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
@@ -49811,18 +49812,19 @@ exports.getVersionFromFileContent = getVersionFromFileContent;
 // Map SDKMAN distribution identifiers to setup-java distribution names
 function mapSdkmanDistribution(sdkmanDist) {
     const distributionMap = {
-        'tem': 'temurin',
-        'sem': 'semeru',
-        'zulu': 'zulu',
-        'amzn': 'corretto',
-        'graal': 'graalvm',
-        'graalce': 'graalvm',
-        'librca': 'liberica',
-        'ms': 'microsoft',
-        'oracle': 'oracle',
-        'sapmchn': 'sapmachine',
-        'jbr': 'jetbrains',
-        'dragonwell': 'dragonwell'
+        tem: 'temurin',
+        sem: 'semeru',
+        albba: 'dragonwell',
+        zulu: 'zulu',
+        amzn: 'corretto',
+        graal: 'graalvm',
+        graalce: 'graalvm',
+        librca: 'liberica',
+        ms: 'microsoft',
+        oracle: 'oracle',
+        sapmchn: 'sapmachine',
+        jbr: 'jetbrains',
+        dragonwell: 'dragonwell'
     };
     const mapped = distributionMap[sdkmanDist.toLowerCase()];
     if (!mapped) {

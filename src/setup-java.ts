@@ -59,7 +59,9 @@ async function run() {
 
       // Use distribution from file if available, otherwise use the input
       if (versionInfo.distribution) {
-        core.info(`Using distribution '${versionInfo.distribution}' from ${versionFile}`);
+        core.info(
+          `Using distribution '${versionInfo.distribution}' from ${versionFile}`
+        );
         distributionName = versionInfo.distribution;
       } else if (!distributionName) {
         throw new Error(

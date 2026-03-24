@@ -95,6 +95,7 @@ describe('getVersionFromFileContent', () => {
       ['java=11.0.20.1-tem\njava=21.0.20.1-tem\n', '11.0.20', 'temurin'], // choose first match
       ['#java=11.0.20.1-tem\njava=21.0.20.1-tem\n', '21.0.20', 'temurin'], // first one is 'commented' in .sdkmanrc
       ['java=21.0.5-zulu', '21.0.5', 'zulu'],
+      ['java=17.0.13-albba', '17.0.13', 'dragonwell'],
       ['java=17.0.13-amzn', '17', 'corretto'],
       ['java=21.0.5-graal', '21.0.5', 'graalvm'],
       ['java=17.0.9-graalce', '17.0.9', 'graalvm'],
@@ -105,22 +106,39 @@ describe('getVersionFromFileContent', () => {
       ['java=21.0.5-jbr', '21.0.5', 'jetbrains'],
       ['java=11.0.25-sem', '11.0.25', 'semeru'],
       ['java=17.0.13-dragonwell', '17.0.13', 'dragonwell']
-    ])('parsing %s should return version %s and distribution %s', (content: string, expectedVersion: string, expectedDist: string) => {
-      const actual = getVersionFromFileContent(content, 'openjdk', '.sdkmanrc');
-      expect(actual?.version).toBe(expectedVersion);
-      expect(actual?.distribution).toBe(expectedDist);
-    });
+    ])(
+      'parsing %s should return version %s and distribution %s',
+      (content: string, expectedVersion: string, expectedDist: string) => {
+        const actual = getVersionFromFileContent(
+          content,
+          'openjdk',
+          '.sdkmanrc'
+        );
+        expect(actual?.version).toBe(expectedVersion);
+        expect(actual?.distribution).toBe(expectedDist);
+      }
+    );
 
     it('should warn and return undefined distribution for unknown identifier', () => {
       const warnSpy = jest.spyOn(core, 'warning');
-      const actual = getVersionFromFileContent('java=21.0.5-unknown', 'temurin', '.sdkmanrc');
+      const actual = getVersionFromFileContent(
+        'java=21.0.5-unknown',
+        'temurin',
+        '.sdkmanrc'
+      );
       expect(actual?.version).toBe('21.0.5');
       expect(actual?.distribution).toBeUndefined();
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Unknown SDKMAN distribution identifier'));
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Unknown SDKMAN distribution identifier')
+      );
     });
 
     it('should return version without distribution when no suffix provided', () => {
-      const actual = getVersionFromFileContent('java=11.0.20', 'temurin', '.sdkmanrc');
+      const actual = getVersionFromFileContent(
+        'java=11.0.20',
+        'temurin',
+        '.sdkmanrc'
+      );
       expect(actual?.version).toBe('11.0.20');
       expect(actual?.distribution).toBeUndefined();
     });
