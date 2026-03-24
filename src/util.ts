@@ -150,7 +150,8 @@ export function getVersionFromFileContent(
       /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
   } else if (versionFileName == '.sdkmanrc') {
     // Match both version and optional distribution identifier
-    javaVersionRegExp = /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
+    javaVersionRegExp =
+      /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
   } else {
     javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
   }
@@ -191,7 +192,11 @@ export function getVersionFromFileContent(
 
   // Apply DISTRIBUTIONS_ONLY_MAJOR_VERSION logic whenever the effective distribution
   // (either explicitly provided or extracted from the version file) is in the list.
-  if (DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(extractedDistribution || distributionName)) {
+  if (
+    DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(
+      extractedDistribution || distributionName
+    )
+  ) {
     const coerceVersion = semver.coerce(version) ?? version;
     version = semver.major(coerceVersion).toString();
   }
@@ -205,18 +210,19 @@ export function getVersionFromFileContent(
 // Map SDKMAN distribution identifiers to setup-java distribution names
 function mapSdkmanDistribution(sdkmanDist: string): string | undefined {
   const distributionMap: Record<string, string> = {
-    'tem': 'temurin',
-    'sem': 'semeru',
-    'zulu': 'zulu',
-    'amzn': 'corretto',
-    'graal': 'graalvm',
-    'graalce': 'graalvm',
-    'librca': 'liberica',
-    'ms': 'microsoft',
-    'oracle': 'oracle',
-    'sapmchn': 'sapmachine',
-    'jbr': 'jetbrains',
-    'dragonwell': 'dragonwell'
+    tem: 'temurin',
+    sem: 'semeru',
+    albba: 'dragonwell',
+    zulu: 'zulu',
+    amzn: 'corretto',
+    graal: 'graalvm',
+    graalce: 'graalvm',
+    librca: 'liberica',
+    ms: 'microsoft',
+    oracle: 'oracle',
+    sapmchn: 'sapmachine',
+    jbr: 'jetbrains',
+    dragonwell: 'dragonwell'
   };
 
   const mapped = distributionMap[sdkmanDist.toLowerCase()];
