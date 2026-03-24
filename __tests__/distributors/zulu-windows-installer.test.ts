@@ -232,6 +232,6 @@ describe('findPackageForDownload', () => {
     distribution['getAvailableVersions'] = async () => manifestData;
     await expect(
       distribution['findPackageForDownload'](distribution['version'])
-    ).rejects.toThrow(/Could not find satisfied version for SemVer/);
+    ).rejects.toThrow(/No matching version found for SemVer/);
   });
 });

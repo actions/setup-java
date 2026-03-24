@@ -538,7 +538,7 @@ describe('setupJava', () => {
   ])('should throw an error for version not found for %s', async input => {
     mockJavaBase = new EmptyJavaBase(input);
     await expect(mockJavaBase.setupJava()).rejects.toThrow(
-      `Could not find satisfied version for SemVer '${input.version}'`
+      `No matching version found for SemVer '${input.version}'`
     );
     expect(spyTcFindAllVersions).toHaveBeenCalled();
     expect(spyCoreAddPath).not.toHaveBeenCalled();
@@ -584,7 +584,7 @@ describe('createVersionNotFoundError', () => {
     const error = (mockJavaBase as any).createVersionNotFoundError('17.0.5');
 
     expect(error.message).toContain(
-      "Could not find satisfied version for SemVer '17.0.5'"
+      "No matching version found for SemVer '17.0.5'"
     );
     expect(error.message).toContain('Distribution: Empty');
     expect(error.message).toContain('Package type: jdk');
@@ -606,7 +606,7 @@ describe('createVersionNotFoundError', () => {
     );
 
     expect(error.message).toContain(
-      "Could not find satisfied version for SemVer '17.0.5'"
+      "No matching version found for SemVer '17.0.5'"
     );
     expect(error.message).toContain('Distribution: Empty');
     expect(error.message).toContain('Package type: jdk');
@@ -653,7 +653,7 @@ describe('createVersionNotFoundError', () => {
     );
 
     expect(error.message).toContain(
-      "Could not find satisfied version for SemVer '17.0.5'"
+      "No matching version found for SemVer '17.0.5'"
     );
     expect(error.message).toContain('Distribution: Empty');
     expect(error.message).toContain('Package type: jdk');

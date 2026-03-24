@@ -238,7 +238,7 @@ describe('getAvailableVersions', () => {
         await expect(
           distribution['findPackageForDownload'](jdkVersion)
         ).rejects.toThrow(
-          `Could not find satisfied version for SemVer '${jdkVersion}'`
+          `No matching version found for SemVer '${jdkVersion}'`
         );
       }
     );

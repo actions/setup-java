@@ -265,7 +265,7 @@ export abstract class JavaBase {
     additionalContext?: string
   ): Error {
     const parts = [
-      `Could not find satisfied version for SemVer '${versionOrRange}'.`,
+      `No matching version found for SemVer '${versionOrRange}'.`,
       `Distribution: ${this.distribution}`,
       `Package type: ${this.packageType}`,
       `Architecture: ${this.architecture}`

@@ -272,7 +272,7 @@ describe('getAvailableVersions', () => {
         await expect(
           distribution['findPackageForDownload'](normalizedVersion)
         ).rejects.toThrow(
-          `Could not find satisfied version for SemVer '${normalizedVersion}'`
+          `No matching version found for SemVer '${normalizedVersion}'`
         );
       }
     );
