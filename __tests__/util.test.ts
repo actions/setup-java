@@ -103,7 +103,7 @@ describe('getVersionFromFileContent', () => {
       ['java=21.0.5-oracle', '21.0.5', 'oracle'],
       ['java=11.0.25-sapmchn', '11.0.25', 'sapmachine'],
       ['java=21.0.5-jbr', '21.0.5', 'jetbrains'],
-      ['java=11.0.25-sem', '11.0.25', 'temurin'],
+      ['java=11.0.25-sem', '11.0.25', 'semeru'],
       ['java=17.0.13-dragonwell', '17.0.13', 'dragonwell']
     ])('parsing %s should return version %s and distribution %s', (content: string, expectedVersion: string, expectedDist: string) => {
       const actual = getVersionFromFileContent(content, 'openjdk', '.sdkmanrc');
@@ -112,7 +112,7 @@ describe('getVersionFromFileContent', () => {
     });
 
     it('should warn and return undefined distribution for unknown identifier', () => {
-      const warnSpy = jest.spyOn(require('@actions/core'), 'warning');
+      const warnSpy = jest.spyOn(core, 'warning');
       const actual = getVersionFromFileContent('java=21.0.5-unknown', 'temurin', '.sdkmanrc');
       expect(actual?.version).toBe('21.0.5');
       expect(actual?.distribution).toBeUndefined();

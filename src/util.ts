@@ -198,7 +198,7 @@ export function getVersionFromFileContent(
 function mapSdkmanDistribution(sdkmanDist: string): string | undefined {
   const distributionMap: Record<string, string> = {
     'tem': 'temurin',
-    'sem': 'temurin',
+    'sem': 'semeru',
     'zulu': 'zulu',
     'amzn': 'corretto',
     'graal': 'graalvm',

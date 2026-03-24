@@ -49812,7 +49812,7 @@ exports.getVersionFromFileContent = getVersionFromFileContent;
 function mapSdkmanDistribution(sdkmanDist) {
     const distributionMap = {
         'tem': 'temurin',
-        'sem': 'temurin',
+        'sem': 'semeru',
         'zulu': 'zulu',
         'amzn': 'corretto',
         'graal': 'graalvm',
