@@ -1,12 +1,14 @@
 import {HttpClient} from '@actions/http-client';
 import {DragonwellDistribution} from '../../src/distributions/dragonwell/installer';
 import * as utils from '../../src/util';
+import * as core from '@actions/core';
 
 import manifestData from '../data/dragonwell.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
   let spyUtilGetDownloadArchiveExtension: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -21,6 +23,10 @@ describe('getAvailableVersions', () => {
       'getDownloadArchiveExtension'
     );
     spyUtilGetDownloadArchiveExtension.mockReturnValue('tar.gz');
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -232,7 +238,7 @@ describe('getAvailableVersions', () => {
         await expect(
           distribution['findPackageForDownload'](jdkVersion)
         ).rejects.toThrow(
-          `Couldn't find any satisfied version for the specified java-version: "${jdkVersion}" and architecture: "${arch}".`
+          `No matching version found for SemVer '${jdkVersion}'`
         );
       }
     );

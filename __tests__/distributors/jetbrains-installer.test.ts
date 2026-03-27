@@ -4,9 +4,11 @@ import {JetBrainsDistribution} from '../../src/distributions/jetbrains/installer
 
 import manifestData from '../data/jetbrains.json';
 import os from 'os';
+import * as core from '@actions/core';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -15,6 +17,10 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: []
     });
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -98,7 +104,7 @@ describe('findPackageForDownload', () => {
     });
     distribution['getAvailableVersions'] = async () => manifestData as any;
     await expect(distribution['findPackageForDownload']('8.x')).rejects.toThrow(
-      /Could not find satisfied version for SemVer */
+      /No matching version found for SemVer */
     );
   });
 
@@ -111,7 +117,7 @@ describe('findPackageForDownload', () => {
     });
     distribution['getAvailableVersions'] = async () => [];
     await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
-      /Could not find satisfied version for SemVer */
+      /No matching version found for SemVer */
     );
   });
 });

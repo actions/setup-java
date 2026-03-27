@@ -11,19 +11,32 @@ describe('cleanup', () => {
     Parameters<typeof cache.saveCache>
   >;
   let spyJobStatusSuccess: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyWarning = jest.spyOn(core, 'warning');
     spyWarning.mockImplementation(() => null);
+
     spyInfo = jest.spyOn(core, 'info');
     spyInfo.mockImplementation(() => null);
+
     spyCacheSave = jest.spyOn(cache, 'saveCache');
+
     spyJobStatusSuccess = jest.spyOn(util, 'isJobStatusSuccess');
     spyJobStatusSuccess.mockReturnValue(true);
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
+
     createStateForSuccessfulRestore();
   });
+
   afterEach(() => {
     resetState();
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   it('does not fail nor warn even when the save process throws a ReserveCacheError', async () => {

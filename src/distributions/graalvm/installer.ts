@@ -150,7 +150,9 @@ export class GraalVMDistribution extends JavaBase {
 
     if (statusCode === HttpCodes.NotFound) {
       throw new Error(
-        `Could not find GraalVM for SemVer ${range}. Please check if this version is available at ${GRAALVM_DL_BASE}`
+        `No matching GraalVM version found for SemVer '${range}'.` +
+          ` Available versions can be found at ${GRAALVM_DL_BASE}/.` +
+          ` Pick a version from the list.`
       );
     }
 
@@ -180,10 +182,12 @@ export class GraalVMDistribution extends JavaBase {
 
     const latestVersion = versions.find(v => v.latest);
     if (!latestVersion) {
-      core.error(
-        `Available versions: ${versions.map(v => v.version).join(', ')}`
-      );
-      throw new Error(`Unable to find latest version for '${javaEaVersion}'`);
+      const availableVersions = versions.map(v => v.version);
+      let message = `No EA build is marked as latest for version '${javaEaVersion}'.`;
+      if (availableVersions.length > 0) {
+        message += ` Available EA versions: [${availableVersions.map(v => `'${v}'`).join(', ')}].`;
+      }
+      throw new Error(message);
     }
 
     core.debug(`Latest version found: ${latestVersion.version}`);

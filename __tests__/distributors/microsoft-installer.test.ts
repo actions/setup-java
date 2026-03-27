@@ -8,6 +8,7 @@ describe('findPackageForDownload', () => {
   let distribution: MicrosoftDistributions;
   let spyGetManifestFromRepo: jest.SpyInstance;
   let spyDebug: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     distribution = new MicrosoftDistributions({
@@ -26,6 +27,10 @@ describe('findPackageForDownload', () => {
 
     spyDebug = jest.spyOn(core, 'debug');
     spyDebug.mockImplementation(() => {});
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   it.each([
@@ -174,7 +179,7 @@ describe('findPackageForDownload', () => {
 
   it('should throw an error', async () => {
     await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
-      /Could not find satisfied version for SemVer */
+      /No matching version found for SemVer */
     );
   });
 });

@@ -112,7 +112,7 @@ export class OracleDistribution extends JavaBase {
       }
     }
 
-    throw new Error(`Could not find Oracle JDK for SemVer ${range}`);
+    throw this.createVersionNotFoundError(range);
   }
 
   public getPlatform(platform: NodeJS.Platform = process.platform): OsVersions {

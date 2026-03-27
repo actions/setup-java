@@ -42,6 +42,7 @@ beforeAll(() => {
 describe('GraalVMDistribution', () => {
   let distribution: GraalVMDistribution;
   let mockHttpClient: jest.Mocked<http.HttpClient>;
+  let spyCoreError: jest.SpyInstance;
 
   const defaultOptions: JavaInstallerOptions = {
     version: '17',
@@ -59,6 +60,10 @@ describe('GraalVMDistribution', () => {
     (distribution as any).http = mockHttpClient;
 
     (util.getDownloadArchiveExtension as jest.Mock).mockReturnValue('tar.gz');
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterAll(() => {
@@ -348,11 +353,17 @@ describe('GraalVMDistribution', () => {
         } as http.HttpClientResponse;
         mockHttpClient.head.mockResolvedValue(mockResponse);
 
+        // Verify the error is thrown with the expected message
         await expect(
           (distribution as any).findPackageForDownload('17.0.99')
         ).rejects.toThrow(
-          'Could not find GraalVM for SemVer 17.0.99. Please check if this version is available at https://download.oracle.com/graalvm'
+          "No matching GraalVM version found for SemVer '17.0.99'. Available versions can be found at https://download.oracle.com/graalvm/. Pick a version from the list."
         );
+
+        // Verify the hint about checking the base URL is included
+        await expect(
+          (distribution as any).findPackageForDownload('17.0.99')
+        ).rejects.toThrow('https://download.oracle.com/graalvm');
       });
 
       it('should throw error for unauthorized access (401)', async () => {
@@ -496,12 +507,11 @@ describe('GraalVMDistribution', () => {
 
         await expect(
           (distribution as any).findPackageForDownload('23')
-        ).rejects.toThrow("Unable to find latest version for '23-ea'");
-
-        // Verify error logging
-        expect(core.error).toHaveBeenCalledWith(
-          'Available versions: 23-ea-20240716'
+        ).rejects.toThrow(
+          "No EA build is marked as latest for version '23-ea'. Available EA versions: ['23-ea-20240716']."
         );
+
+        // Verify error logging - removed as we now use the helper method which doesn't call core.error
       });
 
       it('should throw error when no matching file for architecture in EA build', async () => {
@@ -708,11 +718,11 @@ describe('GraalVMDistribution', () => {
 
       await expect(
         (distribution as any).findEABuildDownloadUrl('23-ea')
-      ).rejects.toThrow("Unable to find latest version for '23-ea'");
-
-      expect(core.error).toHaveBeenCalledWith(
-        'Available versions: 23-ea-20240716, 23-ea-20240709'
+      ).rejects.toThrow(
+        "No EA build is marked as latest for version '23-ea'. Available EA versions: ['23-ea-20240716', '23-ea-20240709']."
       );
+
+      // Verify error logging - removed as we now use the helper method which doesn't call core.error
     });
 
     it('should throw error when no matching file for architecture', async () => {

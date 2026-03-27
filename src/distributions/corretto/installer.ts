@@ -75,15 +75,10 @@ export class CorrettoDistribution extends JavaBase {
     const resolvedVersion =
       matchingVersions.length > 0 ? matchingVersions[0] : null;
     if (!resolvedVersion) {
-      const availableOptions = availableVersions
-        .map(item => item.version)
-        .join(', ');
-      const availableOptionsMessage = availableOptions
-        ? `\nAvailable versions: ${availableOptions}`
-        : '';
-      throw new Error(
-        `Could not find satisfied version for SemVer '${version}'. ${availableOptionsMessage}`
+      const availableVersionStrings = availableVersions.map(
+        item => item.version
       );
+      throw this.createVersionNotFoundError(version, availableVersionStrings);
     }
     return resolvedVersion;
   }

@@ -69,15 +69,10 @@ export class LibericaDistributions extends JavaBase {
       .sort((a, b) => -semver.compareBuild(a.version, b.version))[0];
 
     if (!satisfiedVersion) {
-      const availableOptions = availableVersions
-        .map(item => item.version)
-        .join(', ');
-      const availableOptionsMessage = availableOptions
-        ? `\nAvailable versions: ${availableOptions}`
-        : '';
-      throw new Error(
-        `Could not find satisfied version for semver ${range}. ${availableOptionsMessage}`
+      const availableVersionStrings = availableVersions.map(
+        item => item.version
       );
+      throw this.createVersionNotFoundError(range, availableVersionStrings);
     }
 
     return satisfiedVersion;

@@ -27,6 +27,7 @@ describe('setupJava', () => {
   let spyFsReadDir: jest.SpyInstance;
   let spyUtilsExtractJdkFile: jest.SpyInstance;
   let spyPathResolve: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
   const expectedJdkFile = 'JavaLocalJdkFile';
 
   beforeEach(() => {
@@ -93,6 +94,10 @@ describe('setupJava', () => {
     // Spy on path methods
     spyPathResolve = jest.spyOn(path, 'resolve');
     spyPathResolve.mockImplementation((path: string) => path);
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {
