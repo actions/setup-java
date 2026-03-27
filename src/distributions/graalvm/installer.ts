@@ -149,10 +149,11 @@ export class GraalVMDistribution extends JavaBase {
     const statusCode = response.message.statusCode;
 
     if (statusCode === HttpCodes.NotFound) {
-      // Create the standard error with additional hint about checking the download URL
-      const error = this.createVersionNotFoundError(range);
-      error.message += `\nPlease check if this version is available at ${GRAALVM_DL_BASE}`;
-      throw error;
+      throw new Error(
+        `No matching GraalVM version found for SemVer '${range}'.` +
+          ` Available versions can be found at ${GRAALVM_DL_BASE}/.` +
+          ` Pick a version from the list.`
+      );
     }
 
     if (
