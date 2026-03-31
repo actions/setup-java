@@ -44,7 +44,7 @@ For information about the latest releases, recent updates, and newly supported d
 
   - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
 
-  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM.
+  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM. Note: `distribution` must be set to 'jdkfile' when using this option.
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
@@ -120,6 +120,7 @@ Currently, the following distributions are supported:
 | `sapmachine` | SAP SapMachine JDK/JRE | [Link](https://sapmachine.io/) | [Link](https://github.com/SAP/SapMachine/blob/sapmachine/LICENSE)
 | `graalvm` | Oracle GraalVM | [Link](https://www.graalvm.org/) | [Link](https://www.oracle.com/downloads/licenses/graal-free-license.html)
 | `jetbrains` | JetBrains Runtime | [Link](https://github.com/JetBrains/JetBrainsRuntime/) | [Link](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE)
+| `jdkfile` | Custom JDK Installation | | 
 
 **NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 
