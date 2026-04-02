@@ -18,6 +18,7 @@ import {
 } from '../../util';
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm';
+const GRAALVM_DOWNLOAD_URL = 'https://www.graalvm.org/downloads/';
 const IS_WINDOWS = process.platform === 'win32';
 const GRAALVM_PLATFORM = IS_WINDOWS ? 'windows' : process.platform;
 const GRAALVM_MIN_VERSION = 17;
@@ -149,11 +150,10 @@ export class GraalVMDistribution extends JavaBase {
     const statusCode = response.message.statusCode;
 
     if (statusCode === HttpCodes.NotFound) {
-      throw new Error(
-        `No matching GraalVM version found for SemVer '${range}'.` +
-          ` Available versions can be found at ${GRAALVM_DL_BASE}/.` +
-          ` Pick a version from the list.`
-      );
+      // Create the standard error with additional hint about checking the download URL
+      const error = this.createVersionNotFoundError(range);
+      error.message += `\nPlease check if this version is available at ${GRAALVM_DOWNLOAD_URL} . Pick a version from the list.`;
+      throw error;
     }
 
     if (

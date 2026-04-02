@@ -356,14 +356,16 @@ describe('GraalVMDistribution', () => {
         // Verify the error is thrown with the expected message
         await expect(
           (distribution as any).findPackageForDownload('17.0.99')
-        ).rejects.toThrow(
-          "No matching GraalVM version found for SemVer '17.0.99'. Available versions can be found at https://download.oracle.com/graalvm/. Pick a version from the list."
-        );
+        ).rejects.toThrow("No matching version found for SemVer '17.0.99'");
+        // Verify distribution info is included
+        await expect(
+          (distribution as any).findPackageForDownload('17.0.99')
+        ).rejects.toThrow('GraalVM');
 
         // Verify the hint about checking the base URL is included
         await expect(
           (distribution as any).findPackageForDownload('17.0.99')
-        ).rejects.toThrow('https://download.oracle.com/graalvm');
+        ).rejects.toThrow('https://www.graalvm.org/downloads/');
       });
 
       it('should throw error for unauthorized access (401)', async () => {
