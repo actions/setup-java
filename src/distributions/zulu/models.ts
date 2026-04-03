@@ -1,9 +1,12 @@
-// Models from https://app.swaggerhub.com/apis-docs/azul/zulu-download-community/1.0
+// Models from https://api.azul.com/metadata/v1/docs/swagger (metadata API v1)
 
 export interface IZuluVersions {
-  id: number;
+  package_uuid: string;
   name: string;
-  url: string;
-  jdk_version: Array<number>;
-  zulu_version: Array<number>;
+  download_url: string;
+  java_version: Array<number>;
+  distro_version: Array<number>;
+  availability_type: string;
+  javafx_bundled: boolean;
+  crac_supported?: boolean;
 }

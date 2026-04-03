@@ -40,7 +40,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&ext=zip&bundle_type=jdk&javafx=false&arch=x86&hw_bitness=32&release_status=ga'
+      '?os=windows&arch=x86&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -49,7 +49,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&ext=zip&bundle_type=jdk&javafx=false&arch=x86&hw_bitness=32&release_status=ea'
+      '?os=windows&arch=x86&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ea&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -58,7 +58,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&ext=zip&bundle_type=jdk&javafx=false&arch=x86&hw_bitness=64&release_status=ga'
+      '?os=windows&arch=x86&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -67,7 +67,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jre',
         checkLatest: false
       },
-      '?os=windows&ext=zip&bundle_type=jre&javafx=false&arch=x86&hw_bitness=64&release_status=ga'
+      '?os=windows&arch=x86&archive_type=zip&java_package_type=jre&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -76,7 +76,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk+fx',
         checkLatest: false
       },
-      '?os=windows&ext=zip&bundle_type=jdk&javafx=true&arch=x86&hw_bitness=64&release_status=ga&features=fx'
+      '?os=windows&arch=x86&archive_type=zip&java_package_type=jdk&javafx_bundled=true&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -85,7 +85,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jre+fx',
         checkLatest: false
       },
-      '?os=windows&ext=zip&bundle_type=jre&javafx=true&arch=x86&hw_bitness=64&release_status=ga&features=fx'
+      '?os=windows&arch=x86&archive_type=zip&java_package_type=jre&javafx_bundled=true&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -94,7 +94,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&ext=zip&bundle_type=jdk&javafx=false&arch=arm&hw_bitness=64&release_status=ga'
+      '?os=windows&arch=arm&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -103,12 +103,12 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&ext=zip&bundle_type=jdk&javafx=false&arch=arm&hw_bitness=&release_status=ga'
+      '?os=windows&arch=arm&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ]
   ])('build correct url for %s -> %s', async (input, parsedUrl) => {
     const distribution = new ZuluDistribution(input);
     distribution['getPlatformOption'] = () => 'windows';
-    const buildUrl = `https://api.azul.com/zulu/download/community/v1.0/bundles/${parsedUrl}`;
+    const buildUrl = `https://api.azul.com/metadata/v1/zulu/packages/${parsedUrl}`;
 
     await distribution['getAvailableVersions']();
 
@@ -137,7 +137,7 @@ describe('getAvailableVersions', () => {
         checkLatest: false
       });
       distribution['getPlatformOption'] = () => 'windows';
-      const buildUrl = `https://api.azul.com/zulu/download/community/v1.0/bundles/?os=windows&ext=zip&bundle_type=jdk&javafx=false&arch=${distroArch.arch}&hw_bitness=${distroArch.bitness}&release_status=ga`;
+      const buildUrl = `https://api.azul.com/metadata/v1/zulu/packages/?os=windows&arch=${distroArch.arch}&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100`;
 
       await distribution['getAvailableVersions']();
 
