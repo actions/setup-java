@@ -133,7 +133,9 @@ export class ZuluDistribution extends JavaBase {
         `crac_supported=${crac}`,
         `release_status=${releaseStatus}`,
         `availability_types=ca`,
-        `certifications=tck`,
+        // Only filter by TCK certification for GA releases
+        // EA releases typically don't have TCK certification
+        releaseStatus === 'ga' ? `certifications=tck` : '',
         `page=${page}`,
         `page_size=${pageSize}`
       ]
@@ -216,13 +218,13 @@ export class ZuluDistribution extends JavaBase {
 
   private getArchParam(arch: string, hw_bitness: string): string {
     // Map architecture to new metadata API arch parameter
-    // The new API uses x64, x86, arm64, arm (not the legacy x86 + hw_bitness pattern)
+    // The new API uses x64, x86, aarch64, arm
     if (arch === 'x86' && hw_bitness === '64') {
       return 'x64';
     } else if (arch === 'x86' && hw_bitness === '32') {
       return 'x86';
     } else if (arch === 'arm' && hw_bitness === '64') {
-      return 'arm64';
+      return 'aarch64';
     } else if (arch === 'arm' && hw_bitness === '') {
       return 'arm';
     }

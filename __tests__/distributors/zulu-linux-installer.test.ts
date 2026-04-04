@@ -49,7 +49,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=linux-glibc&arch=x86&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ea&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=linux-glibc&arch=x86&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ea&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -94,7 +94,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=linux-glibc&arch=arm64&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=linux-glibc&arch=aarch64&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -139,7 +139,7 @@ describe('getAvailableVersions', () => {
       distribution['getPlatformOption'] = () => 'linux';
       // Override extension for linux default arch case to match util behavior
       spyUtilGetDownloadArchiveExtension.mockReturnValue('tar.gz');
-      const expectedArch = distroArch.bitness === '64' && distroArch.arch === 'x86' ? 'x64' : distroArch.bitness === '64' && distroArch.arch === 'arm' ? 'arm64' : distroArch.arch;
+      const expectedArch = distroArch.bitness === '64' && distroArch.arch === 'x86' ? 'x64' : distroArch.bitness === '64' && distroArch.arch === 'arm' ? 'aarch64' : distroArch.arch;
       const buildUrl = `https://api.azul.com/metadata/v1/zulu/packages/?os=linux-glibc&arch=${expectedArch}&archive_type=tar.gz&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100`;
 
       await distribution['getAvailableVersions']();
