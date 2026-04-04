@@ -48,7 +48,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=macos&arch=x86&archive_type=tar.gz&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ea&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=macos&arch=x86&archive_type=tar.gz&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ea&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -57,7 +57,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=macos&arch=x86&archive_type=tar.gz&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=macos&arch=x64&archive_type=tar.gz&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -66,7 +66,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jre',
         checkLatest: false
       },
-      '?os=macos&arch=x86&archive_type=tar.gz&java_package_type=jre&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=macos&arch=x64&archive_type=tar.gz&java_package_type=jre&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -75,7 +75,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk+fx',
         checkLatest: false
       },
-      '?os=macos&arch=x86&archive_type=tar.gz&java_package_type=jdk&javafx_bundled=true&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=macos&arch=x64&archive_type=tar.gz&java_package_type=jdk&javafx_bundled=true&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -84,7 +84,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jre+fx',
         checkLatest: false
       },
-      '?os=macos&arch=x86&archive_type=tar.gz&java_package_type=jre&javafx_bundled=true&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=macos&arch=x64&archive_type=tar.gz&java_package_type=jre&javafx_bundled=true&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -93,7 +93,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk+crac',
         checkLatest: false
       },
-      '?os=macos&arch=x86&archive_type=tar.gz&java_package_type=jdk&javafx_bundled=false&crac_supported=true&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=macos&arch=x64&archive_type=tar.gz&java_package_type=jdk&javafx_bundled=false&crac_supported=true&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -102,7 +102,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=macos&arch=arm&archive_type=tar.gz&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=macos&arch=aarch64&archive_type=tar.gz&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -129,8 +129,8 @@ describe('getAvailableVersions', () => {
     arch: string;
   };
   it.each([
-    ['amd64', {bitness: '64', arch: 'x86'}],
-    ['arm64', {bitness: '64', arch: 'arm'}]
+    ['amd64', {bitness: '64', arch: 'x64'}],
+    ['arm64', {bitness: '64', arch: 'aarch64'}]
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: DistroArch) => {
