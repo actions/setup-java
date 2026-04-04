@@ -113,13 +113,12 @@ export class ZuluDistribution extends JavaBase {
     }
 
     // Map old API parameters to new metadata API parameters
-    const archParam = hw_bitness === '64' ? arch : arch;
     const osParam = this.getOsParam(platform);
     const archiveType = this.getArchiveType(extension);
 
     const requestArguments = [
       `os=${osParam}`,
-      `arch=${archParam}`,
+      `arch=${arch}`,
       `archive_type=${archiveType}`,
       `java_package_type=${bundleType}`,
       `javafx_bundled=${javafx}`,
