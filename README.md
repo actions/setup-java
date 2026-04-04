@@ -40,7 +40,7 @@ For information about the latest releases, recent updates, and newly supported d
 
   - `distribution`: _(required)_ Java [distribution](#supported-distributions).
 
-  - `java-package`: The packaging variant of the chosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
+  - `java-package`: The packaging variant of the chosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. For Azul Zulu, `jdk+crac` and `jre+crac` are also supported to select builds with [CRaC](https://openjdk.org/projects/crac/) support. Default value: `jdk`.
 
   - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
 

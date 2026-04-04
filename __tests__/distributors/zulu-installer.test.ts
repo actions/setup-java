@@ -164,6 +164,28 @@ describe('getAvailableVersions', () => {
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).toHaveLength(manifestData.length);
   });
+
+  it('fetches multiple pages when first page is full', async () => {
+    const firstPage = Array(100).fill(manifestData[0]) as IZuluVersions[];
+    const secondPage = manifestData.slice(0, 5) as IZuluVersions[];
+
+    spyHttpClient
+      .mockReturnValueOnce({statusCode: 200, headers: {}, result: firstPage})
+      .mockReturnValueOnce({statusCode: 200, headers: {}, result: secondPage});
+
+    const distribution = new ZuluDistribution({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    distribution['getPlatformOption'] = () => 'linux';
+
+    const availableVersions = await distribution['getAvailableVersions']();
+
+    expect(spyHttpClient).toHaveBeenCalledTimes(2);
+    expect(availableVersions).toHaveLength(firstPage.length + secondPage.length);
+  });
 });
 
 describe('getArchitectureOptions', () => {
