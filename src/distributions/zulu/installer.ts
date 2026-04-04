@@ -115,42 +115,57 @@ export class ZuluDistribution extends JavaBase {
     // Map old API parameters to new metadata API parameters
     const osParam = this.getOsParam(platform);
     const archiveType = this.getArchiveType(extension);
+    const archParam = this.getArchParam(arch, hw_bitness);
 
-    const requestArguments = [
-      `os=${osParam}`,
-      `arch=${arch}`,
-      `archive_type=${archiveType}`,
-      `java_package_type=${bundleType}`,
-      `javafx_bundled=${javafx}`,
-      `crac_supported=${crac}`,
-      `release_status=${releaseStatus}`,
-      `availability_types=ca`,
-      `certifications=tck`,
-      `page=1`,
-      `page_size=100`
-    ]
-      .filter(Boolean)
-      .join('&');
+    // Fetch all pages to avoid missing packages when there are > 100 results
+    let allVersions: IZuluVersions[] = [];
+    let page = 1;
+    const pageSize = 100;
+    let hasMore = true;
 
-    const availableVersionsUrl = `https://api.azul.com/metadata/v1/zulu/packages/?${requestArguments}`;
+    while (hasMore) {
+      const requestArguments = [
+        `os=${osParam}`,
+        `arch=${archParam}`,
+        `archive_type=${archiveType}`,
+        `java_package_type=${bundleType}`,
+        `javafx_bundled=${javafx}`,
+        `crac_supported=${crac}`,
+        `release_status=${releaseStatus}`,
+        `availability_types=ca`,
+        `certifications=tck`,
+        `page=${page}`,
+        `page_size=${pageSize}`
+      ]
+        .filter(Boolean)
+        .join('&');
 
-    core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+      const availableVersionsUrl = `https://api.azul.com/metadata/v1/zulu/packages/?${requestArguments}`;
 
-    const availableVersions =
-      (await this.http.getJson<Array<IZuluVersions>>(availableVersionsUrl))
-        .result ?? [];
+      core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+
+      const pageResults =
+        (await this.http.getJson<Array<IZuluVersions>>(availableVersionsUrl))
+          .result ?? [];
+
+      allVersions = allVersions.concat(pageResults);
+
+      // If we got fewer results than page size, we've reached the end
+      hasMore = pageResults.length === pageSize;
+      page++;
+    }
 
     if (core.isDebug()) {
       core.startGroup('Print information about available versions');
       console.timeEnd('Retrieving available versions for Zulu took'); // eslint-disable-line no-console
-      core.debug(`Available versions: [${availableVersions.length}]`);
+      core.debug(`Available versions: [${allVersions.length}]`);
       core.debug(
-        availableVersions.map(item => item.java_version.join('.')).join(', ')
+        allVersions.map(item => item.java_version.join('.')).join(', ')
       );
       core.endGroup();
     }
 
-    return availableVersions;
+    return allVersions;
   }
 
   private getArchitectureOptions(): {
@@ -197,6 +212,22 @@ export class ZuluDistribution extends JavaBase {
       default:
         return platform;
     }
+  }
+
+  private getArchParam(arch: string, hw_bitness: string): string {
+    // Map architecture to new metadata API arch parameter
+    // The new API uses x64, x86, arm64, arm (not the legacy x86 + hw_bitness pattern)
+    if (arch === 'x86' && hw_bitness === '64') {
+      return 'x64';
+    } else if (arch === 'x86' && hw_bitness === '32') {
+      return 'x86';
+    } else if (arch === 'arm' && hw_bitness === '64') {
+      return 'arm64';
+    } else if (arch === 'arm' && hw_bitness === '') {
+      return 'arm';
+    }
+    // Fallback for other architectures
+    return arch;
   }
 
   private getArchiveType(extension: string): string {

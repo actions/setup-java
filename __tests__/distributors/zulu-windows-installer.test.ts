@@ -58,7 +58,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&arch=x86&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=windows&arch=x64&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -67,7 +67,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jre',
         checkLatest: false
       },
-      '?os=windows&arch=x86&archive_type=zip&java_package_type=jre&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=windows&arch=x64&archive_type=zip&java_package_type=jre&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -76,7 +76,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk+fx',
         checkLatest: false
       },
-      '?os=windows&arch=x86&archive_type=zip&java_package_type=jdk&javafx_bundled=true&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=windows&arch=x64&archive_type=zip&java_package_type=jdk&javafx_bundled=true&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -85,7 +85,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jre+fx',
         checkLatest: false
       },
-      '?os=windows&arch=x86&archive_type=zip&java_package_type=jre&javafx_bundled=true&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=windows&arch=x64&archive_type=zip&java_package_type=jre&javafx_bundled=true&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -94,7 +94,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&arch=arm&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
+      '?os=windows&arch=arm64&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100'
     ],
     [
       {
@@ -137,7 +137,8 @@ describe('getAvailableVersions', () => {
         checkLatest: false
       });
       distribution['getPlatformOption'] = () => 'windows';
-      const buildUrl = `https://api.azul.com/metadata/v1/zulu/packages/?os=windows&arch=${distroArch.arch}&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100`;
+      const expectedArch = distroArch.bitness === '64' && distroArch.arch === 'x86' ? 'x64' : distroArch.bitness === '64' && distroArch.arch === 'arm' ? 'arm64' : distroArch.arch;
+      const buildUrl = `https://api.azul.com/metadata/v1/zulu/packages/?os=windows&arch=${expectedArch}&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&release_status=ga&availability_types=ca&certifications=tck&page=1&page_size=100`;
 
       await distribution['getAvailableVersions']();
 
