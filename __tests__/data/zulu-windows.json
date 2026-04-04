@@ -701,7 +701,7 @@
   },
   {
     "package_uuid": "uuid-12446",
-    "name": "zulu17.48.15-ca-jdk17.0.10-win_aarhc4.zip",
+    "name": "zulu17.48.15-ca-jdk17.0.10-windows_aarch64.zip",
     "download_url": "https://cdn.azul.com/zulu/bin/zulu17.48.15-ca-jdk17.0.10-windows_aarch64.zip",
     "java_version": [
       17,
