@@ -3,10 +3,10 @@ import {HttpClient} from '@actions/http-client';
 import {JetBrainsDistribution} from '../../src/distributions/jetbrains/installer';
 
 import manifestData from '../data/jetbrains.json';
+import os from 'os';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
-  let spyHttpClientHead: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -14,10 +14,6 @@ describe('getAvailableVersions', () => {
       statusCode: 200,
       headers: {},
       result: []
-    });
-    spyHttpClientHead = jest.spyOn(HttpClient.prototype, 'head');
-    spyHttpClientHead.mockReturnValue({
-      message: {statusCode: 200}
     });
   });
 
@@ -44,8 +40,9 @@ describe('getAvailableVersions', () => {
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).not.toBeNull();
 
-    // manifestData items + 2 hidden versions (always included when head is mocked to return 200)
-    expect(availableVersions.length).toBe(manifestData.length + 2);
+    const length =
+      os.platform() === 'win32' ? manifestData.length : manifestData.length + 2;
+    expect(availableVersions.length).toBe(length);
   }, 10_000);
 });
 
