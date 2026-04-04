@@ -40,7 +40,7 @@ export class ZuluDistribution extends JavaBase {
     const satisfiedVersions = availableVersions
       .filter(item => isVersionSatisfies(version, item.version))
       .sort((a, b) => {
-        // Azul provides two versions: jdk_version and azul_version
+        // Azul provides two versions: java_version and distro_version
         // we should sort by both fields by descending
         return (
           -semver.compareBuild(a.version, b.version) ||
@@ -112,6 +112,11 @@ export class ZuluDistribution extends JavaBase {
       console.time('Retrieving available versions for Zulu took'); // eslint-disable-line no-console
     }
 
+    // Map old API parameters to new metadata API parameters
+    const osParam = this.getOsParam(platform);
+    const archiveType = this.getArchiveType(extension);
+    const archParam = this.getArchParam(arch, hw_bitness);
+
     // Fetch all pages to avoid missing packages when there are > 100 results
     let allVersions: IZuluVersions[] = [];
     let page = 1;
@@ -119,18 +124,10 @@ export class ZuluDistribution extends JavaBase {
     let hasMore = true;
 
     while (hasMore) {
-      // Map architecture for new metadata API (x86+64bit -> x64, arm+64bit -> aarch64, etc.)
-      let archParam = arch;
-      if (arch === 'x86' && hw_bitness === '64') {
-        archParam = 'x64';
-      } else if (arch === 'arm' && hw_bitness === '64') {
-        archParam = 'aarch64';
-      }
-
       const requestArguments = [
-        `os=${platform === 'linux' ? 'linux-glibc' : platform}`,
+        `os=${osParam}`,
         `arch=${archParam}`,
-        `archive_type=${extension}`,
+        `archive_type=${archiveType}`,
         `java_package_type=${bundleType}`,
         `javafx_bundled=${javafx}`,
         `crac_supported=${crac}`,
@@ -201,6 +198,49 @@ export class ZuluDistribution extends JavaBase {
         return 'windows';
       default:
         return process.platform;
+    }
+  }
+
+  private getOsParam(platform: string): string {
+    // Map platform to new metadata API OS parameter
+    // The new API uses more specific OS names like 'linux-glibc', 'macos', 'windows'
+    switch (platform) {
+      case 'linux':
+        return 'linux-glibc';
+      case 'macos':
+        return 'macos';
+      case 'windows':
+        return 'windows';
+      default:
+        return platform;
+    }
+  }
+
+  private getArchParam(arch: string, hw_bitness: string): string {
+    // Map architecture to new metadata API arch parameter
+    // The new API uses x64, x86, aarch64, arm
+    if (arch === 'x86' && hw_bitness === '64') {
+      return 'x64';
+    } else if (arch === 'x86' && hw_bitness === '32') {
+      return 'x86';
+    } else if (arch === 'arm' && hw_bitness === '64') {
+      return 'aarch64';
+    } else if (arch === 'arm' && hw_bitness === '') {
+      return 'arm';
+    }
+    // Fallback for other architectures
+    return arch;
+  }
+
+  private getArchiveType(extension: string): string {
+    // Map extension to archive_type parameter for new API
+    switch (extension) {
+      case 'tar.gz':
+        return 'tar.gz';
+      case 'zip':
+        return 'zip';
+      default:
+        return extension;
     }
   }
 }
