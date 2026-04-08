@@ -1,6 +1,6 @@
 ---
 name: "@oozcitak/infra"
-version: 1.0.8
+version: 2.0.2
 type: npm
 summary: An implementation of the Infra Living Standard
 homepage: http://github.com/oozcitak/infra

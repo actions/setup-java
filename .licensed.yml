@@ -14,3 +14,4 @@ allowed:
 reviewed:
   npm:
     - "@actions/http-client" # MIT (license text present), but detected as "other"
+    - "argparse" # Python Software Foundation License (PSF), but detected as "other"
