@@ -129,6 +129,8 @@ Currently, the following distributions are supported:
 
 **NOTE:** To comply with the GraalVM Free Terms and Conditions (GFTC) license, it is recommended to use GraalVM JDK 17 version 17.0.12, as this is the only version of GraalVM JDK 17 available under the GFTC license. Additionally, it is encouraged to consider upgrading to GraalVM JDK 21, which offers the latest features and improvements.
 
+**NOTE:** Oracle JDK 17 versions up to 17.0.12 are provided under the NFTC license (free for commercial use). Versions 17.0.13 and later are under the OTN license (restricted). If you need Oracle JDK 17 under the NFTC license, use `distribution: 'oracle'` and explicitly pin `java-version: '17.0.12'` (or an earlier 17.0.x version) rather than the floating `java-version: '17'`. Alternatively, upgrade to Oracle JDK 21 or later, which remains available under the NFTC license.
+
 ### Caching packages dependencies
 The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
 
