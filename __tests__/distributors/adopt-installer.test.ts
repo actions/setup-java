@@ -9,9 +9,11 @@ import {JavaInstallerOptions} from '../../src/distributions/base-models';
 import os from 'os';
 
 import manifestData from '../data/adopt.json';
+import * as core from '@actions/core';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -20,6 +22,10 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: []
     });
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -262,7 +268,7 @@ describe('findPackageForDownload', () => {
     distribution['getAvailableVersions'] = async () => manifestData as any;
     await expect(
       distribution['findPackageForDownload']('9.0.8')
-    ).rejects.toThrow(/Could not find satisfied version for SemVer */);
+    ).rejects.toThrow(/No matching version found for SemVer */);
   });
 
   it('version is not found', async () => {
@@ -277,7 +283,7 @@ describe('findPackageForDownload', () => {
     );
     distribution['getAvailableVersions'] = async () => manifestData as any;
     await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrow(
-      /Could not find satisfied version for SemVer */
+      /No matching version found for SemVer */
     );
   });
 
@@ -293,7 +299,7 @@ describe('findPackageForDownload', () => {
     );
     distribution['getAvailableVersions'] = async () => [];
     await expect(distribution['findPackageForDownload']('11')).rejects.toThrow(
-      /Could not find satisfied version for SemVer */
+      /No matching version found for SemVer */
     );
   });
 });
