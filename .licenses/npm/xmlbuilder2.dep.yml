@@ -1,12 +1,12 @@
 ---
 name: xmlbuilder2
-version: 2.4.1
+version: 4.0.3
 type: npm
 summary: An XML builder for node.js
-homepage: http://github.com/oozcitak/xmlbuilder2
+homepage: https://github.com/oozcitak/xmlbuilder2
 license: mit
 licenses:
-- sources: LICENSE
+- sources: LICENSE.txt
   text: |
     MIT License
 
