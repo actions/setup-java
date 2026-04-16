@@ -51682,6 +51682,11 @@ function removePrivateKeyFromKeychain() {
  */
 function saveCache() {
     return __awaiter(this, void 0, void 0, function* () {
+        const cacheWriteEnabled = core.getInput('cache-write');
+        if (cacheWriteEnabled === 'false') {
+            core.info('Cache write is disabled (read-only mode). Skipping cache save.');
+            return Promise.resolve();
+        }
         const jobStatus = (0, util_1.isJobStatusSuccess)();
         const cache = core.getInput(constants.INPUT_CACHE);
         return jobStatus && cache ? (0, cache_1.save)(cache) : Promise.resolve();
