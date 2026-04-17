@@ -61,9 +61,24 @@ steps:
   with:
     distribution: 'zulu'
     java-version: '21'
-    java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
+    java-package: jdk # optional (jdk, jre, jdk+fx, jre+fx, jdk+crac or jre+crac) - defaults to jdk
 - run: java -cp java HelloWorldApp
 ```
+
+To use a Zulu JDK build with [CRaC (Coordinated Restore at Checkpoint)](https://openjdk.org/projects/crac/) support, set `java-package` to `jdk+crac` or `jre+crac`:
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'zulu'
+    java-version: '21'
+    java-package: jdk+crac
+- run: java -cp java HelloWorldApp
+```
+
+> **Note:** CRaC builds are only available for specific Zulu versions on Linux. The default (`jdk`) selects non-CRaC builds.
 
 ### Liberica
 
