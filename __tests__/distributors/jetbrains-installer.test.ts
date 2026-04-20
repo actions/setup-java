@@ -1,4 +1,3 @@
-import https from 'https';
 import {HttpClient} from '@actions/http-client';
 import {JetBrainsDistribution} from '../../src/distributions/jetbrains/installer';
 
@@ -17,6 +16,11 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: []
     });
+    jest.spyOn(HttpClient.prototype, 'head').mockResolvedValue({
+      message: {
+        statusCode: 200
+      }
+    } as any);
 
     // Mock core.error to suppress error logs
     spyCoreError = jest.spyOn(core, 'error');
@@ -50,6 +54,61 @@ describe('getAvailableVersions', () => {
       os.platform() === 'win32' ? manifestData.length : manifestData.length + 2;
     expect(availableVersions.length).toBe(length);
   }, 10_000);
+
+  it('uses _nomod package URL when base package is unavailable', async () => {
+    spyHttpClient.mockReturnValueOnce({
+      statusCode: 200,
+      headers: {},
+      result: [{tag_name: 'jbr-release-21.0.3b465.3', prerelease: true}] as any
+    });
+    spyHttpClient.mockReturnValueOnce({
+      statusCode: 200,
+      headers: {},
+      result: []
+    });
+    jest
+      .spyOn(HttpClient.prototype, 'head')
+      .mockResolvedValueOnce({message: {statusCode: 404}} as any)
+      .mockResolvedValueOnce({message: {statusCode: 200}} as any);
+
+    const distribution = new JetBrainsDistribution({
+      version: '21-ea',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    const availableVersions = await distribution['getAvailableVersions']();
+
+    expect(availableVersions).toHaveLength(1);
+    expect(availableVersions[0].url).toContain('_nomod-21.0.3-linux-x64-b465.3');
+  });
+
+  it('filters out versions when both package URLs are unavailable', async () => {
+    spyHttpClient.mockReturnValueOnce({
+      statusCode: 200,
+      headers: {},
+      result: [{tag_name: 'jbr-release-21.0.3b465.3', prerelease: true}] as any
+    });
+    spyHttpClient.mockReturnValueOnce({
+      statusCode: 200,
+      headers: {},
+      result: []
+    });
+    jest
+      .spyOn(HttpClient.prototype, 'head')
+      .mockResolvedValueOnce({message: {statusCode: 404}} as any)
+      .mockResolvedValueOnce({message: {statusCode: 404}} as any);
+
+    const distribution = new JetBrainsDistribution({
+      version: '21-ea',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    const availableVersions = await distribution['getAvailableVersions']();
+
+    expect(availableVersions).toHaveLength(0);
+  });
 });
 
 describe('findPackageForDownload', () => {
@@ -84,14 +143,9 @@ describe('findPackageForDownload', () => {
       distribution['getAvailableVersions'] = async () => manifestData as any;
       const resolvedVersion =
         await distribution['findPackageForDownload'](input);
-      const url = resolvedVersion.url;
-      const options = {method: 'HEAD'};
-
-      https.request(url, options, res => {
-        // JetBrains uses 403 for inexistent packages
-        expect(res.statusCode).not.toBe(403);
-        res.resume();
-      });
+      expect(resolvedVersion.url).toMatch(
+        /^https:\/\/cache-redirector\.jetbrains\.com\/intellij-jbr\/.+-b\d+(\.\d+)?\.tar\.gz$/
+      );
     }
   );
 
