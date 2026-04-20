@@ -1,4 +1,3 @@
-import https from 'https';
 import {HttpClient} from '@actions/http-client';
 import {JetBrainsDistribution} from '../../src/distributions/jetbrains/installer';
 
@@ -17,6 +16,11 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: []
     });
+    jest.spyOn(HttpClient.prototype, 'head').mockResolvedValue({
+      message: {
+        statusCode: 200
+      }
+    } as any);
 
     // Mock core.error to suppress error logs
     spyCoreError = jest.spyOn(core, 'error');
@@ -84,14 +88,9 @@ describe('findPackageForDownload', () => {
       distribution['getAvailableVersions'] = async () => manifestData as any;
       const resolvedVersion =
         await distribution['findPackageForDownload'](input);
-      const url = resolvedVersion.url;
-      const options = {method: 'HEAD'};
-
-      https.request(url, options, res => {
-        // JetBrains uses 403 for inexistent packages
-        expect(res.statusCode).not.toBe(403);
-        res.resume();
-      });
+      expect(resolvedVersion.url).toMatch(
+        /^https:\/\/cache-redirector\.jetbrains\.com\/intellij-jbr\//
+      );
     }
   );
 
