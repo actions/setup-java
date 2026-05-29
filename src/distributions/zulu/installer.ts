@@ -31,16 +31,16 @@ export class ZuluDistribution extends JavaBase {
     const availableVersionsRaw = await this.getAvailableVersions();
     const availableVersions = availableVersionsRaw.map(item => {
       return {
-        version: convertVersionToSemver(item.jdk_version),
-        url: item.url,
-        zuluVersion: convertVersionToSemver(item.zulu_version)
+        version: convertVersionToSemver(item.java_version),
+        url: item.download_url,
+        zuluVersion: convertVersionToSemver(item.distro_version)
       };
     });
 
     const satisfiedVersions = availableVersions
       .filter(item => isVersionSatisfies(version, item.version))
       .sort((a, b) => {
-        // Azul provides two versions: jdk_version and azul_version
+        // Azul provides two versions: java_version and distro_version
         // we should sort by both fields by descending
         return (
           -semver.compareBuild(a.version, b.version) ||
@@ -95,7 +95,7 @@ export class ZuluDistribution extends JavaBase {
   }
 
   private async getAvailableVersions(): Promise<IZuluVersions[]> {
-    const {arch, hw_bitness, abi} = this.getArchitectureOptions();
+    const arch = this.getArchitectureOptions();
     const [bundleType, features] = this.packageType.split('+');
     const platform = this.getPlatformOption();
     const extension = getDownloadArchiveExtension();
@@ -108,19 +108,17 @@ export class ZuluDistribution extends JavaBase {
 
     const requestArguments = [
       `os=${platform}`,
-      `ext=${extension}`,
-      `bundle_type=${bundleType}`,
-      `javafx=${javafx}`,
+      `archive_type=${extension}`,
+      `java_package_type=${bundleType}`,
+      `javafx_bundled=${javafx}`,
       `arch=${arch}`,
-      `hw_bitness=${hw_bitness}`,
       `release_status=${releaseStatus}`,
-      abi ? `abi=${abi}` : null,
-      features ? `features=${features}` : null
-    ]
-      .filter(Boolean)
-      .join('&');
+      `availability_types=ca`,
+      `page=1`,
+      `page_size=1000`
+    ].join('&');
 
-    const availableVersionsUrl = `https://api.azul.com/zulu/download/community/v1.0/bundles/?${requestArguments}`;
+    const availableVersionsUrl = `https://api.azul.com/metadata/v1/zulu/packages/?${requestArguments}`;
 
     core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
 
@@ -133,7 +131,7 @@ export class ZuluDistribution extends JavaBase {
       console.timeEnd('Retrieving available versions for Zulu took'); // eslint-disable-line no-console
       core.debug(`Available versions: [${availableVersions.length}]`);
       core.debug(
-        availableVersions.map(item => item.jdk_version.join('.')).join(', ')
+        availableVersions.map(item => item.java_version.join('.')).join(', ')
       );
       core.endGroup();
     }
@@ -141,22 +139,18 @@ export class ZuluDistribution extends JavaBase {
     return availableVersions;
   }
 
-  private getArchitectureOptions(): {
-    arch: string;
-    hw_bitness: string;
-    abi: string;
-  } {
+  private getArchitectureOptions(): string {
     const arch = this.distributionArchitecture();
     switch (arch) {
       case 'x64':
-        return {arch: 'x86', hw_bitness: '64', abi: ''};
+        return 'x64';
       case 'x86':
-        return {arch: 'x86', hw_bitness: '32', abi: ''};
+        return 'x86';
       case 'aarch64':
       case 'arm64':
-        return {arch: 'arm', hw_bitness: '64', abi: ''};
+        return 'aarch64';
       default:
-        return {arch: arch, hw_bitness: '', abi: ''};
+        return arch;
     }
   }
 

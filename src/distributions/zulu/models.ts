@@ -1,9 +1,11 @@
-// Models from https://app.swaggerhub.com/apis-docs/azul/zulu-download-community/1.0
+// Models from https://app.swaggerhub.com/apis/azul/metadata/1.0
 
 export interface IZuluVersions {
-  id: number;
+  package_uuid: string;
   name: string;
-  url: string;
-  jdk_version: Array<number>;
-  zulu_version: Array<number>;
+  download_url: string;
+  java_version: Array<number>;
+  distro_version: Array<number>;
+  latest: boolean;
+  availability_type: string;
 }
