@@ -177,6 +177,10 @@ export class ZuluDistribution extends JavaBase {
         return 'macos';
       case 'win32':
         return 'windows';
+      case 'linux':
+        // The new Metadata API's "linux" value returns both glibc and musl packages;
+        // use "linux_glibc" to target only glibc, which is what standard runners use.
+        return 'linux_glibc';
       default:
         return process.platform;
     }
