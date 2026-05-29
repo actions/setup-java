@@ -106,25 +106,41 @@ export class ZuluDistribution extends JavaBase {
       console.time('Retrieving available versions for Zulu took'); // eslint-disable-line no-console
     }
 
-    const requestArguments = [
+    const baseRequestArguments = [
       `os=${platform}`,
       `archive_type=${extension}`,
       `java_package_type=${bundleType}`,
       `javafx_bundled=${javafx}`,
       `arch=${arch}`,
       `release_status=${releaseStatus}`,
-      `availability_types=ca`,
-      `page=1`,
-      `page_size=1000`
+      `availability_types=ca`
     ].join('&');
 
-    const availableVersionsUrl = `https://api.azul.com/metadata/v1/zulu/packages/?${requestArguments}`;
+    // need to iterate through all pages to retrieve the list of all versions
+    // Azul API doesn't provide a way to retrieve the count of pages so use an infinity loop
+    let page_index = 1;
+    const availableVersions: IZuluVersions[] = [];
+    while (true) {
+      const requestArguments = `${baseRequestArguments}&page=${page_index}&page_size=100`;
+      const availableVersionsUrl = `https://api.azul.com/metadata/v1/zulu/packages/?${requestArguments}`;
+      if (core.isDebug() && page_index === 1) {
+        // url is identical except page_index so print it once for debug
+        core.debug(
+          `Gathering available versions from '${availableVersionsUrl}'`
+        );
+      }
 
-    core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+      const paginationPage = (
+        await this.http.getJson<IZuluVersions[]>(availableVersionsUrl)
+      ).result;
+      if (paginationPage === null || paginationPage.length === 0) {
+        // break infinity loop because we have reached end of pagination
+        break;
+      }
 
-    const availableVersions =
-      (await this.http.getJson<Array<IZuluVersions>>(availableVersionsUrl))
-        .result ?? [];
+      availableVersions.push(...paginationPage);
+      page_index++;
+    }
 
     if (core.isDebug()) {
       core.startGroup('Print information about available versions');

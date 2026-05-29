@@ -18,7 +18,7 @@ describe('getAvailableVersions', () => {
     spyHttpClient.mockReturnValue({
       statusCode: 200,
       headers: {},
-      result: manifestData as IZuluVersions[]
+      result: [] as IZuluVersions[]
     });
 
     spyUtilGetDownloadArchiveExtension = jest.spyOn(
@@ -46,7 +46,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&arch=x86&release_status=ga&availability_types=ca&page=1&page_size=1000'
+      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&arch=x86&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -55,7 +55,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&arch=x86&release_status=ea&availability_types=ca&page=1&page_size=1000'
+      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&arch=x86&release_status=ea&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -64,7 +64,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=1000'
+      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -73,7 +73,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jre',
         checkLatest: false
       },
-      '?os=windows&archive_type=zip&java_package_type=jre&javafx_bundled=false&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=1000'
+      '?os=windows&archive_type=zip&java_package_type=jre&javafx_bundled=false&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -82,7 +82,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk+fx',
         checkLatest: false
       },
-      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=true&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=1000'
+      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=true&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -91,7 +91,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jre+fx',
         checkLatest: false
       },
-      '?os=windows&archive_type=zip&java_package_type=jre&javafx_bundled=true&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=1000'
+      '?os=windows&archive_type=zip&java_package_type=jre&javafx_bundled=true&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -100,7 +100,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&arch=aarch64&release_status=ga&availability_types=ca&page=1&page_size=1000'
+      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&arch=aarch64&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -109,7 +109,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&arch=arm&release_status=ga&availability_types=ca&page=1&page_size=1000'
+      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&arch=arm&release_status=ga&availability_types=ca&page=1&page_size=100'
     ]
   ])('build correct url for %s -> %s', async (input, parsedUrl) => {
     const distribution = new ZuluDistribution(input);
@@ -139,7 +139,7 @@ describe('getAvailableVersions', () => {
         checkLatest: false
       });
       distribution['getPlatformOption'] = () => 'windows';
-      const buildUrl = `https://api.azul.com/metadata/v1/zulu/packages/?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&arch=${distroArch}&release_status=ga&availability_types=ca&page=1&page_size=1000`;
+      const buildUrl = `https://api.azul.com/metadata/v1/zulu/packages/?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&arch=${distroArch}&release_status=ga&availability_types=ca&page=1&page_size=100`;
 
       await distribution['getAvailableVersions']();
 
@@ -149,6 +149,18 @@ describe('getAvailableVersions', () => {
   );
 
   it('load available versions', async () => {
+    spyHttpClient
+      .mockReturnValueOnce({
+        statusCode: 200,
+        headers: {},
+        result: manifestData as IZuluVersions[]
+      })
+      .mockReturnValueOnce({
+        statusCode: 200,
+        headers: {},
+        result: [] as IZuluVersions[]
+      });
+
     const distribution = new ZuluDistribution({
       version: '11',
       architecture: 'x86',
