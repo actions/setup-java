@@ -148,7 +148,7 @@ export class AdoptDistribution extends JavaBase {
 
       availableVersions.push(...paginationPage);
 
-      if (pageCount >= MAX_PAGINATION_PAGES && availableVersionsUrl) {
+      if (pageCount >= MAX_PAGINATION_PAGES) {
         core.warning(
           `Reached pagination safeguard limit (${MAX_PAGINATION_PAGES} pages) while listing Adopt releases.`
         );
