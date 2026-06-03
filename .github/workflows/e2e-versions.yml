@@ -99,7 +99,7 @@ jobs:
         version: ['21', '17']
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Install bash
         run: apk add --no-cache bash
       - name: setup-java
