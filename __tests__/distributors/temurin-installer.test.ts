@@ -93,22 +93,19 @@ describe('getAvailableVersions', () => {
   );
 
   it('load available versions', async () => {
+    const nextPageUrl =
+      'https://api.adoptium.net/v3/assets/version/%5B1.0,100.0%5D?page=1&page_size=20';
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
     spyHttpClient
       .mockReturnValueOnce({
         statusCode: 200,
-        headers: {},
+        headers: {link: `<${nextPageUrl}>; rel="next"`},
         result: manifestData as any
       })
       .mockReturnValueOnce({
         statusCode: 200,
         headers: {},
         result: manifestData as any
-      })
-      .mockReturnValueOnce({
-        statusCode: 200,
-        headers: {},
-        result: []
       });
 
     const distribution = new TemurinDistribution(
@@ -123,6 +120,7 @@ describe('getAvailableVersions', () => {
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).not.toBeNull();
     expect(availableVersions.length).toBe(manifestData.length * 2);
+    expect(spyHttpClient).toHaveBeenNthCalledWith(2, nextPageUrl);
   });
 
   it.each([

@@ -14,6 +14,7 @@ import {
 } from '../base-models';
 import {
   extractJdkFile,
+  getNextPageUrlFromLinkHeader,
   getDownloadArchiveExtension,
   isVersionSatisfies,
   renameWinArchive
@@ -125,30 +126,23 @@ export class AdoptDistribution extends JavaBase {
       `jvm_impl=${this.jvmImpl.toLowerCase()}`
     ].join('&');
 
-    // need to iterate through all pages to retrieve the list of all versions
-    // Adopt API doesn't provide way to retrieve the count of pages to iterate so infinity loop
-    let page_index = 0;
+    const requestArguments = `${baseRequestArguments}&page_size=20&page=0`;
+    let availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
     const availableVersions: IAdoptAvailableVersions[] = [];
-    while (true) {
-      const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
-      const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
-      if (core.isDebug() && page_index === 0) {
-        // url is identical except page_index so print it once for debug
-        core.debug(
-          `Gathering available versions from '${availableVersionsUrl}'`
-        );
-      }
+    if (core.isDebug()) {
+      core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+    }
 
-      const paginationPage = (
-        await this.http.getJson<IAdoptAvailableVersions[]>(availableVersionsUrl)
-      ).result;
+    while (availableVersionsUrl) {
+      const response =
+        await this.http.getJson<IAdoptAvailableVersions[]>(availableVersionsUrl);
+      const paginationPage = response.result;
+      availableVersionsUrl = getNextPageUrlFromLinkHeader(response.headers);
       if (paginationPage === null || paginationPage.length === 0) {
-        // break infinity loop because we have reached end of pagination
         break;
       }
 
       availableVersions.push(...paginationPage);
-      page_index++;
     }
 
     if (core.isDebug()) {
