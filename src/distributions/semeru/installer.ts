@@ -157,7 +157,7 @@ export class SemeruDistribution extends JavaBase {
     ].join('&');
 
     const requestArguments = `${baseRequestArguments}&page_size=20&page=0`;
-    let availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
+    let availableVersionsUrl: string | null = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
     const availableVersions: ISemeruAvailableVersions[] = [];
     if (core.isDebug()) {
       core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
