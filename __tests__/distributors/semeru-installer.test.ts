@@ -9,6 +9,7 @@ import * as core from '@actions/core';
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
   let spyCoreError: jest.SpyInstance;
+  let spyCoreWarning: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -20,6 +21,8 @@ describe('getAvailableVersions', () => {
     // Mock core.error to suppress error logs
     spyCoreError = jest.spyOn(core, 'error');
     spyCoreError.mockImplementation(() => {});
+    spyCoreWarning = jest.spyOn(core, 'warning');
+    spyCoreWarning.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -107,6 +110,29 @@ describe('getAvailableVersions', () => {
     expect(availableVersions).not.toBeNull();
     expect(availableVersions.length).toBe(manifestData.length * 2);
     expect(spyHttpClient).toHaveBeenNthCalledWith(2, nextPageUrl);
+  });
+
+  it('stops pagination after 1000 pages as a safeguard', async () => {
+    const nextPageUrl = 'https://example.com/releases?page=2';
+    spyHttpClient.mockReturnValue({
+      statusCode: 200,
+      headers: {link: `<${nextPageUrl}>; rel="next"`},
+      result: [{version_data: {semver: '17.0.1'}, binaries: []}] as any
+    });
+
+    const distribution = new SemeruDistribution({
+      version: '8',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    await distribution['getAvailableVersions']();
+
+    expect(spyHttpClient).toHaveBeenCalledTimes(1000);
+    expect(spyCoreWarning).toHaveBeenCalledWith(
+      expect.stringContaining('Reached pagination safeguard limit (1000 pages)')
+    );
   });
 
   it.each([

@@ -16,8 +16,6 @@ import {extractJdkFile, isVersionSatisfies} from '../../util';
 import {OutgoingHttpHeaders} from 'http';
 import {HttpCodes} from '@actions/http-client';
 
-const MAX_PAGINATION_PAGES = 1000;
-
 export class JetBrainsDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('JetBrains', installerOptions);
@@ -95,7 +93,7 @@ export class JetBrainsDistribution extends JavaBase {
     const rawVersions: IJetBrainsRawVersion[] = [];
     const bearerToken = process.env.GITHUB_TOKEN;
 
-    while (page_index <= MAX_PAGINATION_PAGES) {
+    while (true) {
       const requestArguments = `per_page=100&page=${page_index}`;
       const requestHeaders: OutgoingHttpHeaders = {};
 
@@ -129,12 +127,6 @@ export class JetBrainsDistribution extends JavaBase {
 
       rawVersions.push(...paginationPage);
       page_index++;
-    }
-
-    if (page_index > MAX_PAGINATION_PAGES) {
-      core.warning(
-        `Reached pagination safeguard limit (${MAX_PAGINATION_PAGES} pages) while listing JetBrains runtime releases.`
-      );
     }
 
     if (this.stable) {

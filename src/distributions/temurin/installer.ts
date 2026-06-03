@@ -20,6 +20,8 @@ import {
   renameWinArchive
 } from '../../util';
 
+const MAX_PAGINATION_PAGES = 1000;
+
 export enum TemurinImplementation {
   Hotspot = 'Hotspot'
 }
@@ -127,11 +129,13 @@ export class TemurinDistribution extends JavaBase {
     const requestArguments = `${baseRequestArguments}&page_size=20&page=0`;
     let availableVersionsUrl: string | null = `https://api.adoptium.net/v3/assets/version/${versionRange}?${requestArguments}`;
     const availableVersions: ITemurinAvailableVersions[] = [];
+    let pageCount = 0;
     if (core.isDebug()) {
       core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
     }
 
     while (availableVersionsUrl) {
+      pageCount++;
       const response = await this.http.getJson<ITemurinAvailableVersions[]>(
         availableVersionsUrl
       );
@@ -143,6 +147,13 @@ export class TemurinDistribution extends JavaBase {
       }
 
       availableVersions.push(...paginationPage);
+
+      if (pageCount >= MAX_PAGINATION_PAGES && availableVersionsUrl) {
+        core.warning(
+          `Reached pagination safeguard limit (${MAX_PAGINATION_PAGES} pages) while listing Temurin releases.`
+        );
+        break;
+      }
     }
 
     if (core.isDebug()) {

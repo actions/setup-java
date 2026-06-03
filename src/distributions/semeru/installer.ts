@@ -18,6 +18,8 @@ import fs from 'fs';
 import path from 'path';
 import {ISemeruAvailableVersions} from './models';
 
+const MAX_PAGINATION_PAGES = 1000;
+
 const supportedArchitectures = [
   'x64',
   'x86',
@@ -159,11 +161,13 @@ export class SemeruDistribution extends JavaBase {
     const requestArguments = `${baseRequestArguments}&page_size=20&page=0`;
     let availableVersionsUrl: string | null = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
     const availableVersions: ISemeruAvailableVersions[] = [];
+    let pageCount = 0;
     if (core.isDebug()) {
       core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
     }
 
     while (availableVersionsUrl) {
+      pageCount++;
       const response = await this.http.getJson<ISemeruAvailableVersions[]>(
         availableVersionsUrl
       );
@@ -174,6 +178,13 @@ export class SemeruDistribution extends JavaBase {
       }
 
       availableVersions.push(...paginationPage);
+
+      if (pageCount >= MAX_PAGINATION_PAGES && availableVersionsUrl) {
+        core.warning(
+          `Reached pagination safeguard limit (${MAX_PAGINATION_PAGES} pages) while listing Semeru releases.`
+        );
+        break;
+      }
     }
 
     if (core.isDebug()) {

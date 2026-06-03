@@ -20,6 +20,8 @@ import {
   renameWinArchive
 } from '../../util';
 
+const MAX_PAGINATION_PAGES = 1000;
+
 export enum AdoptImplementation {
   Hotspot = 'Hotspot',
   OpenJ9 = 'OpenJ9'
@@ -129,11 +131,13 @@ export class AdoptDistribution extends JavaBase {
     const requestArguments = `${baseRequestArguments}&page_size=20&page=0`;
     let availableVersionsUrl: string | null = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
     const availableVersions: IAdoptAvailableVersions[] = [];
+    let pageCount = 0;
     if (core.isDebug()) {
       core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
     }
 
     while (availableVersionsUrl) {
+      pageCount++;
       const response =
         await this.http.getJson<IAdoptAvailableVersions[]>(availableVersionsUrl);
       const paginationPage = response.result;
@@ -143,6 +147,13 @@ export class AdoptDistribution extends JavaBase {
       }
 
       availableVersions.push(...paginationPage);
+
+      if (pageCount >= MAX_PAGINATION_PAGES && availableVersionsUrl) {
+        core.warning(
+          `Reached pagination safeguard limit (${MAX_PAGINATION_PAGES} pages) while listing Adopt releases.`
+        );
+        break;
+      }
     }
 
     if (core.isDebug()) {
