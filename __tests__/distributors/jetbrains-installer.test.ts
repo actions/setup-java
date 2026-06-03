@@ -9,6 +9,8 @@ import * as core from '@actions/core';
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
   let spyCoreError: jest.SpyInstance;
+  let spyCoreWarning: jest.SpyInstance;
+  let spyHeadRequest: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -21,6 +23,14 @@ describe('getAvailableVersions', () => {
     // Mock core.error to suppress error logs
     spyCoreError = jest.spyOn(core, 'error');
     spyCoreError.mockImplementation(() => {});
+    spyCoreWarning = jest.spyOn(core, 'warning');
+    spyCoreWarning.mockImplementation(() => {});
+    spyHeadRequest = jest.spyOn(HttpClient.prototype, 'head');
+    spyHeadRequest.mockResolvedValue({
+      message: {
+        statusCode: 404
+      }
+    } as any);
   });
 
   afterEach(() => {
@@ -50,6 +60,27 @@ describe('getAvailableVersions', () => {
       os.platform() === 'win32' ? manifestData.length : manifestData.length + 2;
     expect(availableVersions.length).toBe(length);
   }, 10_000);
+
+  it('stops pagination after 1000 pages as a safeguard', async () => {
+    spyHttpClient.mockResolvedValue({
+      statusCode: 200,
+      headers: {},
+      result: [{tag_name: 'jbr17-b87.7', name: 'jbr17-b87.7', prerelease: false}]
+    });
+
+    const distribution = new JetBrainsDistribution({
+      version: '17',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    await distribution['getAvailableVersions']();
+
+    expect(spyHttpClient).toHaveBeenCalledTimes(1000);
+    expect(spyCoreWarning).toHaveBeenCalledWith(
+      expect.stringContaining('Reached pagination safeguard limit (1000 pages)')
+    );
+  }, 20_000);
 });
 
 describe('findPackageForDownload', () => {
