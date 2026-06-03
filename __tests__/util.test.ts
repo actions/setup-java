@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {
   convertVersionToSemver,
+  getNextPageUrlFromLinkHeader,
   getVersionFromFileContent,
   isVersionSatisfies,
   isCacheFeatureAvailable,
@@ -82,6 +83,27 @@ describe('convertVersionToSemver', () => {
   ])('%s -> %s', (input: string, expected: string) => {
     const actual = convertVersionToSemver(input);
     expect(actual).toBe(expected);
+  });
+});
+
+describe('getNextPageUrlFromLinkHeader', () => {
+  it.each([
+    [
+      {
+        link: '<https://api.adoptium.net/v3/info/release_versions?page=1&page_size=10>; rel="next"'
+      },
+      'https://api.adoptium.net/v3/info/release_versions?page=1&page_size=10'
+    ],
+    [
+      {
+        Link: '<https://example.com/last?page=5>; rel="last", <https://example.com/next?page=2>; rel="next"'
+      },
+      'https://example.com/next?page=2'
+    ],
+    [{link: '<https://example.com/last?page=5>; rel="last"'}, null],
+    [undefined, null]
+  ])('returns %s -> %s', (headers, expected) => {
+    expect(getNextPageUrlFromLinkHeader(headers)).toBe(expected);
   });
 });
 

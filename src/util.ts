@@ -201,6 +201,28 @@ export function getGitHubHttpHeaders(): OutgoingHttpHeaders {
   return headers;
 }
 
+export function getNextPageUrlFromLinkHeader(
+  headers?: Record<string, string | string[] | undefined>
+): string | null {
+  if (!headers) {
+    return null;
+  }
+
+  const linkHeader = headers.link ?? headers.Link;
+  if (!linkHeader) {
+    return null;
+  }
+
+  const normalizedLinkHeader = Array.isArray(linkHeader)
+    ? linkHeader.join(',')
+    : linkHeader;
+  const nextLinkMatch = normalizedLinkHeader.match(
+    /<([^>]+)>\s*;\s*rel="?next"?/i
+  );
+
+  return nextLinkMatch?.[1] ?? null;
+}
+
 // Rename archive to add extension because after downloading
 // archive does not contain extension type and it leads to some issues
 // on Windows runners without PowerShell Core.

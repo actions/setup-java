@@ -51888,7 +51888,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.renameWinArchive = exports.getGitHubHttpHeaders = exports.convertVersionToSemver = exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
+exports.renameWinArchive = exports.getNextPageUrlFromLinkHeader = exports.getGitHubHttpHeaders = exports.convertVersionToSemver = exports.getVersionFromFileContent = exports.isCacheFeatureAvailable = exports.isGhes = exports.isJobStatusSuccess = exports.getToolcachePath = exports.isVersionSatisfies = exports.getDownloadArchiveExtension = exports.extractJdkFile = exports.getVersionFromToolcachePath = exports.getBooleanInput = exports.getTempDir = void 0;
 const os_1 = __importDefault(__nccwpck_require__(22037));
 const path_1 = __importDefault(__nccwpck_require__(71017));
 const fs = __importStar(__nccwpck_require__(57147));
@@ -52055,6 +52055,22 @@ function getGitHubHttpHeaders() {
     return headers;
 }
 exports.getGitHubHttpHeaders = getGitHubHttpHeaders;
+function getNextPageUrlFromLinkHeader(headers) {
+    var _a, _b;
+    if (!headers) {
+        return null;
+    }
+    const linkHeader = (_a = headers.link) !== null && _a !== void 0 ? _a : headers.Link;
+    if (!linkHeader) {
+        return null;
+    }
+    const normalizedLinkHeader = Array.isArray(linkHeader)
+        ? linkHeader.join(',')
+        : linkHeader;
+    const nextLinkMatch = normalizedLinkHeader.match(/<([^>]+)>\s*;\s*rel="?next"?/i);
+    return (_b = nextLinkMatch === null || nextLinkMatch === void 0 ? void 0 : nextLinkMatch[1]) !== null && _b !== void 0 ? _b : null;
+}
+exports.getNextPageUrlFromLinkHeader = getNextPageUrlFromLinkHeader;
 // Rename archive to add extension because after downloading
 // archive does not contain extension type and it leads to some issues
 // on Windows runners without PowerShell Core.
