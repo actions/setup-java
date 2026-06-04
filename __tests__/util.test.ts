@@ -8,7 +8,8 @@ import {
   getVersionFromFileContent,
   isVersionSatisfies,
   isCacheFeatureAvailable,
-  isGhes
+  isGhes,
+  validatePaginationUrl
 } from '../src/util';
 
 jest.mock('@actions/cache');
@@ -100,10 +101,51 @@ describe('getNextPageUrlFromLinkHeader', () => {
       },
       'https://example.com/next?page=2'
     ],
+    [
+      {
+        link: '<https://api.adoptium.net/v3/versions?page=3>; type="application/json"; rel="next"'
+      },
+      'https://api.adoptium.net/v3/versions?page=3'
+    ],
     [{link: '<https://example.com/last?page=5>; rel="last"'}, null],
     [undefined, null]
   ])('returns %s -> %s', (headers, expected) => {
     expect(getNextPageUrlFromLinkHeader(headers)).toBe(expected);
+  });
+});
+
+describe('validatePaginationUrl', () => {
+  it('accepts URL with matching origin', () => {
+    expect(
+      validatePaginationUrl(
+        'https://api.adoptium.net/v3/assets?page=2',
+        'https://api.adoptium.net'
+      )
+    ).toBe(true);
+  });
+
+  it('rejects URL with different host', () => {
+    expect(
+      validatePaginationUrl(
+        'https://evil.example.com/steal?data=1',
+        'https://api.adoptium.net'
+      )
+    ).toBe(false);
+  });
+
+  it('rejects URL with different protocol', () => {
+    expect(
+      validatePaginationUrl(
+        'http://api.adoptium.net/v3/assets?page=2',
+        'https://api.adoptium.net'
+      )
+    ).toBe(false);
+  });
+
+  it('returns false for invalid URL', () => {
+    expect(
+      validatePaginationUrl('not-a-url', 'https://api.adoptium.net')
+    ).toBe(false);
   });
 });
 

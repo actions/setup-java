@@ -201,6 +201,8 @@ export function getGitHubHttpHeaders(): OutgoingHttpHeaders {
   return headers;
 }
 
+export const MAX_PAGINATION_PAGES = 1000;
+
 export function getNextPageUrlFromLinkHeader(
   headers?: Record<string, string | string[] | undefined>
 ): string | null {
@@ -216,11 +218,36 @@ export function getNextPageUrlFromLinkHeader(
   const normalizedLinkHeader = Array.isArray(linkHeader)
     ? linkHeader.join(',')
     : linkHeader;
-  const nextLinkMatch = normalizedLinkHeader.match(
-    /<([^>]+)>\s*;\s*rel="?next"?/i
-  );
 
-  return nextLinkMatch?.[1] ?? null;
+  // Split into individual link-values and find the one with rel="next"
+  // RFC 8288 allows rel to appear anywhere among the parameters
+  const linkValues = normalizedLinkHeader.split(/,(?=\s*<)/);
+  for (const linkValue of linkValues) {
+    const urlMatch = linkValue.match(/<([^>]+)>/);
+    if (!urlMatch) continue;
+
+    const params = linkValue.slice(urlMatch[0].length);
+    if (/;\s*rel="?next"?/i.test(params)) {
+      return urlMatch[1];
+    }
+  }
+
+  return null;
+}
+
+export function validatePaginationUrl(
+  url: string,
+  allowedOrigin: string
+): boolean {
+  try {
+    const parsed = new URL(url);
+    const allowed = new URL(allowedOrigin);
+    return (
+      parsed.protocol === allowed.protocol && parsed.host === allowed.host
+    );
+  } catch {
+    return false;
+  }
 }
 
 // Rename archive to add extension because after downloading

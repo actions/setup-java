@@ -10,15 +10,15 @@ import {
   getNextPageUrlFromLinkHeader,
   getDownloadArchiveExtension,
   isVersionSatisfies,
-  renameWinArchive
+  renameWinArchive,
+  MAX_PAGINATION_PAGES,
+  validatePaginationUrl
 } from '../../util';
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 import {ISemeruAvailableVersions} from './models';
-
-const MAX_PAGINATION_PAGES = 1000;
 
 const supportedArchitectures = [
   'x64',
@@ -174,7 +174,18 @@ export class SemeruDistribution extends JavaBase {
           availableVersionsUrl
         );
       const paginationPage = response.result;
-      availableVersionsUrl = getNextPageUrlFromLinkHeader(response.headers);
+      const nextUrl = getNextPageUrlFromLinkHeader(response.headers);
+      if (
+        nextUrl &&
+        !validatePaginationUrl(nextUrl, 'https://api.adoptopenjdk.net')
+      ) {
+        core.warning(
+          `Ignoring pagination link with unexpected origin: ${nextUrl}`
+        );
+        availableVersionsUrl = null;
+      } else {
+        availableVersionsUrl = nextUrl;
+      }
       if (paginationPage === null || paginationPage.length === 0) {
         break;
       }

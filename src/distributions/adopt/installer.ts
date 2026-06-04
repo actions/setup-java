@@ -17,10 +17,10 @@ import {
   getNextPageUrlFromLinkHeader,
   getDownloadArchiveExtension,
   isVersionSatisfies,
-  renameWinArchive
+  renameWinArchive,
+  MAX_PAGINATION_PAGES,
+  validatePaginationUrl
 } from '../../util';
-
-const MAX_PAGINATION_PAGES = 1000;
 
 export enum AdoptImplementation {
   Hotspot = 'Hotspot',
@@ -144,7 +144,18 @@ export class AdoptDistribution extends JavaBase {
           availableVersionsUrl
         );
       const paginationPage = response.result;
-      availableVersionsUrl = getNextPageUrlFromLinkHeader(response.headers);
+      const nextUrl = getNextPageUrlFromLinkHeader(response.headers);
+      if (
+        nextUrl &&
+        !validatePaginationUrl(nextUrl, 'https://api.adoptopenjdk.net')
+      ) {
+        core.warning(
+          `Ignoring pagination link with unexpected origin: ${nextUrl}`
+        );
+        availableVersionsUrl = null;
+      } else {
+        availableVersionsUrl = nextUrl;
+      }
       if (paginationPage === null || paginationPage.length === 0) {
         break;
       }
