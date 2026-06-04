@@ -113,7 +113,8 @@ describe('getAvailableVersions', () => {
   });
 
   it('stops pagination after 1000 pages as a safeguard', async () => {
-    const nextPageUrl = 'https://example.com/releases?page=2';
+    const nextPageUrl =
+      'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D?page=2&page_size=20';
     spyHttpClient.mockReturnValue({
       statusCode: 200,
       headers: {link: `<${nextPageUrl}>; rel="next"`},

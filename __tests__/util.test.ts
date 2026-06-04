@@ -108,6 +108,10 @@ describe('getNextPageUrlFromLinkHeader', () => {
       'https://api.adoptium.net/v3/versions?page=3'
     ],
     [{link: '<https://example.com/last?page=5>; rel="last"'}, null],
+    [
+      {link: '<https://example.com/page?p=2>; rel="nextsomething"'},
+      null
+    ],
     [undefined, null]
   ])('returns %s -> %s', (headers, expected) => {
     expect(getNextPageUrlFromLinkHeader(headers)).toBe(expected);
@@ -146,6 +150,15 @@ describe('validatePaginationUrl', () => {
     expect(
       validatePaginationUrl('not-a-url', 'https://api.adoptium.net')
     ).toBe(false);
+  });
+
+  it('accepts URL with explicit default port', () => {
+    expect(
+      validatePaginationUrl(
+        'https://api.adoptium.net:443/v3/assets?page=2',
+        'https://api.adoptium.net'
+      )
+    ).toBe(true);
   });
 });
 

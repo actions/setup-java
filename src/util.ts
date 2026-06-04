@@ -227,7 +227,9 @@ export function getNextPageUrlFromLinkHeader(
     if (!urlMatch) continue;
 
     const params = linkValue.slice(urlMatch[0].length);
-    if (/;\s*rel="?next"?/i.test(params)) {
+    // Use word boundary to match "next" as a standalone relation type
+    // RFC 8288 allows space-separated relation types like rel="next prev"
+    if (/;\s*rel="?[^"]*\bnext\b/i.test(params)) {
       return urlMatch[1];
     }
   }
@@ -242,9 +244,7 @@ export function validatePaginationUrl(
   try {
     const parsed = new URL(url);
     const allowed = new URL(allowedOrigin);
-    return (
-      parsed.protocol === allowed.protocol && parsed.host === allowed.host
-    );
+    return parsed.origin === allowed.origin;
   } catch {
     return false;
   }
