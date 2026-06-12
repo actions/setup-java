@@ -34,6 +34,9 @@ export class TemurinDistribution extends JavaBase {
     super(`Temurin-${jvmImpl}`, installerOptions);
   }
 
+  /**
+   * @internal For cross-distribution reuse only. Not intended as a public API.
+   */
   public async findPackageForDownload(
     version: string
   ): Promise<JavaDownloadRelease> {

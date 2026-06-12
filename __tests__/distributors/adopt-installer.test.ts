@@ -278,6 +278,10 @@ describe('findPackageForDownload', () => {
       },
       AdoptImplementation.Hotspot
     );
+    // Mock Temurin to fail so fallback to AdoptOpenJDK is tested
+    distribution['temurinDistribution']!['findPackageForDownload'] = async () => {
+      throw new Error('No matching version found for SemVer');
+    };
     distribution['getAvailableVersions'] = async () => manifestData as any;
     const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
@@ -293,6 +297,10 @@ describe('findPackageForDownload', () => {
       },
       AdoptImplementation.Hotspot
     );
+    // Mock Temurin to fail so fallback to AdoptOpenJDK is tested
+    distribution['temurinDistribution']!['findPackageForDownload'] = async () => {
+      throw new Error('No matching version found for SemVer');
+    };
     distribution['getAvailableVersions'] = async () => manifestData as any;
     await expect(
       distribution['findPackageForDownload']('9.0.8')
@@ -309,6 +317,10 @@ describe('findPackageForDownload', () => {
       },
       AdoptImplementation.Hotspot
     );
+    // Mock Temurin to fail so fallback to AdoptOpenJDK is tested
+    distribution['temurinDistribution']!['findPackageForDownload'] = async () => {
+      throw new Error('No matching version found for SemVer');
+    };
     distribution['getAvailableVersions'] = async () => manifestData as any;
     await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrow(
       /No matching version found for SemVer */
@@ -325,6 +337,10 @@ describe('findPackageForDownload', () => {
       },
       AdoptImplementation.Hotspot
     );
+    // Mock Temurin to fail so fallback to AdoptOpenJDK is tested
+    distribution['temurinDistribution']!['findPackageForDownload'] = async () => {
+      throw new Error('No matching version found for SemVer');
+    };
     distribution['getAvailableVersions'] = async () => [];
     await expect(distribution['findPackageForDownload']('11')).rejects.toThrow(
       /No matching version found for SemVer */

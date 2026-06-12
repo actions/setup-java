@@ -36,12 +36,18 @@ export class AdoptDistribution extends JavaBase {
   ) {
     super(`Adopt-${jvmImpl}`, installerOptions);
 
-    if (temurinDistribution != null && jvmImpl != AdoptImplementation.Hotspot) {
+    if (
+      temurinDistribution !== null &&
+      jvmImpl !== AdoptImplementation.Hotspot
+    ) {
       throw new Error('Only Hotspot JVM is supported by Temurin.');
     }
 
     // Only use the temurin repo for Hotspot JVMs
-    if (temurinDistribution == null && jvmImpl == AdoptImplementation.Hotspot) {
+    if (
+      temurinDistribution === null &&
+      jvmImpl === AdoptImplementation.Hotspot
+    ) {
       this.temurinDistribution = new TemurinDistribution(
         installerOptions,
         TemurinImplementation.Hotspot
@@ -52,30 +58,34 @@ export class AdoptDistribution extends JavaBase {
   protected async findPackageForDownload(
     version: string
   ): Promise<JavaDownloadRelease> {
-    if (this.jvmImpl == AdoptImplementation.Hotspot) {
+    if (this.jvmImpl === AdoptImplementation.Hotspot) {
       core.notice(
         "AdoptOpenJDK has moved to Eclipse Temurin https://github.com/actions/setup-java#supported-distributions please consider changing to the 'temurin' distribution type in your setup-java configuration."
       );
     }
 
     if (
-      this.jvmImpl == AdoptImplementation.Hotspot &&
-      this.temurinDistribution != null
+      this.jvmImpl === AdoptImplementation.Hotspot &&
+      this.temurinDistribution !== null
     ) {
       try {
-        const result = await this.temurinDistribution.findPackageForDownload(
-          version
-        );
-
-        if (result != undefined) {
-          return result;
-        }
+        return await this.temurinDistribution.findPackageForDownload(version);
       } catch (error) {
-        if (error.message.includes('Could not find satisfied version')) {
+        // Only fall back to legacy AdoptOpenJDK for version-not-found errors
+        if (
+          error instanceof Error &&
+          error.message.includes('No matching version found')
+        ) {
           core.notice(
             'The JVM you are looking for could not be found in the Temurin repository, this likely indicates ' +
               'that you are using an out of date version of Java, consider updating and moving to using the Temurin distribution type in setup-java.'
           );
+        } else {
+          // Rethrow unexpected errors to avoid masking real issues
+          core.debug(
+            `Unexpected error from Temurin lookup: ${error instanceof Error ? error.message : String(error)}`
+          );
+          throw error;
         }
       }
     }
