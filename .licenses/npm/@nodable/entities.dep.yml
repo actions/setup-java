@@ -6,6 +6,6 @@ summary: Entity parser for XML, HTML, External entites with security and NCR con
 homepage:
 license: mit
 licenses:
-- sources: package.json
+- sources: README.md
   text: MIT
 notices: []
