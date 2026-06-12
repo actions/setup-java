@@ -1,0 +1,12 @@
+---
+name: xml-naming
+version: 0.1.0
+type: npm
+summary: "Validates XML name productions \u2014 Name, NCName, QName, NMToken, NMTokens\
+  \ \u2014 for XML 1.0 and 1.1"
+homepage:
+license: mit
+licenses:
+- sources: package.json
+  text: MIT
+notices: []
