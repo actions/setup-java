@@ -13,6 +13,7 @@
   - [JetBrains](#JetBrains)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
+- [Installing JDK without setting as default](#Installing-JDK-without-setting-as-default)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
 - [Testing against different Java distributions](#Testing-against-different-Java-distributions)
 - [Testing against different platforms](#Testing-against-different-platforms)
@@ -240,6 +241,32 @@ steps:
     architecture: x86 # optional - default value derived from the runner machine
 - run: java -cp java HelloWorldApp
 ```
+
+## Installing JDK without setting as default
+
+When installing multiple JDKs, the last one installed becomes the default (`JAVA_HOME`, `PATH`). Use the `set-default` option to install a JDK without overriding the default. The installed JDK is still discoverable via the `JAVA_HOME_<major>_<arch>` environment variable (e.g. `JAVA_HOME_21_X64`).
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'temurin'
+    java-version: '17'
+- uses: actions/setup-java@v5
+  id: setup-java-21
+  with:
+    distribution: 'temurin'
+    java-version: '21'
+    set-default: false
+- run: |
+    echo "Default java:"
+    java -version
+    echo "Java 21 home: $JAVA_HOME_21_X64"
+    echo "Java 21 path from output: ${{ steps.setup-java-21.outputs.path }}"
+```
+
+In this example, `JAVA_HOME` and `java` on `PATH` point to Java 17, while Java 21 is available via `JAVA_HOME_21_X64` or the step output `path`.
 
 ## Installing Java from local file
 If your use-case requires a custom distribution or a version that is not provided by setup-java, you can download it manually and setup-java will take care of the installation and caching on the VM:
