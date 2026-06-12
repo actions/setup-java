@@ -29,10 +29,12 @@ export enum AdoptImplementation {
 }
 
 export class AdoptDistribution extends JavaBase {
+  private readonly temurinDistribution: TemurinDistribution | null;
+
   constructor(
     installerOptions: JavaInstallerOptions,
     private readonly jvmImpl: AdoptImplementation,
-    private readonly temurinDistribution: TemurinDistribution | null = null
+    temurinDistribution: TemurinDistribution | null = null
   ) {
     super(`Adopt-${jvmImpl}`, installerOptions);
 
@@ -44,15 +46,14 @@ export class AdoptDistribution extends JavaBase {
     }
 
     // Only use the temurin repo for Hotspot JVMs
-    if (
-      temurinDistribution === null &&
-      jvmImpl === AdoptImplementation.Hotspot
-    ) {
-      this.temurinDistribution = new TemurinDistribution(
-        installerOptions,
-        TemurinImplementation.Hotspot
-      );
-    }
+    this.temurinDistribution =
+      temurinDistribution ??
+      (jvmImpl === AdoptImplementation.Hotspot
+        ? new TemurinDistribution(
+            installerOptions,
+            TemurinImplementation.Hotspot
+          )
+        : null);
   }
 
   protected async findPackageForDownload(
