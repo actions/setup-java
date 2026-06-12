@@ -34,7 +34,7 @@ export class TemurinDistribution extends JavaBase {
     super(`Temurin-${jvmImpl}`, installerOptions);
   }
 
-  protected async findPackageForDownload(
+  public async findPackageForDownload(
     version: string
   ): Promise<JavaDownloadRelease> {
     const availableVersionsRaw = await this.getAvailableVersions();
