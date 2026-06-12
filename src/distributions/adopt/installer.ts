@@ -71,21 +71,18 @@ export class AdoptDistribution extends JavaBase {
       try {
         return await this.temurinDistribution.findPackageForDownload(version);
       } catch (error) {
-        // Only fall back to legacy AdoptOpenJDK for version-not-found errors
-        if (
-          error instanceof Error &&
-          error.message.includes('No matching version found')
-        ) {
+        // Log the failure but always fall back to legacy AdoptOpenJDK for resilience
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('No matching version found')) {
           core.notice(
             'The JVM you are looking for could not be found in the Temurin repository, this likely indicates ' +
               'that you are using an out of date version of Java, consider updating and moving to using the Temurin distribution type in setup-java.'
           );
         } else {
-          // Rethrow unexpected errors to avoid masking real issues
+          // Log other errors for debugging but gracefully fall back
           core.debug(
-            `Unexpected error from Temurin lookup: ${error instanceof Error ? error.message : String(error)}`
+            `Temurin lookup failed: ${errorMessage}. Falling back to AdoptOpenJDK API.`
           );
-          throw error;
         }
       }
     }
