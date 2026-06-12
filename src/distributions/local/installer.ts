@@ -69,9 +69,15 @@ export class LocalDistribution extends JavaBase {
       foundJava.path = macOSPostfixPath;
     }
 
-    core.info(`Setting Java ${foundJava.version} as default`);
-
-    this.setJavaDefault(foundJava.version, foundJava.path);
+    if (this.setDefault) {
+      core.info(`Setting Java ${foundJava.version} as the default`);
+      this.setJavaDefault(foundJava.version, foundJava.path);
+    } else {
+      core.info(
+        `Installing Java ${foundJava.version} (not setting as default)`
+      );
+      this.setJavaEnvironment(foundJava.version, foundJava.path);
+    }
     return foundJava;
   }
 
