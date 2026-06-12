@@ -73,8 +73,9 @@ export class AdoptDistribution extends JavaBase {
         return await this.temurinDistribution.findPackageForDownload(version);
       } catch (error) {
         // Log the failure but always fall back to legacy AdoptOpenJDK for resilience
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.includes('No matching version found')) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        if (error instanceof Error && error.name === 'VersionNotFoundError') {
           core.notice(
             'The JVM you are looking for could not be found in the Temurin repository, this likely indicates ' +
               'that you are using an out of date version of Java, consider updating and moving to using the Temurin distribution type in setup-java.'
