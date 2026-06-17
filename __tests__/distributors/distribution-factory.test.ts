@@ -100,7 +100,10 @@ describe('getJavaDistribution', () => {
   });
 
   it('returns null for unknown distribution name', () => {
-    const distribution = getJavaDistribution('unknown-distro', installerOptions);
+    const distribution = getJavaDistribution(
+      'unknown-distro',
+      installerOptions
+    );
     expect(distribution).toBeNull();
   });
 
@@ -121,7 +124,7 @@ describe('getJavaDistribution', () => {
     ) as AdoptDistribution;
     // @ts-ignore - accessing private fields
     const temurin = distribution['temurinDistribution'] as TemurinDistribution;
-    // @ts-ignore
+    // @ts-ignore - accessing private field
     expect(temurin['jvmImpl']).toBe(TemurinImplementation.Hotspot);
   });
 
