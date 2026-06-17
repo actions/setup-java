@@ -294,6 +294,7 @@ describe('downloadTool', () => {
   let spyExtractJdkFile: jest.SpyInstance;
   let spyCacheDir: jest.SpyInstance;
   let spyReadDirSync: jest.SpyInstance;
+  let spyRenameWinArchive: jest.SpyInstance;
 
   beforeEach(() => {
     spyDownloadTool = jest.spyOn(tc, 'downloadTool');
@@ -306,6 +307,8 @@ describe('downloadTool', () => {
     spyCacheDir.mockResolvedValue('/tmp/toolcache');
     spyReadDirSync = jest.spyOn(fs, 'readdirSync');
     spyReadDirSync.mockReturnValue(['jdk-17'] as any);
+    spyRenameWinArchive = jest.spyOn(util, 'renameWinArchive');
+    spyRenameWinArchive.mockReturnValue('/tmp/jdk.tar.gz.zip');
   });
 
   afterEach(() => {
