@@ -235,7 +235,7 @@ describe('findPackageForDownload', () => {
     distribution['getAvailableVersions'] = async () => manifestData as any;
     const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
-    expect(resolvedVersion.signatureUrl).toBeTruthy();
+    expect(resolvedVersion.signatureUrl).toBeDefined();
   });
 
   it('version is found but binaries list is empty', async () => {

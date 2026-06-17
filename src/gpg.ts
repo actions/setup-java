@@ -63,9 +63,18 @@ export async function verifyPackageSignature(
   keyFingerprint = ADOPTIUM_SIGNATURE_KEY_FINGERPRINT
 ) {
   const signaturePath = await tc.downloadTool(signatureUrl);
-  const gpgHome = fs.mkdtempSync(
-    path.join(util.getTempDir(), 'verify-signature-gpg-home-')
-  );
+  let gpgHome: string;
+  try {
+    gpgHome = fs.mkdtempSync(
+      path.join(util.getTempDir(), 'verify-signature-gpg-home-')
+    );
+  } catch (error) {
+    throw new Error(
+      `Failed to create temporary GPG home directory for signature verification: ${
+        (error as Error).message
+      }`
+    );
+  }
   const env = {...process.env, GNUPGHOME: gpgHome};
 
   try {
@@ -74,6 +83,7 @@ export async function verifyPackageSignature(
       'gpg',
       [
         '--batch',
+        // Adoptium release-signing docs recommend keyserver.ubuntu.com for key retrieval.
         '--keyserver',
         'keyserver.ubuntu.com',
         '--recv-keys',

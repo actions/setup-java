@@ -97,7 +97,7 @@ export class TemurinDistribution extends JavaBase {
         );
       } catch (error) {
         throw new Error(
-          `Failed to verify signature for Temurin version ${javaRelease.version}: ${
+          `Failed to verify signature for Temurin version ${javaRelease.version} from ${javaRelease.signatureUrl}: ${
             (error as Error).message
           }`
         );

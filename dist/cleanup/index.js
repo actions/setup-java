@@ -52116,12 +52116,19 @@ exports.deleteKey = deleteKey;
 function verifyPackageSignature(archivePath, signatureUrl, keyFingerprint = exports.ADOPTIUM_SIGNATURE_KEY_FINGERPRINT) {
     return __awaiter(this, void 0, void 0, function* () {
         const signaturePath = yield tc.downloadTool(signatureUrl);
-        const gpgHome = fs.mkdtempSync(path.join(util.getTempDir(), 'verify-signature-gpg-home-'));
+        let gpgHome;
+        try {
+            gpgHome = fs.mkdtempSync(path.join(util.getTempDir(), 'verify-signature-gpg-home-'));
+        }
+        catch (error) {
+            throw new Error(`Failed to create temporary GPG home directory for signature verification: ${error.message}`);
+        }
         const env = Object.assign(Object.assign({}, process.env), { GNUPGHOME: gpgHome });
         try {
             const options = { silent: true, env };
             yield exec.exec('gpg', [
                 '--batch',
+                // Adoptium release-signing docs recommend keyserver.ubuntu.com for key retrieval.
                 '--keyserver',
                 'keyserver.ubuntu.com',
                 '--recv-keys',
