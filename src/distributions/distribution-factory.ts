@@ -44,7 +44,8 @@ export function getJavaDistribution(
     case JavaDistribution.AdoptHotspot:
       return new AdoptDistribution(
         installerOptions,
-        AdoptImplementation.Hotspot
+        AdoptImplementation.Hotspot,
+        new TemurinDistribution(installerOptions, TemurinImplementation.Hotspot)
       );
     case JavaDistribution.AdoptOpenJ9:
       return new AdoptDistribution(
