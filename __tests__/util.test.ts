@@ -4,10 +4,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {
   convertVersionToSemver,
+  getNextPageUrlFromLinkHeader,
   getVersionFromFileContent,
   isVersionSatisfies,
   isCacheFeatureAvailable,
-  isGhes
+  isGhes,
+  validatePaginationUrl
 } from '../src/util';
 
 jest.mock('@actions/cache');
@@ -86,6 +88,78 @@ describe('convertVersionToSemver', () => {
   ])('%s -> %s', (input: string, expected: string) => {
     const actual = convertVersionToSemver(input);
     expect(actual).toBe(expected);
+  });
+});
+
+describe('getNextPageUrlFromLinkHeader', () => {
+  it.each([
+    [
+      {
+        link: '<https://api.adoptium.net/v3/info/release_versions?page=1&page_size=10>; rel="next"'
+      },
+      'https://api.adoptium.net/v3/info/release_versions?page=1&page_size=10'
+    ],
+    [
+      {
+        Link: '<https://example.com/last?page=5>; rel="last", <https://example.com/next?page=2>; rel="next"'
+      },
+      'https://example.com/next?page=2'
+    ],
+    [
+      {
+        link: '<https://api.adoptium.net/v3/versions?page=3>; type="application/json"; rel="next"'
+      },
+      'https://api.adoptium.net/v3/versions?page=3'
+    ],
+    [{link: '<https://example.com/last?page=5>; rel="last"'}, null],
+    [{link: '<https://example.com/page?p=2>; rel="nextsomething"'}, null],
+    [undefined, null]
+  ])('returns %s -> %s', (headers, expected) => {
+    expect(getNextPageUrlFromLinkHeader(headers)).toBe(expected);
+  });
+});
+
+describe('validatePaginationUrl', () => {
+  it('accepts URL with matching origin', () => {
+    expect(
+      validatePaginationUrl(
+        'https://api.adoptium.net/v3/assets?page=2',
+        'https://api.adoptium.net'
+      )
+    ).toBe(true);
+  });
+
+  it('rejects URL with different host', () => {
+    expect(
+      validatePaginationUrl(
+        'https://evil.example.com/steal?data=1',
+        'https://api.adoptium.net'
+      )
+    ).toBe(false);
+  });
+
+  it('rejects URL with different protocol', () => {
+    expect(
+      validatePaginationUrl(
+        'http://api.adoptium.net/v3/assets?page=2',
+        'https://api.adoptium.net'
+      )
+    ).toBe(false);
+  });
+
+  it('returns false for invalid URL', () => {
+    expect(validatePaginationUrl('not-a-url', 'https://api.adoptium.net')).toBe(
+      false
+    );
+  });
+
+  it('accepts URL with explicit default port', () => {
+    expect(
+      validatePaginationUrl(
+        'https://api.adoptium.net:443/v3/assets?page=2',
+        'https://api.adoptium.net'
+      )
+    ).toBe(true);
   });
 });
 
