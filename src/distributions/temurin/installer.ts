@@ -27,6 +27,9 @@ export enum TemurinImplementation {
   Hotspot = 'Hotspot'
 }
 
+export const ADOPTIUM_SIGNATURE_KEY_FINGERPRINT =
+  '3B04D753C9050D9A5D343F39843C48A565F8F04B';
+
 export class TemurinDistribution extends JavaBase {
   constructor(
     installerOptions: JavaInstallerOptions,
@@ -93,7 +96,7 @@ export class TemurinDistribution extends JavaBase {
         await gpg.verifyPackageSignature(
           javaArchivePath,
           javaRelease.signatureUrl,
-          gpg.ADOPTIUM_SIGNATURE_KEY_FINGERPRINT
+          ADOPTIUM_SIGNATURE_KEY_FINGERPRINT
         );
       } catch (error) {
         throw new Error(

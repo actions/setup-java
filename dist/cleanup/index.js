@@ -52067,7 +52067,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.verifyPackageSignature = exports.deleteKey = exports.importKey = exports.ADOPTIUM_SIGNATURE_KEY_FINGERPRINT = exports.PRIVATE_KEY_FILE = void 0;
+exports.verifyPackageSignature = exports.deleteKey = exports.importKey = exports.PRIVATE_KEY_FILE = void 0;
 const fs = __importStar(__nccwpck_require__(79896));
 const path = __importStar(__nccwpck_require__(16928));
 const io = __importStar(__nccwpck_require__(94994));
@@ -52075,7 +52075,6 @@ const exec = __importStar(__nccwpck_require__(95236));
 const tc = __importStar(__nccwpck_require__(33472));
 const util = __importStar(__nccwpck_require__(54527));
 exports.PRIVATE_KEY_FILE = path.join(util.getTempDir(), 'private-key.asc');
-exports.ADOPTIUM_SIGNATURE_KEY_FINGERPRINT = '3B04D753C9050D9A5D343F39843C48A565F8F04B';
 const PRIVATE_KEY_FINGERPRINT_REGEX = /\w{40}/;
 function importKey(privateKey) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -52113,7 +52112,7 @@ function deleteKey(keyFingerprint) {
     });
 }
 exports.deleteKey = deleteKey;
-function verifyPackageSignature(archivePath, signatureUrl, keyFingerprint = exports.ADOPTIUM_SIGNATURE_KEY_FINGERPRINT) {
+function verifyPackageSignature(archivePath, signatureUrl, keyFingerprint) {
     return __awaiter(this, void 0, void 0, function* () {
         const signaturePath = yield tc.downloadTool(signatureUrl);
         let gpgHome;
@@ -52128,7 +52127,6 @@ function verifyPackageSignature(archivePath, signatureUrl, keyFingerprint = expo
             const options = { silent: true, env };
             yield exec.exec('gpg', [
                 '--batch',
-                // Adoptium release-signing docs recommend keyserver.ubuntu.com for key retrieval.
                 '--keyserver',
                 'keyserver.ubuntu.com',
                 '--recv-keys',

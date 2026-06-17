@@ -7,8 +7,6 @@ import * as util from './util';
 import {ExecOptions} from '@actions/exec/lib/interfaces';
 
 export const PRIVATE_KEY_FILE = path.join(util.getTempDir(), 'private-key.asc');
-export const ADOPTIUM_SIGNATURE_KEY_FINGERPRINT =
-  '3B04D753C9050D9A5D343F39843C48A565F8F04B';
 
 const PRIVATE_KEY_FINGERPRINT_REGEX = /\w{40}/;
 
@@ -60,7 +58,7 @@ export async function deleteKey(keyFingerprint: string) {
 export async function verifyPackageSignature(
   archivePath: string,
   signatureUrl: string,
-  keyFingerprint = ADOPTIUM_SIGNATURE_KEY_FINGERPRINT
+  keyFingerprint: string
 ) {
   const signaturePath = await tc.downloadTool(signatureUrl);
   let gpgHome: string;
@@ -83,7 +81,6 @@ export async function verifyPackageSignature(
       'gpg',
       [
         '--batch',
-        // Adoptium release-signing docs recommend keyserver.ubuntu.com for key retrieval.
         '--keyserver',
         'keyserver.ubuntu.com',
         '--recv-keys',
