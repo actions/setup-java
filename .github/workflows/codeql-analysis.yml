@@ -12,6 +12,7 @@ jobs:
   call-codeQL-analysis:
     permissions:
       actions: read
+      contents: read
       security-events: write
     name: CodeQL analysis
     uses: actions/reusable-workflows/.github/workflows/codeql-analysis.yml@main
