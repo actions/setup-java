@@ -11,6 +11,7 @@ export interface ITemurinAvailableVersions {
       package: {
         checksum: string;
         checksum_link: string;
+        signature_link?: string;
         download_count: number;
         link: string;
         metadata_link: string;

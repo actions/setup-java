@@ -20,6 +20,7 @@ export abstract class JavaBase {
   protected packageType: string;
   protected stable: boolean;
   protected checkLatest: boolean;
+  protected verifySignature: boolean;
 
   constructor(
     protected distribution: string,
@@ -36,6 +37,7 @@ export abstract class JavaBase {
     this.architecture = installerOptions.architecture || os.arch();
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
+    this.verifySignature = installerOptions.verifySignature ?? false;
   }
 
   protected abstract downloadTool(
@@ -46,6 +48,12 @@ export abstract class JavaBase {
   ): Promise<JavaDownloadRelease>;
 
   public async setupJava(): Promise<JavaInstallerResults> {
+    if (this.verifySignature && !this.supportsSignatureVerification()) {
+      throw new Error(
+        `Input 'verify-signature' is not supported for distribution '${this.distribution}'.`
+      );
+    }
+
     let foundJava = this.findInToolcache();
     if (foundJava && !this.checkLatest) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
@@ -177,6 +185,10 @@ export abstract class JavaBase {
 
   protected get toolcacheFolderName(): string {
     return `Java_${this.distribution}_${this.packageType}`;
+  }
+
+  protected supportsSignatureVerification(): boolean {
+    return false;
   }
 
   protected getToolcacheVersionName(version: string): string {

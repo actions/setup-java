@@ -28,6 +28,10 @@ async function run() {
       constants.INPUT_CACHE_DEPENDENCY_PATH
     );
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
+    const verifySignature = getBooleanInput(
+      constants.INPUT_VERIFY_SIGNATURE,
+      false
+    );
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
 
     core.startGroup('Installed distributions');
@@ -44,6 +48,7 @@ async function run() {
       architecture,
       packageType,
       checkLatest,
+      verifySignature,
       distributionName,
       jdkFile,
       toolchainIds
@@ -100,6 +105,7 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
+    verifySignature,
     toolchainIds
   } = options;
 
@@ -107,6 +113,7 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
+    verifySignature,
     version
   };
 
@@ -141,6 +148,7 @@ interface installerInputsOptions {
   architecture: string;
   packageType: string;
   checkLatest: boolean;
+  verifySignature: boolean;
   distributionName: string;
   jdkFile: string;
   toolchainIds: Array<string>;

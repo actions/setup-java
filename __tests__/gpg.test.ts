@@ -1,11 +1,18 @@
 import * as path from 'path';
 import * as io from '@actions/io';
 import * as exec from '@actions/exec';
+import * as tc from '@actions/tool-cache';
 import * as gpg from '../src/gpg';
 
 jest.mock('@actions/exec', () => {
   return {
     exec: jest.fn()
+  };
+});
+
+jest.mock('@actions/tool-cache', () => {
+  return {
+    downloadTool: jest.fn()
   };
 });
 
@@ -50,6 +57,38 @@ describe('gpg tests', () => {
         expect.anything(),
         expect.anything()
       );
+    });
+
+    describe('verifyPackageSignature', () => {
+      it('downloads signature and verifies package', async () => {
+        (tc.downloadTool as jest.Mock).mockResolvedValue('/tmp/jdk.tar.gz.sig');
+        await gpg.verifyPackageSignature(
+          '/tmp/jdk.tar.gz',
+          'https://example.com/jdk.tar.gz.sig'
+        );
+
+        expect(tc.downloadTool).toHaveBeenCalledWith(
+          'https://example.com/jdk.tar.gz.sig'
+        );
+        expect(exec.exec).toHaveBeenNthCalledWith(
+          1,
+          'gpg',
+          [
+            '--batch',
+            '--keyserver',
+            'keyserver.ubuntu.com',
+            '--recv-keys',
+            gpg.ADOPTIUM_SIGNATURE_KEY_FINGERPRINT
+          ],
+          expect.objectContaining({silent: true})
+        );
+        expect(exec.exec).toHaveBeenNthCalledWith(
+          2,
+          'gpg',
+          ['--batch', '--verify', '/tmp/jdk.tar.gz.sig', '/tmp/jdk.tar.gz'],
+          expect.objectContaining({silent: true})
+        );
+      });
     });
   });
 });

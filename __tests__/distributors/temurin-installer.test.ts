@@ -1,10 +1,14 @@
 import {HttpClient} from '@actions/http-client';
+import * as tc from '@actions/tool-cache';
+import fs from 'fs';
 import os from 'os';
 import {
   TemurinDistribution,
   TemurinImplementation
 } from '../../src/distributions/temurin/installer';
 import {JavaInstallerOptions} from '../../src/distributions/base-models';
+import * as util from '../../src/util';
+import * as gpg from '../../src/gpg';
 
 import manifestData from '../data/temurin.json';
 import * as core from '@actions/core';
@@ -231,6 +235,7 @@ describe('findPackageForDownload', () => {
     distribution['getAvailableVersions'] = async () => manifestData as any;
     const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
+    expect(resolvedVersion.signatureUrl).toBeTruthy();
   });
 
   it('version is found but binaries list is empty', async () => {
@@ -279,5 +284,80 @@ describe('findPackageForDownload', () => {
     await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
       /No matching version found for SemVer */
     );
+  });
+});
+
+describe('downloadTool', () => {
+  let spyDownloadTool: jest.SpyInstance;
+  let spyVerifySignature: jest.SpyInstance;
+  let spyExtractJdkFile: jest.SpyInstance;
+  let spyCacheDir: jest.SpyInstance;
+  let spyReadDirSync: jest.SpyInstance;
+
+  beforeEach(() => {
+    spyDownloadTool = jest.spyOn(tc, 'downloadTool');
+    spyDownloadTool.mockResolvedValue('/tmp/jdk.tar.gz');
+    spyVerifySignature = jest.spyOn(gpg, 'verifyPackageSignature');
+    spyVerifySignature.mockResolvedValue(undefined);
+    spyExtractJdkFile = jest.spyOn(util, 'extractJdkFile');
+    spyExtractJdkFile.mockResolvedValue('/tmp/extracted');
+    spyCacheDir = jest.spyOn(tc, 'cacheDir');
+    spyCacheDir.mockResolvedValue('/tmp/toolcache');
+    spyReadDirSync = jest.spyOn(fs, 'readdirSync');
+    spyReadDirSync.mockReturnValue(['jdk-17'] as any);
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+  });
+
+  it('verifies signature when enabled', async () => {
+    const distribution = new TemurinDistribution(
+      {
+        version: '17',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false,
+        verifySignature: true
+      },
+      TemurinImplementation.Hotspot
+    );
+
+    await distribution['downloadTool']({
+      version: '17.0.14+7',
+      url: 'https://example.com/jdk.tar.gz',
+      signatureUrl: 'https://example.com/jdk.tar.gz.sig'
+    });
+
+    expect(spyVerifySignature).toHaveBeenCalledWith(
+      '/tmp/jdk.tar.gz',
+      'https://example.com/jdk.tar.gz.sig',
+      gpg.ADOPTIUM_SIGNATURE_KEY_FINGERPRINT
+    );
+  });
+
+  it('fails when signature is missing and verification is enabled', async () => {
+    const distribution = new TemurinDistribution(
+      {
+        version: '17',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false,
+        verifySignature: true
+      },
+      TemurinImplementation.Hotspot
+    );
+
+    await expect(
+      distribution['downloadTool']({
+        version: '17.0.14+7',
+        url: 'https://example.com/jdk.tar.gz'
+      })
+    ).rejects.toThrow(
+      "Input 'verify-signature' is enabled, but no signature URL was found"
+    );
+    expect(spyVerifySignature).not.toHaveBeenCalled();
   });
 });
