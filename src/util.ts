@@ -55,6 +55,14 @@ export function getDownloadArchiveExtension() {
 }
 
 export function isVersionSatisfies(range: string, version: string): boolean {
+  // Some distributions (e.g. JetBrains Runtime) publish 4-segment versions
+  // like '17.0.8.1+1080.1' that semver rejects. If the candidate version
+  // isn't valid semver, it can't match — bail out rather than letting
+  // compareBuild / satisfies throw.
+  if (!semver.valid(version)) {
+    return false;
+  }
+
   if (semver.valid(range)) {
     // if full version with build digit is provided as a range (such as '1.2.3+4')
     // we should check for exact equal via compareBuild

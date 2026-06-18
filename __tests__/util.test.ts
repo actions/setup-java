@@ -29,7 +29,11 @@ describe('isVersionSatisfies', () => {
     ['2.5.1+3', '2.5.1+3', true],
     ['2.5.1+3', '2.5.1+2', false],
     ['15.0.0+14', '15.0.0+14.1.202003190635', false],
-    ['15.0.0+14.1.202003190635', '15.0.0+14.1.202003190635', true]
+    ['15.0.0+14.1.202003190635', '15.0.0+14.1.202003190635', true],
+    // 4-segment versions (e.g. JetBrains Runtime '17.0.8.1+1080.1') are not
+    // valid semver — they should be rejected, not throw.
+    ['25.0.3+480.61', '17.0.8.1+1080.1', false],
+    ['17', '17.0.8.1+1080.1', false]
   ])(
     '%s, %s -> %s',
     (inputRange: string, inputVersion: string, expected: boolean) => {
