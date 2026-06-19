@@ -96,7 +96,7 @@ describe('dependency cache', () => {
     });
 
     describe('for maven', () => {
-      it('throws error if no pom.xml found', async () => {
+      it('throws error if no pom.xml or maven-wrapper.properties found', async () => {
         await expect(restore('maven', '')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
@@ -107,7 +107,13 @@ describe('dependency cache', () => {
         createFile(join(workspace, 'pom.xml'));
 
         await restore('maven', '');
-        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [
+            join(os.homedir(), '.m2', 'repository'),
+            join(os.homedir(), '.m2', 'wrapper', 'dists')
+          ],
+          expect.any(String)
+        );
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
           '**/pom.xml\n**/.mvn/wrapper/maven-wrapper.properties'
         );
@@ -122,7 +128,13 @@ describe('dependency cache', () => {
         );
 
         await restore('maven', '');
-        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [
+            join(os.homedir(), '.m2', 'repository'),
+            join(os.homedir(), '.m2', 'wrapper', 'dists')
+          ],
+          expect.any(String)
+        );
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
           '**/pom.xml\n**/.mvn/wrapper/maven-wrapper.properties'
         );
