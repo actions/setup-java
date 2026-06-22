@@ -14,10 +14,14 @@ import {
 } from '../base-models';
 import {
   extractJdkFile,
+  getNextPageUrlFromLinkHeader,
   getDownloadArchiveExtension,
   isVersionSatisfies,
-  renameWinArchive
+  renameWinArchive,
+  MAX_PAGINATION_PAGES,
+  validatePaginationUrl
 } from '../../util';
+import {TemurinDistribution, TemurinImplementation} from '../temurin/installer';
 
 export enum AdoptImplementation {
   Hotspot = 'Hotspot',
@@ -25,14 +29,71 @@ export enum AdoptImplementation {
 }
 
 export class AdoptDistribution extends JavaBase {
+  private readonly temurinDistribution: TemurinDistribution | null;
+
   constructor(
     installerOptions: JavaInstallerOptions,
-    private readonly jvmImpl: AdoptImplementation
+    private readonly jvmImpl: AdoptImplementation,
+    temurinDistribution: TemurinDistribution | null = null
   ) {
     super(`Adopt-${jvmImpl}`, installerOptions);
+
+    if (
+      temurinDistribution !== null &&
+      jvmImpl !== AdoptImplementation.Hotspot
+    ) {
+      throw new Error('Only Hotspot JVM is supported by Temurin.');
+    }
+
+    // Only use the temurin repo for Hotspot JVMs
+    this.temurinDistribution =
+      temurinDistribution ??
+      (jvmImpl === AdoptImplementation.Hotspot
+        ? new TemurinDistribution(
+            installerOptions,
+            TemurinImplementation.Hotspot
+          )
+        : null);
   }
 
   protected async findPackageForDownload(
+    version: string
+  ): Promise<JavaDownloadRelease> {
+    if (this.jvmImpl === AdoptImplementation.Hotspot) {
+      core.notice(
+        "AdoptOpenJDK has moved to Eclipse Temurin https://github.com/actions/setup-java#supported-distributions please consider changing to the 'temurin' distribution type in your setup-java configuration."
+      );
+    }
+
+    if (
+      this.jvmImpl === AdoptImplementation.Hotspot &&
+      this.temurinDistribution !== null
+    ) {
+      try {
+        return await this.temurinDistribution.findPackageForDownload(version);
+      } catch (error) {
+        // Log the failure but always fall back to legacy AdoptOpenJDK for resilience
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        if (error instanceof Error && error.name === 'VersionNotFoundError') {
+          core.notice(
+            'The JVM you are looking for could not be found in the Temurin repository, this likely indicates ' +
+              'that you are using an out of date version of Java, consider updating and moving to using the Temurin distribution type in setup-java.'
+          );
+        } else {
+          // Log other errors for debugging but gracefully fall back
+          core.debug(
+            `Temurin lookup failed: ${errorMessage}. Falling back to AdoptOpenJDK API.`
+          );
+        }
+      }
+    }
+
+    // failed to find a Temurin version, so fall back to AdoptOpenJDK
+    return this.findPackageForDownloadOldAdoptOpenJdk(version);
+  }
+
+  private async findPackageForDownloadOldAdoptOpenJdk(
     version: string
   ): Promise<JavaDownloadRelease> {
     const availableVersionsRaw = await this.getAvailableVersions();
@@ -54,15 +115,10 @@ export class AdoptDistribution extends JavaBase {
     const resolvedFullVersion =
       satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
     if (!resolvedFullVersion) {
-      const availableOptions = availableVersionsWithBinaries
-        .map(item => item.version)
-        .join(', ');
-      const availableOptionsMessage = availableOptions
-        ? `\nAvailable versions: ${availableOptions}`
-        : '';
-      throw new Error(
-        `Could not find satisfied version for SemVer '${version}'. ${availableOptionsMessage}`
+      const availableVersionStrings = availableVersionsWithBinaries.map(
+        item => item.version
       );
+      throw this.createVersionNotFoundError(version, availableVersionStrings);
     }
 
     return resolvedFullVersion;
@@ -130,30 +186,46 @@ export class AdoptDistribution extends JavaBase {
       `jvm_impl=${this.jvmImpl.toLowerCase()}`
     ].join('&');
 
-    // need to iterate through all pages to retrieve the list of all versions
-    // Adopt API doesn't provide way to retrieve the count of pages to iterate so infinity loop
-    let page_index = 0;
+    const requestArguments = `${baseRequestArguments}&page_size=20&page=0`;
+    let availableVersionsUrl: string | null =
+      `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
     const availableVersions: IAdoptAvailableVersions[] = [];
-    while (true) {
-      const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
-      const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
-      if (core.isDebug() && page_index === 0) {
-        // url is identical except page_index so print it once for debug
-        core.debug(
-          `Gathering available versions from '${availableVersionsUrl}'`
-        );
-      }
+    let pageCount = 0;
+    if (core.isDebug()) {
+      core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+    }
 
-      const paginationPage = (
-        await this.http.getJson<IAdoptAvailableVersions[]>(availableVersionsUrl)
-      ).result;
+    while (availableVersionsUrl) {
+      pageCount++;
+      const response =
+        await this.http.getJson<IAdoptAvailableVersions[]>(
+          availableVersionsUrl
+        );
+      const paginationPage = response.result;
+      const nextUrl = getNextPageUrlFromLinkHeader(response.headers);
+      if (
+        nextUrl &&
+        !validatePaginationUrl(nextUrl, 'https://api.adoptopenjdk.net')
+      ) {
+        core.warning(
+          `Ignoring pagination link with unexpected origin: ${nextUrl}`
+        );
+        availableVersionsUrl = null;
+      } else {
+        availableVersionsUrl = nextUrl;
+      }
       if (paginationPage === null || paginationPage.length === 0) {
-        // break infinity loop because we have reached end of pagination
         break;
       }
 
       availableVersions.push(...paginationPage);
-      page_index++;
+
+      if (pageCount >= MAX_PAGINATION_PAGES) {
+        core.warning(
+          `Reached pagination safeguard limit (${MAX_PAGINATION_PAGES} pages) while listing Adopt releases.`
+        );
+        break;
+      }
     }
 
     if (core.isDebug()) {

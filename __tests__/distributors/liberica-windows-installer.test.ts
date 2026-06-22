@@ -5,11 +5,13 @@ import {
 } from '../../src/distributions/liberica/models';
 import {HttpClient} from '@actions/http-client';
 import os from 'os';
+import * as core from '@actions/core';
 
 import manifestData from '../data/liberica-windows.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -18,6 +20,9 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: manifestData as LibericaVersion[]
     });
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -105,7 +110,9 @@ describe('getAvailableVersions', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: DistroArch) => {
-      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+      jest
+        .spyOn(os, 'arch')
+        .mockReturnValue(osArch as ReturnType<typeof os.arch>);
 
       const distribution = new LibericaDistributions({
         version: '17',
@@ -207,7 +214,7 @@ describe('findPackageForDownload', () => {
 
   it('should throw an error', async () => {
     await expect(distribution['findPackageForDownload']('18')).rejects.toThrow(
-      /Could not find satisfied version for semver */
+      /No matching version found for SemVer/
     );
   });
 });

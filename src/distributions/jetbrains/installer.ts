@@ -44,15 +44,10 @@ export class JetBrainsDistribution extends JavaBase {
     const resolvedFullVersion =
       satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
     if (!resolvedFullVersion) {
-      const availableOptions = versionsRaw
-        .map(item => `${item.tag_name} (${item.semver}+${item.build})`)
-        .join(', ');
-      const availableOptionsMessage = availableOptions
-        ? `\nAvailable versions: ${availableOptions}`
-        : '';
-      throw new Error(
-        `Could not find satisfied version for SemVer '${range}'. ${availableOptionsMessage}`
+      const availableVersionStrings = versionsRaw.map(
+        item => `${item.tag_name} (${item.semver}+${item.build})`
       );
+      throw this.createVersionNotFoundError(range, availableVersionStrings);
     }
 
     return resolvedFullVersion;
@@ -113,9 +108,18 @@ export class JetBrainsDistribution extends JavaBase {
         core.debug(`Gathering available versions from '${rawUrl}'`);
       }
 
-      const paginationPage = (
+      const paginationPageResult = (
         await this.http.getJson<IJetBrainsRawVersion[]>(rawUrl, requestHeaders)
       ).result;
+      if (!paginationPageResult || paginationPageResult.length === 0) {
+        // break infinity loop because we have reached end of pagination
+        break;
+      }
+
+      const paginationPage: IJetBrainsRawVersion[] =
+        paginationPageResult.filter(version =>
+          this.stable ? !version.prerelease : version.prerelease
+        );
       if (!paginationPage || paginationPage.length === 0) {
         // break infinity loop because we have reached end of pagination
         break;
@@ -125,9 +129,13 @@ export class JetBrainsDistribution extends JavaBase {
       page_index++;
     }
 
-    // Add versions not available from the API but are downloadable
-    const hidden = ['11_0_10b1145.115', '11_0_11b1341.60'];
-    rawVersions.push(...hidden.map(tag => ({tag_name: tag, name: tag})));
+    if (this.stable) {
+      // Add versions not available from the API but are downloadable
+      const hidden = ['11_0_10b1145.115', '11_0_11b1341.60'];
+      rawVersions.push(
+        ...hidden.map(tag => ({tag_name: tag, name: tag, prerelease: false}))
+      );
+    }
 
     const versions0 = rawVersions.map(async v => {
       // Release tags look like one of these:
@@ -148,7 +156,7 @@ export class JetBrainsDistribution extends JavaBase {
 
       const vsplit = vstring.split('b');
       let semver = vsplit[0];
-      const build = +vsplit[1];
+      const build = vsplit[1];
 
       // Normalize semver
       if (!semver.includes('.') && !semver.includes('_'))
