@@ -4,13 +4,14 @@ import {JavaInstallerOptions} from '../../src/distributions/base-models';
 import {CorrettoDistribution} from '../../src/distributions/corretto/installer';
 import * as util from '../../src/util';
 import os from 'os';
-import {isGeneratorFunction} from 'util/types';
+import * as core from '@actions/core';
 
 import manifestData from '../data/corretto.json';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
   let spyGetDownloadArchiveExtension: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -23,6 +24,10 @@ describe('getAvailableVersions', () => {
       util,
       'getDownloadArchiveExtension'
     );
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -150,9 +155,8 @@ describe('getAvailableVersions', () => {
       });
       mockPlatform(distribution, platform);
 
-      const availableVersion = await distribution['findPackageForDownload'](
-        version
-      );
+      const availableVersion =
+        await distribution['findPackageForDownload'](version);
       expect(availableVersion).not.toBeNull();
       expect(availableVersion.url).toBe(expectedLink);
     });
@@ -199,33 +203,31 @@ describe('getAvailableVersions', () => {
 
       await expect(
         distribution['findPackageForDownload'](version)
-      ).rejects.toThrow("Could not find satisfied version for SemVer '4'");
+      ).rejects.toThrow("No matching version found for SemVer '4'");
     });
 
     it.each([
-      ['arm64', 'aarch64'],
-      ['amd64', 'x64']
+      ['amd64', 'x64'],
+      ['arm64', 'aarch64']
     ])(
       'defaults to os.arch(): %s mapped to distro arch: %s',
       async (osArch: string, distroArch: string) => {
-        jest.spyOn(os, 'arch').mockReturnValue(osArch);
+        jest
+          .spyOn(os, 'arch')
+          .mockReturnValue(osArch as ReturnType<typeof os.arch>);
 
-        const version = '17';
-        const installerOptions: JavaInstallerOptions = {
-          version,
+        const distribution = new CorrettoDistribution({
+          version: '17',
           architecture: '', // to get default value
           packageType: 'jdk',
           checkLatest: false
-        };
-
-        const distribution = new CorrettoDistribution(installerOptions);
+        });
         mockPlatform(distribution, 'macos');
 
         const expectedLink = `https://corretto.aws/downloads/resources/17.0.2.8.1/amazon-corretto-17.0.2.8.1-macosx-${distroArch}.tar.gz`;
 
-        const availableVersion = await distribution['findPackageForDownload'](
-          version
-        );
+        const availableVersion =
+          await distribution['findPackageForDownload']('17');
         expect(availableVersion).not.toBeNull();
         expect(availableVersion.url).toBe(expectedLink);
       }

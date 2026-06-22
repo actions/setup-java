@@ -7,9 +7,12 @@ import {
 import semver from 'semver';
 import {
   extractJdkFile,
+  getNextPageUrlFromLinkHeader,
   getDownloadArchiveExtension,
   isVersionSatisfies,
-  renameWinArchive
+  renameWinArchive,
+  MAX_PAGINATION_PAGES,
+  validatePaginationUrl
 } from '../../util';
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
@@ -79,14 +82,16 @@ export class SemeruDistribution extends JavaBase {
     const resolvedFullVersion =
       satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
     if (!resolvedFullVersion) {
-      const availableOptions = availableVersionsWithBinaries
-        .map(item => item.version)
-        .join(', ');
-      const availableOptionsMessage = availableOptions
-        ? `\nAvailable versions: ${availableOptions}`
-        : '';
-      throw new Error(
-        `Could not find satisfied version for SemVer version '${version}' for your current OS version for ${this.architecture} architecture ${availableOptionsMessage}`
+      const availableVersionStrings = availableVersionsWithBinaries.map(
+        item => item.version
+      );
+      // Include platform context to help users understand OS-specific version availability
+      // IBM Semeru builds are OS-specific, so platform info aids in troubleshooting
+      const platformContext = `Platform: ${process.platform}`;
+      throw this.createVersionNotFoundError(
+        version,
+        availableVersionStrings,
+        platformContext
       );
     }
 
@@ -153,32 +158,46 @@ export class SemeruDistribution extends JavaBase {
       `jvm_impl=openj9`
     ].join('&');
 
-    // need to iterate through all pages to retrieve the list of all versions
-    // Adoptium API doesn't provide way to retrieve the count of pages to iterate so infinity loop
-    let page_index = 0;
+    const requestArguments = `${baseRequestArguments}&page_size=20&page=0`;
+    let availableVersionsUrl: string | null =
+      `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
     const availableVersions: ISemeruAvailableVersions[] = [];
-    while (true) {
-      const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
-      const availableVersionsUrl = `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
-      if (core.isDebug() && page_index === 0) {
-        // url is identical except page_index so print it once for debug
-        core.debug(
-          `Gathering available versions from '${availableVersionsUrl}'`
-        );
-      }
+    let pageCount = 0;
+    if (core.isDebug()) {
+      core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+    }
 
-      const paginationPage = (
+    while (availableVersionsUrl) {
+      pageCount++;
+      const response =
         await this.http.getJson<ISemeruAvailableVersions[]>(
           availableVersionsUrl
-        )
-      ).result;
+        );
+      const paginationPage = response.result;
+      const nextUrl = getNextPageUrlFromLinkHeader(response.headers);
+      if (
+        nextUrl &&
+        !validatePaginationUrl(nextUrl, 'https://api.adoptopenjdk.net')
+      ) {
+        core.warning(
+          `Ignoring pagination link with unexpected origin: ${nextUrl}`
+        );
+        availableVersionsUrl = null;
+      } else {
+        availableVersionsUrl = nextUrl;
+      }
       if (paginationPage === null || paginationPage.length === 0) {
-        // break infinity loop because we have reached end of pagination
         break;
       }
 
       availableVersions.push(...paginationPage);
-      page_index++;
+
+      if (pageCount >= MAX_PAGINATION_PAGES) {
+        core.warning(
+          `Reached pagination safeguard limit (${MAX_PAGINATION_PAGES} pages) while listing Semeru releases.`
+        );
+        break;
+      }
     }
 
     if (core.isDebug()) {
