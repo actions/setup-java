@@ -172,6 +172,49 @@
     ]
   },
   {
+    "version": "17.0.18",
+    "stable": true,
+    "release_url": "https://aka.ms/download-jdk",
+    "files": [
+      {
+        "filename": "microsoft-jdk-17.0.18-macos-x64.tar.gz",
+        "arch": "x64",
+        "platform": "darwin",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.18-macos-x64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-17.0.18-linux-x64.tar.gz",
+        "arch": "x64",
+        "platform": "linux",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.18-linux-x64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-17.0.18-windows-x64.zip",
+        "arch": "x64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.18-windows-x64.zip"
+      },
+      {
+        "filename": "microsoft-jdk-17.0.18-macos-aarch64.tar.gz",
+        "arch": "aarch64",
+        "platform": "darwin",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.18-macos-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-17.0.18-linux-aarch64.tar.gz",
+        "arch": "aarch64",
+        "platform": "linux",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.18-linux-aarch64.tar.gz"
+      },
+      {
+        "filename": "microsoft-jdk-17.0.18-windows-aarch64.zip",
+        "arch": "aarch64",
+        "platform": "win32",
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.18-windows-aarch64.zip"
+      }
+    ]
+  },
+  {
     "version": "17.0.10",
     "stable": true,
     "release_url": "https://aka.ms/download-jdk",
@@ -180,7 +223,7 @@
         "filename": "microsoft-jdk-17.0.10-macos-x64.tar.gz",
         "arch": "x64",
         "platform": "darwin",
-        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.7-macos-x64.tar.gz"
+        "download_url": "https://aka.ms/download-jdk/microsoft-jdk-17.0.10-macos-x64.tar.gz"
       },
       {
         "filename": "microsoft-jdk-17.0.10-linux-x64.tar.gz",

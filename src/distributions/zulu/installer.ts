@@ -57,15 +57,10 @@ export class ZuluDistribution extends JavaBase {
     const resolvedFullVersion =
       satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
     if (!resolvedFullVersion) {
-      const availableOptions = availableVersions
-        .map(item => item.version)
-        .join(', ');
-      const availableOptionsMessage = availableOptions
-        ? `\nAvailable versions: ${availableOptions}`
-        : '';
-      throw new Error(
-        `Could not find satisfied version for semver ${version}. ${availableOptionsMessage}`
+      const availableVersionStrings = availableVersions.map(
+        item => item.version
       );
+      throw this.createVersionNotFoundError(version, availableVersionStrings);
     }
 
     return resolvedFullVersion;

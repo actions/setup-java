@@ -8,6 +8,7 @@ describe('findPackageForDownload', () => {
   let distribution: OracleDistribution;
   let spyDebug: jest.SpyInstance;
   let spyHttpClient: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     distribution = new OracleDistribution({
@@ -19,6 +20,10 @@ describe('findPackageForDownload', () => {
 
     spyDebug = jest.spyOn(core, 'debug');
     spyDebug.mockImplementation(() => {});
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   it.each([
