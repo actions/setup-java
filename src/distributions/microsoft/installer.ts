@@ -7,7 +7,8 @@ import {
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
-  getGitHubHttpHeaders
+  getGitHubHttpHeaders,
+  renameWinArchive
 } from '../../util';
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
@@ -26,10 +27,13 @@ export class MicrosoftDistributions extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    const javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
+    if (process.platform === 'win32') {
+      javaArchivePath = renameWinArchive(javaArchivePath);
+    }
     const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
@@ -72,11 +76,8 @@ export class MicrosoftDistributions extends JavaBase {
     const foundRelease = await tc.findFromManifest(range, true, manifest, arch);
 
     if (!foundRelease) {
-      throw new Error(
-        `Could not find satisfied version for SemVer ${range}.\nAvailable versions: ${manifest
-          .map(item => item.version)
-          .join(', ')}`
-      );
+      const availableVersionStrings = manifest.map(item => item.version);
+      throw this.createVersionNotFoundError(range, availableVersionStrings);
     }
 
     return {
@@ -112,7 +113,7 @@ export class MicrosoftDistributions extends JavaBase {
       }
     } catch (err) {
       core.debug(
-        `Http request for microsoft-openjdk-versions.json failed with status code: ${response?.statusCode}`
+        `Http request for microsoft-openjdk-versions.json failed with status code: ${response?.statusCode}. Error: ${err}`
       );
       return null;
     }

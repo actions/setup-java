@@ -8,7 +8,8 @@ import semver from 'semver';
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
-  isVersionSatisfies
+  isVersionSatisfies,
+  renameWinArchive
 } from '../../util';
 import * as core from '@actions/core';
 import {ArchitectureOptions, LibericaVersion, OsVersions} from './models';
@@ -31,10 +32,13 @@ export class LibericaDistributions extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    const javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
+    if (process.platform === 'win32') {
+      javaArchivePath = renameWinArchive(javaArchivePath);
+    }
     const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
@@ -65,15 +69,10 @@ export class LibericaDistributions extends JavaBase {
       .sort((a, b) => -semver.compareBuild(a.version, b.version))[0];
 
     if (!satisfiedVersion) {
-      const availableOptions = availableVersions
-        .map(item => item.version)
-        .join(', ');
-      const availableOptionsMessage = availableOptions
-        ? `\nAvailable versions: ${availableOptions}`
-        : '';
-      throw new Error(
-        `Could not find satisfied version for semver ${range}. ${availableOptionsMessage}`
+      const availableVersionStrings = availableVersions.map(
+        item => item.version
       );
+      throw this.createVersionNotFoundError(range, availableVersionStrings);
     }
 
     return satisfiedVersion;

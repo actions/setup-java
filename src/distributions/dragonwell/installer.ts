@@ -11,7 +11,8 @@ import {
   extractJdkFile,
   getDownloadArchiveExtension,
   getGitHubHttpHeaders,
-  isVersionSatisfies
+  isVersionSatisfies,
+  renameWinArchive
 } from '../../util';
 import {IDragonwellVersions, IDragonwellAllVersions} from './models';
 import {
@@ -50,9 +51,10 @@ export class DragonwellDistribution extends JavaBase {
       });
 
     if (!matchedVersions.length) {
-      throw new Error(
-        `Couldn't find any satisfied version for the specified java-version: "${version}" and architecture: "${this.architecture}".`
+      const availableVersionStrings = availableVersions.map(
+        item => item.jdk_version
       );
+      throw this.createVersionNotFoundError(version, availableVersionStrings);
     }
 
     const resolvedVersion = matchedVersions[0];
@@ -100,14 +102,14 @@ export class DragonwellDistribution extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    const javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
-
-    const extractedJavaPath = await extractJdkFile(
-      javaArchivePath,
-      getDownloadArchiveExtension()
-    );
+    const extension = getDownloadArchiveExtension();
+    if (process.platform === 'win32') {
+      javaArchivePath = renameWinArchive(javaArchivePath);
+    }
+    const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
@@ -149,9 +151,14 @@ export class DragonwellDistribution extends JavaBase {
 
         // Some version of Dragonwell JDK are numerated with help of non-semver notation (more then 3 digits).
         // Common practice is to transform excess digits to the so-called semver build part, which is prefixed with the plus sign, to be able to operate with them using semver tools.
-        if (jdkVersion.split('.').length > 3) {
-          jdkVersion = convertVersionToSemver(jdkVersion);
-        }
+        const jdkVersionNums: string[] = jdkVersion
+          .replace('+', '.')
+          .split('.');
+        jdkVersion = convertVersionToSemver(
+          `${jdkVersionNums.slice(0, 3).join('.')}.${
+            jdkVersionNums[jdkVersionNums.length - 1]
+          }`
+        );
 
         for (const edition in archMap) {
           eligibleVersions.push({

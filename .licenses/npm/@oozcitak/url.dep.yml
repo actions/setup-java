@@ -1,6 +1,6 @@
 ---
 name: "@oozcitak/url"
-version: 1.0.4
+version: 3.0.0
 type: npm
 summary: An implementation of the URL Living Standard
 homepage: http://github.com/oozcitak/url
