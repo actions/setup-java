@@ -5,7 +5,8 @@ import path from 'path';
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
-  convertVersionToSemver
+  convertVersionToSemver,
+  renameWinArchive
 } from '../../util';
 import {JavaBase} from '../base-installer';
 import {
@@ -29,14 +30,14 @@ export class CorrettoDistribution extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    const javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
-
-    const extractedJavaPath = await extractJdkFile(
-      javaArchivePath,
-      getDownloadArchiveExtension()
-    );
+    const extension = getDownloadArchiveExtension();
+    if (process.platform === 'win32') {
+      javaArchivePath = renameWinArchive(javaArchivePath);
+    }
+    const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
@@ -74,15 +75,10 @@ export class CorrettoDistribution extends JavaBase {
     const resolvedVersion =
       matchingVersions.length > 0 ? matchingVersions[0] : null;
     if (!resolvedVersion) {
-      const availableOptions = availableVersions
-        .map(item => item.version)
-        .join(', ');
-      const availableOptionsMessage = availableOptions
-        ? `\nAvailable versions: ${availableOptions}`
-        : '';
-      throw new Error(
-        `Could not find satisfied version for SemVer '${version}'. ${availableOptionsMessage}`
+      const availableVersionStrings = availableVersions.map(
+        item => item.version
       );
+      throw this.createVersionNotFoundError(version, availableVersionStrings);
     }
     return resolvedVersion;
   }
@@ -93,7 +89,7 @@ export class CorrettoDistribution extends JavaBase {
     const imageType = this.packageType;
 
     if (core.isDebug()) {
-      console.time('Retrieving available versions for Coretto took'); // eslint-disable-line no-console
+      console.time('Retrieving available versions for Corretto took'); // eslint-disable-line no-console
     }
 
     const availableVersionsUrl =
@@ -116,7 +112,7 @@ export class CorrettoDistribution extends JavaBase {
 
     if (core.isDebug()) {
       core.startGroup('Print information about available versions');
-      console.timeEnd('Retrieving available versions for Coretto took'); // eslint-disable-line no-console
+      console.timeEnd('Retrieving available versions for Corretto took'); // eslint-disable-line no-console
       core.debug(`Available versions: [${availableVersions.length}]`);
       core.debug(
         availableVersions

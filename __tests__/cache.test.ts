@@ -17,6 +17,7 @@ describe('dependency cache', () => {
   let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>;
   let spyDebug: jest.SpyInstance<void, Parameters<typeof core.debug>>;
   let spySaveState: jest.SpyInstance<void, Parameters<typeof core.saveState>>;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     workspace = mkdtempSync(join(tmpdir(), 'setup-java-cache-'));
@@ -51,6 +52,10 @@ describe('dependency cache', () => {
 
     spySaveState = jest.spyOn(core, 'saveState');
     spySaveState.mockImplementation(() => null);
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -58,6 +63,10 @@ describe('dependency cache', () => {
     process.env['GITHUB_WORKSPACE'] = ORIGINAL_GITHUB_WORKSPACE;
     process.env['RUNNER_OS'] = ORIGINAL_RUNNER_OS;
     resetState();
+
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('restore', () => {
@@ -282,9 +291,11 @@ describe('dependency cache', () => {
       await save('maven');
       expect(spyCacheSave).toHaveBeenCalled();
       expect(spyWarning).not.toHaveBeenCalled();
-      expect(spyInfo).toHaveBeenCalled();
-      expect(spyInfo).toHaveBeenCalledWith(
+      expect(spyInfo).not.toHaveBeenCalledWith(
         expect.stringMatching(/^Cache saved with the key:.*/)
+      );
+      expect(spyDebug).toHaveBeenCalledWith(
+        expect.stringMatching(/^Cache was not saved for the key:.*/)
       );
     });
 

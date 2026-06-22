@@ -51,17 +51,115 @@ export abstract class JavaBase {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
       core.info('Trying to resolve the latest version from remote');
-      const javaRelease = await this.findPackageForDownload(this.version);
-      core.info(`Resolved latest version as ${javaRelease.version}`);
-      if (foundJava?.version === javaRelease.version) {
-        core.info(`Resolved Java ${foundJava.version} from tool-cache`);
-      } else {
-        core.info('Trying to download...');
-        foundJava = await this.downloadTool(javaRelease);
-        core.info(`Java ${foundJava.version} was downloaded`);
+      const MAX_RETRIES = 4;
+      const RETRY_DELAY_MS = 2000;
+      const retryableCodes = [
+        'ETIMEDOUT',
+        'ECONNRESET',
+        'ENOTFOUND',
+        'ECONNREFUSED'
+      ];
+      let retries = MAX_RETRIES;
+      while (retries > 0) {
+        try {
+          // Clear console timers before each attempt to prevent conflicts
+          if (retries < MAX_RETRIES && core.isDebug()) {
+            const consoleAny = console as any;
+            consoleAny._times?.clear?.();
+          }
+          const javaRelease = await this.findPackageForDownload(this.version);
+          core.info(`Resolved latest version as ${javaRelease.version}`);
+          if (foundJava?.version === javaRelease.version) {
+            core.info(`Resolved Java ${foundJava.version} from tool-cache`);
+          } else {
+            core.info('Trying to download...');
+            foundJava = await this.downloadTool(javaRelease);
+            core.info(`Java ${foundJava.version} was downloaded`);
+          }
+          break;
+        } catch (error: any) {
+          retries--;
+          // Check if error is retryable (including aggregate errors)
+          const isRetryable =
+            (error instanceof tc.HTTPError &&
+              error.httpStatusCode &&
+              [429, 502, 503, 504, 522].includes(error.httpStatusCode)) ||
+            retryableCodes.includes(error?.code) ||
+            (error?.errors &&
+              Array.isArray(error.errors) &&
+              error.errors.some((err: any) =>
+                retryableCodes.includes(err?.code)
+              ));
+          if (retries > 0 && isRetryable) {
+            core.debug(
+              `Attempt failed due to network or timeout issues, initiating retry... (${retries} attempts left)`
+            );
+            await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
+            continue;
+          }
+          if (error instanceof tc.HTTPError) {
+            if (error.httpStatusCode === 403) {
+              core.error('HTTP 403: Permission denied or access restricted.');
+            } else if (error.httpStatusCode === 429) {
+              core.warning(
+                'HTTP 429: Rate limit exceeded. Please retry later.'
+              );
+            } else {
+              core.error(`HTTP ${error.httpStatusCode}: ${error.message}`);
+            }
+          } else if (error && error.errors && Array.isArray(error.errors)) {
+            core.error(
+              `Java setup failed due to network or configuration error(s)`
+            );
+            if (error instanceof Error && error.stack) {
+              core.debug(error.stack);
+            }
+            for (const err of error.errors) {
+              const endpoint = err?.address || err?.hostname || '';
+              const port = err?.port ? `:${err.port}` : '';
+              const message = err?.message || 'Aggregate error';
+              const endpointInfo = !message.includes(endpoint)
+                ? ` ${endpoint}${port}`
+                : '';
+              const localInfo =
+                err.localAddress && err.localPort
+                  ? ` - Local (${err.localAddress}:${err.localPort})`
+                  : '';
+              const logMessage = `${message}${endpointInfo}${localInfo}`;
+              core.error(logMessage);
+              core.debug(`${err.stack || err.message}`);
+              Object.entries(err).forEach(([key, value]) => {
+                core.debug(`"${key}": ${JSON.stringify(value)}`);
+              });
+            }
+          } else {
+            const message =
+              error instanceof Error ? error.message : JSON.stringify(error);
+            core.error(`Java setup process failed due to: ${message}`);
+            if (typeof error?.code === 'string') {
+              core.debug(error.stack);
+            }
+            const errorDetails = {
+              name: error.name,
+              message: error.message,
+              ...Object.getOwnPropertyNames(error)
+                .filter(prop => !['name', 'message', 'stack'].includes(prop))
+                .reduce<{[key: string]: any}>((acc, prop) => {
+                  acc[prop] = error[prop];
+                  return acc;
+                }, {})
+            };
+            Object.entries(errorDetails).forEach(([key, value]) => {
+              core.debug(`"${key}": ${JSON.stringify(value)}`);
+            });
+          }
+          throw error;
+        }
       }
     }
-
+    if (!foundJava) {
+      throw new Error('Failed to resolve Java version');
+    }
     // JDK folder may contain postfix "Contents/Home" on macOS
     const macOSPostfixPath = path.join(
       foundJava.path,
@@ -159,6 +257,44 @@ export abstract class JavaBase {
       version,
       stable
     };
+  }
+
+  protected createVersionNotFoundError(
+    versionOrRange: string,
+    availableVersions?: string[],
+    additionalContext?: string
+  ): Error {
+    const parts = [
+      `No matching version found for SemVer '${versionOrRange}'.`,
+      `Distribution: ${this.distribution}`,
+      `Package type: ${this.packageType}`,
+      `Architecture: ${this.architecture}`
+    ];
+
+    // Add additional context if provided (e.g., platform/OS info)
+    if (additionalContext) {
+      parts.push(additionalContext);
+    }
+
+    if (availableVersions && availableVersions.length > 0) {
+      const maxVersionsToShow = core.isDebug() ? availableVersions.length : 50;
+      const versionsToShow = availableVersions.slice(0, maxVersionsToShow);
+      const truncated = availableVersions.length > maxVersionsToShow;
+
+      parts.push(
+        `Available versions: ${versionsToShow.join(', ')}${truncated ? ', ...' : ''}`
+      );
+
+      if (truncated) {
+        parts.push(
+          `(showing first ${maxVersionsToShow} of ${availableVersions.length} versions, enable debug mode to see all)`
+        );
+      }
+    }
+
+    const error = new Error(parts.join('\n'));
+    error.name = 'VersionNotFoundError';
+    return error;
   }
 
   protected setJavaDefault(version: string, toolPath: string) {
