@@ -37,7 +37,7 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
 
-  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM. Note: `distribution` must be set to 'jdkfile' when using this option.
+  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM. Note: `distribution` must be set to 'jdkfile' (case-sensitive; all lowercase) when using this option.
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
