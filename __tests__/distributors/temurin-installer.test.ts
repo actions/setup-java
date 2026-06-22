@@ -7,9 +7,12 @@ import {
 import {JavaInstallerOptions} from '../../src/distributions/base-models';
 
 import manifestData from '../data/temurin.json';
+import * as core from '@actions/core';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
+  let spyCoreWarning: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -18,6 +21,11 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: []
     });
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
+    spyCoreWarning = jest.spyOn(core, 'warning');
+    spyCoreWarning.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -88,22 +96,19 @@ describe('getAvailableVersions', () => {
   );
 
   it('load available versions', async () => {
+    const nextPageUrl =
+      'https://api.adoptium.net/v3/assets/version/%5B1.0,100.0%5D?page=1&page_size=20';
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
     spyHttpClient
       .mockReturnValueOnce({
         statusCode: 200,
-        headers: {},
+        headers: {link: `<${nextPageUrl}>; rel="next"`},
         result: manifestData as any
       })
       .mockReturnValueOnce({
         statusCode: 200,
         headers: {},
         result: manifestData as any
-      })
-      .mockReturnValueOnce({
-        statusCode: 200,
-        headers: {},
-        result: []
       });
 
     const distribution = new TemurinDistribution(
@@ -118,6 +123,34 @@ describe('getAvailableVersions', () => {
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).not.toBeNull();
     expect(availableVersions.length).toBe(manifestData.length * 2);
+    expect(spyHttpClient).toHaveBeenNthCalledWith(2, nextPageUrl);
+  });
+
+  it('stops pagination after 1000 pages as a safeguard', async () => {
+    const nextPageUrl =
+      'https://api.adoptium.net/v3/assets/version/%5B1.0,100.0%5D?page=2&page_size=20';
+    spyHttpClient.mockReturnValue({
+      statusCode: 200,
+      headers: {link: `<${nextPageUrl}>; rel="next"`},
+      result: [{version_data: {semver: '17.0.1'}, binaries: []}] as any
+    });
+
+    const distribution = new TemurinDistribution(
+      {
+        version: '8',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
+      TemurinImplementation.Hotspot
+    );
+
+    await distribution['getAvailableVersions']();
+
+    expect(spyHttpClient).toHaveBeenCalledTimes(1000);
+    expect(spyCoreWarning).toHaveBeenCalledWith(
+      expect.stringContaining('Reached pagination safeguard limit (1000 pages)')
+    );
   });
 
   it.each([
@@ -147,7 +180,9 @@ describe('getAvailableVersions', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: string) => {
-      jest.spyOn(os, 'arch').mockReturnValue(distroArch);
+      jest
+        .spyOn(os, 'arch')
+        .mockReturnValue(osArch as ReturnType<typeof os.arch>);
 
       const installerOptions: JavaInstallerOptions = {
         version: '17',
@@ -211,7 +246,7 @@ describe('findPackageForDownload', () => {
     distribution['getAvailableVersions'] = async () => manifestData as any;
     await expect(
       distribution['findPackageForDownload']('9.0.8')
-    ).rejects.toThrow(/Could not find satisfied version for SemVer */);
+    ).rejects.toThrow(/No matching version found for SemVer */);
   });
 
   it('version is not found', async () => {
@@ -226,7 +261,7 @@ describe('findPackageForDownload', () => {
     );
     distribution['getAvailableVersions'] = async () => manifestData as any;
     await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrow(
-      /Could not find satisfied version for SemVer */
+      /No matching version found for SemVer */
     );
   });
 
@@ -242,7 +277,7 @@ describe('findPackageForDownload', () => {
     );
     distribution['getAvailableVersions'] = async () => [];
     await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
-      /Could not find satisfied version for SemVer */
+      /No matching version found for SemVer */
     );
   });
 });
