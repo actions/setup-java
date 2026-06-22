@@ -6,6 +6,7 @@ export interface IZuluVersions {
   download_url: string;
   java_version: Array<number>;
   distro_version: Array<number>;
+  openjdk_build_number: number;
   latest: boolean;
   availability_type: string;
 }

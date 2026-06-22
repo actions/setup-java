@@ -30,8 +30,15 @@ export class ZuluDistribution extends JavaBase {
   ): Promise<JavaDownloadRelease> {
     const availableVersionsRaw = await this.getAvailableVersions();
     const availableVersions = availableVersionsRaw.map(item => {
+      // The Azul Metadata API reports the JDK build number separately from
+      // java_version (e.g. java_version=[17,0,7], openjdk_build_number=7).
+      // Append it so the resulting semver retains the build (e.g. 17.0.7+7).
+      const javaVersion =
+        item.openjdk_build_number != null
+          ? [...item.java_version, item.openjdk_build_number]
+          : item.java_version;
       return {
-        version: convertVersionToSemver(item.java_version),
+        version: convertVersionToSemver(javaVersion),
         url: item.download_url,
         zuluVersion: convertVersionToSemver(item.distro_version)
       };
