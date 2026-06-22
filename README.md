@@ -121,13 +121,11 @@ Currently, the following distributions are supported:
 | `graalvm` | [Oracle GraalVM](https://www.graalvm.org/) | [`graalvm` license](https://www.oracle.com/downloads/licenses/graal-free-license.html)
 | `jetbrains` | [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime/) | [`jetbrains` license](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE)
 
-**NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
-
-**NOTE:** AdoptOpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` and `adopt-openj9`, to `temurin` and `semeru` respectively, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
-
-**NOTE:** For Azul Zulu OpenJDK architectures x64 and arm64 are mapped to x86 / arm with proper hw_bitness.
-
-**NOTE:** To comply with the GraalVM Free Terms and Conditions (GFTC) license, it is recommended to use GraalVM JDK 17 version 17.0.12, as this is the only version of GraalVM JDK 17 available under the GFTC license. Additionally, it is encouraged to consider upgrading to GraalVM JDK 21, which offers the latest features and improvements.
+> [!NOTE]
+> - The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
+> - AdoptOpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` and `adopt-openj9`, to `temurin` and `semeru` respectively, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
+> - For Azul Zulu OpenJDK architectures x64 and arm64 are mapped to x86 / arm with proper hw_bitness.
+> - To comply with the GraalVM Free Terms and Conditions (GFTC) license, it is recommended to use GraalVM JDK 17 version 17.0.12, as this is the only version of GraalVM JDK 17 available under the GFTC license. Additionally, it is encouraged to consider upgrading to GraalVM JDK 21, which offers the latest features and improvements.
 
 **NOTE:** Oracle JDK 17 licensing varies by patch level. As shown on the [JDK 17 Archive](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) (versions up to 17.0.12 are under the [NFTC](https://www.oracle.com/downloads/licenses/no-fee-license.html) license) and the [JDK 17.0.13+ Archive](https://www.oracle.com/java/technologies/javase/jdk17-0-13-later-archive-downloads.html) (versions 17.0.13 and later are under the [OTN](https://www.oracle.com/downloads/licenses/javase-license1.html) license). To stay on the free NFTC license, use `distribution: 'oracle'` with `java-version: '17.0.12'` (or earlier) instead of the floating `'17'`. Alternatively, upgrade to Oracle JDK 21+, which remains under the NFTC license.
 
@@ -282,6 +280,7 @@ In the example above multiple JDKs are installed for the same job. The result af
   - [Alibaba Dragonwell](docs/advanced-usage.md#Alibaba-Dragonwell)
   - [SapMachine](docs/advanced-usage.md#SapMachine)
   - [GraalVM](docs/advanced-usage.md#GraalVM)
+  - [JetBrains](docs/advanced-usage.md#JetBrains)
 - [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](docs/advanced-usage.md#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](docs/advanced-usage.md#Installing-Java-from-local-file)
