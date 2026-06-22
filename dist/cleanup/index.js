@@ -51773,9 +51773,12 @@ const CACHE_KEY_PREFIX = 'setup-java';
 const supportedPackageManager = [
     {
         id: 'maven',
-        path: [(0, path_1.join)(os_1.default.homedir(), '.m2', 'repository')],
+        path: [
+            (0, path_1.join)(os_1.default.homedir(), '.m2', 'repository'),
+            (0, path_1.join)(os_1.default.homedir(), '.m2', 'wrapper', 'dists')
+        ],
         // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---maven
-        pattern: ['**/pom.xml']
+        pattern: ['**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties']
     },
     {
         id: 'gradle',
