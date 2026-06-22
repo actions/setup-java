@@ -12,6 +12,7 @@
   - [GraalVM](#GraalVM)
   - [JetBrains](#JetBrains)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
+  - [JavaFX Maven project](#JavaFX-Maven-project)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
 - [Testing against different Java distributions](#Testing-against-different-Java-distributions)
@@ -226,6 +227,30 @@ steps:
     java-version: '11'
     java-package: jdk # optional (jdk or jre) - defaults to jdk
 - run: java --version
+```
+
+### JavaFX Maven project
+
+For JavaFX projects that use Maven, use `jdk+fx` (or `jre+fx`) as the `java-package` value together with a distribution that supports it (e.g. `zulu` or `liberica`). Then include the [`javafx-maven-plugin`](https://openjfx.io/openjfx-docs/#maven) in your `pom.xml` as described in the [Getting Started with JavaFX](https://openjfx.io/openjfx-docs/#maven) guide.
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'zulu'
+    java-version: '21'
+    java-package: jdk+fx
+    cache: maven
+- name: Build with Maven
+  run: mvn --no-transfer-progress compile
+```
+
+To run the JavaFX application in CI:
+
+```yaml
+- name: Run with Maven
+  run: mvn --no-transfer-progress javafx:run
 ```
 
 ## Installing custom Java architecture
