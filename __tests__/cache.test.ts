@@ -17,6 +17,7 @@ describe('dependency cache', () => {
   let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>;
   let spyDebug: jest.SpyInstance<void, Parameters<typeof core.debug>>;
   let spySaveState: jest.SpyInstance<void, Parameters<typeof core.saveState>>;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     workspace = mkdtempSync(join(tmpdir(), 'setup-java-cache-'));
@@ -51,6 +52,10 @@ describe('dependency cache', () => {
 
     spySaveState = jest.spyOn(core, 'saveState');
     spySaveState.mockImplementation(() => null);
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -58,6 +63,10 @@ describe('dependency cache', () => {
     process.env['GITHUB_WORKSPACE'] = ORIGINAL_GITHUB_WORKSPACE;
     process.env['RUNNER_OS'] = ORIGINAL_RUNNER_OS;
     resetState();
+
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('restore', () => {
@@ -87,19 +96,48 @@ describe('dependency cache', () => {
     });
 
     describe('for maven', () => {
-      it('throws error if no pom.xml found', async () => {
+      it('throws error if no pom.xml or maven-wrapper.properties found', async () => {
         await expect(restore('maven', '')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/pom.xml], make sure you have checked out the target repository`
+          )} matched to [**/pom.xml,**/.mvn/wrapper/maven-wrapper.properties], make sure you have checked out the target repository`
         );
       });
-      it('downloads cache', async () => {
+      it('downloads cache based on pom.xml', async () => {
         createFile(join(workspace, 'pom.xml'));
 
         await restore('maven', '');
-        expect(spyCacheRestore).toHaveBeenCalled();
-        expect(spyGlobHashFiles).toHaveBeenCalledWith('**/pom.xml');
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [
+            join(os.homedir(), '.m2', 'repository'),
+            join(os.homedir(), '.m2', 'wrapper', 'dists')
+          ],
+          expect.any(String)
+        );
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/pom.xml\n**/.mvn/wrapper/maven-wrapper.properties'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('maven cache is not found');
+      });
+      it('downloads cache based on maven-wrapper.properties', async () => {
+        createDirectory(join(workspace, '.mvn'));
+        createDirectory(join(workspace, '.mvn', 'wrapper'));
+        createFile(
+          join(workspace, '.mvn', 'wrapper', 'maven-wrapper.properties')
+        );
+
+        await restore('maven', '');
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [
+            join(os.homedir(), '.m2', 'repository'),
+            join(os.homedir(), '.m2', 'wrapper', 'dists')
+          ],
+          expect.any(String)
+        );
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/pom.xml\n**/.mvn/wrapper/maven-wrapper.properties'
+        );
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith('maven cache is not found');
       });
@@ -324,9 +362,11 @@ describe('dependency cache', () => {
       await save('maven');
       expect(spyCacheSave).toHaveBeenCalled();
       expect(spyWarning).not.toHaveBeenCalled();
-      expect(spyInfo).toHaveBeenCalled();
-      expect(spyInfo).toHaveBeenCalledWith(
+      expect(spyInfo).not.toHaveBeenCalledWith(
         expect.stringMatching(/^Cache saved with the key:.*/)
+      );
+      expect(spyDebug).toHaveBeenCalledWith(
+        expect.stringMatching(/^Cache was not saved for the key:.*/)
       );
     });
 

@@ -76,11 +76,8 @@ export class MicrosoftDistributions extends JavaBase {
     const foundRelease = await tc.findFromManifest(range, true, manifest, arch);
 
     if (!foundRelease) {
-      throw new Error(
-        `Could not find satisfied version for SemVer ${range}.\nAvailable versions: ${manifest
-          .map(item => item.version)
-          .join(', ')}`
-      );
+      const availableVersionStrings = manifest.map(item => item.version);
+      throw this.createVersionNotFoundError(range, availableVersionStrings);
     }
 
     return {
@@ -116,7 +113,7 @@ export class MicrosoftDistributions extends JavaBase {
       }
     } catch (err) {
       core.debug(
-        `Http request for microsoft-openjdk-versions.json failed with status code: ${response?.statusCode}`
+        `Http request for microsoft-openjdk-versions.json failed with status code: ${response?.statusCode}. Error: ${err}`
       );
       return null;
     }

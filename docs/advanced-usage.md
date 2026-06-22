@@ -31,8 +31,8 @@ Inputs `java-version` and `distribution` are mandatory and needs to be provided.
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
     java-version: '21'
@@ -44,8 +44,8 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'adopt-hotspot'
     java-version: '11'
@@ -56,8 +56,8 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'zulu'
     java-version: '21'
@@ -69,8 +69,8 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'liberica'
     java-version: '21'
@@ -82,8 +82,8 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'microsoft'
     java-version: '21'
@@ -97,7 +97,7 @@ steps:
 To get a higher rate limit, you can [generate a personal access token on github.com](https://github.com/settings/tokens/new) and pass it as the `token` input for the action:
 
 ```yaml
-uses: actions/setup-java@v4
+uses: actions/setup-java@v5
 with:
   token: ${{ secrets.GH_DOTCOM_TOKEN }}
   distribution: 'microsoft'
@@ -111,8 +111,8 @@ If the runner is not able to access github.com, any Java versions requested duri
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'corretto'
     java-version: '21'
@@ -124,8 +124,8 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'oracle'
     java-version: '21'
@@ -137,8 +137,8 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'dragonwell'
     java-version: '8'
@@ -149,8 +149,8 @@ steps:
 **NOTE:** An OpenJDK release maintained and supported by SAP
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'sapmachine'
     java-version: '21'
@@ -162,8 +162,8 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'graalvm'
     java-version: '21'
@@ -176,13 +176,13 @@ steps:
 
 **NOTE:** JetBrains is only available for LTS versions on 11 or later (11, 17, 21, etc.).
 
-Not all minor LTS versions are guarenteed to be available, since JetBrains considers what to ship IntelliJ IDEA with, most commonly on JDK 11.
+Not all minor LTS versions are guaranteed to be available, since JetBrains considers what to ship IntelliJ IDEA with, most commonly on JDK 11.
 For example, `11.0.24` is not available but `11.0.16` is.
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'jetbrains'
     java-version: '11'
@@ -194,8 +194,8 @@ GitHub token to the action to increase the rate limit. Set the `GITHUB_TOKEN` en
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'jetbrains'
     java-version: '17'
@@ -219,8 +219,8 @@ The available package types are:
 ## Installing custom Java package type
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: '<distribution>'
     java-version: '11'
@@ -232,8 +232,8 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: '<distribution>'
     java-version: '11'
@@ -249,7 +249,7 @@ steps:
 - run: |
     download_url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz"
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v4
+- uses: actions/setup-java@v5
   with:
     distribution: 'jdkfile'
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
@@ -275,7 +275,7 @@ If your use-case requires a custom distribution (in the example, alpine-linux is
           latest_semver_version=$(curl -sL $latest_jdk_json_url | jq -r 'version.semver')
           echo "java_version=$latest_semver_version" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'jdkfile'
           jdkFile: ${{ runner.temp }}/java_package.tar.gz
@@ -296,9 +296,9 @@ jobs:
         java: [ '8', '11' ]
     name: Java ${{ matrix.Java }} (${{ matrix.distribution }}) sample
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
@@ -316,9 +316,9 @@ jobs:
         os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
     name: Java ${{ matrix.Java }} (${{ matrix.os }}) sample
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
@@ -333,9 +333,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Set up JDK 11
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -349,7 +349,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
 
     - name: Set up Apache Maven Central
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with: # running setup-java again overwrites the settings.xml
         distribution: 'temurin'
         java-version: '11'
@@ -446,9 +446,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Set up JDK 11 for Shared Runner
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -472,10 +472,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Set up JDK 11
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         distribution: '<distribution>'
         java-version: '11'
@@ -509,14 +509,14 @@ Subsequent calls to `setup-java` with distinct distribution and version paramete
 
 ```yaml
 steps:
-- uses: actions/setup-java@v4
+- uses: actions/setup-java@v5
   with:
     distribution: '<distribution>'
     java-version: |
       8
       11
 
-- uses: actions/setup-java@v4
+- uses: actions/setup-java@v5
   with:
     distribution: '<distribution>'
     java-version: '15'
@@ -528,7 +528,7 @@ The result is a Toolchain with entries for JDKs 8, 11 and 15. You can even combi
 - run: |
     download_url="https://example.com/java/jdk/6u45-b06/jdk-6u45-linux-x64.tar.gz"
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v4
+- uses: actions/setup-java@v5
   with:
     distribution: 'jdkfile'
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
@@ -545,7 +545,7 @@ Each JDK provider will receive a default `vendor` using the `distribution` input
 - run: |
     download_url="https://example.com/java/jdk/6u45-b06/jdk-6u45-linux-x64.tar.gz"
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v4
+- uses: actions/setup-java@v5
   with:
     distribution: 'jdkfile'
     jdkFile: ${{ runner.temp }}/java_package.tar.gz
@@ -560,7 +560,7 @@ In case you install multiple versions of Java at once with multi-line `java-vers
 
 ```yaml
 steps:
-- uses: actions/setup-java@v4
+- uses: actions/setup-java@v5
   with:
     distribution: '<distribution>'
     java-version: |
@@ -574,8 +574,8 @@ Each JDK provider will receive a default `id` based on the combination of `distr
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
     java-version: '11'
@@ -587,7 +587,7 @@ In case you install multiple versions of Java at once you can use the same synta
 
 ```yaml
 steps:
-- uses: actions/setup-java@v4
+- uses: actions/setup-java@v5
   with:
     distribution: '<distribution>'
     java-version: |
@@ -601,18 +601,37 @@ steps:
 ## Java version file
   If the `java-version-file` input is specified, the action will extract the version from the file and install it.
   
-  Supported files are .java-version and .tool-versions.
-  In .java-version file, only the version should be specified (e.g., 17.0.7).
-  In .tool-versions file, java version should be preceded by the java keyword (e.g., java 17.0.7).
-  The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv). Similarly, the `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)).
-  
-  If both java-version and java-version-file inputs are provided, the java-version input will be used.
+  Supported files are `.java-version`, `.tool-versions` and `.sdkmanrc`.
+  * In `.java-version` file, only the version should be specified (e.g., 17.0.7). The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv).
+  * In `.tool-versions` file, java version should be preceded by the java keyword (e.g., java 17.0.7). The `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)).
+  * In `.sdkmanrc` file, java version should be preceded by the `java=` prefix (e.g., java=17.0.7-tem) and include the distribution. The `.sdkmanrc` file supports version specifications in accordance with [file format](https://sdkman.io/usage#env-command), see [Sdkman! documentation](https://sdkman.io/jdks) for more information.
 
-Valid entry options:
+    
+  If both `java-version` and `java-version-file` **inputs** are provided, the `java-version` input will be used.
+
+**Example step using `Sdkman!`**:
+```yml
+  - name: Setup java
+    uses: actions/setup-java@v5
+    with:
+      java-version-file: '.sdkmanrc'
+      distribution: 'temurin'
+```
+
+**Example `.sdkmanrc`**:
+```
+java=17.0.7-tem
+```
+
+Valid entry options (does not apply to `.sdkmanrc`):
 ```
 major versions: 8, 11, 16, 17, 21
 more specific versions: 8.0.282+8, 8.0.232, 11.0, 11.0.4, 17.0
 early access (EA) versions: 15-ea, 15.0.0-ea
 versions with specified distribution: openjdk64-11.0.2
+LTS versions : temurin-21.0.5+11.0.LTS
 ```
 If the file contains multiple versions, only the first one will be recognized.
+
+***NOTE***:
+For the tool-version file, ensure that you use standard semantic versioning (semver) formats, as non-standard formats (such as jetbrains-21b212.1) may not be parsed correctly. Additionally, for complex version strings containing multiple version-like segments (for example, java semeru-openj9-11.0.15+10_openj9-0.32.0), the extraction logic may incorrectly capture the last segment (0.32.0) instead of the main version (11.0.15+10).

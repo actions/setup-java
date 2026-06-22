@@ -1,10 +1,15 @@
 import * as cache from '@actions/cache';
 import * as core from '@actions/core';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
   convertVersionToSemver,
+  getNextPageUrlFromLinkHeader,
+  getVersionFromFileContent,
   isVersionSatisfies,
   isCacheFeatureAvailable,
-  isGhes
+  isGhes,
+  validatePaginationUrl
 } from '../src/util';
 
 jest.mock('@actions/cache');
@@ -24,7 +29,11 @@ describe('isVersionSatisfies', () => {
     ['2.5.1+3', '2.5.1+3', true],
     ['2.5.1+3', '2.5.1+2', false],
     ['15.0.0+14', '15.0.0+14.1.202003190635', false],
-    ['15.0.0+14.1.202003190635', '15.0.0+14.1.202003190635', true]
+    ['15.0.0+14.1.202003190635', '15.0.0+14.1.202003190635', true],
+    // 4-segment versions (e.g. JetBrains Runtime '17.0.8.1+1080.1') are not
+    // valid semver — they should be rejected, not throw.
+    ['25.0.3+480.61', '17.0.8.1+1080.1', false],
+    ['17', '17.0.8.1+1080.1', false]
   ])(
     '%s, %s -> %s',
     (inputRange: string, inputVersion: string, expected: boolean) => {
@@ -79,6 +88,115 @@ describe('convertVersionToSemver', () => {
   ])('%s -> %s', (input: string, expected: string) => {
     const actual = convertVersionToSemver(input);
     expect(actual).toBe(expected);
+  });
+});
+
+describe('getNextPageUrlFromLinkHeader', () => {
+  it.each([
+    [
+      {
+        link: '<https://api.adoptium.net/v3/info/release_versions?page=1&page_size=10>; rel="next"'
+      },
+      'https://api.adoptium.net/v3/info/release_versions?page=1&page_size=10'
+    ],
+    [
+      {
+        Link: '<https://example.com/last?page=5>; rel="last", <https://example.com/next?page=2>; rel="next"'
+      },
+      'https://example.com/next?page=2'
+    ],
+    [
+      {
+        link: '<https://api.adoptium.net/v3/versions?page=3>; type="application/json"; rel="next"'
+      },
+      'https://api.adoptium.net/v3/versions?page=3'
+    ],
+    [{link: '<https://example.com/last?page=5>; rel="last"'}, null],
+    [{link: '<https://example.com/page?p=2>; rel="nextsomething"'}, null],
+    [undefined, null]
+  ])('returns %s -> %s', (headers, expected) => {
+    expect(getNextPageUrlFromLinkHeader(headers)).toBe(expected);
+  });
+});
+
+describe('validatePaginationUrl', () => {
+  it('accepts URL with matching origin', () => {
+    expect(
+      validatePaginationUrl(
+        'https://api.adoptium.net/v3/assets?page=2',
+        'https://api.adoptium.net'
+      )
+    ).toBe(true);
+  });
+
+  it('rejects URL with different host', () => {
+    expect(
+      validatePaginationUrl(
+        'https://evil.example.com/steal?data=1',
+        'https://api.adoptium.net'
+      )
+    ).toBe(false);
+  });
+
+  it('rejects URL with different protocol', () => {
+    expect(
+      validatePaginationUrl(
+        'http://api.adoptium.net/v3/assets?page=2',
+        'https://api.adoptium.net'
+      )
+    ).toBe(false);
+  });
+
+  it('returns false for invalid URL', () => {
+    expect(validatePaginationUrl('not-a-url', 'https://api.adoptium.net')).toBe(
+      false
+    );
+  });
+
+  it('accepts URL with explicit default port', () => {
+    expect(
+      validatePaginationUrl(
+        'https://api.adoptium.net:443/v3/assets?page=2',
+        'https://api.adoptium.net'
+      )
+    ).toBe(true);
+  });
+});
+
+describe('getVersionFromFileContent', () => {
+  describe('.sdkmanrc', () => {
+    it.each([
+      ['java=11.0.20.1-tem', '11.0.20'],
+      ['java = 11.0.20.1-tem', '11.0.20'],
+      ['java=11.0.20.1-tem # a comment in sdkmanrc', '11.0.20'],
+      ['java=11.0.20.1-tem\n#java=21.0.20.1-tem\n', '11.0.20'], // choose first match
+      ['java=11.0.20.1-tem\njava=21.0.20.1-tem\n', '11.0.20'], // choose first match
+      ['#java=11.0.20.1-tem\njava=21.0.20.1-tem\n', '21.0.20'] // first one is 'commented' in .sdkmanrc
+    ])('parsing %s should return %s', (content: string, expected: string) => {
+      const actual = getVersionFromFileContent(content, 'openjdk', '.sdkmanrc');
+      expect(actual).toBe(expected);
+    });
+
+    describe('known versions', () => {
+      const csv = fs.readFileSync(
+        path.join(__dirname, 'data/sdkman-java-versions.csv'),
+        'utf8'
+      );
+      const versions = csv.split('\n').map(r => r.split(', '));
+
+      it.each(versions)(
+        'parsing %s should return %s',
+        (sdkmanJavaVersion: string, expected: string) => {
+          const asContent = `java=${sdkmanJavaVersion}`;
+          const actual = getVersionFromFileContent(
+            asContent,
+            'openjdk',
+            '.sdkmanrc'
+          );
+          expect(actual).toBe(expected);
+        }
+      );
+    });
   });
 });
 

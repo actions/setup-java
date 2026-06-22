@@ -19,10 +19,12 @@ The `setup-java` action provides the following functionality for GitHub Actions 
 
 This action allows you to work with Java and Scala projects.
 
-## V2 vs V1
+## Breaking changes in V5
 
-- V2 supports custom distributions and provides support for Azul Zulu OpenJDK, Eclipse Temurin and AdoptOpenJDK  out of the box. V1 supports only Azul Zulu OpenJDK.
-- V2 requires you to specify distribution along with the version. V1 defaults to Azul Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2.
+- Upgraded action from node20 to node24
+  > Make sure your runner is on version v2.327.1 or later to ensure compatibility with this release [Release Notes](https://github.com/actions/runner/releases/tag/v2.327.1)
+
+For more details,  see the full release notes on the [releases page](https://github.com/actions/setup-java/releases/tag/v5.0.0)
 
 ## Usage
 
@@ -36,7 +38,7 @@ This action allows you to work with Java and Scala projects.
 
   - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
 
-  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM.
+  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM. Note: `distribution` must be set to 'jdkfile' (case-sensitive; all lowercase) when using this option.
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
@@ -70,62 +72,65 @@ This action allows you to work with Java and Scala projects.
 #### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
-    java-version: '21'
+    java-version: '25'
 - run: java HelloWorldApp.java
 ```
 
 #### Azul Zulu OpenJDK
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
-    java-version: '21'
+    java-version: '25'
 - run: java HelloWorldApp.java
 ```
 
 #### Supported version syntax
-The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
-- major versions: `8`, `11`, `16`, `17`, `21`
+The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation. The values below are examples, not an exhaustive list:
+- major versions, such as: `8`, `11`, `16`, `17`, `21`, `25`
 - more specific versions: `8.0.282+8`, `8.0.232`, `11.0`, `11.0.4`, `17.0`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`
 
 #### Supported distributions
 Currently, the following distributions are supported:
-| Keyword | Distribution | Official site | License
-|-|-|-|-|
-| `temurin` | Eclipse Temurin | [Link](https://adoptium.net/) | [Link](https://adoptium.net/about.html)
-| `zulu` | Azul Zulu OpenJDK | [Link](https://www.azul.com/downloads/zulu-community/?package=jdk) | [Link](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
-| `adopt` or `adopt-hotspot` | AdoptOpenJDK Hotspot | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
-| `adopt-openj9` | AdoptOpenJDK OpenJ9 | [Link](https://adoptopenjdk.net/) | [Link](https://adoptopenjdk.net/about.html) |
-| `liberica` | Liberica JDK | [Link](https://bell-sw.com/) | [Link](https://bell-sw.com/liberica_eula/) |
-| `microsoft` | Microsoft Build of OpenJDK | [Link](https://www.microsoft.com/openjdk) | [Link](https://docs.microsoft.com/java/openjdk/faq)
-| `corretto` | Amazon Corretto Build of OpenJDK | [Link](https://aws.amazon.com/corretto/) | [Link](https://aws.amazon.com/corretto/faqs/)
-| `semeru` | IBM Semeru Runtime Open Edition | [Link](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) | [Link](https://openjdk.java.net/legal/gplv2+ce.html) |
-| `oracle` | Oracle JDK | [Link](https://www.oracle.com/java/technologies/downloads/) | [Link](https://java.com/freeuselicense)
-| `dragonwell` | Alibaba Dragonwell JDK | [Link](https://dragonwell-jdk.io/) | [Link](https://www.aliyun.com/product/dragonwell/)
-| `sapmachine` | SAP SapMachine JDK/JRE | [Link](https://sapmachine.io/) | [Link](https://github.com/SAP/SapMachine/blob/sapmachine/LICENSE)
-| `graalvm` | Oracle GraalVM | [Link](https://www.graalvm.org/) | [Link](https://www.oracle.com/downloads/licenses/graal-free-license.html)
-| `jetbrains` | JetBrains Runtime | [Link](https://github.com/JetBrains/JetBrainsRuntime/) | [Link](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE)
+| Keyword | Distribution / Official site | License
+|-|-|-|
+| `temurin` | [Eclipse Temurin](https://adoptium.net/) | [`temurin` license](https://adoptium.net/about.html)
+| `zulu` | [Azul Zulu OpenJDK](https://www.azul.com/downloads/zulu-community/?package=jdk) | [`zulu` license](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
+| `adopt` or `adopt-hotspot` | [AdoptOpenJDK Hotspot](https://adoptopenjdk.net/) | [`adopt-hotspot` license](https://adoptopenjdk.net/about.html) |
+| `adopt-openj9` | [AdoptOpenJDK OpenJ9](https://adoptopenjdk.net/) | [`adopt-openj9` license](https://adoptopenjdk.net/about.html) |
+| `liberica` | [Liberica JDK](https://bell-sw.com/) | [`liberica` license](https://bell-sw.com/liberica_eula/) |
+| `microsoft` | [Microsoft Build of OpenJDK](https://www.microsoft.com/openjdk) | [`microsoft` license](https://docs.microsoft.com/java/openjdk/faq)
+| `corretto` | [Amazon Corretto Build of OpenJDK](https://aws.amazon.com/corretto/) | [`corretto` license](https://aws.amazon.com/corretto/faqs/)
+| `semeru` | [IBM Semeru Runtime Open Edition](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) | [`semeru` license](https://openjdk.java.net/legal/gplv2+ce.html) |
+| `oracle` | [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) | [`oracle` license](https://java.com/freeuselicense)
+| `dragonwell` | [Alibaba Dragonwell JDK](https://dragonwell-jdk.io/) | [`dragonwell` license](https://www.aliyun.com/product/dragonwell/)
+| `sapmachine` | [SAP SapMachine JDK/JRE](https://sapmachine.io/) | [`sapmachine` license](https://github.com/SAP/SapMachine/blob/sapmachine/LICENSE)
+| `graalvm` | [Oracle GraalVM](https://www.graalvm.org/) | [`graalvm` license](https://www.oracle.com/downloads/licenses/graal-free-license.html)
+| `jetbrains` | [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime/) | [`jetbrains` license](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE)
+| `jdkfile` | Custom JDK Installation | |
 
-**NOTE:** The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
+> [!NOTE]
+> - The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
+> - AdoptOpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` and `adopt-openj9`, to `temurin` and `semeru` respectively, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
+> - For Azul Zulu OpenJDK architectures x64 and arm64 are mapped to x86 / arm with proper hw_bitness.
+> - To comply with the GraalVM Free Terms and Conditions (GFTC) license, it is recommended to use GraalVM JDK 17 version 17.0.12, as this is the only version of GraalVM JDK 17 available under the GFTC license. Additionally, it is encouraged to consider upgrading to GraalVM JDK 21, which offers the latest features and improvements.
 
-**NOTE:** AdoptOpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` and `adopt-openj9`, to `temurin` and `semeru` respectively, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
+**NOTE:** Oracle JDK 17 licensing varies by patch level. As shown on the [JDK 17 Archive](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) (versions up to 17.0.12 are under the [NFTC](https://www.oracle.com/downloads/licenses/no-fee-license.html) license) and the [JDK 17.0.13+ Archive](https://www.oracle.com/java/technologies/javase/jdk17-0-13-later-archive-downloads.html) (versions 17.0.13 and later are under the [OTN](https://www.oracle.com/downloads/licenses/javase-license1.html) license). To stay on the free NFTC license, use `distribution: 'oracle'` with `java-version: '17.0.12'` (or earlier) instead of the floating `'17'`. Alternatively, upgrade to Oracle JDK 21+, which remains under the NFTC license.
 
-**NOTE:** For Azul Zulu OpenJDK architectures x64 and arm64 are mapped to x86 / arm with proper hw_bitness.
-
-**NOTE:** To comply with the GraalVM Free Terms and Conditions (GFTC) license, it is recommended to use GraalVM JDK 17 version 17.0.12, as this is the only version of GraalVM JDK 17 available under the GFTC license. Additionally, it is encouraged to consider upgrading to GraalVM JDK 21, which offers the latest features and improvements.
+**NOTE:** On Ubuntu runners, commands executed via `sudo` do not inherit the `JAVA_HOME` and `PATH` set by `setup-java` and will fall back to the runner image's system-default JDK.
 
 ### Caching packages dependencies
 The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are Gradle, Maven, sbt, and Mill. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
 
-- Gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, and `**/versions.properties`
-- Maven: `**/pom.xml`
+- gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, and `**/versions.properties`
+- maven: `**/pom.xml` and `**/.mvn/wrapper/maven-wrapper.properties`
 - sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.scala`, `**/project/**.sbt`
 - Mill: `**/build.sc`, `**/*.sc`, `**/mill`, `**/.mill-version`, and `**/.config/mill-version`
 
@@ -138,26 +143,31 @@ The cache input is optional, and caching is turned off by default.
 #### Caching Gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     cache: 'gradle'
     cache-dependency-path: | # optional
       sub-project/*.gradle*
       sub-project/**/gradle-wrapper.properties
 - run: ./gradlew build --no-daemon
 ```
+Using the `cache: gradle` provides a simple and effective way to cache Gradle dependencies with minimal configuration.
+
+For projects that require more advanced `Gradle` caching features, such as caching build outputs, support for Gradle configuration cache, encrypted cache storage, fine-grained cache control (including options to enable or disable the cache, set it to read-only or write-only, perform automated cleanup, and define custom cache rules), or optimized performance for complex CI workflows, consider using [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle).  
+
+For setup details and a comprehensive overview of all available features, visit the [setup-gradle documentation](https://github.com/gradle/actions/blob/main/docs/setup-gradle.md).
 
 #### Caching Maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     cache: 'maven'
     cache-dependency-path: 'sub-project/pom.xml' # optional
 - name: Build with Maven
@@ -167,11 +177,11 @@ steps:
 #### Caching sbt dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     cache: 'sbt'
     cache-dependency-path: | # optional
       sub-project/build.sbt
@@ -202,11 +212,11 @@ Usually, cache gets downloaded in multiple segments of fixed sizes. Sometimes, a
 env:
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     cache: 'gradle'
 - run: ./gradlew build --no-daemon
 ```
@@ -217,16 +227,16 @@ In the basic examples above, the `check-latest` flag defaults to `false`. When s
 
 If `check-latest` is set to `true`, the action first checks if the cached version is the latest one. If the locally cached version is not the most up-to-date, the latest version of Java will be downloaded. Set `check-latest` to `true` if you want the most up-to-date version of Java to always be used. Setting `check-latest` to `true` has performance implications as downloading versions of Java is slower than using cached versions.
 
-For Java distributions that are not cached on Hosted images, `check-latest` always behaves as `true` and downloads Java on-flight. Check out [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache) for more details about pre-cached Java versions.
+For Java distributions that are not cached on Hosted images, `check-latest` always behaves as `true` and downloads Java on the fly. Check out [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache) for more details about pre-cached Java versions.
 
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     check-latest: true
 - run: java HelloWorldApp.java
 ```
@@ -238,12 +248,12 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        java: [ '8', '11', '17', '21' ]
+        java: [ '8', '11', '17', '21', '25' ]
     name: Java ${{ matrix.Java }} sample
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
@@ -252,11 +262,11 @@ jobs:
 
 ### Install multiple JDKs
 
-All versions are added to the PATH. The last version will be used and available globally. Other Java versions can be accessed through env variables with such specification as 'JAVA_HOME_{{ MAJOR_VERSION }}_{{ ARCHITECTURE }}'.
+All configured Java versions are added to the PATH. The last one added to the PATH (i.e., the last JDK set up by this action) will be used as the default and available globally. Other Java versions can be accessed through environment variables such as 'JAVA_HOME_{{ MAJOR_VERSION }}_{{ ARCHITECTURE }}'. To use a specific Java version, set the JAVA_HOME environment variable accordingly and prepend its bin directory to the PATH to ensure it takes priority during execution.
 
 ```yaml
     steps:
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: '<distribution>'
           java-version: |
@@ -281,6 +291,7 @@ In the example above multiple JDKs are installed for the same job. The result af
   - [Alibaba Dragonwell](docs/advanced-usage.md#Alibaba-Dragonwell)
   - [SapMachine](docs/advanced-usage.md#SapMachine)
   - [GraalVM](docs/advanced-usage.md#GraalVM)
+  - [JetBrains](docs/advanced-usage.md#JetBrains)
 - [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](docs/advanced-usage.md#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](docs/advanced-usage.md#Installing-Java-from-local-file)
@@ -291,6 +302,15 @@ In the example above multiple JDKs are installed for the same job. The result af
 - [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](docs/advanced-usage.md#Modifying-Maven-Toolchains)
 - [Java Version File](docs/advanced-usage.md#Java-version-file)
+
+## V2 vs V1
+
+Examples in this README use `actions/setup-java@v5`, but the main migration note from V1 still applies to all later major versions (`v2`, `v3`, `v4`, and `v5`):
+
+- Starting with V2, the action supports custom distributions. V1 supports only Azul Zulu OpenJDK.
+- Starting with V2, you must specify distribution along with the version. V1 defaults to Azul Zulu OpenJDK, so only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2.
+
+For information about the latest releases, recent updates, and newly supported distributions, please refer to the `setup-java` [Releases](https://github.com/actions/setup-java/releases).
 
 ## Recommended permissions
 

@@ -27,6 +27,7 @@ describe('setupJava', () => {
   let spyFsReadDir: jest.SpyInstance;
   let spyUtilsExtractJdkFile: jest.SpyInstance;
   let spyPathResolve: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
   const expectedJdkFile = 'JavaLocalJdkFile';
 
   beforeEach(() => {
@@ -93,6 +94,10 @@ describe('setupJava', () => {
     // Spy on path methods
     spyPathResolve = jest.spyOn(path, 'resolve');
     spyPathResolve.mockImplementation((path: string) => path);
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -214,7 +219,7 @@ describe('setupJava', () => {
     );
   });
 
-  it('java is resolved from toolcache including Contents/Home on MacOS', async () => {
+  it('java is resolved from toolcache including Contents/Home on macOS', async () => {
     const inputs = {
       version: actualJavaVersion,
       architecture: 'x86',
@@ -257,7 +262,7 @@ describe('setupJava', () => {
     });
   });
 
-  it('java is unpacked from jdkfile including Contents/Home on MacOS', async () => {
+  it('java is unpacked from jdkfile including Contents/Home on macOS', async () => {
     const inputs = {
       version: '11.0.289',
       architecture: 'x86',

@@ -21,16 +21,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-15-intel, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Run setup-java with the cache for gradle
         uses: ./
         id: setup-java
         with:
           distribution: 'adopt'
-          java-version: '11'
+          java-version: '17'
           cache: gradle
       - name: Create files to cache
         # Need to avoid using Gradle daemon to stabilize the save process on Windows
@@ -46,11 +46,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-15-intel, windows-latest, ubuntu-latest]
     needs: gradle-save
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Run setup-java with the cache for gradle
         uses: ./
         id: setup-java
@@ -70,10 +70,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-15-intel, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Run setup-java with the cache for maven
         uses: ./
         id: setup-java
@@ -93,11 +93,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-latest]
+        os: [macos-15-intel, windows-latest, ubuntu-latest]
     needs: maven-save
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Run setup-java with the cache for maven
         uses: ./
         id: setup-java
@@ -121,10 +121,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-22.04]
+        os: [macos-15-intel, windows-latest, ubuntu-22.04]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Run setup-java with the cache for sbt
         uses: ./
         id: setup-java
@@ -133,7 +133,7 @@ jobs:
           java-version: '11'
           cache: sbt
       - name: Setup SBT
-        if: matrix.os == 'macos-13'
+        if: matrix.os == 'macos-15-intel'
         run: |
           echo ""Installing SBT...""
           brew install sbt
@@ -141,7 +141,7 @@ jobs:
         run: sbt update
 
       - name: Check files to cache on macos-latest
-        if: matrix.os == 'macos-13'
+        if: matrix.os == 'macos-15-intel'
         run: |
           if [ ! -d ~/Library/Caches/Coursier ]; then
             echo "::error::The ~/Library/Caches/Coursier directory does not exist unexpectedly"
@@ -170,11 +170,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, windows-latest, ubuntu-22.04]
+        os: [macos-15-intel, windows-latest, ubuntu-22.04]
     needs: sbt-save
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Run setup-java with the cache for sbt
         uses: ./
         id: setup-java
@@ -184,7 +184,7 @@ jobs:
           cache: sbt
 
       - name: Confirm that ~/Library/Caches/Coursier directory has been made
-        if: matrix.os == 'macos-13'
+        if: matrix.os == 'macos-15-intel'
         run: |
           if [ ! -d ~/Library/Caches/Coursier ]; then
             echo "::error::The ~/Library/Caches/Coursier directory does not exist unexpectedly"

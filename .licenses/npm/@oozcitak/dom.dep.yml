@@ -1,6 +1,6 @@
 ---
 name: "@oozcitak/dom"
-version: 1.15.8
+version: 2.0.2
 type: npm
 summary: A modern DOM implementation
 homepage: http://github.com/oozcitak/dom

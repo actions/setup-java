@@ -4,9 +4,11 @@ import {JetBrainsDistribution} from '../../src/distributions/jetbrains/installer
 
 import manifestData from '../data/jetbrains.json';
 import os from 'os';
+import * as core from '@actions/core';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -15,6 +17,10 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: []
     });
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -41,9 +47,7 @@ describe('getAvailableVersions', () => {
     expect(availableVersions).not.toBeNull();
 
     const length =
-      os.platform() === 'win32'
-        ? manifestData.length - 1
-        : manifestData.length + 1;
+      os.platform() === 'win32' ? manifestData.length : manifestData.length + 2;
     expect(availableVersions.length).toBe(length);
   }, 10_000);
 });
@@ -78,9 +82,8 @@ describe('findPackageForDownload', () => {
         checkLatest: false
       });
       distribution['getAvailableVersions'] = async () => manifestData as any;
-      const resolvedVersion = await distribution['findPackageForDownload'](
-        input
-      );
+      const resolvedVersion =
+        await distribution['findPackageForDownload'](input);
       const url = resolvedVersion.url;
       const options = {method: 'HEAD'};
 
@@ -101,7 +104,7 @@ describe('findPackageForDownload', () => {
     });
     distribution['getAvailableVersions'] = async () => manifestData as any;
     await expect(distribution['findPackageForDownload']('8.x')).rejects.toThrow(
-      /Could not find satisfied version for SemVer */
+      /No matching version found for SemVer */
     );
   });
 
@@ -114,7 +117,7 @@ describe('findPackageForDownload', () => {
     });
     distribution['getAvailableVersions'] = async () => [];
     await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
-      /Could not find satisfied version for SemVer */
+      /No matching version found for SemVer */
     );
   });
 });
