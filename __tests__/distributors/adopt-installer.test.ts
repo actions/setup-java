@@ -1,12 +1,21 @@
-import { HttpClient } from '@actions/http-client';
+import {HttpClient} from '@actions/http-client';
+import {IAdoptAvailableVersions} from '../../src/distributions/adopt/models';
+import {
+  AdoptDistribution,
+  AdoptImplementation
+} from '../../src/distributions/adopt/installer';
+import {TemurinDistribution} from '../../src/distributions/temurin/installer';
+import {JavaInstallerOptions} from '../../src/distributions/base-models';
 
-import { AdoptDistribution, AdoptImplementation } from '../../src/distributions/adopt/installer';
-import { JavaInstallerOptions } from '../../src/distributions/base-models';
+import os from 'os';
 
-let manifestData = require('../data/adopt.json') as [];
+import manifestData from '../data/adopt.json';
+import * as core from '@actions/core';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
+  let spyCoreWarning: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -15,6 +24,12 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: []
     });
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
+    spyCoreWarning = jest.spyOn(core, 'warning');
+    spyCoreWarning.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -25,42 +40,82 @@ describe('getAvailableVersions', () => {
 
   it.each([
     [
-      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       AdoptImplementation.Hotspot,
       'os=mac&architecture=x64&image_type=jdk&release_type=ga&jvm_impl=hotspot&page_size=20&page=0'
     ],
     [
-      { version: '11', architecture: 'x86', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11',
+        architecture: 'x86',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       AdoptImplementation.Hotspot,
       'os=mac&architecture=x86&image_type=jdk&release_type=ga&jvm_impl=hotspot&page_size=20&page=0'
     ],
     [
-      { version: '11', architecture: 'x64', packageType: 'jre', checkLatest: false },
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jre',
+        checkLatest: false
+      },
       AdoptImplementation.Hotspot,
       'os=mac&architecture=x64&image_type=jre&release_type=ga&jvm_impl=hotspot&page_size=20&page=0'
     ],
     [
-      { version: '11-ea', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11-ea',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       AdoptImplementation.Hotspot,
       'os=mac&architecture=x64&image_type=jdk&release_type=ea&jvm_impl=hotspot&page_size=20&page=0'
     ],
     [
-      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       AdoptImplementation.OpenJ9,
       'os=mac&architecture=x64&image_type=jdk&release_type=ga&jvm_impl=openj9&page_size=20&page=0'
     ],
     [
-      { version: '11', architecture: 'x86', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11',
+        architecture: 'x86',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       AdoptImplementation.OpenJ9,
       'os=mac&architecture=x86&image_type=jdk&release_type=ga&jvm_impl=openj9&page_size=20&page=0'
     ],
     [
-      { version: '11', architecture: 'x64', packageType: 'jre', checkLatest: false },
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jre',
+        checkLatest: false
+      },
       AdoptImplementation.OpenJ9,
       'os=mac&architecture=x64&image_type=jre&release_type=ga&jvm_impl=openj9&page_size=20&page=0'
     ],
     [
-      { version: '11-ea', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11-ea',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       AdoptImplementation.OpenJ9,
       'os=mac&architecture=x64&image_type=jdk&release_type=ea&jvm_impl=openj9&page_size=20&page=0'
     ]
@@ -72,7 +127,8 @@ describe('getAvailableVersions', () => {
       expectedParameters
     ) => {
       const distribution = new AdoptDistribution(installerOptions, impl);
-      const baseUrl = 'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D';
+      const baseUrl =
+        'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D';
       const expectedUrl = `${baseUrl}?project=jdk&vendor=adoptopenjdk&heap_size=normal&sort_method=DEFAULT&sort_order=DESC&${expectedParameters}`;
       distribution['getPlatformOption'] = () => 'mac';
 
@@ -84,31 +140,61 @@ describe('getAvailableVersions', () => {
   );
 
   it('load available versions', async () => {
+    const nextPageUrl =
+      'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D?page=1&page_size=20';
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
     spyHttpClient
       .mockReturnValueOnce({
         statusCode: 200,
-        headers: {},
-        result: manifestData
+        headers: {link: `<${nextPageUrl}>; rel="next"`},
+        result: manifestData as any
       })
       .mockReturnValueOnce({
         statusCode: 200,
         headers: {},
-        result: manifestData
-      })
-      .mockReturnValueOnce({
-        statusCode: 200,
-        headers: {},
-        result: []
+        result: manifestData as any
       });
 
     const distribution = new AdoptDistribution(
-      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       AdoptImplementation.Hotspot
     );
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).not.toBeNull();
     expect(availableVersions.length).toBe(manifestData.length * 2);
+    expect(spyHttpClient).toHaveBeenNthCalledWith(2, nextPageUrl);
+  });
+
+  it('stops pagination after 1000 pages as a safeguard', async () => {
+    const nextPageUrl =
+      'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D?page=2&page_size=20';
+    spyHttpClient.mockReturnValue({
+      statusCode: 200,
+      headers: {link: `<${nextPageUrl}>; rel="next"`},
+      result: [{version_data: {semver: '17.0.1'}, binaries: []}] as any
+    });
+
+    const distribution = new AdoptDistribution(
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
+      AdoptImplementation.Hotspot
+    );
+
+    await distribution['getAvailableVersions']();
+
+    expect(spyHttpClient).toHaveBeenCalledTimes(1000);
+    expect(spyCoreWarning).toHaveBeenCalledWith(
+      expect.stringContaining('Reached pagination safeguard limit (1000 pages)')
+    );
   });
 
   it.each([
@@ -120,7 +206,12 @@ describe('getAvailableVersions', () => {
     'find right toolchain folder',
     (impl: AdoptImplementation, packageType: string, expected: string) => {
       const distribution = new AdoptDistribution(
-        { version: '11', architecture: 'x64', packageType: packageType, checkLatest: false },
+        {
+          version: '11',
+          architecture: 'x64',
+          packageType: packageType,
+          checkLatest: false
+        },
         impl
       );
 
@@ -128,9 +219,76 @@ describe('getAvailableVersions', () => {
       expect(distribution.toolcacheFolderName).toBe(expected);
     }
   );
+
+  it.each([
+    ['amd64', 'x64'],
+    ['arm64', 'aarch64']
+  ])(
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArch: string) => {
+      jest
+        .spyOn(os, 'arch')
+        .mockReturnValue(osArch as ReturnType<typeof os.arch>);
+
+      const installerOptions: JavaInstallerOptions = {
+        version: '17',
+        architecture: '', // to get default value
+        packageType: 'jdk',
+        checkLatest: false
+      };
+
+      const expectedParameters = `os=mac&architecture=${distroArch}&image_type=jdk&release_type=ga&jvm_impl=hotspot&page_size=20&page=0`;
+
+      const distribution = new AdoptDistribution(
+        installerOptions,
+        AdoptImplementation.Hotspot
+      );
+      const baseUrl =
+        'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D';
+      const expectedUrl = `${baseUrl}?project=jdk&vendor=adoptopenjdk&heap_size=normal&sort_method=DEFAULT&sort_order=DESC&${expectedParameters}`;
+      distribution['getPlatformOption'] = () => 'mac';
+
+      await distribution['getAvailableVersions']();
+
+      expect(spyHttpClient.mock.calls).toHaveLength(1);
+      expect(spyHttpClient.mock.calls[0][0]).toBe(expectedUrl);
+    }
+  );
 });
 
 describe('findPackageForDownload', () => {
+  it('returns Temurin result and does not query Adopt API when Temurin succeeds', async () => {
+    const temurinRelease = {
+      version: '11.0.31+11',
+      url: 'https://example.test/temurin-11.tar.gz'
+    };
+    const temurinFindPackageForDownload = jest
+      .fn()
+      .mockResolvedValue(temurinRelease);
+    const temurinDistribution = {
+      findPackageForDownload: temurinFindPackageForDownload
+    } as unknown as TemurinDistribution;
+
+    const distribution = new AdoptDistribution(
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
+      AdoptImplementation.Hotspot,
+      temurinDistribution
+    );
+    const adoptLookupSpy = jest.fn();
+    distribution['getAvailableVersions'] = adoptLookupSpy;
+
+    const resolvedVersion = await distribution['findPackageForDownload']('11');
+
+    expect(resolvedVersion).toEqual(temurinRelease);
+    expect(temurinFindPackageForDownload).toHaveBeenCalledWith('11');
+    expect(adoptLookupSpy).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['9', '9.0.7+10'],
     ['15', '15.0.2+7'],
@@ -145,44 +303,84 @@ describe('findPackageForDownload', () => {
     ['15.0.1+9.1', '15.0.1+9.1']
   ])('version is resolved correctly %s -> %s', async (input, expected) => {
     const distribution = new AdoptDistribution(
-      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       AdoptImplementation.Hotspot
     );
-    distribution['getAvailableVersions'] = async () => manifestData;
+    // Mock Temurin to fail so fallback to AdoptOpenJDK is tested
+    distribution['temurinDistribution']!['findPackageForDownload'] =
+      async () => {
+        throw new Error('No matching version found for SemVer');
+      };
+    distribution['getAvailableVersions'] = async () => manifestData as any;
     const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
   });
 
   it('version is found but binaries list is empty', async () => {
     const distribution = new AdoptDistribution(
-      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       AdoptImplementation.Hotspot
     );
-    distribution['getAvailableVersions'] = async () => manifestData;
-    await expect(distribution['findPackageForDownload']('9.0.8')).rejects.toThrowError(
-      /Could not find satisfied version for SemVer */
-    );
+    // Mock Temurin to fail so fallback to AdoptOpenJDK is tested
+    distribution['temurinDistribution']!['findPackageForDownload'] =
+      async () => {
+        throw new Error('No matching version found for SemVer');
+      };
+    distribution['getAvailableVersions'] = async () => manifestData as any;
+    await expect(
+      distribution['findPackageForDownload']('9.0.8')
+    ).rejects.toThrow(/No matching version found for SemVer */);
   });
 
   it('version is not found', async () => {
     const distribution = new AdoptDistribution(
-      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       AdoptImplementation.Hotspot
     );
-    distribution['getAvailableVersions'] = async () => manifestData;
-    await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrowError(
-      /Could not find satisfied version for SemVer */
+    // Mock Temurin to fail so fallback to AdoptOpenJDK is tested
+    distribution['temurinDistribution']!['findPackageForDownload'] =
+      async () => {
+        throw new Error('No matching version found for SemVer');
+      };
+    distribution['getAvailableVersions'] = async () => manifestData as any;
+    await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrow(
+      /No matching version found for SemVer */
     );
   });
 
   it('version list is empty', async () => {
     const distribution = new AdoptDistribution(
-      { version: '11', architecture: 'x64', packageType: 'jdk', checkLatest: false },
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
       AdoptImplementation.Hotspot
     );
+    // Mock Temurin to fail so fallback to AdoptOpenJDK is tested
+    distribution['temurinDistribution']!['findPackageForDownload'] =
+      async () => {
+        throw new Error('No matching version found for SemVer');
+      };
     distribution['getAvailableVersions'] = async () => [];
-    await expect(distribution['findPackageForDownload']('11')).rejects.toThrowError(
-      /Could not find satisfied version for SemVer */
+    await expect(distribution['findPackageForDownload']('11')).rejects.toThrow(
+      /No matching version found for SemVer */
     );
   });
 });

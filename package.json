@@ -1,13 +1,18 @@
 {
   "name": "setup-java",
-  "version": "2.0.0",
+  "version": "5.3.0",
   "private": true,
   "description": "setup java action",
   "main": "dist/setup/index.js",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "scripts": {
     "build": "ncc build -o dist/setup src/setup-java.ts && ncc build -o dist/cleanup src/cleanup-java.ts",
-    "format": "prettier --write \"{,!(node_modules)/**/}*.ts\"",
-    "format-check": "prettier --check \"{,!(node_modules)/**/}*.ts\"",
+    "format": "prettier --no-error-on-unmatched-pattern --config ./.prettierrc.js --write \"**/*.{ts,yml,yaml}\"",
+    "format-check": "prettier --no-error-on-unmatched-pattern --config ./.prettierrc.js --check \"**/*.{ts,yml,yaml}\"",
+    "lint": "eslint --config ./.eslintrc.js \"**/*.ts\"",
+    "lint:fix": "eslint --config ./.eslintrc.js \"**/*.ts\" --fix",
     "prerelease": "npm run-script build",
     "release": "git add -f dist/setup/index.js dist/cleanup/index.js",
     "test": "jest"
@@ -24,31 +29,35 @@
   "author": "GitHub",
   "license": "MIT",
   "dependencies": {
-    "@actions/cache": "^1.0.7",
-    "@actions/core": "^1.2.6",
-    "@actions/exec": "^1.0.4",
-    "@actions/glob": "^0.2.0",
-    "@actions/http-client": "^1.0.9",
-    "@actions/io": "^1.0.2",
-    "@actions/tool-cache": "^1.6.1",
-    "semver": "^7.3.4",
-    "xmlbuilder2": "^2.4.0"
+    "@actions/cache": "^5.1.0",
+    "@actions/core": "^2.0.3",
+    "@actions/exec": "^2.0.0",
+    "@actions/glob": "^0.5.1",
+    "@actions/http-client": "^3.0.2",
+    "@actions/io": "^2.0.0",
+    "@actions/tool-cache": "^3.0.1",
+    "semver": "^7.6.0",
+    "xmlbuilder2": "^4.0.3"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.20",
-    "@types/node": "^12.19.13",
-    "@types/semver": "^7.3.4",
-    "@zeit/ncc": "^0.20.5",
-    "jest": "^26.6.3",
-    "jest-circus": "^26.6.3",
-    "prettier": "^1.19.1",
-    "ts-jest": "^26.5.3",
-    "typescript": "^4.2.3"
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.9.3",
+    "@types/semver": "^7.5.8",
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.61.1",
+    "@vercel/ncc": "^0.44.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jest": "^29.0.1",
+    "eslint-plugin-node": "^11.1.0",
+    "jest": "^30.4.2",
+    "jest-circus": "^30.4.2",
+    "prettier": "^3.6.2",
+    "ts-jest": "^29.4.11",
+    "typescript": "^5.3.3"
   },
-  "husky": {
-    "skipCI": true,
-    "hooks": {
-      "pre-commit": "npm run build && npm run format"
-    }
-  }
+  "bugs": {
+    "url": "https://github.com/actions/setup-java/issues"
+  },
+  "homepage": "https://github.com/actions/setup-java#readme"
 }

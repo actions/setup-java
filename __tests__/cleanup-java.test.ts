@@ -1,28 +1,45 @@
-import { run as cleanup } from '../src/cleanup-java';
+import {run as cleanup} from '../src/cleanup-java';
 import * as core from '@actions/core';
 import * as cache from '@actions/cache';
 import * as util from '../src/util';
 
 describe('cleanup', () => {
   let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>;
+  let spyInfo: jest.SpyInstance<void, Parameters<typeof core.info>>;
   let spyCacheSave: jest.SpyInstance<
     ReturnType<typeof cache.saveCache>,
     Parameters<typeof cache.saveCache>
   >;
   let spyJobStatusSuccess: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyWarning = jest.spyOn(core, 'warning');
+    spyWarning.mockImplementation(() => null);
+
+    spyInfo = jest.spyOn(core, 'info');
+    spyInfo.mockImplementation(() => null);
+
     spyCacheSave = jest.spyOn(cache, 'saveCache');
+
     spyJobStatusSuccess = jest.spyOn(util, 'isJobStatusSuccess');
     spyJobStatusSuccess.mockReturnValue(true);
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
+
     createStateForSuccessfulRestore();
   });
+
   afterEach(() => {
     resetState();
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
-  it('does not fail nor warn even when the save provess throws a ReserveCacheError', async () => {
+  it('does not warn/fail even when the save process throws a ReserveCacheError', async () => {
     spyCacheSave.mockImplementation((paths: string[], key: string) =>
       Promise.reject(
         new cache.ReserveCacheError(
@@ -34,8 +51,8 @@ describe('cleanup', () => {
       return name === 'cache' ? 'gradle' : '';
     });
     await cleanup();
-    expect(spyCacheSave).toBeCalled();
-    expect(spyWarning).not.toBeCalled();
+    expect(spyCacheSave).toHaveBeenCalled();
+    expect(spyWarning).not.toHaveBeenCalled();
   });
 
   it('does not fail even though the save process throws error', async () => {
@@ -46,7 +63,7 @@ describe('cleanup', () => {
       return name === 'cache' ? 'gradle' : '';
     });
     await cleanup();
-    expect(spyCacheSave).toBeCalled();
+    expect(spyCacheSave).toHaveBeenCalled();
   });
 });
 

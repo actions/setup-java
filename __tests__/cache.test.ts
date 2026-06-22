@@ -1,11 +1,12 @@
-import { mkdtempSync } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
-import { restore, save } from '../src/cache';
+import {mkdtempSync} from 'fs';
+import {tmpdir} from 'os';
+import {join} from 'path';
+import {restore, save} from '../src/cache';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as core from '@actions/core';
 import * as cache from '@actions/cache';
+import * as glob from '@actions/glob';
 
 describe('dependency cache', () => {
   const ORIGINAL_RUNNER_OS = process.env['RUNNER_OS'];
@@ -14,6 +15,9 @@ describe('dependency cache', () => {
   let workspace: string;
   let spyInfo: jest.SpyInstance<void, Parameters<typeof core.info>>;
   let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>;
+  let spyDebug: jest.SpyInstance<void, Parameters<typeof core.debug>>;
+  let spySaveState: jest.SpyInstance<void, Parameters<typeof core.saveState>>;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     workspace = mkdtempSync(join(tmpdir(), 'setup-java-cache-'));
@@ -38,7 +42,20 @@ describe('dependency cache', () => {
 
   beforeEach(() => {
     spyInfo = jest.spyOn(core, 'info');
+    spyInfo.mockImplementation(() => null);
+
     spyWarning = jest.spyOn(core, 'warning');
+    spyWarning.mockImplementation(() => null);
+
+    spyDebug = jest.spyOn(core, 'debug');
+    spyDebug.mockImplementation(() => null);
+
+    spySaveState = jest.spyOn(core, 'saveState');
+    spySaveState.mockImplementation(() => null);
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -46,6 +63,10 @@ describe('dependency cache', () => {
     process.env['GITHUB_WORKSPACE'] = ORIGINAL_GITHUB_WORKSPACE;
     process.env['RUNNER_OS'] = ORIGINAL_RUNNER_OS;
     resetState();
+
+    jest.resetAllMocks();
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('restore', () => {
@@ -53,57 +74,221 @@ describe('dependency cache', () => {
       ReturnType<typeof cache.restoreCache>,
       Parameters<typeof cache.restoreCache>
     >;
+    let spyGlobHashFiles: jest.SpyInstance<
+      ReturnType<typeof glob.hashFiles>,
+      Parameters<typeof glob.hashFiles>
+    >;
 
     beforeEach(() => {
       spyCacheRestore = jest
         .spyOn(cache, 'restoreCache')
-        .mockImplementation((paths: string[], primaryKey: string) => Promise.resolve(undefined));
+        .mockImplementation((paths: string[], primaryKey: string) =>
+          Promise.resolve(undefined)
+        );
+      spyGlobHashFiles = jest.spyOn(glob, 'hashFiles');
+      spyWarning.mockImplementation(() => null);
     });
 
     it('throws error if unsupported package manager specified', () => {
-      return expect(restore('ant')).rejects.toThrowError('unknown package manager specified: ant');
+      return expect(restore('ant', '')).rejects.toThrow(
+        'unknown package manager specified: ant'
+      );
     });
 
     describe('for maven', () => {
-      it('throws error if no pom.xml found', async () => {
-        await expect(restore('maven')).rejects.toThrowError(
+      it('throws error if no pom.xml or maven-wrapper.properties found', async () => {
+        await expect(restore('maven', '')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/pom.xml], make sure you have checked out the target repository`
+          )} matched to [**/pom.xml,**/.mvn/wrapper/maven-wrapper.properties], make sure you have checked out the target repository`
         );
       });
-      it('downloads cache', async () => {
+      it('downloads cache based on pom.xml', async () => {
         createFile(join(workspace, 'pom.xml'));
 
-        await restore('maven');
-        expect(spyCacheRestore).toBeCalled();
-        expect(spyWarning).not.toBeCalled();
-        expect(spyInfo).toBeCalledWith('maven cache is not found');
+        await restore('maven', '');
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [
+            join(os.homedir(), '.m2', 'repository'),
+            join(os.homedir(), '.m2', 'wrapper', 'dists')
+          ],
+          expect.any(String)
+        );
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/pom.xml\n**/.mvn/wrapper/maven-wrapper.properties'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('maven cache is not found');
+      });
+      it('downloads cache based on maven-wrapper.properties', async () => {
+        createDirectory(join(workspace, '.mvn'));
+        createDirectory(join(workspace, '.mvn', 'wrapper'));
+        createFile(
+          join(workspace, '.mvn', 'wrapper', 'maven-wrapper.properties')
+        );
+
+        await restore('maven', '');
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [
+            join(os.homedir(), '.m2', 'repository'),
+            join(os.homedir(), '.m2', 'wrapper', 'dists')
+          ],
+          expect.any(String)
+        );
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/pom.xml\n**/.mvn/wrapper/maven-wrapper.properties'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('maven cache is not found');
       });
     });
     describe('for gradle', () => {
       it('throws error if no build.gradle found', async () => {
-        await expect(restore('gradle')).rejects.toThrowError(
+        await expect(restore('gradle', '')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/*.gradle*,**/gradle-wrapper.properties], make sure you have checked out the target repository`
+          )} matched to [**/*.gradle*,**/gradle-wrapper.properties,buildSrc/**/Versions.kt,buildSrc/**/Dependencies.kt,gradle/*.versions.toml,**/versions.properties], make sure you have checked out the target repository`
         );
       });
       it('downloads cache based on build.gradle', async () => {
         createFile(join(workspace, 'build.gradle'));
 
-        await restore('gradle');
-        expect(spyCacheRestore).toBeCalled();
-        expect(spyWarning).not.toBeCalled();
-        expect(spyInfo).toBeCalledWith('gradle cache is not found');
+        await restore('gradle', '');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/*.gradle*\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
       });
       it('downloads cache based on build.gradle.kts', async () => {
         createFile(join(workspace, 'build.gradle.kts'));
 
-        await restore('gradle');
-        expect(spyCacheRestore).toBeCalled();
-        expect(spyWarning).not.toBeCalled();
-        expect(spyInfo).toBeCalledWith('gradle cache is not found');
+        await restore('gradle', '');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/*.gradle*\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
+      });
+      it('downloads cache based on libs.versions.toml', async () => {
+        createDirectory(join(workspace, 'gradle'));
+        createFile(join(workspace, 'gradle', 'libs.versions.toml'));
+
+        await restore('gradle', '');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/*.gradle*\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
+      });
+      it('downloads cache based on buildSrc/Versions.kt', async () => {
+        createDirectory(join(workspace, 'buildSrc'));
+        createFile(join(workspace, 'buildSrc', 'Versions.kt'));
+
+        await restore('gradle', '');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/*.gradle*\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
+      });
+    });
+    describe('for sbt', () => {
+      it('throws error if no build.sbt found', async () => {
+        await expect(restore('sbt', '')).rejects.toThrow(
+          `No file in ${projectRoot(
+            workspace
+          )} matched to [**/*.sbt,**/project/build.properties,**/project/**.scala,**/project/**.sbt], make sure you have checked out the target repository`
+        );
+      });
+      it('downloads cache', async () => {
+        createFile(join(workspace, 'build.sbt'));
+
+        await restore('sbt', '');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/*.sbt\n**/project/build.properties\n**/project/**.scala\n**/project/**.sbt'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('sbt cache is not found');
+      });
+      it('detects scala and sbt changes under **/project/ folder', async () => {
+        createFile(join(workspace, 'build.sbt'));
+        createDirectory(join(workspace, 'project'));
+        createFile(join(workspace, 'project/DependenciesV1.scala'));
+
+        await restore('sbt', '');
+        const firstCall = spySaveState.mock.calls.toString();
+
+        spySaveState.mockClear();
+        await restore('sbt', '');
+        const secondCall = spySaveState.mock.calls.toString();
+
+        // Make sure multiple restores produce the same cache
+        expect(firstCall).toBe(secondCall);
+
+        spySaveState.mockClear();
+        createFile(join(workspace, 'project/DependenciesV2.scala'));
+        await restore('sbt', '');
+        const thirdCall = spySaveState.mock.calls.toString();
+
+        expect(firstCall).not.toBe(thirdCall);
+      });
+    });
+    it('downloads cache based on versions.properties', async () => {
+      createFile(join(workspace, 'versions.properties'));
+
+      await restore('gradle', '');
+      expect(spyCacheRestore).toHaveBeenCalled();
+      expect(spyGlobHashFiles).toHaveBeenCalledWith(
+        '**/*.gradle*\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
+      );
+      expect(spyWarning).not.toHaveBeenCalled();
+      expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
+    });
+    describe('cache-dependency-path', () => {
+      it('throws error if no matching dependency file found', async () => {
+        createFile(join(workspace, 'build.gradle.kts'));
+        await expect(
+          restore('gradle', 'sub-project/**/build.gradle.kts')
+        ).rejects.toThrow(
+          `No file in ${projectRoot(
+            workspace
+          )} matched to [sub-project/**/build.gradle.kts], make sure you have checked out the target repository`
+        );
+      });
+      it('downloads cache based on the specified pattern', async () => {
+        createFile(join(workspace, 'build.gradle.kts'));
+        createDirectory(join(workspace, 'sub-project1'));
+        createFile(join(workspace, 'sub-project1', 'build.gradle.kts'));
+        createDirectory(join(workspace, 'sub-project2'));
+        createFile(join(workspace, 'sub-project2', 'build.gradle.kts'));
+
+        await restore('gradle', 'build.gradle.kts');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith('build.gradle.kts');
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
+
+        await restore('gradle', 'sub-project1/**/*.gradle*\n');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          'sub-project1/**/*.gradle*'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
+
+        await restore('gradle', '*.gradle*\nsub-project2/**/*.gradle*\n');
+        expect(spyCacheRestore).toHaveBeenCalled();
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '*.gradle*\nsub-project2/**/*.gradle*'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
       });
     });
   });
@@ -116,35 +301,71 @@ describe('dependency cache', () => {
     beforeEach(() => {
       spyCacheSave = jest
         .spyOn(cache, 'saveCache')
-        .mockImplementation((paths: string[], key: string) => Promise.resolve(0));
+        .mockImplementation((paths: string[], key: string) =>
+          Promise.resolve(0)
+        );
+      spyWarning.mockImplementation(() => null);
     });
 
     it('throws error if unsupported package manager specified', () => {
-      return expect(save('ant')).rejects.toThrowError('unknown package manager specified: ant');
+      return expect(save('ant')).rejects.toThrow(
+        'unknown package manager specified: ant'
+      );
+    });
+
+    it('save with -1 cacheId , should not fail workflow', async () => {
+      spyCacheSave.mockImplementation(() => Promise.resolve(-1));
+      createStateForMissingBuildFile();
+
+      await save('maven');
+      expect(spyCacheSave).toHaveBeenCalled();
+      expect(spyWarning).not.toHaveBeenCalled();
+      expect(spyInfo).not.toHaveBeenCalledWith(
+        expect.stringMatching(/^Cache saved with the key:.*/)
+      );
+      expect(spyDebug).toHaveBeenCalledWith(
+        expect.stringMatching(/^Cache was not saved for the key:.*/)
+      );
+    });
+
+    it('saves with error from toolkit, should fail workflow', async () => {
+      spyCacheSave.mockImplementation(() =>
+        Promise.reject(new cache.ValidationError('Validation failed'))
+      );
+      createStateForMissingBuildFile();
+
+      expect.assertions(1);
+      await expect(save('maven')).rejects.toEqual(
+        new cache.ValidationError('Validation failed')
+      );
     });
 
     describe('for maven', () => {
       it('uploads cache even if no pom.xml found', async () => {
         createStateForMissingBuildFile();
         await save('maven');
-        expect(spyCacheSave).toBeCalled();
-        expect(spyWarning).not.toBeCalled();
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
       });
       it('does not upload cache if no restore run before', async () => {
         createFile(join(workspace, 'pom.xml'));
 
         await save('maven');
-        expect(spyCacheSave).not.toBeCalled();
-        expect(spyWarning).toBeCalledWith('Error retrieving key from state.');
+        expect(spyCacheSave).not.toHaveBeenCalled();
+        expect(spyWarning).toHaveBeenCalledWith(
+          'Error retrieving key from state.'
+        );
       });
       it('uploads cache', async () => {
         createFile(join(workspace, 'pom.xml'));
         createStateForSuccessfulRestore();
 
         await save('maven');
-        expect(spyCacheSave).toBeCalled();
-        expect(spyWarning).not.toBeCalled();
-        expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith(
+          expect.stringMatching(/^Cache saved with the key:.*/)
+        );
       });
     });
     describe('for gradle', () => {
@@ -152,33 +373,90 @@ describe('dependency cache', () => {
         createStateForMissingBuildFile();
 
         await save('gradle');
-        expect(spyCacheSave).toBeCalled();
-        expect(spyWarning).not.toBeCalled();
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
       });
       it('does not upload cache if no restore run before', async () => {
         createFile(join(workspace, 'build.gradle'));
 
         await save('gradle');
-        expect(spyCacheSave).not.toBeCalled();
-        expect(spyWarning).toBeCalledWith('Error retrieving key from state.');
+        expect(spyCacheSave).not.toHaveBeenCalled();
+        expect(spyWarning).toHaveBeenCalledWith(
+          'Error retrieving key from state.'
+        );
       });
       it('uploads cache based on build.gradle', async () => {
         createFile(join(workspace, 'build.gradle'));
         createStateForSuccessfulRestore();
 
         await save('gradle');
-        expect(spyCacheSave).toBeCalled();
-        expect(spyWarning).not.toBeCalled();
-        expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith(
+          expect.stringMatching(/^Cache saved with the key:.*/)
+        );
       });
       it('uploads cache based on build.gradle.kts', async () => {
         createFile(join(workspace, 'build.gradle.kts'));
         createStateForSuccessfulRestore();
 
         await save('gradle');
-        expect(spyCacheSave).toBeCalled();
-        expect(spyWarning).not.toBeCalled();
-        expect(spyInfo).toBeCalledWith(expect.stringMatching(/^Cache saved with the key:.*/));
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith(
+          expect.stringMatching(/^Cache saved with the key:.*/)
+        );
+      });
+      it('uploads cache based on buildSrc/Versions.kt', async () => {
+        createDirectory(join(workspace, 'buildSrc'));
+        createFile(join(workspace, 'buildSrc', 'Versions.kt'));
+        createStateForSuccessfulRestore();
+
+        await save('gradle');
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith(
+          expect.stringMatching(/^Cache saved with the key:.*/)
+        );
+      });
+    });
+    describe('for sbt', () => {
+      it('uploads cache even if no build.sbt found', async () => {
+        createStateForMissingBuildFile();
+        await save('sbt');
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+      });
+      it('does not upload cache if no restore run before', async () => {
+        createFile(join(workspace, 'build.sbt'));
+
+        await save('sbt');
+        expect(spyCacheSave).not.toHaveBeenCalled();
+        expect(spyWarning).toHaveBeenCalledWith(
+          'Error retrieving key from state.'
+        );
+      });
+      it('uploads cache', async () => {
+        createFile(join(workspace, 'build.sbt'));
+        createStateForSuccessfulRestore();
+
+        await save('sbt');
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith(
+          expect.stringMatching(/^Cache saved with the key:.*/)
+        );
+      });
+      it('uploads cache based on versions.properties', async () => {
+        createFile(join(workspace, 'versions.properties'));
+        createStateForSuccessfulRestore();
+
+        await save('gradle');
+        expect(spyCacheSave).toHaveBeenCalled();
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith(
+          expect.stringMatching(/^Cache saved with the key:.*/)
+        );
       });
     });
   });
@@ -221,6 +499,11 @@ function createStateForSuccessfulRestore() {
 function createFile(path: string) {
   core.info(`created a file at ${path}`);
   fs.writeFileSync(path, '');
+}
+
+function createDirectory(path: string) {
+  core.info(`created a directory at ${path}`);
+  fs.mkdirSync(path);
 }
 
 function projectRoot(workspace: string): string {
