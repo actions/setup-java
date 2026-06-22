@@ -31,6 +31,7 @@ const GRAALVM_COMMUNITY_RELEASES_PAGE_ORIGIN = 'https://api.github.com';
 const GRAALVM_COMMUNITY_DOWNLOAD_URL =
   'https://github.com/graalvm/graalvm-ce-builds/releases';
 const GRAALVM_COMMUNITY_ASSET_PREFIX = 'graalvm-community-jdk-';
+const GRAALVM_COMMUNITY_VERSION_PATTERN = /^\d+(?:\.\d+)*$/;
 const IS_WINDOWS = process.platform === 'win32';
 const GRAALVM_PLATFORM = IS_WINDOWS ? 'windows' : process.platform;
 const GRAALVM_MIN_VERSION = 17;
@@ -386,7 +387,7 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
         headers
       );
 
-      const releases = response.result ?? [];
+      const releases = Array.isArray(response.result) ? response.result : [];
       if (releases.length === 0) {
         break;
       }
@@ -431,7 +432,7 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
       -assetSuffix.length
     );
 
-    if (!/^\d+(?:\.\d+)*$/.test(rawVersion)) {
+    if (!GRAALVM_COMMUNITY_VERSION_PATTERN.test(rawVersion)) {
       return null;
     }
 
