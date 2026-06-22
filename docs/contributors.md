@@ -6,13 +6,13 @@ We have prepared a short guide so that the process of making your contribution i
 
 ## How can I contribute...
 
-* [Contribute Documentation:green_book:](#contribute-documentation)
+* [:green_book: Contribute Documentation](#contribute-documentation)
 
-* [Contribute Code :computer:](#contribute-code)
+* [:computer: Contribute Code](#contribute-code)
 
-* [Provide Support on Issues:pencil:](#provide-support-on-issues)
+* [:pencil: Provide Support on Issues](#provide-support-on-issues)
 
-* [Review Pull Requests:mag:](#review-pull-requests)
+* [:mag: Review Pull Requests](#review-pull-requests)
 
 ## Contribute documentation
 
