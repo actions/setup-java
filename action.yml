@@ -5,8 +5,10 @@ author: 'GitHub'
 inputs:
   java-version:
     description: 'The Java version to set up. Takes a whole or semver Java version. See examples of supported syntax in README file'
+    required: false
   java-version-file:
-    description: 'The path to the `.java-version` file. See examples of supported syntax in README file'
+    description: 'The path to a file containing the Java version to set up (.java-version, .tool-versions, .sdkmanrc). Used when java-version is not set. See examples of supported syntax in README file'
+    required: false
   distribution:
     description: 'Java distribution. See the list of supported distributions in README file'
     required: true
@@ -49,9 +51,9 @@ inputs:
   gpg-private-key:
     description: 'GPG private key to import. Default is empty string.'
     required: false
+    default: ''
   gpg-passphrase:
-    description: 'Environment variable name for the GPG private key passphrase. Default is
-       $GPG_PASSPHRASE.'
+    description: 'Environment variable name for the GPG private key passphrase. Defaults to GPG_PASSPHRASE when gpg-private-key is set; ignored otherwise.'
     required: false
   cache:
     description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle" or "sbt".'
@@ -61,9 +63,11 @@ inputs:
     required: false
   job-status:
     description: 'Workaround to pass job status to post job step. This variable is not intended for manual setting'
+    required: false
     default: ${{ job.status }}
   token:
     description: The token used to authenticate when fetching version manifests hosted on github.com, such as for the Microsoft Build of OpenJDK. When running this action on github.com, the default value is sufficient. When running on GHES, you can pass a personal access token for github.com if you are experiencing rate limiting.
+    required: false
     default: ${{ github.server_url == 'https://github.com' && github.token || '' }}
   mvn-toolchain-id:
     description: 'Name of Maven Toolchain ID if the default name of "${distribution}_${java-version}" is not wanted. See examples of supported syntax in Advanced Usage file'
