@@ -30,6 +30,7 @@ const GRAALVM_COMMUNITY_RELEASES_URL =
 const GRAALVM_COMMUNITY_RELEASES_PAGE_ORIGIN = 'https://api.github.com';
 const GRAALVM_COMMUNITY_DOWNLOAD_URL =
   'https://github.com/graalvm/graalvm-ce-builds/releases';
+const GRAALVM_COMMUNITY_ASSET_PREFIX = 'graalvm-community-jdk-';
 const IS_WINDOWS = process.platform === 'win32';
 const GRAALVM_PLATFORM = IS_WINDOWS ? 'windows' : process.platform;
 const GRAALVM_MIN_VERSION = 17;
@@ -350,11 +351,10 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
 
     const arch = this.getSupportedArchitecture();
     const {platform, extension} = this.validateStableBuildRequest(range);
-    const availableVersions = await this.getAvailableVersionsForPlatform(
-      platform,
-      arch,
-      extension
-    );
+    // GraalVM Community asset names embed the platform, architecture and
+    // archive type, e.g. `graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz`.
+    const assetSuffix = `_${platform}-${arch}_bin.${extension}`;
+    const availableVersions = await this.getAvailableVersions(assetSuffix);
 
     const satisfiedVersion = availableVersions
       .filter(item => isVersionSatisfies(range, item.version))
@@ -373,24 +373,23 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
     return satisfiedVersion;
   }
 
-  private async getAvailableVersionsForPlatform(
-    platform: OsVersions,
-    arch: SupportedArchitecture,
-    extension: string
+  private async getAvailableVersions(
+    assetSuffix: string
   ): Promise<JavaDownloadRelease[]> {
     const headers = getGitHubHttpHeaders();
-    const availableVersions = new Map<string, JavaDownloadRelease>();
+    const versions = new Map<string, JavaDownloadRelease>();
     let releasesUrl: string | null = GRAALVM_COMMUNITY_RELEASES_URL;
-    let pageCount = 0;
 
-    while (releasesUrl) {
-      pageCount++;
+    for (let page = 0; releasesUrl && page < MAX_PAGINATION_PAGES; page++) {
       const response = await this.http.getJson<GraalVMCommunityRelease[]>(
         releasesUrl,
         headers
       );
 
-      const releases = Array.isArray(response.result) ? response.result : [];
+      const releases = response.result ?? [];
+      if (releases.length === 0) {
+        break;
+      }
 
       for (const release of releases) {
         if (release.draft || release.prerelease) {
@@ -398,74 +397,60 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
         }
 
         for (const asset of release.assets ?? []) {
-          const releaseForPlatform = this.toCommunityReleaseForPlatform(
-            asset,
-            platform,
-            arch,
-            extension
-          );
-          if (releaseForPlatform) {
-            availableVersions.set(
-              releaseForPlatform.version,
-              releaseForPlatform
-            );
+          const version = this.extractAssetVersion(asset.name, assetSuffix);
+          if (version) {
+            versions.set(version, {
+              version,
+              url: asset.browser_download_url
+            });
           }
         }
       }
 
-      const nextUrl = getNextPageUrlFromLinkHeader(response.headers);
-      if (
-        nextUrl &&
-        !validatePaginationUrl(nextUrl, GRAALVM_COMMUNITY_RELEASES_PAGE_ORIGIN)
-      ) {
-        core.warning(
-          `Ignoring pagination link with unexpected origin: ${nextUrl}`
-        );
-        break;
-      }
-
-      releasesUrl = nextUrl;
-
-      if (releases.length === 0) {
-        break;
-      }
-
-      if (pageCount >= MAX_PAGINATION_PAGES) {
-        core.warning(
-          `Reached pagination safeguard limit (${MAX_PAGINATION_PAGES} pages) while listing GraalVM Community releases.`
-        );
-        break;
-      }
+      releasesUrl = this.getNextReleasesUrl(response.headers);
     }
 
-    return [...availableVersions.values()];
+    return [...versions.values()];
   }
 
-  private toCommunityReleaseForPlatform(
-    asset: GraalVMCommunityAsset,
-    platform: OsVersions,
-    arch: SupportedArchitecture,
-    extension: string
-  ): JavaDownloadRelease | null {
-    const match = asset.name.match(
-      /^graalvm-community-jdk-(?<version>\d+(?:\.\d+)+)_(?<platform>linux|macos|windows)-(?<arch>x64|aarch64)_bin\.(?<extension>tar\.gz|zip)$/
-    );
-
-    if (!match?.groups) {
-      return null;
-    }
-
+  // Returns the GraalVM JDK version encoded in a release asset name when it
+  // matches the requested platform/architecture/archive suffix, otherwise null.
+  private extractAssetVersion(
+    assetName: string,
+    assetSuffix: string
+  ): string | null {
     if (
-      match.groups.platform !== platform ||
-      match.groups.arch !== arch ||
-      match.groups.extension !== extension
+      !assetName.startsWith(GRAALVM_COMMUNITY_ASSET_PREFIX) ||
+      !assetName.endsWith(assetSuffix)
     ) {
       return null;
     }
 
-    return {
-      version: convertVersionToSemver(match.groups.version),
-      url: asset.browser_download_url
-    };
+    const rawVersion = assetName.slice(
+      GRAALVM_COMMUNITY_ASSET_PREFIX.length,
+      -assetSuffix.length
+    );
+
+    if (!/^\d+(?:\.\d+)*$/.test(rawVersion)) {
+      return null;
+    }
+
+    return convertVersionToSemver(rawVersion);
+  }
+
+  private getNextReleasesUrl(
+    headers: Record<string, string | string[] | undefined>
+  ): string | null {
+    const nextUrl = getNextPageUrlFromLinkHeader(headers);
+    if (
+      nextUrl &&
+      !validatePaginationUrl(nextUrl, GRAALVM_COMMUNITY_RELEASES_PAGE_ORIGIN)
+    ) {
+      core.warning(
+        `Ignoring pagination link with unexpected origin: ${nextUrl}`
+      );
+      return null;
+    }
+    return nextUrl;
   }
 }
