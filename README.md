@@ -36,9 +36,9 @@ For information about the latest releases, recent updates, and newly supported d
 
   - `java-version`: The Java version that is going to be set up. Takes a whole or [semver](#supported-version-syntax) Java version. If not specified, the action will expect `java-version-file` input to be specified.
 
-  - `java-version-file`: The path to a file containing java version. Supported file types are `.java-version` and `.tool-versions`. See more details in [about .java-version-file](docs/advanced-usage.md#Java-version-file).
+  - `java-version-file`: The path to a file containing java version. Supported file types are `.java-version`, `.tool-versions`, and `.sdkmanrc`. See more details in [about .java-version-file](docs/advanced-usage.md#Java-version-file).
 
-  - `distribution`: _(required)_ Java [distribution](#supported-distributions).
+  - `distribution`: Java [distribution](#supported-distributions). Required unless `java-version-file` points to `.sdkmanrc` with a recognized distribution suffix (for example `java=21.0.5-tem`).
 
   - `java-package`: The packaging variant of the chosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
 
