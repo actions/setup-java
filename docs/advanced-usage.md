@@ -294,6 +294,8 @@ steps:
 
 In this example, `JAVA_HOME` and `java` on `PATH` point to Java 17, while Java 21 is available via `JAVA_HOME_21_X64` or the step output `path`.
 
+> **Note:** When a single step installs multiple JDKs via a multiline `java-version`, the `set-default` value applies to all of them. With `set-default: false`, none of those JDKs become the default; each remains discoverable through its `JAVA_HOME_<major>_<arch>` variable. Regardless of `set-default`, installed JDKs are still registered in the Maven toolchains file, so they can be selected via Maven toolchains.
+
 ## Installing Java from local file
 If your use-case requires a custom distribution or a version that is not provided by setup-java, you can download it manually and setup-java will take care of the installation and caching on the VM:
 
