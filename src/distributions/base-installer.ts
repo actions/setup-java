@@ -292,7 +292,9 @@ export abstract class JavaBase {
       }
     }
 
-    return new Error(parts.join('\n'));
+    const error = new Error(parts.join('\n'));
+    error.name = 'VersionNotFoundError';
+    return error;
   }
 
   protected setJavaDefault(version: string, toolPath: string) {
