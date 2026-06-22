@@ -61,7 +61,7 @@ steps:
   with:
     distribution: 'zulu'
     java-version: '21'
-    java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
+    java-package: jdk # optional (jdk, jre, jdk+fx, jre+fx, jdk+crac or jre+crac) - defaults to jdk
 - run: java -cp java HelloWorldApp
 ```
 

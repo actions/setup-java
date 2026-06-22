@@ -100,6 +100,7 @@ export class ZuluDistribution extends JavaBase {
     const platform = this.getPlatformOption();
     const extension = getDownloadArchiveExtension();
     const javafx = features?.includes('fx') ?? false;
+    const crac = features?.includes('crac') ?? false;
     const releaseStatus = this.stable ? 'ga' : 'ea';
 
     if (core.isDebug()) {
@@ -111,6 +112,7 @@ export class ZuluDistribution extends JavaBase {
       `archive_type=${extension}`,
       `java_package_type=${bundleType}`,
       `javafx_bundled=${javafx}`,
+      `crac_supported=${crac}`,
       `arch=${arch}`,
       `release_status=${releaseStatus}`,
       `availability_types=ca`
