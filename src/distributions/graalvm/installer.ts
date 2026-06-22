@@ -182,8 +182,8 @@ export class GraalVMDistribution extends JavaBase {
     return {
       arch,
       platform,
-      extension,
-      major
+      major,
+      extension
     };
   }
 

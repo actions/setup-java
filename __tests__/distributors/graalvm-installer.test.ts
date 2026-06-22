@@ -1054,12 +1054,20 @@ describe('GraalVMDistribution', () => {
       });
     });
 
-    describe('distribution factory', () => {
-      it('should map graalvm-community to the community installer', () => {
-        const community = getJavaDistribution('graalvm-community', defaultOptions);
+  });
 
-        expect(community).toBeInstanceOf(GraalVMCommunityDistribution);
-      });
+  describe('distribution factory', () => {
+    const defaultOptions: JavaInstallerOptions = {
+      version: '17',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    };
+
+    it('should map graalvm-community to the community installer', () => {
+      const community = getJavaDistribution('graalvm-community', defaultOptions);
+
+      expect(community).toBeInstanceOf(GraalVMCommunityDistribution);
     });
   });
 });
