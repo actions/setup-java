@@ -38,7 +38,7 @@ class EmptyJavaBase extends JavaBase {
   ): Promise<JavaDownloadRelease> {
     const availableVersion = '11.0.9';
     if (!semver.satisfies(availableVersion, range)) {
-      throw new Error('Available version not found');
+      throw this.createVersionNotFoundError(range, [availableVersion]);
     }
 
     return {
@@ -248,6 +248,7 @@ describe('setupJava', () => {
   let spyCoreExportVariable: jest.SpyInstance;
   let spyCoreAddPath: jest.SpyInstance;
   let spyCoreSetOutput: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     spyGetToolcachePath = jest.spyOn(util, 'getToolcachePath');
@@ -286,6 +287,10 @@ describe('setupJava', () => {
 
     spyCoreSetOutput = jest.spyOn(core, 'setOutput');
     spyCoreSetOutput.mockImplementation(() => undefined);
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => undefined);
 
     jest.spyOn(os, 'arch').mockReturnValue('x86' as ReturnType<typeof os.arch>);
   });
@@ -530,19 +535,16 @@ describe('setupJava', () => {
         checkLatest: false
       }
     ]
-  ])(
-    'should throw an error for Available version not found for %s',
-    async input => {
-      mockJavaBase = new EmptyJavaBase(input);
-      await expect(mockJavaBase.setupJava()).rejects.toThrow(
-        'Available version not found'
-      );
-      expect(spyTcFindAllVersions).toHaveBeenCalled();
-      expect(spyCoreAddPath).not.toHaveBeenCalled();
-      expect(spyCoreExportVariable).not.toHaveBeenCalled();
-      expect(spyCoreSetOutput).not.toHaveBeenCalled();
-    }
-  );
+  ])('should throw an error for version not found for %s', async input => {
+    mockJavaBase = new EmptyJavaBase(input);
+    await expect(mockJavaBase.setupJava()).rejects.toThrow(
+      `No matching version found for SemVer '${input.version}'`
+    );
+    expect(spyTcFindAllVersions).toHaveBeenCalled();
+    expect(spyCoreAddPath).not.toHaveBeenCalled();
+    expect(spyCoreExportVariable).not.toHaveBeenCalled();
+    expect(spyCoreSetOutput).not.toHaveBeenCalled();
+  });
 });
 
 describe('normalizeVersion', () => {
@@ -567,6 +569,97 @@ describe('normalizeVersion', () => {
     ).toThrow(
       `The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`
     );
+  });
+});
+
+describe('createVersionNotFoundError', () => {
+  it('should include all required fields in error message without available versions', () => {
+    const mockJavaBase = new EmptyJavaBase({
+      version: '17.0.5',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    const error = (mockJavaBase as any).createVersionNotFoundError('17.0.5');
+
+    expect(error.message).toContain(
+      "No matching version found for SemVer '17.0.5'"
+    );
+    expect(error.message).toContain('Distribution: Empty');
+    expect(error.message).toContain('Package type: jdk');
+    expect(error.message).toContain('Architecture: x64');
+  });
+
+  it('should include available versions when provided', () => {
+    const mockJavaBase = new EmptyJavaBase({
+      version: '17.0.5',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    const availableVersions = ['11.0.1', '11.0.2', '17.0.1', '17.0.2'];
+    const error = (mockJavaBase as any).createVersionNotFoundError(
+      '17.0.5',
+      availableVersions
+    );
+
+    expect(error.message).toContain(
+      "No matching version found for SemVer '17.0.5'"
+    );
+    expect(error.message).toContain('Distribution: Empty');
+    expect(error.message).toContain('Package type: jdk');
+    expect(error.message).toContain('Architecture: x64');
+    expect(error.message).toContain(
+      'Available versions: 11.0.1, 11.0.2, 17.0.1, 17.0.2'
+    );
+  });
+
+  it('should truncate available versions when there are many', () => {
+    const mockJavaBase = new EmptyJavaBase({
+      version: '17.0.5',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    // Create 60 versions to test truncation
+    const availableVersions = Array.from({length: 60}, (_, i) => `11.0.${i}`);
+    const error = (mockJavaBase as any).createVersionNotFoundError(
+      '17.0.5',
+      availableVersions
+    );
+
+    expect(error.message).toContain('Available versions:');
+    expect(error.message).toContain('...');
+    expect(error.message).toContain('(showing first 50 of 60 versions');
+  });
+
+  it('should include additional context when provided', () => {
+    const mockJavaBase = new EmptyJavaBase({
+      version: '17.0.5',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    const availableVersions = ['11.0.1', '11.0.2'];
+    const additionalContext = 'Platform: linux';
+    const error = (mockJavaBase as any).createVersionNotFoundError(
+      '17.0.5',
+      availableVersions,
+      additionalContext
+    );
+
+    expect(error.message).toContain(
+      "No matching version found for SemVer '17.0.5'"
+    );
+    expect(error.message).toContain('Distribution: Empty');
+    expect(error.message).toContain('Package type: jdk');
+    expect(error.message).toContain('Architecture: x64');
+    expect(error.message).toContain('Platform: linux');
+    expect(error.message).toContain('Available versions: 11.0.1, 11.0.2');
   });
 });
 

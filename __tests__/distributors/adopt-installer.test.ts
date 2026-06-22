@@ -4,14 +4,18 @@ import {
   AdoptDistribution,
   AdoptImplementation
 } from '../../src/distributions/adopt/installer';
+import {TemurinDistribution} from '../../src/distributions/temurin/installer';
 import {JavaInstallerOptions} from '../../src/distributions/base-models';
 
 import os from 'os';
 
 import manifestData from '../data/adopt.json';
+import * as core from '@actions/core';
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
+  let spyCoreWarning: jest.SpyInstance;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -20,6 +24,12 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: []
     });
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
+    spyCoreWarning = jest.spyOn(core, 'warning');
+    spyCoreWarning.mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -130,22 +140,19 @@ describe('getAvailableVersions', () => {
   );
 
   it('load available versions', async () => {
+    const nextPageUrl =
+      'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D?page=1&page_size=20';
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
     spyHttpClient
       .mockReturnValueOnce({
         statusCode: 200,
-        headers: {},
+        headers: {link: `<${nextPageUrl}>; rel="next"`},
         result: manifestData as any
       })
       .mockReturnValueOnce({
         statusCode: 200,
         headers: {},
         result: manifestData as any
-      })
-      .mockReturnValueOnce({
-        statusCode: 200,
-        headers: {},
-        result: []
       });
 
     const distribution = new AdoptDistribution(
@@ -160,6 +167,34 @@ describe('getAvailableVersions', () => {
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).not.toBeNull();
     expect(availableVersions.length).toBe(manifestData.length * 2);
+    expect(spyHttpClient).toHaveBeenNthCalledWith(2, nextPageUrl);
+  });
+
+  it('stops pagination after 1000 pages as a safeguard', async () => {
+    const nextPageUrl =
+      'https://api.adoptopenjdk.net/v3/assets/version/%5B1.0,100.0%5D?page=2&page_size=20';
+    spyHttpClient.mockReturnValue({
+      statusCode: 200,
+      headers: {link: `<${nextPageUrl}>; rel="next"`},
+      result: [{version_data: {semver: '17.0.1'}, binaries: []}] as any
+    });
+
+    const distribution = new AdoptDistribution(
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
+      AdoptImplementation.Hotspot
+    );
+
+    await distribution['getAvailableVersions']();
+
+    expect(spyHttpClient).toHaveBeenCalledTimes(1000);
+    expect(spyCoreWarning).toHaveBeenCalledWith(
+      expect.stringContaining('Reached pagination safeguard limit (1000 pages)')
+    );
   });
 
   it.each([
@@ -222,6 +257,38 @@ describe('getAvailableVersions', () => {
 });
 
 describe('findPackageForDownload', () => {
+  it('returns Temurin result and does not query Adopt API when Temurin succeeds', async () => {
+    const temurinRelease = {
+      version: '11.0.31+11',
+      url: 'https://example.test/temurin-11.tar.gz'
+    };
+    const temurinFindPackageForDownload = jest
+      .fn()
+      .mockResolvedValue(temurinRelease);
+    const temurinDistribution = {
+      findPackageForDownload: temurinFindPackageForDownload
+    } as unknown as TemurinDistribution;
+
+    const distribution = new AdoptDistribution(
+      {
+        version: '11',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
+      AdoptImplementation.Hotspot,
+      temurinDistribution
+    );
+    const adoptLookupSpy = jest.fn();
+    distribution['getAvailableVersions'] = adoptLookupSpy;
+
+    const resolvedVersion = await distribution['findPackageForDownload']('11');
+
+    expect(resolvedVersion).toEqual(temurinRelease);
+    expect(temurinFindPackageForDownload).toHaveBeenCalledWith('11');
+    expect(adoptLookupSpy).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['9', '9.0.7+10'],
     ['15', '15.0.2+7'],
@@ -244,6 +311,11 @@ describe('findPackageForDownload', () => {
       },
       AdoptImplementation.Hotspot
     );
+    // Mock Temurin to fail so fallback to AdoptOpenJDK is tested
+    distribution['temurinDistribution']!['findPackageForDownload'] =
+      async () => {
+        throw new Error('No matching version found for SemVer');
+      };
     distribution['getAvailableVersions'] = async () => manifestData as any;
     const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
@@ -259,10 +331,15 @@ describe('findPackageForDownload', () => {
       },
       AdoptImplementation.Hotspot
     );
+    // Mock Temurin to fail so fallback to AdoptOpenJDK is tested
+    distribution['temurinDistribution']!['findPackageForDownload'] =
+      async () => {
+        throw new Error('No matching version found for SemVer');
+      };
     distribution['getAvailableVersions'] = async () => manifestData as any;
     await expect(
       distribution['findPackageForDownload']('9.0.8')
-    ).rejects.toThrow(/Could not find satisfied version for SemVer */);
+    ).rejects.toThrow(/No matching version found for SemVer */);
   });
 
   it('version is not found', async () => {
@@ -275,9 +352,14 @@ describe('findPackageForDownload', () => {
       },
       AdoptImplementation.Hotspot
     );
+    // Mock Temurin to fail so fallback to AdoptOpenJDK is tested
+    distribution['temurinDistribution']!['findPackageForDownload'] =
+      async () => {
+        throw new Error('No matching version found for SemVer');
+      };
     distribution['getAvailableVersions'] = async () => manifestData as any;
     await expect(distribution['findPackageForDownload']('7.x')).rejects.toThrow(
-      /Could not find satisfied version for SemVer */
+      /No matching version found for SemVer */
     );
   });
 
@@ -291,9 +373,14 @@ describe('findPackageForDownload', () => {
       },
       AdoptImplementation.Hotspot
     );
+    // Mock Temurin to fail so fallback to AdoptOpenJDK is tested
+    distribution['temurinDistribution']!['findPackageForDownload'] =
+      async () => {
+        throw new Error('No matching version found for SemVer');
+      };
     distribution['getAvailableVersions'] = async () => [];
     await expect(distribution['findPackageForDownload']('11')).rejects.toThrow(
-      /Could not find satisfied version for SemVer */
+      /No matching version found for SemVer */
     );
   });
 });

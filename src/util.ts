@@ -55,6 +55,14 @@ export function getDownloadArchiveExtension() {
 }
 
 export function isVersionSatisfies(range: string, version: string): boolean {
+  // Some distributions (e.g. JetBrains Runtime) publish 4-segment versions
+  // like '17.0.8.1+1080.1' that semver rejects. If the candidate version
+  // isn't valid semver, it can't match — bail out rather than letting
+  // compareBuild / satisfies throw.
+  if (!semver.valid(version)) {
+    return false;
+  }
+
   if (semver.valid(range)) {
     // if full version with build digit is provided as a range (such as '1.2.3+4')
     // we should check for exact equal via compareBuild
@@ -199,6 +207,55 @@ export function getGitHubHttpHeaders(): OutgoingHttpHeaders {
     headers.authorization = auth;
   }
   return headers;
+}
+
+export const MAX_PAGINATION_PAGES = 1000;
+
+export function getNextPageUrlFromLinkHeader(
+  headers?: Record<string, string | string[] | undefined>
+): string | null {
+  if (!headers) {
+    return null;
+  }
+
+  const linkHeader = headers.link ?? headers.Link;
+  if (!linkHeader) {
+    return null;
+  }
+
+  const normalizedLinkHeader = Array.isArray(linkHeader)
+    ? linkHeader.join(',')
+    : linkHeader;
+
+  // Split into individual link-values and find the one with rel="next"
+  // RFC 8288 allows rel to appear anywhere among the parameters
+  const linkValues = normalizedLinkHeader.split(/,(?=\s*<)/);
+  for (const linkValue of linkValues) {
+    const urlMatch = linkValue.match(/<([^>]+)>/);
+    if (!urlMatch) continue;
+
+    const params = linkValue.slice(urlMatch[0].length);
+    // Use word boundary to match "next" as a standalone relation type
+    // RFC 8288 allows space-separated relation types like rel="next prev"
+    if (/;\s*rel="?[^"]*\bnext\b/i.test(params)) {
+      return urlMatch[1];
+    }
+  }
+
+  return null;
+}
+
+export function validatePaginationUrl(
+  url: string,
+  allowedOrigin: string
+): boolean {
+  try {
+    const parsed = new URL(url);
+    const allowed = new URL(allowedOrigin);
+    return parsed.origin === allowed.origin;
+  } catch {
+    return false;
+  }
 }
 
 // Rename archive to add extension because after downloading

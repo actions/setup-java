@@ -49,9 +49,10 @@ export class SapMachineDistribution extends JavaBase {
       });
 
     if (!matchedVersions.length) {
-      throw new Error(
-        `Couldn't find any satisfied version for the specified java-version: "${version}" and architecture: "${this.architecture}".`
+      const availableVersionStrings = availableVersions.map(
+        item => item.version
       );
+      throw this.createVersionNotFoundError(version, availableVersionStrings);
     }
 
     const resolvedVersion = matchedVersions[0];

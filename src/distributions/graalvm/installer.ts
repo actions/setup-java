@@ -18,6 +18,7 @@ import {
 } from '../../util';
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm';
+const GRAALVM_DOWNLOAD_URL = 'https://www.graalvm.org/downloads/';
 const IS_WINDOWS = process.platform === 'win32';
 const GRAALVM_PLATFORM = IS_WINDOWS ? 'windows' : process.platform;
 const GRAALVM_MIN_VERSION = 17;
@@ -149,9 +150,10 @@ export class GraalVMDistribution extends JavaBase {
     const statusCode = response.message.statusCode;
 
     if (statusCode === HttpCodes.NotFound) {
-      throw new Error(
-        `Could not find GraalVM for SemVer ${range}. Please check if this version is available at ${GRAALVM_DL_BASE}`
-      );
+      // Create the standard error with additional hint about checking the download URL
+      const error = this.createVersionNotFoundError(range);
+      error.message += `\nPlease check if this version is available at ${GRAALVM_DOWNLOAD_URL} . Pick a version from the list.`;
+      throw error;
     }
 
     if (
@@ -180,10 +182,12 @@ export class GraalVMDistribution extends JavaBase {
 
     const latestVersion = versions.find(v => v.latest);
     if (!latestVersion) {
-      core.error(
-        `Available versions: ${versions.map(v => v.version).join(', ')}`
+      const availableVersions = versions.map(v => v.version);
+      throw this.createVersionNotFoundError(
+        javaEaVersion,
+        availableVersions,
+        'Note: No EA build is marked as latest for this version.'
       );
-      throw new Error(`Unable to find latest version for '${javaEaVersion}'`);
     }
 
     core.debug(`Latest version found: ${latestVersion.version}`);
