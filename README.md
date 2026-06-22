@@ -25,13 +25,6 @@ This action allows you to work with Java and Scala projects.
 
 For more details,  see the full release notes on the [releases page](https://github.com/actions/setup-java/releases/tag/v5.0.0)
 
-## V2 vs V1
-
-- V2 supports custom distributions and provides support for Azul Zulu OpenJDK, Eclipse Temurin and AdoptOpenJDK  out of the box. V1 supports only Azul Zulu OpenJDK.
-- V2 requires you to specify distribution along with the version. V1 defaults to Azul Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2.
-
-For information about the latest releases, recent updates, and newly supported distributions, please refer to the `setup-java` [Releases](https://github.com/actions/setup-java/releases).
-
 ## Usage
 
   - `java-version`: The Java version that is going to be set up. Takes a whole or [semver](#supported-version-syntax) Java version. If not specified, the action will expect `java-version-file` input to be specified.
@@ -44,7 +37,7 @@ For information about the latest releases, recent updates, and newly supported d
 
   - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
 
-  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM.
+  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM. Note: `distribution` must be set to 'jdkfile' (case-sensitive; all lowercase) when using this option.
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
@@ -98,8 +91,8 @@ steps:
 ```
 
 #### Supported version syntax
-The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
-- major versions: `8`, `11`, `16`, `17`, `21`, `25`
+The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation. The values below are examples, not an exhaustive list:
+- major versions, such as: `8`, `11`, `16`, `17`, `21`, `25`
 - more specific versions: `8.0.282+8`, `8.0.232`, `11.0`, `11.0.4`, `17.0`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`
 
@@ -121,6 +114,7 @@ Currently, the following distributions are supported:
 | `graalvm` | [Oracle GraalVM](https://www.graalvm.org/) | [`graalvm` license](https://www.oracle.com/downloads/licenses/graal-free-license.html)
 | `graalvm-community` | [GraalVM Community](https://github.com/graalvm/graalvm-ce-builds/releases) | [`graalvm-community` license](https://github.com/oracle/graal/blob/master/LICENSE)
 | `jetbrains` | [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime/) | [`jetbrains` license](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE)
+| `jdkfile` | Custom JDK Installation | |
 
 > [!NOTE]
 > - The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
@@ -293,6 +287,15 @@ In the example above multiple JDKs are installed for the same job. The result af
 - [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](docs/advanced-usage.md#Modifying-Maven-Toolchains)
 - [Java Version File](docs/advanced-usage.md#Java-version-file)
+
+## V2 vs V1
+
+Examples in this README use `actions/setup-java@v5`, but the main migration note from V1 still applies to all later major versions (`v2`, `v3`, `v4`, and `v5`):
+
+- Starting with V2, the action supports custom distributions. V1 supports only Azul Zulu OpenJDK.
+- Starting with V2, you must specify distribution along with the version. V1 defaults to Azul Zulu OpenJDK, so only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2.
+
+For information about the latest releases, recent updates, and newly supported distributions, please refer to the `setup-java` [Releases](https://github.com/actions/setup-java/releases).
 
 ## Recommended permissions
 
