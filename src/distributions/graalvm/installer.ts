@@ -381,7 +381,11 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
     const versions = new Map<string, JavaDownloadRelease>();
     let releasesUrl: string | null = GRAALVM_COMMUNITY_RELEASES_URL;
 
-    for (let page = 0; releasesUrl && page < MAX_PAGINATION_PAGES; page++) {
+    for (
+      let pageIndex = 0;
+      releasesUrl && pageIndex < MAX_PAGINATION_PAGES;
+      pageIndex++
+    ) {
       const response = await this.http.getJson<GraalVMCommunityRelease[]>(
         releasesUrl,
         headers
