@@ -310,16 +310,9 @@ export abstract class JavaBase {
   }
 
   protected setJavaDefault(version: string, toolPath: string) {
-    const majorVersion = version.split('.')[0];
     core.exportVariable('JAVA_HOME', toolPath);
     core.addPath(path.join(toolPath, 'bin'));
-    core.setOutput('distribution', this.distribution);
-    core.setOutput('path', toolPath);
-    core.setOutput('version', version);
-    core.exportVariable(
-      `JAVA_HOME_${majorVersion}_${this.architecture.toUpperCase()}`,
-      toolPath
-    );
+    this.setJavaEnvironment(version, toolPath);
   }
 
   protected setJavaEnvironment(version: string, toolPath: string) {
