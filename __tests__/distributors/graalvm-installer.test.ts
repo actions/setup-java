@@ -1053,21 +1053,21 @@ describe('GraalVMDistribution', () => {
         ).rejects.toThrow('GraalVM Community does not provide early access builds');
       });
     });
-
   });
 
-  describe('distribution factory', () => {
-    const defaultOptions: JavaInstallerOptions = {
-      version: '17',
-      architecture: 'x64',
-      packageType: 'jdk',
-      checkLatest: false
-    };
+});
 
-    it('should map graalvm-community to the community installer', () => {
-      const community = getJavaDistribution('graalvm-community', defaultOptions);
+describe('distribution factory', () => {
+  const defaultOptions: JavaInstallerOptions = {
+    version: '17',
+    architecture: 'x64',
+    packageType: 'jdk',
+    checkLatest: false
+  };
 
-      expect(community).toBeInstanceOf(GraalVMCommunityDistribution);
-    });
+  it('should map graalvm-community to the community installer', () => {
+    const community = getJavaDistribution('graalvm-community', defaultOptions);
+
+    expect(community).toBeInstanceOf(GraalVMCommunityDistribution);
   });
 });

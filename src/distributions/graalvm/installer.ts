@@ -151,13 +151,10 @@ export class GraalVMDistribution extends JavaBase {
   }
 
   protected validateStableBuildRequest(range: string): {
-    arch: SupportedArchitecture;
     platform: OsVersions;
     extension: string;
     major: string;
   } {
-    const arch = this.getSupportedArchitecture();
-
     if (this.packageType !== 'jdk') {
       throw new Error(
         `${this.distribution} provides only the \`jdk\` package type`
@@ -180,7 +177,6 @@ export class GraalVMDistribution extends JavaBase {
     }
 
     return {
-      arch,
       platform,
       major,
       extension
@@ -352,7 +348,8 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
       throw new Error('GraalVM Community does not provide early access builds');
     }
 
-    const {arch, platform, extension} = this.validateStableBuildRequest(range);
+    const arch = this.getSupportedArchitecture();
+    const {platform, extension} = this.validateStableBuildRequest(range);
     const availableVersions = await this.getAvailableVersionsForPlatform(
       platform,
       arch,
@@ -393,7 +390,9 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
         headers
       );
 
-      for (const release of response.result ?? []) {
+      const releases = Array.isArray(response.result) ? response.result : [];
+
+      for (const release of releases) {
         if (release.draft || release.prerelease) {
           continue;
         }
@@ -427,7 +426,7 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
 
       releasesUrl = nextUrl;
 
-      if (!response.result || response.result.length === 0) {
+      if (releases.length === 0) {
         break;
       }
 
