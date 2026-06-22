@@ -2,7 +2,8 @@ name: 'Publish Immutable Action Version'
 
 on:
   release:
-    types: [published]
+    types: [released]
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -14,7 +15,7 @@ jobs:
 
     steps:
       - name: Checking out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Publish
         id: publish
-        uses: actions/publish-immutable-action@0.0.3
+        uses: actions/publish-immutable-action@v0.0.4

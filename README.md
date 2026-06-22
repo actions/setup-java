@@ -18,10 +18,19 @@ The `setup-java` action provides the following functionality for GitHub Actions 
 
 This action allows you to work with Java and Scala projects.
 
+## Breaking changes in V5
+
+- Upgraded action from node20 to node24
+  > Make sure your runner is on version v2.327.1 or later to ensure compatibility with this release [Release Notes](https://github.com/actions/runner/releases/tag/v2.327.1)
+
+For more details,  see the full release notes on the [releases page](https://github.com/actions/setup-java/releases/tag/v5.0.0)
+
 ## V2 vs V1
 
 - V2 supports custom distributions and provides support for Azul Zulu OpenJDK, Eclipse Temurin and AdoptOpenJDK  out of the box. V1 supports only Azul Zulu OpenJDK.
 - V2 requires you to specify distribution along with the version. V1 defaults to Azul Zulu OpenJDK, only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2.
+
+For information about the latest releases, recent updates, and newly supported distributions, please refer to the `setup-java` [Releases](https://github.com/actions/setup-java/releases).
 
 ## Usage
 
@@ -69,28 +78,28 @@ This action allows you to work with Java and Scala projects.
 #### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
-    java-version: '21'
+    java-version: '25'
 - run: java HelloWorldApp.java
 ```
 
 #### Azul Zulu OpenJDK
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
-    java-version: '21'
+    java-version: '25'
 - run: java HelloWorldApp.java
 ```
 
 #### Supported version syntax
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation:
-- major versions: `8`, `11`, `16`, `17`, `21`
+- major versions: `8`, `11`, `16`, `17`, `21`, `25`
 - more specific versions: `8.0.282+8`, `8.0.232`, `11.0`, `11.0.4`, `17.0`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`
 
@@ -118,6 +127,12 @@ Currently, the following distributions are supported:
 
 **NOTE:** For Azul Zulu OpenJDK architectures x64 and arm64 are mapped to x86 / arm with proper hw_bitness.
 
+**NOTE:** To comply with the GraalVM Free Terms and Conditions (GFTC) license, it is recommended to use GraalVM JDK 17 version 17.0.12, as this is the only version of GraalVM JDK 17 available under the GFTC license. Additionally, it is encouraged to consider upgrading to GraalVM JDK 21, which offers the latest features and improvements.
+
+**NOTE:** Oracle JDK 17 licensing varies by patch level. As shown on the [JDK 17 Archive](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) (versions up to 17.0.12 are under the [NFTC](https://www.oracle.com/downloads/licenses/no-fee-license.html) license) and the [JDK 17.0.13+ Archive](https://www.oracle.com/java/technologies/javase/jdk17-0-13-later-archive-downloads.html) (versions 17.0.13 and later are under the [OTN](https://www.oracle.com/downloads/licenses/javase-license1.html) license). To stay on the free NFTC license, use `distribution: 'oracle'` with `java-version: '17.0.12'` (or earlier) instead of the floating `'17'`. Alternatively, upgrade to Oracle JDK 21+, which remains under the NFTC license.
+
+**NOTE:** On Ubuntu runners, commands executed via `sudo` do not inherit the `JAVA_HOME` and `PATH` set by `setup-java` and will fall back to the runner image's system-default JDK.
+
 ### Caching packages dependencies
 The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
 
@@ -134,26 +149,31 @@ The cache input is optional, and caching is turned off by default.
 #### Caching gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     cache: 'gradle'
     cache-dependency-path: | # optional
       sub-project/*.gradle*
       sub-project/**/gradle-wrapper.properties
 - run: ./gradlew build --no-daemon
 ```
+Using the `cache: gradle` provides a simple and effective way to cache Gradle dependencies with minimal configuration.
+
+For projects that require more advanced `Gradle` caching features, such as caching build outputs, support for Gradle configuration cache, encrypted cache storage, fine-grained cache control (including options to enable or disable the cache, set it to read-only or write-only, perform automated cleanup, and define custom cache rules), or optimized performance for complex CI workflows, consider using [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle).  
+
+For setup details and a comprehensive overview of all available features, visit the [setup-gradle documentation](https://github.com/gradle/actions/blob/main/docs/setup-gradle.md).
 
 #### Caching maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     cache: 'maven'
     cache-dependency-path: 'sub-project/pom.xml' # optional
 - name: Build with Maven
@@ -163,11 +183,11 @@ steps:
 #### Caching sbt dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     cache: 'sbt'
     cache-dependency-path: | # optional
       sub-project/build.sbt
@@ -183,11 +203,11 @@ Usually, cache gets downloaded in multiple segments of fixed sizes. Sometimes, a
 env:
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     cache: 'gradle'
 - run: ./gradlew build --no-daemon
 ```
@@ -203,11 +223,11 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 
 ```yaml
 steps:
-- uses: actions/checkout@v4
-- uses: actions/setup-java@v4
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
     check-latest: true
 - run: java HelloWorldApp.java
 ```
@@ -219,12 +239,12 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        java: [ '8', '11', '17', '21' ]
+        java: [ '8', '11', '17', '21', '25' ]
     name: Java ${{ matrix.Java }} sample
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
@@ -233,11 +253,11 @@ jobs:
 
 ### Install multiple JDKs
 
-All versions are added to the PATH. The last version will be used and available globally. Other Java versions can be accessed through env variables with such specification as 'JAVA_HOME_{{ MAJOR_VERSION }}_{{ ARCHITECTURE }}'.
+All configured Java versions are added to the PATH. The last one added to the PATH (i.e., the last JDK set up by this action) will be used as the default and available globally. Other Java versions can be accessed through environment variables such as 'JAVA_HOME_{{ MAJOR_VERSION }}_{{ ARCHITECTURE }}'. To use a specific Java version, set the JAVA_HOME environment variable accordingly and prepend its bin directory to the PATH to ensure it takes priority during execution.
 
 ```yaml
     steps:
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: '<distribution>'
           java-version: |
@@ -272,6 +292,15 @@ In the example above multiple JDKs are installed for the same job. The result af
 - [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](docs/advanced-usage.md#Modifying-Maven-Toolchains)
 - [Java Version File](docs/advanced-usage.md#Java-version-file)
+
+## Recommended permissions
+
+When using the `setup-java` action in your GitHub Actions workflow, it is recommended to set the following permissions to ensure proper functionality:
+
+```yaml
+permissions:
+  contents: read # access to check out code and install dependencies
+```
 
 ## License
 

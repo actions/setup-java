@@ -59,9 +59,8 @@ export async function createToolchainsSettings({
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
   await io.mkdirP(settingsDirectory);
-  const originalToolchains = await readExistingToolchainsFile(
-    settingsDirectory
-  );
+  const originalToolchains =
+    await readExistingToolchainsFile(settingsDirectory);
   const updatedToolchains = generateToolchainDefinition(
     originalToolchains,
     jdkInfo.version,
