@@ -358,7 +358,7 @@ jobs:
         server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
 
     - name: Publish to Apache Maven Central
-      run: mvn deploy -Dgpg.signer=bc
+      run: mvn deploy -Dgpg.signer=bc # requires maven-gpg-plugin >= 3.2.0 (bc signer support)
       env:
         MAVEN_USERNAME: maven_username123
         MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
