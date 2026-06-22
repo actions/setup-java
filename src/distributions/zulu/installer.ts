@@ -118,15 +118,18 @@ export class ZuluDistribution extends JavaBase {
       `availability_types=ca`
     ].join('&');
 
-    // need to iterate through all pages to retrieve the list of all versions
-    // Azul API doesn't provide a way to retrieve the count of pages so use an infinity loop
-    let page_index = 1;
+    // Need to iterate through all pages to retrieve the list of all versions.
+    // The Azul API doesn't return a total page count, so paginate until a page
+    // comes back empty (or short), guarding against a runaway loop with a cap.
+    const pageSize = 100;
+    const maxPages = 100;
+    let pageIndex = 1;
     const availableVersions: IZuluVersions[] = [];
-    while (true) {
-      const requestArguments = `${baseRequestArguments}&page=${page_index}&page_size=100`;
+    while (pageIndex <= maxPages) {
+      const requestArguments = `${baseRequestArguments}&page=${pageIndex}&page_size=${pageSize}`;
       const availableVersionsUrl = `https://api.azul.com/metadata/v1/zulu/packages/?${requestArguments}`;
-      if (core.isDebug() && page_index === 1) {
-        // url is identical except page_index so print it once for debug
+      if (core.isDebug() && pageIndex === 1) {
+        // the url is identical except for the page number, so print it once for debug
         core.debug(
           `Gathering available versions from '${availableVersionsUrl}'`
         );
@@ -135,13 +138,25 @@ export class ZuluDistribution extends JavaBase {
       const paginationPage = (
         await this.http.getJson<IZuluVersions[]>(availableVersionsUrl)
       ).result;
-      if (paginationPage === null || paginationPage.length === 0) {
-        // break infinity loop because we have reached end of pagination
+      if (!paginationPage || paginationPage.length === 0) {
+        // stop paginating because we have reached the end of the results
         break;
       }
 
       availableVersions.push(...paginationPage);
-      page_index++;
+
+      if (paginationPage.length < pageSize) {
+        // a short page means this was the last one; avoid an extra empty request
+        break;
+      }
+
+      pageIndex++;
+    }
+
+    if (pageIndex > maxPages) {
+      core.warning(
+        `Reached the maximum of ${maxPages} pages while listing Zulu versions; results may be truncated.`
+      );
     }
 
     if (core.isDebug()) {
