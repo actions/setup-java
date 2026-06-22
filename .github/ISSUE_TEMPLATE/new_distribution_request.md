@@ -1,8 +1,8 @@
 ---
 name: New Java distribution template
-about: Suggest a new Java distribution request
+about: Suggest a new Java distribution
 title: ''
-labels: new-distribution
+labels: feature request, needs triage
 assignees: ''
 ---
 
@@ -13,10 +13,10 @@ Describe your proposal.
 Justification or a use case for your proposal.
 
 **Download URL:**
-Download URL for a new distribution
+Download URL for the new distribution.
 
 **License:**
-Link for license for a new distribution 
+Link to the license for the new distribution.
 
 **Are you willing to submit a PR?**
 <!--- We accept contributions! -->

@@ -5,7 +5,7 @@ Describe your changes.
 Add link to the related issue.
 
 **Download URL:**
-Download URL for a new distribution
+Download URL for the new distribution.
 
 **License:**
 Link to the license for the new distribution.
