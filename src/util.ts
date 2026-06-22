@@ -6,16 +6,19 @@ import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
-import { INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION } from './constants';
+import {INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION} from './constants';
+import {OutgoingHttpHeaders} from 'http';
 
 export function getTempDir() {
-  let tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
+  const tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
 
   return tempDirectory;
 }
 
-export function getBooleanInput(inputName: string, defaultValue: boolean = false) {
-  return (core.getInput(inputName) || String(defaultValue)).toUpperCase() === 'TRUE';
+export function getBooleanInput(inputName: string, defaultValue = false) {
+  return (
+    (core.getInput(inputName) || String(defaultValue)).toUpperCase() === 'TRUE'
+  );
 }
 
 export function getVersionFromToolcachePath(toolPath: string) {
@@ -28,7 +31,9 @@ export function getVersionFromToolcachePath(toolPath: string) {
 
 export async function extractJdkFile(toolPath: string, extension?: string) {
   if (!extension) {
-    extension = toolPath.endsWith('.tar.gz') ? 'tar.gz' : path.extname(toolPath);
+    extension = toolPath.endsWith('.tar.gz')
+      ? 'tar.gz'
+      : path.extname(toolPath);
     if (extension.startsWith('.')) {
       extension = extension.substring(1);
     }
@@ -50,6 +55,14 @@ export function getDownloadArchiveExtension() {
 }
 
 export function isVersionSatisfies(range: string, version: string): boolean {
+  // Some distributions (e.g. JetBrains Runtime) publish 4-segment versions
+  // like '17.0.8.1+1080.1' that semver rejects. If the candidate version
+  // isn't valid semver, it can't match — bail out rather than letting
+  // compareBuild / satisfies throw.
+  if (!semver.valid(version)) {
+    return false;
+  }
+
   if (semver.valid(range)) {
     // if full version with build digit is provided as a range (such as '1.2.3+4')
     // we should check for exact equal via compareBuild
@@ -63,7 +76,11 @@ export function isVersionSatisfies(range: string, version: string): boolean {
   return semver.satisfies(version, range);
 }
 
-export function getToolcachePath(toolName: string, version: string, architecture: string) {
+export function getToolcachePath(
+  toolName: string,
+  version: string,
+  architecture: string
+) {
   const toolcacheRoot = process.env['RUNNER_TOOL_CACHE'] ?? '';
   const fullPath = path.join(toolcacheRoot, toolName, version, architecture);
   if (fs.existsSync(fullPath)) {
@@ -80,44 +97,74 @@ export function isJobStatusSuccess() {
 }
 
 export function isGhes(): boolean {
-  const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
-  return ghUrl.hostname.toUpperCase() !== 'GITHUB.COM';
+  const ghUrl = new URL(
+    process.env['GITHUB_SERVER_URL'] || 'https://github.com'
+  );
+
+  const hostname = ghUrl.hostname.trimEnd().toUpperCase();
+  const isGitHubHost = hostname === 'GITHUB.COM';
+  const isGitHubEnterpriseCloudHost = hostname.endsWith('.GHE.COM');
+  const isLocalHost = hostname.endsWith('.LOCALHOST');
+
+  return !isGitHubHost && !isGitHubEnterpriseCloudHost && !isLocalHost;
 }
 
 export function isCacheFeatureAvailable(): boolean {
-  if (!cache.isFeatureAvailable()) {
-    if (isGhes()) {
-      throw new Error(
-        'Caching is only supported on GHES version >= 3.5. If you are on a version >= 3.5, please check with your GHES admin if the Actions cache service is enabled or not.'
-      );
-    } else {
-      core.warning('The runner was not able to contact the cache service. Caching will be skipped');
-    }
+  if (cache.isFeatureAvailable()) {
+    return true;
+  }
 
+  if (isGhes()) {
+    core.warning(
+      'Caching is only supported on GHES version >= 3.5. If you are on a version >= 3.5, please check with your GHES admin if the Actions cache service is enabled or not.'
+    );
     return false;
   }
 
-  return true;
+  core.warning(
+    'The runner was not able to contact the cache service. Caching will be skipped'
+  );
+  return false;
 }
 
 export function getVersionFromFileContent(
   content: string,
-  distributionName: string
+  distributionName: string,
+  versionFile: string
 ): string | null {
-  const javaVersionRegExp = /(?<version>(?<=(^|\s|\-))(\d+\S*))(\s|$)/;
-  const fileContent = content.match(javaVersionRegExp)?.groups?.version
+  let javaVersionRegExp: RegExp;
+
+  function getFileName(versionFile: string) {
+    return path.basename(versionFile);
+  }
+
+  const versionFileName = getFileName(versionFile);
+  if (versionFileName == '.tool-versions') {
+    javaVersionRegExp =
+      /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
+  } else if (versionFileName == '.sdkmanrc') {
+    javaVersionRegExp = /^java\s*=\s*(?<version>[^-]+)/m;
+  } else {
+    javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+  }
+
+  const capturedVersion = content.match(javaVersionRegExp)?.groups?.version
     ? (content.match(javaVersionRegExp)?.groups?.version as string)
     : '';
-  if (!fileContent) {
+
+  core.debug(
+    `Parsed version '${capturedVersion}' from file '${versionFileName}'`
+  );
+  if (!capturedVersion) {
     return null;
   }
 
-  core.debug(`Version from file '${fileContent}'`);
-
-  const tentativeVersion = avoidOldNotation(fileContent);
+  const tentativeVersion = avoidOldNotation(capturedVersion);
   const rawVersion = tentativeVersion.split('-')[0];
 
-  let version = semver.validRange(rawVersion) ? tentativeVersion : semver.coerce(tentativeVersion);
+  let version = semver.validRange(rawVersion)
+    ? tentativeVersion
+    : semver.coerce(tentativeVersion);
 
   core.debug(`Range version from file is '${version}'`);
 
@@ -136,4 +183,88 @@ export function getVersionFromFileContent(
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
 function avoidOldNotation(content: string): string {
   return content.startsWith('1.') ? content.substring(2) : content;
+}
+
+export function convertVersionToSemver(version: number[] | string) {
+  // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1)
+  const versionArray = Array.isArray(version) ? version : version.split('.');
+  const mainVersion = versionArray.slice(0, 3).join('.');
+  if (versionArray.length > 3) {
+    return `${mainVersion}+${versionArray.slice(3).join('.')}`;
+  }
+  return mainVersion;
+}
+
+export function getGitHubHttpHeaders(): OutgoingHttpHeaders {
+  const resolvedToken = core.getInput('token') || process.env.GITHUB_TOKEN;
+  const auth = !resolvedToken ? undefined : `token ${resolvedToken}`;
+
+  const headers: OutgoingHttpHeaders = {
+    accept: 'application/vnd.github.VERSION.raw'
+  };
+
+  if (auth) {
+    headers.authorization = auth;
+  }
+  return headers;
+}
+
+export const MAX_PAGINATION_PAGES = 1000;
+
+export function getNextPageUrlFromLinkHeader(
+  headers?: Record<string, string | string[] | undefined>
+): string | null {
+  if (!headers) {
+    return null;
+  }
+
+  const linkHeader = headers.link ?? headers.Link;
+  if (!linkHeader) {
+    return null;
+  }
+
+  const normalizedLinkHeader = Array.isArray(linkHeader)
+    ? linkHeader.join(',')
+    : linkHeader;
+
+  // Split into individual link-values and find the one with rel="next"
+  // RFC 8288 allows rel to appear anywhere among the parameters
+  const linkValues = normalizedLinkHeader.split(/,(?=\s*<)/);
+  for (const linkValue of linkValues) {
+    const urlMatch = linkValue.match(/<([^>]+)>/);
+    if (!urlMatch) continue;
+
+    const params = linkValue.slice(urlMatch[0].length);
+    // Use word boundary to match "next" as a standalone relation type
+    // RFC 8288 allows space-separated relation types like rel="next prev"
+    if (/;\s*rel="?[^"]*\bnext\b/i.test(params)) {
+      return urlMatch[1];
+    }
+  }
+
+  return null;
+}
+
+export function validatePaginationUrl(
+  url: string,
+  allowedOrigin: string
+): boolean {
+  try {
+    const parsed = new URL(url);
+    const allowed = new URL(allowedOrigin);
+    return parsed.origin === allowed.origin;
+  } catch {
+    return false;
+  }
+}
+
+// Rename archive to add extension because after downloading
+// archive does not contain extension type and it leads to some issues
+// on Windows runners without PowerShell Core.
+//
+// For default PowerShell Windows it should contain extension type to unpack it.
+export function renameWinArchive(javaArchivePath: string): string {
+  const javaArchivePathRenamed = `${javaArchivePath}.zip`;
+  fs.renameSync(javaArchivePath, javaArchivePathRenamed);
+  return javaArchivePathRenamed;
 }

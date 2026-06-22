@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as io from '@actions/io';
 import * as exec from '@actions/exec';
 import * as util from './util';
-import { ExecOptions } from '@actions/exec/lib/interfaces';
+import {ExecOptions} from '@actions/exec/lib/interfaces';
 
 export const PRIVATE_KEY_FILE = path.join(util.getTempDir(), 'private-key.asc');
 
@@ -28,7 +28,13 @@ export async function importKey(privateKey: string) {
 
   await exec.exec(
     'gpg',
-    ['--batch', '--import-options', 'import-show', '--import', PRIVATE_KEY_FILE],
+    [
+      '--batch',
+      '--import-options',
+      'import-show',
+      '--import',
+      PRIVATE_KEY_FILE
+    ],
     options
   );
 
@@ -39,7 +45,11 @@ export async function importKey(privateKey: string) {
 }
 
 export async function deleteKey(keyFingerprint: string) {
-  await exec.exec('gpg', ['--batch', '--yes', '--delete-secret-and-public-key', keyFingerprint], {
-    silent: true
-  });
+  await exec.exec(
+    'gpg',
+    ['--batch', '--yes', '--delete-secret-and-public-key', keyFingerprint],
+    {
+      silent: true
+    }
+  );
 }

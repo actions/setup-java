@@ -5,10 +5,22 @@ import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
 
-import { JavaBase } from '../base-installer';
-import { ITemurinAvailableVersions } from './models';
-import { JavaDownloadRelease, JavaInstallerOptions, JavaInstallerResults } from '../base-models';
-import { extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies } from '../../util';
+import {JavaBase} from '../base-installer';
+import {ITemurinAvailableVersions} from './models';
+import {
+  JavaDownloadRelease,
+  JavaInstallerOptions,
+  JavaInstallerResults
+} from '../base-models';
+import {
+  extractJdkFile,
+  getNextPageUrlFromLinkHeader,
+  getDownloadArchiveExtension,
+  isVersionSatisfies,
+  renameWinArchive,
+  MAX_PAGINATION_PAGES,
+  validatePaginationUrl
+} from '../../util';
 
 export enum TemurinImplementation {
   Hotspot = 'Hotspot'
@@ -22,7 +34,12 @@ export class TemurinDistribution extends JavaBase {
     super(`Temurin-${jvmImpl}`, installerOptions);
   }
 
-  protected async findPackageForDownload(version: string): Promise<JavaDownloadRelease> {
+  /**
+   * @internal For cross-distribution reuse only. Not intended as a public API.
+   */
+  public async findPackageForDownload(
+    version: string
+  ): Promise<JavaDownloadRelease> {
     const availableVersionsRaw = await this.getAvailableVersions();
     const availableVersionsWithBinaries = availableVersionsRaw
       .filter(item => item.binaries.length > 0)
@@ -43,41 +60,45 @@ export class TemurinDistribution extends JavaBase {
         return -semver.compareBuild(a.version, b.version);
       });
 
-    const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
+    const resolvedFullVersion =
+      satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
     if (!resolvedFullVersion) {
-      const availableOptions = availableVersionsWithBinaries.map(item => item.version).join(', ');
-      const availableOptionsMessage = availableOptions
-        ? `\nAvailable versions: ${availableOptions}`
-        : '';
-      throw new Error(
-        `Could not find satisfied version for SemVer '${version}'. ${availableOptionsMessage}`
+      const availableVersionStrings = availableVersionsWithBinaries.map(
+        item => item.version
       );
+      throw this.createVersionNotFoundError(version, availableVersionStrings);
     }
 
     return resolvedFullVersion;
   }
 
-  protected async downloadTool(javaRelease: JavaDownloadRelease): Promise<JavaInstallerResults> {
-    let javaPath: string;
-    let extractedJavaPath: string;
-
+  protected async downloadTool(
+    javaRelease: JavaDownloadRelease
+  ): Promise<JavaInstallerResults> {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    const javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
-    let extension = getDownloadArchiveExtension();
-
-    extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
+    const extension = getDownloadArchiveExtension();
+    if (process.platform === 'win32') {
+      javaArchivePath = renameWinArchive(javaArchivePath);
+    }
+    const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
     const version = this.getToolcacheVersionName(javaRelease.version);
 
-    javaPath = await tc.cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
+    const javaPath = await tc.cacheDir(
+      archivePath,
+      this.toolcacheFolderName,
+      version,
+      this.architecture
+    );
 
-    return { version: javaRelease.version, path: javaPath };
+    return {version: javaRelease.version, path: javaPath};
   }
 
   protected get toolcacheFolderName(): string {
@@ -92,7 +113,7 @@ export class TemurinDistribution extends JavaBase {
     const releaseType = this.stable ? 'ga' : 'ea';
 
     if (core.isDebug()) {
-      console.time('temurin-retrieve-available-versions');
+      console.time('Retrieving available versions for Temurin took'); // eslint-disable-line no-console
     }
 
     const baseRequestArguments = [
@@ -108,35 +129,56 @@ export class TemurinDistribution extends JavaBase {
       `jvm_impl=${this.jvmImpl.toLowerCase()}`
     ].join('&');
 
-    // need to iterate through all pages to retrieve the list of all versions
-    // Adoptium API doesn't provide way to retrieve the count of pages to iterate so infinity loop
-    let page_index = 0;
+    const requestArguments = `${baseRequestArguments}&page_size=20&page=0`;
+    let availableVersionsUrl: string | null =
+      `https://api.adoptium.net/v3/assets/version/${versionRange}?${requestArguments}`;
     const availableVersions: ITemurinAvailableVersions[] = [];
-    while (true) {
-      const requestArguments = `${baseRequestArguments}&page_size=20&page=${page_index}`;
-      const availableVersionsUrl = `https://api.adoptium.net/v3/assets/version/${versionRange}?${requestArguments}`;
-      if (core.isDebug() && page_index === 0) {
-        // url is identical except page_index so print it once for debug
-        core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+    let pageCount = 0;
+    if (core.isDebug()) {
+      core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+    }
+
+    while (availableVersionsUrl) {
+      pageCount++;
+      const response =
+        await this.http.getJson<ITemurinAvailableVersions[]>(
+          availableVersionsUrl
+        );
+      const paginationPage = response.result;
+      const nextUrl = getNextPageUrlFromLinkHeader(response.headers);
+      if (
+        nextUrl &&
+        !validatePaginationUrl(nextUrl, 'https://api.adoptium.net')
+      ) {
+        core.warning(
+          `Ignoring pagination link with unexpected origin: ${nextUrl}`
+        );
+        availableVersionsUrl = null;
+      } else {
+        availableVersionsUrl = nextUrl;
       }
 
-      const paginationPage = (
-        await this.http.getJson<ITemurinAvailableVersions[]>(availableVersionsUrl)
-      ).result;
       if (paginationPage === null || paginationPage.length === 0) {
-        // break infinity loop because we have reached end of pagination
         break;
       }
 
       availableVersions.push(...paginationPage);
-      page_index++;
+
+      if (pageCount >= MAX_PAGINATION_PAGES) {
+        core.warning(
+          `Reached pagination safeguard limit (${MAX_PAGINATION_PAGES} pages) while listing Temurin releases.`
+        );
+        break;
+      }
     }
 
     if (core.isDebug()) {
       core.startGroup('Print information about available versions');
-      console.timeEnd('temurin-retrieve-available-versions');
-      console.log(`Available versions: [${availableVersions.length}]`);
-      console.log(availableVersions.map(item => item.version_data.semver).join(', '));
+      console.timeEnd('Retrieving available versions for Temurin took'); // eslint-disable-line no-console
+      core.debug(`Available versions: [${availableVersions.length}]`);
+      core.debug(
+        availableVersions.map(item => item.version_data.semver).join(', ')
+      );
       core.endGroup();
     }
 
@@ -150,6 +192,11 @@ export class TemurinDistribution extends JavaBase {
         return 'mac';
       case 'win32':
         return 'windows';
+      case 'linux':
+        if (fs.existsSync('/etc/alpine-release')) {
+          return 'alpine-linux';
+        }
+        return 'linux';
       default:
         return process.platform;
     }

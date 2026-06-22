@@ -1,6 +1,6 @@
-import { MicrosoftDistributions } from '../../src/distributions/microsoft/installer';
+import {MicrosoftDistributions} from '../../src/distributions/microsoft/installer';
 import os from 'os';
-import data from '../../src/distributions/microsoft/microsoft-openjdk-versions.json';
+import data from '../data/microsoft.json';
 import * as httpm from '@actions/http-client';
 import * as core from '@actions/core';
 
@@ -8,6 +8,7 @@ describe('findPackageForDownload', () => {
   let distribution: MicrosoftDistributions;
   let spyGetManifestFromRepo: jest.SpyInstance;
   let spyDebug: jest.SpyInstance;
+  let spyCoreError: jest.SpyInstance;
 
   beforeEach(() => {
     distribution = new MicrosoftDistributions({
@@ -26,9 +27,23 @@ describe('findPackageForDownload', () => {
 
     spyDebug = jest.spyOn(core, 'debug');
     spyDebug.mockImplementation(() => {});
+
+    // Mock core.error to suppress error logs
+    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError.mockImplementation(() => {});
   });
 
   it.each([
+    [
+      '25.x',
+      '25.0.0',
+      'https://aka.ms/download-jdk/microsoft-jdk-25.0.0-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+    ],
+    [
+      '21.x',
+      '21.0.0',
+      'https://aka.ms/download-jdk/microsoft-jdk-21.0.0-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+    ],
     [
       '17.0.1',
       '17.0.1+12.1',
@@ -36,8 +51,8 @@ describe('findPackageForDownload', () => {
     ],
     [
       '17.x',
-      '17.0.3',
-      'https://aka.ms/download-jdk/microsoft-jdk-17.0.3-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+      '17.0.7',
+      'https://aka.ms/download-jdk/microsoft-jdk-17.0.7-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ],
     [
       '16.0.x',
@@ -53,6 +68,11 @@ describe('findPackageForDownload', () => {
       '11.0.15',
       '11.0.15',
       'https://aka.ms/download-jdk/microsoft-jdk-11.0.15-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
+    ],
+    [
+      '11.x',
+      '11.0.19',
+      'https://aka.ms/download-jdk/microsoft-jdk-11.0.19-{{OS_TYPE}}-x64.{{ARCHIVE_TYPE}}'
     ]
   ])('version is %s -> %s', async (input, expectedVersion, expectedUrl) => {
     const result = await distribution['findPackageForDownload'](input);
@@ -73,7 +93,9 @@ describe('findPackageForDownload', () => {
         archive = 'tar.gz';
         break;
     }
-    const url = expectedUrl.replace('{{OS_TYPE}}', os).replace('{{ARCHIVE_TYPE}}', archive);
+    const url = expectedUrl
+      .replace('{{OS_TYPE}}', os)
+      .replace('{{ARCHIVE_TYPE}}', archive);
     expect(result.url).toBe(url);
   });
 
@@ -83,7 +105,35 @@ describe('findPackageForDownload', () => {
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
     async (osArch: string, distroArch: string) => {
-      jest.spyOn(os, 'arch').mockReturnValue(osArch);
+      jest
+        .spyOn(os, 'arch')
+        .mockReturnValue(osArch as ReturnType<typeof os.arch>);
+      jest.spyOn(os, 'platform').mockReturnValue('darwin');
+
+      const version = '17';
+      const distro = new MicrosoftDistributions({
+        version,
+        architecture: '', // to get default value
+        packageType: 'jdk',
+        checkLatest: false
+      });
+
+      const result = await distro['findPackageForDownload'](version);
+      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.7-macos-${distroArch}.tar.gz`;
+
+      expect(result.url).toBe(expectedUrl);
+    }
+  );
+
+  it.each([
+    ['amd64', 'x64'],
+    ['arm64', 'aarch64']
+  ])(
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArch: string) => {
+      jest
+        .spyOn(os, 'arch')
+        .mockReturnValue(osArch as ReturnType<typeof os.arch>);
       jest.spyOn(os, 'platform').mockReturnValue('linux');
 
       const version = '17';
@@ -95,7 +145,33 @@ describe('findPackageForDownload', () => {
       });
 
       const result = await distro['findPackageForDownload'](version);
-      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.3-linux-${distroArch}.tar.gz`;
+      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.7-linux-${distroArch}.tar.gz`;
+
+      expect(result.url).toBe(expectedUrl);
+    }
+  );
+
+  it.each([
+    ['amd64', 'x64'],
+    ['arm64', 'aarch64']
+  ])(
+    'defaults to os.arch(): %s mapped to distro arch: %s',
+    async (osArch: string, distroArch: string) => {
+      jest
+        .spyOn(os, 'arch')
+        .mockReturnValue(osArch as ReturnType<typeof os.arch>);
+      jest.spyOn(os, 'platform').mockReturnValue('win32');
+
+      const version = '17';
+      const distro = new MicrosoftDistributions({
+        version,
+        architecture: '', // to get default value
+        packageType: 'jdk',
+        checkLatest: false
+      });
+
+      const result = await distro['findPackageForDownload'](version);
+      const expectedUrl = `https://aka.ms/download-jdk/microsoft-jdk-17.0.7-windows-${distroArch}.zip`;
 
       expect(result.url).toBe(expectedUrl);
     }
@@ -103,7 +179,7 @@ describe('findPackageForDownload', () => {
 
   it('should throw an error', async () => {
     await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
-      /Could not find satisfied version for SemVer */
+      /No matching version found for SemVer */
     );
   });
 });

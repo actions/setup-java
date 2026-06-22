@@ -1,0 +1,227 @@
+import {JavaBase} from '../base-installer';
+import {
+  JavaDownloadRelease,
+  JavaInstallerOptions,
+  JavaInstallerResults
+} from '../base-models';
+import semver from 'semver';
+import {
+  extractJdkFile,
+  getNextPageUrlFromLinkHeader,
+  getDownloadArchiveExtension,
+  isVersionSatisfies,
+  renameWinArchive,
+  MAX_PAGINATION_PAGES,
+  validatePaginationUrl
+} from '../../util';
+import * as core from '@actions/core';
+import * as tc from '@actions/tool-cache';
+import fs from 'fs';
+import path from 'path';
+import {ISemeruAvailableVersions} from './models';
+
+const supportedArchitectures = [
+  'x64',
+  'x86',
+  'ppc64le',
+  'ppc64',
+  's390x',
+  'aarch64'
+];
+
+export class SemeruDistribution extends JavaBase {
+  constructor(installerOptions: JavaInstallerOptions) {
+    super('IBM_Semeru', installerOptions);
+  }
+
+  protected async findPackageForDownload(
+    version: string
+  ): Promise<JavaDownloadRelease> {
+    const arch = this.distributionArchitecture();
+
+    if (!supportedArchitectures.includes(arch)) {
+      throw new Error(
+        `Unsupported architecture for IBM Semeru: ${
+          this.architecture
+        } for your current OS version, the following are supported: ${supportedArchitectures.join(
+          ', '
+        )}`
+      );
+    }
+
+    if (!this.stable) {
+      throw new Error(
+        'IBM Semeru does not provide builds for early access versions'
+      );
+    }
+
+    if (this.packageType !== 'jdk' && this.packageType !== 'jre') {
+      throw new Error('IBM Semeru only provide `jdk` and `jre` package types');
+    }
+
+    const availableVersionsRaw = await this.getAvailableVersions();
+    const availableVersionsWithBinaries = availableVersionsRaw
+      .filter(item => item.binaries.length > 0)
+      .map(item => {
+        // normalize 17.0.0-beta+33.0.202107301459 to 17.0.0+33.0.202107301459 for earlier access versions
+        const formattedVersion = this.stable
+          ? item.version_data.semver
+          : item.version_data.semver.replace('-beta+', '+');
+        return {
+          version: formattedVersion,
+          url: item.binaries[0].package.link
+        } as JavaDownloadRelease;
+      });
+
+    const satisfiedVersions = availableVersionsWithBinaries
+      .filter(item => isVersionSatisfies(version, item.version))
+      .sort((a, b) => {
+        return -semver.compareBuild(a.version, b.version);
+      });
+
+    const resolvedFullVersion =
+      satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
+    if (!resolvedFullVersion) {
+      const availableVersionStrings = availableVersionsWithBinaries.map(
+        item => item.version
+      );
+      // Include platform context to help users understand OS-specific version availability
+      // IBM Semeru builds are OS-specific, so platform info aids in troubleshooting
+      const platformContext = `Platform: ${process.platform}`;
+      throw this.createVersionNotFoundError(
+        version,
+        availableVersionStrings,
+        platformContext
+      );
+    }
+
+    return resolvedFullVersion;
+  }
+
+  protected async downloadTool(
+    javaRelease: JavaDownloadRelease
+  ): Promise<JavaInstallerResults> {
+    core.info(
+      `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
+    );
+    let javaArchivePath = await tc.downloadTool(javaRelease.url);
+
+    core.info(`Extracting Java archive...`);
+    const extension = getDownloadArchiveExtension();
+    if (process.platform === 'win32') {
+      javaArchivePath = renameWinArchive(javaArchivePath);
+    }
+    const extractedJavaPath: string = await extractJdkFile(
+      javaArchivePath,
+      extension
+    );
+
+    const archiveName = fs.readdirSync(extractedJavaPath)[0];
+    const archivePath = path.join(extractedJavaPath, archiveName);
+    const version = this.getToolcacheVersionName(javaRelease.version);
+
+    const javaPath: string = await tc.cacheDir(
+      archivePath,
+      this.toolcacheFolderName,
+      version,
+      this.architecture
+    );
+
+    return {version: javaRelease.version, path: javaPath};
+  }
+
+  protected get toolcacheFolderName(): string {
+    return super.toolcacheFolderName;
+  }
+
+  public async getAvailableVersions(): Promise<ISemeruAvailableVersions[]> {
+    const platform = this.getPlatformOption();
+    const arch = this.distributionArchitecture();
+    const imageType = this.packageType;
+    const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
+    const releaseType = this.stable ? 'ga' : 'ea';
+
+    if (core.isDebug()) {
+      console.time('Retrieving available versions for Semeru took'); // eslint-disable-line no-console
+    }
+
+    const baseRequestArguments = [
+      `project=jdk`,
+      'vendor=ibm',
+      `heap_size=normal`,
+      'sort_method=DEFAULT',
+      'sort_order=DESC',
+      `os=${platform}`,
+      `architecture=${arch}`,
+      `image_type=${imageType}`,
+      `release_type=${releaseType}`,
+      `jvm_impl=openj9`
+    ].join('&');
+
+    const requestArguments = `${baseRequestArguments}&page_size=20&page=0`;
+    let availableVersionsUrl: string | null =
+      `https://api.adoptopenjdk.net/v3/assets/version/${versionRange}?${requestArguments}`;
+    const availableVersions: ISemeruAvailableVersions[] = [];
+    let pageCount = 0;
+    if (core.isDebug()) {
+      core.debug(`Gathering available versions from '${availableVersionsUrl}'`);
+    }
+
+    while (availableVersionsUrl) {
+      pageCount++;
+      const response =
+        await this.http.getJson<ISemeruAvailableVersions[]>(
+          availableVersionsUrl
+        );
+      const paginationPage = response.result;
+      const nextUrl = getNextPageUrlFromLinkHeader(response.headers);
+      if (
+        nextUrl &&
+        !validatePaginationUrl(nextUrl, 'https://api.adoptopenjdk.net')
+      ) {
+        core.warning(
+          `Ignoring pagination link with unexpected origin: ${nextUrl}`
+        );
+        availableVersionsUrl = null;
+      } else {
+        availableVersionsUrl = nextUrl;
+      }
+      if (paginationPage === null || paginationPage.length === 0) {
+        break;
+      }
+
+      availableVersions.push(...paginationPage);
+
+      if (pageCount >= MAX_PAGINATION_PAGES) {
+        core.warning(
+          `Reached pagination safeguard limit (${MAX_PAGINATION_PAGES} pages) while listing Semeru releases.`
+        );
+        break;
+      }
+    }
+
+    if (core.isDebug()) {
+      core.startGroup('Print information about available versions');
+      console.timeEnd('Retrieving available versions for Semeru took'); // eslint-disable-line no-console
+      core.debug(`Available versions: [${availableVersions.length}]`);
+      core.debug(
+        availableVersions.map(item => item.version_data.semver).join(', ')
+      );
+      core.endGroup();
+    }
+
+    return availableVersions;
+  }
+
+  private getPlatformOption(): string {
+    // Adopt has own platform names so need to map them
+    switch (process.platform) {
+      case 'darwin':
+        return 'mac';
+      case 'win32':
+        return 'windows';
+      default:
+        return process.platform;
+    }
+  }
+}
