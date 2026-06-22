@@ -8,7 +8,7 @@ Add link to the related issue.
 Download URL for a new distribution
 
 **License:**
-Link for license for a new distribution 
+Link to the license for the new distribution.
 
 **Check list:**
 - [ ] Mark if documentation changes are required.
