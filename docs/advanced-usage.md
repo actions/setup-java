@@ -37,7 +37,7 @@ steps:
   with:
     distribution: 'temurin'
     java-version: '21'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Adopt
@@ -50,7 +50,7 @@ steps:
   with:
     distribution: 'adopt-hotspot'
     java-version: '11'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Zulu
@@ -63,7 +63,7 @@ steps:
     distribution: 'zulu'
     java-version: '21'
     java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Liberica
@@ -76,7 +76,7 @@ steps:
     distribution: 'liberica'
     java-version: '21'
     java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Microsoft
@@ -88,7 +88,7 @@ steps:
   with:
     distribution: 'microsoft'
     java-version: '21'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Using Microsoft distribution on GHES
@@ -117,7 +117,7 @@ steps:
   with:
     distribution: 'corretto'
     java-version: '21'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Oracle
@@ -130,7 +130,7 @@ steps:
   with:
     distribution: 'oracle'
     java-version: '21'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Alibaba Dragonwell
@@ -143,7 +143,7 @@ steps:
   with:
     distribution: 'dragonwell'
     java-version: '8'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### SapMachine
@@ -155,7 +155,7 @@ steps:
   with:
     distribution: 'sapmachine'
     java-version: '21'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### GraalVM
@@ -169,8 +169,8 @@ steps:
     distribution: 'graalvm'
     java-version: '21'
 - run: |
-    java -cp java HelloWorldApp
-    native-image -cp java HelloWorldApp
+    java --version
+    native-image --version
 ```
 
 ### JetBrains
@@ -187,7 +187,7 @@ steps:
   with:
     distribution: 'jetbrains'
     java-version: '11'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 The JetBrains installer uses the GitHub API to fetch the latest version. If you believe your project is going to be running into rate limits, you can provide a
@@ -203,7 +203,7 @@ steps:
     java-package: 'jdk' # optional (jdk, jre, jdk+jcef, jre+jcef, jdk+ft, or jre+ft) - defaults to jdk
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 You can specify your package type (as shown in the [releases page](https://github.com/JetBrains/JetBrainsRuntime/releases/)) in the `java-package` parameter. 
@@ -226,7 +226,7 @@ steps:
     distribution: '<distribution>'
     java-version: '11'
     java-package: jdk # optional (jdk or jre) - defaults to jdk
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### JavaFX Maven project
@@ -263,7 +263,7 @@ steps:
     distribution: '<distribution>'
     java-version: '11'
     architecture: x86 # optional - default value derived from the runner machine
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ## Installing Java from local file
@@ -281,7 +281,7 @@ steps:
     java-version: '11.0.0'
     architecture: x64
     
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 If your use-case requires a custom distribution (in the example, alpine-linux is used) or a version that is not provided by setup-java and you want to always install the latest version during runtime, then you can use the following code to auto-download the latest JDK, determine the semver needed for setup-java, and setup-java will take care of the installation and caching on the VM:
@@ -306,7 +306,7 @@ If your use-case requires a custom distribution (in the example, alpine-linux is
           jdkFile: ${{ runner.temp }}/java_package.tar.gz
           java-version: {{ steps.fetch_latest_jdk.outputs.java_version }}
           architecture: x64
-       - run: java -cp java HelloWorldApp
+       - run: java --version
 ```
 
 ## Testing against different Java distributions
@@ -327,7 +327,7 @@ jobs:
         with:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
-      - run: java -cp java HelloWorldApp
+      - run: java --version
 ```
 
 #### Testing against different platforms
@@ -347,7 +347,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - run: java -cp java HelloWorldApp
+      - run: java --version
 ```
 
 ## Publishing using Apache Maven
@@ -605,7 +605,7 @@ steps:
     distribution: 'temurin'
     java-version: '11'
     mvn-toolchain-id: 'some_other_id'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 In case you install multiple versions of Java at once you can use the same syntax as used in `java-versions`. Please note that you have to declare an ID for all Java versions that will be installed or the `mvn-toolchain-id` instruction will be skipped wholesale due to mapping ambiguities.
