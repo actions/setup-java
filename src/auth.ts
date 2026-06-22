@@ -9,11 +9,10 @@ import {create as xmlCreate} from 'xmlbuilder2';
 import * as constants from './constants';
 import * as gpg from './gpg';
 import {getBooleanInput} from './util';
+import {MvnSettingDefinition} from './mvn.setting.definition';
 
 export async function configureAuthentication() {
-  const id = core.getInput(constants.INPUT_SERVER_ID);
-  const username = core.getInput(constants.INPUT_SERVER_USERNAME);
-  const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
+  const mvnSettings = getMavenServerSettings();
   const settingsDirectory =
     core.getInput(constants.INPUT_SETTINGS_PATH) ||
     path.join(os.homedir(), constants.M2_DIR);
@@ -33,9 +32,7 @@ export async function configureAuthentication() {
   }
 
   await createAuthenticationSettings(
-    id,
-    username,
-    password,
+    mvnSettings,
     settingsDirectory,
     overwriteSettings,
     gpgPassphrase
@@ -49,29 +46,25 @@ export async function configureAuthentication() {
 }
 
 export async function createAuthenticationSettings(
-  id: string,
-  username: string,
-  password: string,
+  mvnSettings: MvnSettingDefinition[],
   settingsDirectory: string,
   overwriteSettings: boolean,
   gpgPassphrase: string | undefined = undefined
 ) {
-  core.info(`Creating ${constants.MVN_SETTINGS_FILE} with server-id: ${id}`);
+  core.info(`Creating ${constants.MVN_SETTINGS_FILE}`);
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
   await io.mkdirP(settingsDirectory);
   await write(
     settingsDirectory,
-    generate(id, username, password, gpgPassphrase),
+    generate(mvnSettings, gpgPassphrase),
     overwriteSettings
   );
 }
 
 // only exported for testing purposes
 export function generate(
-  id: string,
-  username: string,
-  password: string,
+  mvnSettings: MvnSettingDefinition[],
   gpgPassphrase?: string | undefined
 ) {
   const xmlObj: {[key: string]: any} = {
@@ -81,16 +74,20 @@ export function generate(
       '@xsi:schemaLocation':
         'http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd',
       servers: {
-        server: [
-          {
-            id: id,
-            username: `\${env.${username}}`,
-            password: `\${env.${password}}`
-          }
-        ]
+        server: []
       }
     }
   };
+
+  for (const mvnSetting of mvnSettings) {
+    if (mvnSetting.username && mvnSetting.password) {
+      xmlObj.settings.servers.server.push({
+        id: mvnSetting.id,
+        username: `\${env.${mvnSetting.username}}`,
+        password: `\${env.${mvnSetting.password}}`
+      });
+    }
+  }
 
   if (gpgPassphrase) {
     const gpgServer = {
@@ -105,6 +102,61 @@ export function generate(
     prettyPrint: true,
     width: 80
   });
+}
+
+function getMavenServerSettings(): MvnSettingDefinition[] {
+  const multilineEntries = core
+    .getMultilineInput(constants.INPUT_MVN_SERVER_CREDENTIALS)
+    .map(entry => entry.trim())
+    .filter(Boolean);
+
+  if (multilineEntries.length > 0) {
+    return parseMavenServerCredentials(multilineEntries);
+  }
+
+  const id = core.getInput(constants.INPUT_SERVER_ID);
+  const username = core.getInput(constants.INPUT_SERVER_USERNAME);
+  const password = core.getInput(constants.INPUT_SERVER_PASSWORD);
+  return [{id, username, password}];
+}
+
+// only exported for testing purposes
+export function parseMavenServerCredentials(
+  entries: string[]
+): MvnSettingDefinition[] {
+  const parsed = entries.map((entry, index) => {
+    const parts = entry.split(':');
+    if (parts.length !== 3) {
+      throw new Error(
+        `Invalid mvn-server-credentials entry at line ${
+          index + 1
+        }. Expected format: server-id:USERNAME_ENV:PASSWORD_ENV`
+      );
+    }
+
+    const [id, username, password] = parts.map(part => part.trim());
+    if (!id || !username || !password) {
+      throw new Error(
+        `Invalid mvn-server-credentials entry at line ${
+          index + 1
+        }. server-id, username env, and password env are required`
+      );
+    }
+
+    return {id, username, password};
+  });
+
+  const ids = new Set<string>();
+  for (const setting of parsed) {
+    if (ids.has(setting.id)) {
+      throw new Error(
+        `Duplicate server-id '${setting.id}' in mvn-server-credentials input`
+      );
+    }
+    ids.add(setting.id);
+  }
+
+  return parsed;
 }
 
 async function write(

@@ -63,6 +63,8 @@ For information about the latest releases, recent updates, and newly supported d
 
   - `server-password`: Environment variable name for password or token for authentication to the Apache Maven repository. Default is GITHUB_TOKEN.
 
+  - `mvn-server-credentials`: Optional multiline list of Maven server credentials in the format `server-id:USERNAME_ENV:PASSWORD_ENV`. When set, this input overrides `server-id`/`server-username`/`server-password` and generates multiple `<server>` entries in `settings.xml`.
+
   - `settings-path`: Maven related setting to point to the directory where the settings.xml file will be written. Default is ~/.m2.
 
   - `gpg-private-key`: GPG private key to import. Default is empty string.
