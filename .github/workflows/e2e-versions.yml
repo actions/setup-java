@@ -13,6 +13,10 @@ on:
   schedule:
     - cron: '0 */12 * * *'
   workflow_dispatch:
+
+permissions:
+  contents: read
+
 jobs:
   setup-java-major-versions:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
@@ -74,6 +78,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: setup-java
         uses: ./
         id: setup-java
@@ -83,14 +89,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_VERSION: ${{ matrix.version }}
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
   setup-java-alpine-linux:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - alpine-linux - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     container:
-      image: alpine:latest
+      image: alpine:3.21
     strategy:
       fail-fast: false
       matrix:
@@ -100,6 +109,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Install bash
         run: apk add --no-cache bash
       - name: setup-java
@@ -109,7 +120,10 @@ jobs:
           java-version: ${{ matrix.version }}
           distribution: ${{ matrix.distribution }}
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_VERSION: ${{ matrix.version }}
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
   setup-java-major-minor-versions:
@@ -150,6 +164,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: setup-java
         uses: ./
         id: setup-java
@@ -157,10 +173,12 @@ jobs:
           java-version: ${{ matrix.version }}
           distribution: ${{ matrix.distribution }}
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
-        shell: bash
         env:
+          JAVA_VERSION: ${{ matrix.version }}
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
+        shell: bash
 
   setup-java-check-latest:
     name: ${{ matrix.distribution }} ${{ matrix.version }} - check-latest flag - ${{ matrix.os }}
@@ -185,6 +203,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: setup-java
         uses: ./
         id: setup-java
@@ -195,7 +215,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "11" "$JAVA_PATH"
         shell: bash
 
   setup-java-multiple-jdks:
@@ -221,6 +243,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: setup-java
         uses: ./
         id: setup-java
@@ -245,7 +269,9 @@ jobs:
           }
         shell: pwsh
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "17" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "17" "$JAVA_PATH"
         shell: bash
 
   setup-java-ea-versions-zulu:
@@ -260,6 +286,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: setup-java
         uses: ./
         id: setup-java
@@ -267,7 +295,10 @@ jobs:
           java-version: ${{ matrix.version }}
           distribution: zulu
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_VERSION: ${{ matrix.version }}
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
   setup-java-ea-versions-temurin:
@@ -282,6 +313,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: setup-java
         uses: ./
         id: setup-java
@@ -289,7 +322,10 @@ jobs:
           java-version: ${{ matrix.version }}
           distribution: temurin
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_VERSION: ${{ matrix.version }}
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
   setup-java-ea-versions-sapmachine:
@@ -304,6 +340,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: setup-java
         uses: ./
         id: setup-java
@@ -311,7 +349,10 @@ jobs:
           java-version: ${{ matrix.version }}
           distribution: sapmachine
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_VERSION: ${{ matrix.version }}
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
   setup-java-custom-package-type:
@@ -391,6 +432,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: setup-java
         uses: ./
         id: setup-java
@@ -401,7 +444,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_VERSION: ${{ matrix.version }}
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
   # Only Liberica and Zulu provide x86
@@ -419,6 +465,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: setup-java
         uses: ./
         id: setup-java
@@ -427,7 +475,10 @@ jobs:
           java-version: ${{ matrix.version }}
           architecture: 'x86'
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_VERSION: ${{ matrix.version }}
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
   setup-java-version-both-version-inputs-presents:
@@ -442,6 +493,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Create .java-version file
         shell: bash
         run: echo "17" > .java-version
@@ -456,7 +509,9 @@ jobs:
           java-version: 11
           java-version-file: ${{matrix.java-version-file }}
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "11" "$JAVA_PATH"
         shell: bash
 
   setup-java-version-from-file-major-notation:
@@ -471,6 +526,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Create .java-version file
         shell: bash
         run: echo "11" > .java-version
@@ -484,7 +541,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version-file: ${{matrix.java-version-file }}
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "11" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "11" "$JAVA_PATH"
         shell: bash
 
   setup-java-version-from-file-major-minor-patch-notation:
@@ -499,6 +558,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Create .java-version file
         shell: bash
         run: echo "17.0.10" > .java-version
@@ -512,7 +573,9 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version-file: ${{matrix.java-version-file }}
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "17.0.10" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "17.0.10" "$JAVA_PATH"
         shell: bash
 
   setup-java-version-from-file-major-minor-patch-with-dist:
@@ -527,6 +590,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Create .java-version file
         shell: bash
         run: echo "openjdk64-17.0.10" > .java-version
@@ -543,5 +608,7 @@ jobs:
           distribution: ${{ matrix.distribution }}
           java-version-file: ${{matrix.java-version-file }}
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "17.0.10" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "17.0.10" "$JAVA_PATH"
         shell: bash
