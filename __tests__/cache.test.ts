@@ -96,7 +96,7 @@ describe('dependency cache', () => {
     });
 
     describe('for maven', () => {
-      it('throws error if no pom.xml or maven-wrapper.properties found', async () => {
+      it('throws error if no pom.xml, maven-wrapper.properties, or extensions.xml found', async () => {
         await expect(restore('maven', '')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
