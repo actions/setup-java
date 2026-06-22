@@ -320,9 +320,11 @@ describe('dependency cache', () => {
       await save('maven');
       expect(spyCacheSave).toHaveBeenCalled();
       expect(spyWarning).not.toHaveBeenCalled();
-      expect(spyInfo).toHaveBeenCalled();
-      expect(spyInfo).toHaveBeenCalledWith(
+      expect(spyInfo).not.toHaveBeenCalledWith(
         expect.stringMatching(/^Cache saved with the key:.*/)
+      );
+      expect(spyDebug).toHaveBeenCalledWith(
+        expect.stringMatching(/^Cache was not saved for the key:.*/)
       );
     });
 
