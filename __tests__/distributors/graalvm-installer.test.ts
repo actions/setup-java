@@ -1058,6 +1058,20 @@ describe('GraalVMDistribution', () => {
           'GraalVM Community does not provide early access builds'
         );
       });
+
+      it('should surface an error when the releases listing is not an array', async () => {
+        mockHttpClient.getJson.mockResolvedValue({
+          result: {message: 'API rate limit exceeded'},
+          statusCode: 403,
+          headers: {}
+        });
+
+        await expect(
+          (communityDistribution as any).findPackageForDownload('21')
+        ).rejects.toThrow(
+          /Unexpected response while listing GraalVM Community releases.*HTTP status code: 403/s
+        );
+      });
     });
   });
 });
