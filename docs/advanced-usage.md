@@ -714,3 +714,41 @@ On **GitHub Enterprise Server**, traffic from your runners frequently passes thr
 
 Do **not** work around this error by disabling TLS verification (for example, by setting `NODE_TLS_REJECT_UNAUTHORIZED=0`). `setup-java` does not verify a pinned checksum or signature of the downloaded archive, so **TLS is effectively the only integrity guarantee** on the JDK download. Disabling verification would expose your workflow to a man-in-the-middle attacker who could serve a tampered JDK — which then becomes the `java` used by the rest of your pipeline, with access to your secrets and credentials. Always extend trust to your CA instead of turning verification off.
 
+### Trusting an internal CA inside the installed JDK
+
+The guidance above makes the **runner** trust your CA so that the JDK can be *downloaded*. That is a separate layer from making the **installed JDK** trust your CA at *application runtime*. If your build steps (Maven/Gradle dependency resolution, integration tests, HTTPS calls from your app, etc.) connect to internal services that present a certificate from your internal CA, the JDK will reject them with errors such as:
+
+```
+PKIX path building failed: unable to find valid certification path to requested target
+```
+
+The JDK keeps its own trust store — a keystore named `cacerts` under `$JAVA_HOME/lib/security/cacerts` — which is independent of the operating system and Node trust stores. After `setup-java` has run (so that `JAVA_HOME` points at the freshly installed JDK), import your CA into that keystore with `keytool`:
+
+```yaml
+steps:
+  - uses: actions/setup-java@v5
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+
+  - name: Import internal CA into the JDK trust store
+    shell: bash
+    run: |
+      # Write the CA from a secret (or reference a file already on the runner)
+      echo "${{ secrets.INTERNAL_CA_PEM }}" > "${RUNNER_TEMP}/internal-ca.pem"
+      keytool -importcert -noprompt \
+        -alias internal-ca \
+        -file "${RUNNER_TEMP}/internal-ca.pem" \
+        -keystore "${JAVA_HOME}/lib/security/cacerts" \
+        -storepass changeit
+```
+
+Notes and caveats:
+
+- The default keystore password for `cacerts` is `changeit` unless your distribution overrides it.
+- On **hosted runners** the change applies only to the current job's JDK and is discarded when the job ends, so include the import step in every job that needs it.
+- On **self-hosted runners**, importing into a tool-cache JDK persists for as long as that cached version remains on the runner; if you want it to survive JDK reinstalls, pre-seed the CA into your runner image or re-run the import step each time.
+- Prefer giving the certificate a stable, descriptive `-alias` so re-runs are idempotent (re-importing the same alias will fail; add `keytool -delete -alias internal-ca ...` first if you re-run within a long-lived runner).
+
+This documents the post-install workflow; there is no dedicated action input for supplying a custom `cacerts` file.
+
