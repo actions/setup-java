@@ -567,7 +567,10 @@ describe('setupJava', () => {
       'JAVA_HOME_11_X86',
       javaPath
     );
-    expect(spyCoreSetOutput).toHaveBeenCalledWith('version', installedJavaVersion);
+    expect(spyCoreSetOutput).toHaveBeenCalledWith(
+      'version',
+      installedJavaVersion
+    );
     expect(spyCoreSetOutput).toHaveBeenCalledWith('path', javaPath);
     expect(spyCoreSetOutput).toHaveBeenCalledWith('distribution', 'Empty');
     expect(spyCoreInfo).toHaveBeenCalledWith(
