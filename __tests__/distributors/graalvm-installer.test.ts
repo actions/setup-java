@@ -251,7 +251,9 @@ describe('GraalVMDistribution', () => {
     });
 
     it('should use a dedicated toolcache folder for GraalVM Community', async () => {
-      const result = await (communityDistribution as any).downloadTool(javaRelease);
+      const result = await (communityDistribution as any).downloadTool(
+        javaRelease
+      );
 
       expect(tc.cacheDir).toHaveBeenCalledWith(
         path.join('/tmp/extracted', 'graalvm-jdk-17.0.5'),
@@ -973,7 +975,9 @@ describe('GraalVMDistribution', () => {
 
     describe('GraalVMCommunityDistribution', () => {
       beforeEach(() => {
-        jest.spyOn(communityDistribution, 'getPlatform').mockReturnValue('linux');
+        jest
+          .spyOn(communityDistribution, 'getPlatform')
+          .mockReturnValue('linux');
       });
 
       it('should resolve an exact GraalVM Community version from GitHub releases', async () => {
@@ -995,9 +999,9 @@ describe('GraalVMDistribution', () => {
           headers: {}
         });
 
-        const result = await (communityDistribution as any).findPackageForDownload(
-          '21.0.2'
-        );
+        const result = await (
+          communityDistribution as any
+        ).findPackageForDownload('21.0.2');
 
         expect(result).toEqual({
           url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
@@ -1035,9 +1039,9 @@ describe('GraalVMDistribution', () => {
           headers: {}
         });
 
-        const result = await (communityDistribution as any).findPackageForDownload(
-          '21'
-        );
+        const result = await (
+          communityDistribution as any
+        ).findPackageForDownload('21');
 
         expect(result).toEqual({
           url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
@@ -1050,11 +1054,12 @@ describe('GraalVMDistribution', () => {
 
         await expect(
           (communityDistribution as any).findPackageForDownload('23')
-        ).rejects.toThrow('GraalVM Community does not provide early access builds');
+        ).rejects.toThrow(
+          'GraalVM Community does not provide early access builds'
+        );
       });
     });
   });
-
 });
 
 describe('distribution factory', () => {
