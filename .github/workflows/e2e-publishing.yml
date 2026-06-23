@@ -11,6 +11,9 @@ on:
     paths-ignore:
       - '**.md'
 
+permissions:
+  contents: read
+
 defaults:
   run:
     shell: pwsh
@@ -26,6 +29,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: setup-java
         uses: ./
         id: setup-java
@@ -61,6 +66,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Create fake settings.xml
         run: |
           $xmlDirectory = Join-Path $HOME ".m2"
@@ -97,6 +104,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Create fake settings.xml
         run: |
           $xmlDirectory = Join-Path $HOME ".m2"
@@ -134,6 +143,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: setup-java
         uses: ./
         id: setup-java
