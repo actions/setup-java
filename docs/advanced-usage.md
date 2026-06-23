@@ -12,6 +12,7 @@
   - [GraalVM](#GraalVM)
   - [JetBrains](#JetBrains)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
+  - [JavaFX Maven project](#JavaFX-Maven-project)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
 - [Testing against different Java distributions](#Testing-against-different-Java-distributions)
@@ -21,6 +22,7 @@
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](#Modifying-Maven-Toolchains)
 - [Java-version file](#Java-version-file)
+- [Self-signed certificates and internal CAs (GitHub Enterprise)](#Self-signed-certificates-and-internal-CAs-GitHub-Enterprise)
 
 See [action.yml](../action.yml) for more details on task inputs.
 
@@ -36,7 +38,7 @@ steps:
   with:
     distribution: 'temurin'
     java-version: '21'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Adopt
@@ -49,7 +51,7 @@ steps:
   with:
     distribution: 'adopt-hotspot'
     java-version: '11'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Zulu
@@ -62,7 +64,7 @@ steps:
     distribution: 'zulu'
     java-version: '21'
     java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Liberica
@@ -75,7 +77,7 @@ steps:
     distribution: 'liberica'
     java-version: '21'
     java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Microsoft
@@ -87,7 +89,7 @@ steps:
   with:
     distribution: 'microsoft'
     java-version: '21'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Using Microsoft distribution on GHES
@@ -116,7 +118,7 @@ steps:
   with:
     distribution: 'corretto'
     java-version: '21'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Oracle
@@ -129,7 +131,7 @@ steps:
   with:
     distribution: 'oracle'
     java-version: '21'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### Alibaba Dragonwell
@@ -142,7 +144,7 @@ steps:
   with:
     distribution: 'dragonwell'
     java-version: '8'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### SapMachine
@@ -154,7 +156,7 @@ steps:
   with:
     distribution: 'sapmachine'
     java-version: '21'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ### GraalVM
@@ -168,8 +170,8 @@ steps:
     distribution: 'graalvm'
     java-version: '21'
 - run: |
-    java -cp java HelloWorldApp
-    native-image -cp java HelloWorldApp
+    java --version
+    native-image --version
 ```
 
 ### JetBrains
@@ -186,7 +188,7 @@ steps:
   with:
     distribution: 'jetbrains'
     java-version: '11'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 The JetBrains installer uses the GitHub API to fetch the latest version. If you believe your project is going to be running into rate limits, you can provide a
@@ -202,7 +204,7 @@ steps:
     java-package: 'jdk' # optional (jdk, jre, jdk+jcef, jre+jcef, jdk+ft, or jre+ft) - defaults to jdk
   env:
     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 You can specify your package type (as shown in the [releases page](https://github.com/JetBrains/JetBrainsRuntime/releases/)) in the `java-package` parameter. 
@@ -225,7 +227,31 @@ steps:
     distribution: '<distribution>'
     java-version: '11'
     java-package: jdk # optional (jdk or jre) - defaults to jdk
-- run: java -cp java HelloWorldApp
+- run: java --version
+```
+
+### JavaFX Maven project
+
+For JavaFX projects that use Maven, use `jdk+fx` (or `jre+fx`) as the `java-package` value together with a distribution that supports it (e.g. `zulu` or `liberica`). Then include the [`javafx-maven-plugin`](https://openjfx.io/openjfx-docs/#maven) in your `pom.xml` as described in the [Getting Started with JavaFX](https://openjfx.io/openjfx-docs/#maven) guide.
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'zulu'
+    java-version: '21'
+    java-package: jdk+fx
+    cache: maven
+- name: Build with Maven
+  run: mvn --no-transfer-progress compile
+```
+
+To run the JavaFX application in CI:
+
+```yaml
+- name: Run with Maven
+  run: mvn --no-transfer-progress javafx:run
 ```
 
 ## Installing custom Java architecture
@@ -238,7 +264,7 @@ steps:
     distribution: '<distribution>'
     java-version: '11'
     architecture: x86 # optional - default value derived from the runner machine
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 ## Installing Java from local file
@@ -256,7 +282,7 @@ steps:
     java-version: '11.0.0'
     architecture: x64
     
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 If your use-case requires a custom distribution (in the example, alpine-linux is used) or a version that is not provided by setup-java and you want to always install the latest version during runtime, then you can use the following code to auto-download the latest JDK, determine the semver needed for setup-java, and setup-java will take care of the installation and caching on the VM:
@@ -281,7 +307,7 @@ If your use-case requires a custom distribution (in the example, alpine-linux is
           jdkFile: ${{ runner.temp }}/java_package.tar.gz
           java-version: {{ steps.fetch_latest_jdk.outputs.java_version }}
           architecture: x64
-       - run: java -cp java HelloWorldApp
+       - run: java --version
 ```
 
 ## Testing against different Java distributions
@@ -302,7 +328,7 @@ jobs:
         with:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
-      - run: java -cp java HelloWorldApp
+      - run: java --version
 ```
 
 #### Testing against different platforms
@@ -322,7 +348,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
-      - run: java -cp java HelloWorldApp
+      - run: java --version
 ```
 
 ## Publishing using Apache Maven
@@ -580,7 +606,7 @@ steps:
     distribution: 'temurin'
     java-version: '11'
     mvn-toolchain-id: 'some_other_id'
-- run: java -cp java HelloWorldApp
+- run: java --version
 ```
 
 In case you install multiple versions of Java at once you can use the same syntax as used in `java-versions`. Please note that you have to declare an ID for all Java versions that will be installed or the `mvn-toolchain-id` instruction will be skipped wholesale due to mapping ambiguities.
@@ -635,3 +661,94 @@ If the file contains multiple versions, only the first one will be recognized.
 
 ***NOTE***:
 For the tool-version file, ensure that you use standard semantic versioning (semver) formats, as non-standard formats (such as jetbrains-21b212.1) may not be parsed correctly. Additionally, for complex version strings containing multiple version-like segments (for example, java semeru-openj9-11.0.15+10_openj9-0.32.0), the extraction logic may incorrectly capture the last segment (0.32.0) instead of the main version (11.0.15+10).
+
+## Self-signed certificates and internal CAs (GitHub Enterprise)
+
+When `setup-java` dynamically downloads a JDK, it makes HTTPS requests both to fetch the available version metadata and to download the JDK archive. If your runners sit behind a **TLS-inspecting corporate proxy**, or you are on **GitHub Enterprise Server (GHES)** with an internal certificate authority, those requests can fail with an error such as:
+
+```
+Error: self signed certificate in certificate chain
+```
+
+This happens because the certificate presented to the runner is signed by an **internal or self-signed CA** that is not part of the runner's default trust store. The download itself is fine — the runner simply cannot verify the certificate chain.
+
+### Recommended fix: trust your internal CA
+
+The secure way to resolve this is to make the runner trust your organization's CA, which keeps TLS verification fully enabled. `setup-java` runs on Node.js, which honors the [`NODE_EXTRA_CA_CERTS`](https://nodejs.org/api/cli.html#node_extra_ca_certsfile) environment variable. Point it at your CA bundle (in PEM format) **before** the `actions/setup-java` step:
+
+```yaml
+steps:
+  # The CA bundle is already present on the runner image in this example.
+  # Alternatively, write it from a secret in a previous step.
+  - name: Trust the internal CA
+    run: echo "NODE_EXTRA_CA_CERTS=/etc/ssl/certs/internal-ca.pem" >> "$GITHUB_ENV"
+
+  - uses: actions/setup-java@v5
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+```
+
+If you keep the certificate in a secret rather than on the runner image, write it to disk first:
+
+```yaml
+steps:
+  - name: Write and trust the internal CA
+    run: |
+      echo "${{ secrets.INTERNAL_CA_PEM }}" > "${RUNNER_TEMP}/internal-ca.pem"
+      echo "NODE_EXTRA_CA_CERTS=${RUNNER_TEMP}/internal-ca.pem" >> "$GITHUB_ENV"
+
+  - uses: actions/setup-java@v5
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+```
+
+For **self-hosted runners**, you can instead install your CA into the operating system's trust store (for example, `update-ca-certificates` on Debian/Ubuntu or `update-ca-trust` on RHEL). This makes the certificate trusted for all tooling on the runner, not just `setup-java`.
+
+### GitHub Enterprise customers
+
+On **GitHub Enterprise Server**, traffic from your runners frequently passes through an organization-managed proxy or terminates TLS at an appliance using a certificate from an internal CA. If your workflows hit the error above, set `NODE_EXTRA_CA_CERTS` to your enterprise CA bundle (or bake the CA into your self-hosted runner image) as shown above. Coordinate with your platform team to obtain the correct PEM bundle for your appliance and proxy chain.
+
+### Security warning: do not disable certificate verification
+
+Do **not** work around this error by disabling TLS verification (for example, by setting `NODE_TLS_REJECT_UNAUTHORIZED=0`). `setup-java` does not verify a pinned checksum or signature of the downloaded archive, so **TLS is effectively the only integrity guarantee** on the JDK download. Disabling verification would expose your workflow to a man-in-the-middle attacker who could serve a tampered JDK — which then becomes the `java` used by the rest of your pipeline, with access to your secrets and credentials. Always extend trust to your CA instead of turning verification off.
+
+### Trusting an internal CA inside the installed JDK
+
+The guidance above makes the **runner** trust your CA so that the JDK can be *downloaded*. That is a separate layer from making the **installed JDK** trust your CA at *application runtime*. If your build steps (Maven/Gradle dependency resolution, integration tests, HTTPS calls from your app, etc.) connect to internal services that present a certificate from your internal CA, the JDK will reject them with errors such as:
+
+```
+PKIX path building failed: unable to find valid certification path to requested target
+```
+
+The JDK keeps its own trust store — a keystore named `cacerts` under `$JAVA_HOME/lib/security/cacerts` — which is independent of the operating system and Node trust stores. After `setup-java` has run (so that `JAVA_HOME` points at the freshly installed JDK), import your CA into that keystore with `keytool`:
+
+```yaml
+steps:
+  - uses: actions/setup-java@v5
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+
+  - name: Import internal CA into the JDK trust store
+    shell: bash
+    run: |
+      # Write the CA from a secret (or reference a file already on the runner)
+      echo "${{ secrets.INTERNAL_CA_PEM }}" > "${RUNNER_TEMP}/internal-ca.pem"
+      keytool -importcert -noprompt \
+        -alias internal-ca \
+        -file "${RUNNER_TEMP}/internal-ca.pem" \
+        -keystore "${JAVA_HOME}/lib/security/cacerts" \
+        -storepass changeit
+```
+
+Notes and caveats:
+
+- The default keystore password for `cacerts` is `changeit` unless your distribution overrides it.
+- On **hosted runners** the change applies only to the current job's JDK and is discarded when the job ends, so include the import step in every job that needs it.
+- On **self-hosted runners**, importing into a tool-cache JDK persists for as long as that cached version remains on the runner; if you want it to survive JDK reinstalls, pre-seed the CA into your runner image or re-run the import step each time.
+- Prefer giving the certificate a stable, descriptive `-alias` so re-runs are idempotent (re-importing the same alias will fail; add `keytool -delete -alias internal-ca ...` first if you re-run within a long-lived runner).
+
+This documents the post-install workflow; there is no dedicated action input for supplying a custom `cacerts` file.
+

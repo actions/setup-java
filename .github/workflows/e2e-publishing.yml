@@ -28,7 +28,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: setup-java
@@ -65,7 +65,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Create fake settings.xml
@@ -103,7 +103,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Create fake settings.xml
@@ -142,7 +142,7 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: setup-java

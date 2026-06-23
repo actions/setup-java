@@ -77,7 +77,7 @@ jobs:
             version: '24-ea'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: setup-java
@@ -108,7 +108,7 @@ jobs:
         version: ['21', '17']
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Install bash
@@ -163,7 +163,7 @@ jobs:
             version: '17.0.7'
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: setup-java
@@ -202,7 +202,7 @@ jobs:
             os: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: setup-java
@@ -242,7 +242,7 @@ jobs:
             os: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: setup-java
@@ -285,7 +285,7 @@ jobs:
         version: ['17-ea', '15.0.0-ea.14']
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: setup-java
@@ -312,7 +312,7 @@ jobs:
         version: ['17-ea']
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: setup-java
@@ -339,7 +339,7 @@ jobs:
         version: ['17-ea', '21-ea']
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: setup-java
@@ -431,7 +431,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: setup-java
@@ -464,7 +464,7 @@ jobs:
         version: ['11']
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: setup-java
@@ -492,7 +492,7 @@ jobs:
         java-version-file: ['.java-version', '.tool-versions']
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Create .java-version file
@@ -525,7 +525,7 @@ jobs:
         java-version-file: ['.java-version', '.tool-versions']
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Create .java-version file
@@ -557,7 +557,7 @@ jobs:
         java-version-file: ['.java-version', '.tool-versions']
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Create .java-version file
@@ -589,7 +589,7 @@ jobs:
         java-version-file: ['.java-version', '.tool-versions', '.sdkmanrc']
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
       - name: Create .java-version file
