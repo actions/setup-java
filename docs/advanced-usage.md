@@ -10,6 +10,7 @@
   - [Alibaba Dragonwell](#Alibaba-Dragonwell)
   - [SapMachine](#SapMachine)
   - [GraalVM](#GraalVM)
+  - [GraalVM Community](#GraalVM-Community)
   - [JetBrains](#JetBrains)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
   - [JavaFX Maven project](#JavaFX-Maven-project)
@@ -172,6 +173,21 @@ steps:
 - run: |
     java --version
     native-image --version
+```
+
+### GraalVM Community
+**NOTE:** GraalVM Community is available for stable JDK 17 and later releases.
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'graalvm-community'
+    java-version: '21'
+- run: |
+    java -cp java HelloWorldApp
+    native-image -cp java HelloWorldApp
 ```
 
 ### JetBrains
