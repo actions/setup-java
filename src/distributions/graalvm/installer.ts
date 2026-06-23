@@ -391,7 +391,20 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
         headers
       );
 
-      const releases = Array.isArray(response.result) ? response.result : [];
+      // A successful GitHub releases listing is always a JSON array (possibly
+      // empty). Anything else indicates an unexpected/error payload (rate
+      // limiting, auth failure, etc.) that must be surfaced instead of being
+      // silently treated as "no releases", which would later look like a
+      // misleading "version not found" error.
+      if (!Array.isArray(response.result)) {
+        throw new Error(
+          `Unexpected response while listing GraalVM Community releases from ${releasesUrl} ` +
+            `(HTTP status code: ${response.statusCode}). Expected a JSON array of releases. ` +
+            `Please check if the service is available at ${GRAALVM_COMMUNITY_DOWNLOAD_URL}.`
+        );
+      }
+
+      const releases = response.result;
       if (releases.length === 0) {
         break;
       }
