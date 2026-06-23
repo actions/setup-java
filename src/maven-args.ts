@@ -63,7 +63,7 @@ export function configureMavenArgs(): void {
 
   core.exportVariable(MAVEN_ARGS_ENV, updatedArgs);
   core.info(
-    `Set ${MAVEN_ARGS_ENV} to '${updatedArgs}' to suppress Maven transfer progress logs. ` +
-      `Set 'show-download-progress: true' to keep the download progress output.`
+    `Configured ${MAVEN_ARGS_ENV} to include ${MAVEN_NO_TRANSFER_PROGRESS_FLAG} to suppress Maven transfer progress logs. ` +
+      `Set '${INPUT_SHOW_DOWNLOAD_PROGRESS}: true' to keep the download progress output.`
   );
 }
