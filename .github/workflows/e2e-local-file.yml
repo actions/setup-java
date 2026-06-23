@@ -11,6 +11,9 @@ on:
     paths-ignore:
       - '**.md'
 
+permissions:
+  contents: read
+
 jobs:
   setup-java-local-file-adopt:
     name: Validate installation from local file Adopt
@@ -21,7 +24,9 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Download Adopt OpenJDK file
         run: |
           if ($IsLinux) {
@@ -46,7 +51,9 @@ jobs:
           java-version: '11.0.0-ea'
           architecture: x64
       - name: Verify Java version
-        run: bash __tests__/verify-java.sh "11.0.10" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "11.0.10" "$JAVA_PATH"
         shell: bash
 
   setup-java-local-file-zulu:
@@ -58,7 +65,9 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Download Zulu OpenJDK file
         run: |
           if ($IsLinux) {
@@ -83,7 +92,9 @@ jobs:
           java-version: '11.0.0-ea'
           architecture: x64
       - name: Verify Java version
-        run: bash __tests__/verify-java.sh "11.0" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "11.0" "$JAVA_PATH"
         shell: bash
 
   setup-java-local-file-temurin:
@@ -95,7 +106,9 @@ jobs:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Download Eclipse Temurin file
         run: |
           if ($IsLinux) {
@@ -120,5 +133,7 @@ jobs:
           java-version: '11.0.0-ea'
           architecture: x64
       - name: Verify Java version
-        run: bash __tests__/verify-java.sh "11.0.12" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "11.0.12" "$JAVA_PATH"
         shell: bash

@@ -8,6 +8,8 @@ on:
   schedule:
     - cron: '0 3 * * 0'
 
+permissions: {}
+
 jobs:
   call-codeQL-analysis:
     permissions:
