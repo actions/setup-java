@@ -187,8 +187,8 @@ steps:
     distribution: 'graalvm-community'
     java-version: '21'
 - run: |
-    java -cp java HelloWorldApp
-    native-image -cp java HelloWorldApp
+    java --version
+    native-image --version
 ```
 
 ### JetBrains
