@@ -10,6 +10,7 @@
   - [Alibaba Dragonwell](#Alibaba-Dragonwell)
   - [SapMachine](#SapMachine)
   - [GraalVM](#GraalVM)
+  - [GraalVM Community](#GraalVM-Community)
   - [JetBrains](#JetBrains)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
   - [JavaFX Maven project](#JavaFX-Maven-project)
@@ -175,6 +176,21 @@ steps:
     native-image --version
 ```
 
+### GraalVM Community
+**NOTE:** GraalVM Community is available for stable JDK 17 and later releases.
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'graalvm-community'
+    java-version: '21'
+- run: |
+    java --version
+    native-image --version
+```
+
 ### JetBrains
 
 **NOTE:** JetBrains is only available for LTS versions on 11 or later (11, 17, 21, etc.).
@@ -271,6 +287,9 @@ steps:
 ## Installing Java from local file
 If your use-case requires a custom distribution or a version that is not provided by setup-java, you can download it manually and setup-java will take care of the installation and caching on the VM:
 
+> [!NOTE]
+> This approach also lets you use builds that setup-java does not provide directly, such as **Early Access (EA)** or other unreleased JDK builds (for example, an upcoming feature release or a Loom/Valhalla preview build). Download the desired archive in a prior step and point `jdkFile` at it; setup-java will extract, install, and cache it just like a supported distribution. When targeting multiple architectures, select the correct binary per architecture in your workflow (for example, with a build matrix).
+
 ```yaml
 steps:
 - run: |
@@ -283,6 +302,23 @@ steps:
     java-version: '11.0.0'
     architecture: x64
     
+- run: java --version
+```
+
+For example, to use an **Early Access** build from [jdk.java.net](https://jdk.java.net/), download the archive for your runner OS/architecture and install it via `distribution: 'jdkfile'` (example below assumes Linux x64):
+
+```yaml
+steps:
+- run: |
+    download_url="https://download.java.net/java/early_access/jdk25/36/GPL/openjdk-25-ea+36_linux-x64_bin.tar.gz"
+    wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'jdkfile'
+    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    java-version: '25.0.0-ea.36'
+    architecture: x64
+
 - run: java --version
 ```
 

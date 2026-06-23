@@ -3,7 +3,11 @@ import * as tc from '@actions/tool-cache';
 import * as http from '@actions/http-client';
 import fs from 'fs';
 import path from 'path';
-import {GraalVMDistribution} from '../../src/distributions/graalvm/installer';
+import {
+  GraalVMCommunityDistribution,
+  GraalVMDistribution
+} from '../../src/distributions/graalvm/installer';
+import {getJavaDistribution} from '../../src/distributions/distribution-factory';
 import {JavaInstallerOptions} from '../../src/distributions/base-models';
 import * as util from '../../src/util';
 
@@ -41,6 +45,7 @@ beforeAll(() => {
 
 describe('GraalVMDistribution', () => {
   let distribution: GraalVMDistribution;
+  let communityDistribution: GraalVMCommunityDistribution;
   let mockHttpClient: jest.Mocked<http.HttpClient>;
   let spyCoreError: jest.SpyInstance;
 
@@ -55,9 +60,11 @@ describe('GraalVMDistribution', () => {
     jest.clearAllMocks();
 
     distribution = new GraalVMDistribution(defaultOptions);
+    communityDistribution = new GraalVMCommunityDistribution(defaultOptions);
 
     mockHttpClient = new http.HttpClient() as jest.Mocked<http.HttpClient>;
     (distribution as any).http = mockHttpClient;
+    (communityDistribution as any).http = mockHttpClient;
 
     (util.getDownloadArchiveExtension as jest.Mock).mockReturnValue('tar.gz');
 
@@ -237,6 +244,23 @@ describe('GraalVMDistribution', () => {
         'zip'
       );
 
+      expect(result).toEqual({
+        version: '17.0.5',
+        path: '/cached/java/path'
+      });
+    });
+
+    it('should use a dedicated toolcache folder for GraalVM Community', async () => {
+      const result = await (communityDistribution as any).downloadTool(
+        javaRelease
+      );
+
+      expect(tc.cacheDir).toHaveBeenCalledWith(
+        path.join('/tmp/extracted', 'graalvm-jdk-17.0.5'),
+        'Java_GraalVM_Community_jdk',
+        '17.0.5',
+        'x64'
+      );
       expect(result).toEqual({
         version: '17.0.5',
         path: '/cached/java/path'
@@ -948,5 +972,121 @@ describe('GraalVMDistribution', () => {
         configurable: true
       });
     });
+
+    describe('GraalVMCommunityDistribution', () => {
+      beforeEach(() => {
+        jest
+          .spyOn(communityDistribution, 'getPlatform')
+          .mockReturnValue('linux');
+      });
+
+      it('should resolve an exact GraalVM Community version from GitHub releases', async () => {
+        mockHttpClient.getJson.mockResolvedValue({
+          result: [
+            {
+              draft: false,
+              prerelease: false,
+              assets: [
+                {
+                  name: 'graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
+                  browser_download_url:
+                    'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz'
+                }
+              ]
+            }
+          ],
+          statusCode: 200,
+          headers: {}
+        });
+
+        const result = await (
+          communityDistribution as any
+        ).findPackageForDownload('21.0.2');
+
+        expect(result).toEqual({
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
+          version: '21.0.2'
+        });
+      });
+
+      it('should resolve the latest GraalVM Community release for a major version', async () => {
+        mockHttpClient.getJson.mockResolvedValue({
+          result: [
+            {
+              draft: false,
+              prerelease: false,
+              assets: [
+                {
+                  name: 'graalvm-community-jdk-21.0.1_linux-x64_bin.tar.gz',
+                  browser_download_url:
+                    'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.1/graalvm-community-jdk-21.0.1_linux-x64_bin.tar.gz'
+                }
+              ]
+            },
+            {
+              draft: false,
+              prerelease: false,
+              assets: [
+                {
+                  name: 'graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
+                  browser_download_url:
+                    'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz'
+                }
+              ]
+            }
+          ],
+          statusCode: 200,
+          headers: {}
+        });
+
+        const result = await (
+          communityDistribution as any
+        ).findPackageForDownload('21');
+
+        expect(result).toEqual({
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
+          version: '21.0.2'
+        });
+      });
+
+      it('should reject GraalVM Community early access requests', async () => {
+        (communityDistribution as any).stable = false;
+
+        await expect(
+          (communityDistribution as any).findPackageForDownload('23')
+        ).rejects.toThrow(
+          'GraalVM Community does not provide early access builds'
+        );
+      });
+
+      it('should surface an error when the releases listing is not an array', async () => {
+        mockHttpClient.getJson.mockResolvedValue({
+          result: {message: 'API rate limit exceeded'},
+          statusCode: 403,
+          headers: {}
+        });
+
+        await expect(
+          (communityDistribution as any).findPackageForDownload('21')
+        ).rejects.toThrow(
+          /Unexpected response while listing GraalVM Community releases.*HTTP status code: 403/s
+        );
+      });
+    });
+  });
+});
+
+describe('distribution factory', () => {
+  const defaultOptions: JavaInstallerOptions = {
+    version: '17',
+    architecture: 'x64',
+    packageType: 'jdk',
+    checkLatest: false
+  };
+
+  it('should map graalvm-community to the community installer', () => {
+    const community = getJavaDistribution('graalvm-community', defaultOptions);
+
+    expect(community).toBeInstanceOf(GraalVMCommunityDistribution);
   });
 });
