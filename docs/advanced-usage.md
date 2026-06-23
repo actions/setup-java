@@ -288,7 +288,7 @@ steps:
 - run: java --version
 ```
 
-For example, to use an **Early Access** build (such as an upcoming feature release from [jdk.java.net](https://jdk.java.net/)) that is not yet available through a regular distribution:
+For example, to use an **Early Access** build from [jdk.java.net](https://jdk.java.net/), download the archive for your runner OS/architecture and install it via `distribution: 'jdkfile'` (example below assumes Linux x64):
 
 ```yaml
 steps:
