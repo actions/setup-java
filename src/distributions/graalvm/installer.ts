@@ -2,6 +2,7 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
+import semver from 'semver';
 import {JavaBase} from '../base-installer';
 import {HttpCodes} from '@actions/http-client';
 import {GraalVMEAVersion} from './models';
@@ -11,14 +12,26 @@ import {
   JavaInstallerResults
 } from '../base-models';
 import {
+  convertVersionToSemver,
   extractJdkFile,
   getDownloadArchiveExtension,
   getGitHubHttpHeaders,
-  renameWinArchive
+  getNextPageUrlFromLinkHeader,
+  isVersionSatisfies,
+  MAX_PAGINATION_PAGES,
+  renameWinArchive,
+  validatePaginationUrl
 } from '../../util';
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm';
 const GRAALVM_DOWNLOAD_URL = 'https://www.graalvm.org/downloads/';
+const GRAALVM_COMMUNITY_RELEASES_URL =
+  'https://api.github.com/repos/graalvm/graalvm-ce-builds/releases?per_page=100';
+const GRAALVM_COMMUNITY_RELEASES_PAGE_ORIGIN = 'https://api.github.com';
+const GRAALVM_COMMUNITY_DOWNLOAD_URL =
+  'https://github.com/graalvm/graalvm-ce-builds/releases';
+const GRAALVM_COMMUNITY_ASSET_PREFIX = 'graalvm-community-jdk-';
+const GRAALVM_COMMUNITY_VERSION_PATTERN = /^\d+(?:\.\d+)*$/;
 const IS_WINDOWS = process.platform === 'win32';
 const GRAALVM_PLATFORM = IS_WINDOWS ? 'windows' : process.platform;
 const GRAALVM_MIN_VERSION = 17;
@@ -26,9 +39,23 @@ const SUPPORTED_ARCHITECTURES = ['x64', 'aarch64'] as const;
 type SupportedArchitecture = (typeof SUPPORTED_ARCHITECTURES)[number];
 type OsVersions = 'linux' | 'macos' | 'windows';
 
+interface GraalVMCommunityAsset {
+  name: string;
+  browser_download_url: string;
+}
+
+interface GraalVMCommunityRelease {
+  draft: boolean;
+  prerelease: boolean;
+  assets: GraalVMCommunityAsset[];
+}
+
 export class GraalVMDistribution extends JavaBase {
-  constructor(installerOptions: JavaInstallerOptions) {
-    super('GraalVM', installerOptions);
+  constructor(
+    installerOptions: JavaInstallerOptions,
+    distributionName = 'GraalVM'
+  ) {
+    super(distributionName, installerOptions);
   }
 
   protected async downloadTool(
@@ -85,40 +112,14 @@ export class GraalVMDistribution extends JavaBase {
   protected async findPackageForDownload(
     range: string
   ): Promise<JavaDownloadRelease> {
-    // Add input validation
-    if (!range || typeof range !== 'string') {
-      throw new Error('Version range is required and must be a string');
-    }
-
-    const arch = this.distributionArchitecture();
-    if (!SUPPORTED_ARCHITECTURES.includes(arch as SupportedArchitecture)) {
-      throw new Error(
-        `Unsupported architecture: ${this.architecture}. Supported architectures are: ${SUPPORTED_ARCHITECTURES.join(', ')}`
-      );
-    }
+    this.validateVersionRange(range);
+    const arch = this.getSupportedArchitecture();
 
     if (!this.stable) {
       return this.findEABuildDownloadUrl(`${range}-ea`);
     }
 
-    if (this.packageType !== 'jdk') {
-      throw new Error('GraalVM provides only the `jdk` package type');
-    }
-
-    const platform = this.getPlatform();
-    const extension = getDownloadArchiveExtension();
-    const major = range.includes('.') ? range.split('.')[0] : range;
-    const majorVersion = parseInt(major);
-
-    if (isNaN(majorVersion)) {
-      throw new Error(`Invalid version format: ${range}`);
-    }
-
-    if (majorVersion < GRAALVM_MIN_VERSION) {
-      throw new Error(
-        `GraalVM is only supported for JDK ${GRAALVM_MIN_VERSION} and later. Requested version: ${major}`
-      );
-    }
+    const {platform, extension, major} = this.validateStableBuildRequest(range);
 
     const fileUrl = this.constructFileUrl(
       range,
@@ -132,6 +133,56 @@ export class GraalVMDistribution extends JavaBase {
     this.handleHttpResponse(response, range);
 
     return {url: fileUrl, version: range};
+  }
+
+  protected validateVersionRange(range: string): void {
+    if (!range || typeof range !== 'string') {
+      throw new Error('Version range is required and must be a string');
+    }
+  }
+
+  protected getSupportedArchitecture(): SupportedArchitecture {
+    const arch = this.distributionArchitecture();
+    if (!SUPPORTED_ARCHITECTURES.includes(arch as SupportedArchitecture)) {
+      throw new Error(
+        `Unsupported architecture: ${this.architecture}. Supported architectures are: ${SUPPORTED_ARCHITECTURES.join(', ')}`
+      );
+    }
+
+    return arch as SupportedArchitecture;
+  }
+
+  protected validateStableBuildRequest(range: string): {
+    platform: OsVersions;
+    extension: string;
+    major: string;
+  } {
+    if (this.packageType !== 'jdk') {
+      throw new Error(
+        `${this.distribution} provides only the \`jdk\` package type`
+      );
+    }
+
+    const platform = this.getPlatform();
+    const extension = getDownloadArchiveExtension();
+    const major = range.includes('.') ? range.split('.')[0] : range;
+    const majorVersion = parseInt(major);
+
+    if (isNaN(majorVersion)) {
+      throw new Error(`Invalid version format: ${range}`);
+    }
+
+    if (majorVersion < GRAALVM_MIN_VERSION) {
+      throw new Error(
+        `${this.distribution} is only supported for JDK ${GRAALVM_MIN_VERSION} and later. Requested version: ${major}`
+      );
+    }
+
+    return {
+      platform,
+      major,
+      extension
+    };
   }
 
   private constructFileUrl(
@@ -278,5 +329,146 @@ export class GraalVMDistribution extends JavaBase {
       );
     }
     return result;
+  }
+}
+
+export class GraalVMCommunityDistribution extends GraalVMDistribution {
+  constructor(installerOptions: JavaInstallerOptions) {
+    super(installerOptions, 'GraalVM Community');
+  }
+
+  protected get toolcacheFolderName(): string {
+    return `Java_GraalVM_Community_${this.packageType}`;
+  }
+
+  protected async findPackageForDownload(
+    range: string
+  ): Promise<JavaDownloadRelease> {
+    this.validateVersionRange(range);
+
+    if (!this.stable) {
+      throw new Error('GraalVM Community does not provide early access builds');
+    }
+
+    const arch = this.getSupportedArchitecture();
+    const {platform, extension} = this.validateStableBuildRequest(range);
+    // GraalVM Community asset names embed the platform, architecture and
+    // archive type, e.g. `graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz`.
+    const assetSuffix = `_${platform}-${arch}_bin.${extension}`;
+    const availableVersions = await this.getAvailableVersions(assetSuffix);
+
+    const satisfiedVersion = availableVersions
+      .filter(item => isVersionSatisfies(range, item.version))
+      .sort((a, b) => -semver.compareBuild(a.version, b.version))[0];
+
+    if (!satisfiedVersion) {
+      const error = this.createVersionNotFoundError(
+        range,
+        availableVersions.map(item => item.version),
+        `Platform: ${platform}`
+      );
+      error.message += `\nPlease check if this version is available at ${GRAALVM_COMMUNITY_DOWNLOAD_URL}.`;
+      throw error;
+    }
+
+    return satisfiedVersion;
+  }
+
+  private async getAvailableVersions(
+    assetSuffix: string
+  ): Promise<JavaDownloadRelease[]> {
+    const headers = getGitHubHttpHeaders();
+    const versions = new Map<string, JavaDownloadRelease>();
+    let releasesUrl: string | null = GRAALVM_COMMUNITY_RELEASES_URL;
+
+    for (
+      let pageIndex = 0;
+      releasesUrl && pageIndex < MAX_PAGINATION_PAGES;
+      pageIndex++
+    ) {
+      const response = await this.http.getJson<GraalVMCommunityRelease[]>(
+        releasesUrl,
+        headers
+      );
+
+      // A successful GitHub releases listing is always a JSON array (possibly
+      // empty). Anything else indicates an unexpected/error payload (rate
+      // limiting, auth failure, etc.) that must be surfaced instead of being
+      // silently treated as "no releases", which would later look like a
+      // misleading "version not found" error.
+      if (!Array.isArray(response.result)) {
+        throw new Error(
+          `Unexpected response while listing GraalVM Community releases from ${releasesUrl} ` +
+            `(HTTP status code: ${response.statusCode}). Expected a JSON array of releases. ` +
+            `Please check if the service is available at ${GRAALVM_COMMUNITY_DOWNLOAD_URL}.`
+        );
+      }
+
+      const releases = response.result;
+      if (releases.length === 0) {
+        break;
+      }
+
+      for (const release of releases) {
+        if (release.draft || release.prerelease) {
+          continue;
+        }
+
+        for (const asset of release.assets ?? []) {
+          const version = this.extractAssetVersion(asset.name, assetSuffix);
+          if (version) {
+            versions.set(version, {
+              version,
+              url: asset.browser_download_url
+            });
+          }
+        }
+      }
+
+      releasesUrl = this.getNextReleasesUrl(response.headers);
+    }
+
+    return [...versions.values()];
+  }
+
+  // Returns the GraalVM JDK version encoded in a release asset name when it
+  // matches the requested platform/architecture/archive suffix, otherwise null.
+  private extractAssetVersion(
+    assetName: string,
+    assetSuffix: string
+  ): string | null {
+    if (
+      !assetName.startsWith(GRAALVM_COMMUNITY_ASSET_PREFIX) ||
+      !assetName.endsWith(assetSuffix)
+    ) {
+      return null;
+    }
+
+    const rawVersion = assetName.slice(
+      GRAALVM_COMMUNITY_ASSET_PREFIX.length,
+      -assetSuffix.length
+    );
+
+    if (!GRAALVM_COMMUNITY_VERSION_PATTERN.test(rawVersion)) {
+      return null;
+    }
+
+    return convertVersionToSemver(rawVersion);
+  }
+
+  private getNextReleasesUrl(
+    headers: Record<string, string | string[] | undefined>
+  ): string | null {
+    const nextUrl = getNextPageUrlFromLinkHeader(headers);
+    if (
+      nextUrl &&
+      !validatePaginationUrl(nextUrl, GRAALVM_COMMUNITY_RELEASES_PAGE_ORIGIN)
+    ) {
+      core.warning(
+        `Ignoring pagination link with unexpected origin: ${nextUrl}`
+      );
+      return null;
+    }
+    return nextUrl;
   }
 }
