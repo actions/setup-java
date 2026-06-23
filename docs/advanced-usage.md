@@ -10,6 +10,7 @@
   - [Alibaba Dragonwell](#Alibaba-Dragonwell)
   - [SapMachine](#SapMachine)
   - [GraalVM](#GraalVM)
+  - [GraalVM Community](#GraalVM-Community)
   - [JetBrains](#JetBrains)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
   - [JavaFX Maven project](#JavaFX-Maven-project)
@@ -22,6 +23,7 @@
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](#Modifying-Maven-Toolchains)
 - [Java-version file](#Java-version-file)
+- [Self-signed certificates and internal CAs (GitHub Enterprise)](#Self-signed-certificates-and-internal-CAs-GitHub-Enterprise)
 
 See [action.yml](../action.yml) for more details on task inputs.
 
@@ -173,6 +175,21 @@ steps:
     native-image --version
 ```
 
+### GraalVM Community
+**NOTE:** GraalVM Community is available for stable JDK 17 and later releases.
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'graalvm-community'
+    java-version: '21'
+- run: |
+    java --version
+    native-image --version
+```
+
 ### JetBrains
 
 **NOTE:** JetBrains is only available for LTS versions on 11 or later (11, 17, 21, etc.).
@@ -269,6 +286,9 @@ steps:
 ## Installing Java from local file
 If your use-case requires a custom distribution or a version that is not provided by setup-java, you can download it manually and setup-java will take care of the installation and caching on the VM:
 
+> [!NOTE]
+> This approach also lets you use builds that setup-java does not provide directly, such as **Early Access (EA)** or other unreleased JDK builds (for example, an upcoming feature release or a Loom/Valhalla preview build). Download the desired archive in a prior step and point `jdkFile` at it; setup-java will extract, install, and cache it just like a supported distribution. When targeting multiple architectures, select the correct binary per architecture in your workflow (for example, with a build matrix).
+
 ```yaml
 steps:
 - run: |
@@ -281,6 +301,23 @@ steps:
     java-version: '11.0.0'
     architecture: x64
     
+- run: java --version
+```
+
+For example, to use an **Early Access** build from [jdk.java.net](https://jdk.java.net/), download the archive for your runner OS/architecture and install it via `distribution: 'jdkfile'` (example below assumes Linux x64):
+
+```yaml
+steps:
+- run: |
+    download_url="https://download.java.net/java/early_access/jdk25/36/GPL/openjdk-25-ea+36_linux-x64_bin.tar.gz"
+    wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'jdkfile'
+    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    java-version: '25.0.0-ea.36'
+    architecture: x64
+
 - run: java --version
 ```
 
@@ -660,3 +697,94 @@ If the file contains multiple versions, only the first one will be recognized.
 
 ***NOTE***:
 For the tool-version file, ensure that you use standard semantic versioning (semver) formats, as non-standard formats (such as jetbrains-21b212.1) may not be parsed correctly. Additionally, for complex version strings containing multiple version-like segments (for example, java semeru-openj9-11.0.15+10_openj9-0.32.0), the extraction logic may incorrectly capture the last segment (0.32.0) instead of the main version (11.0.15+10).
+
+## Self-signed certificates and internal CAs (GitHub Enterprise)
+
+When `setup-java` dynamically downloads a JDK, it makes HTTPS requests both to fetch the available version metadata and to download the JDK archive. If your runners sit behind a **TLS-inspecting corporate proxy**, or you are on **GitHub Enterprise Server (GHES)** with an internal certificate authority, those requests can fail with an error such as:
+
+```
+Error: self signed certificate in certificate chain
+```
+
+This happens because the certificate presented to the runner is signed by an **internal or self-signed CA** that is not part of the runner's default trust store. The download itself is fine — the runner simply cannot verify the certificate chain.
+
+### Recommended fix: trust your internal CA
+
+The secure way to resolve this is to make the runner trust your organization's CA, which keeps TLS verification fully enabled. `setup-java` runs on Node.js, which honors the [`NODE_EXTRA_CA_CERTS`](https://nodejs.org/api/cli.html#node_extra_ca_certsfile) environment variable. Point it at your CA bundle (in PEM format) **before** the `actions/setup-java` step:
+
+```yaml
+steps:
+  # The CA bundle is already present on the runner image in this example.
+  # Alternatively, write it from a secret in a previous step.
+  - name: Trust the internal CA
+    run: echo "NODE_EXTRA_CA_CERTS=/etc/ssl/certs/internal-ca.pem" >> "$GITHUB_ENV"
+
+  - uses: actions/setup-java@v5
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+```
+
+If you keep the certificate in a secret rather than on the runner image, write it to disk first:
+
+```yaml
+steps:
+  - name: Write and trust the internal CA
+    run: |
+      echo "${{ secrets.INTERNAL_CA_PEM }}" > "${RUNNER_TEMP}/internal-ca.pem"
+      echo "NODE_EXTRA_CA_CERTS=${RUNNER_TEMP}/internal-ca.pem" >> "$GITHUB_ENV"
+
+  - uses: actions/setup-java@v5
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+```
+
+For **self-hosted runners**, you can instead install your CA into the operating system's trust store (for example, `update-ca-certificates` on Debian/Ubuntu or `update-ca-trust` on RHEL). This makes the certificate trusted for all tooling on the runner, not just `setup-java`.
+
+### GitHub Enterprise customers
+
+On **GitHub Enterprise Server**, traffic from your runners frequently passes through an organization-managed proxy or terminates TLS at an appliance using a certificate from an internal CA. If your workflows hit the error above, set `NODE_EXTRA_CA_CERTS` to your enterprise CA bundle (or bake the CA into your self-hosted runner image) as shown above. Coordinate with your platform team to obtain the correct PEM bundle for your appliance and proxy chain.
+
+### Security warning: do not disable certificate verification
+
+Do **not** work around this error by disabling TLS verification (for example, by setting `NODE_TLS_REJECT_UNAUTHORIZED=0`). `setup-java` does not verify a pinned checksum or signature of the downloaded archive, so **TLS is effectively the only integrity guarantee** on the JDK download. Disabling verification would expose your workflow to a man-in-the-middle attacker who could serve a tampered JDK — which then becomes the `java` used by the rest of your pipeline, with access to your secrets and credentials. Always extend trust to your CA instead of turning verification off.
+
+### Trusting an internal CA inside the installed JDK
+
+The guidance above makes the **runner** trust your CA so that the JDK can be *downloaded*. That is a separate layer from making the **installed JDK** trust your CA at *application runtime*. If your build steps (Maven/Gradle dependency resolution, integration tests, HTTPS calls from your app, etc.) connect to internal services that present a certificate from your internal CA, the JDK will reject them with errors such as:
+
+```
+PKIX path building failed: unable to find valid certification path to requested target
+```
+
+The JDK keeps its own trust store — a keystore named `cacerts` under `$JAVA_HOME/lib/security/cacerts` — which is independent of the operating system and Node trust stores. After `setup-java` has run (so that `JAVA_HOME` points at the freshly installed JDK), import your CA into that keystore with `keytool`:
+
+```yaml
+steps:
+  - uses: actions/setup-java@v5
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+
+  - name: Import internal CA into the JDK trust store
+    shell: bash
+    run: |
+      # Write the CA from a secret (or reference a file already on the runner)
+      echo "${{ secrets.INTERNAL_CA_PEM }}" > "${RUNNER_TEMP}/internal-ca.pem"
+      keytool -importcert -noprompt \
+        -alias internal-ca \
+        -file "${RUNNER_TEMP}/internal-ca.pem" \
+        -keystore "${JAVA_HOME}/lib/security/cacerts" \
+        -storepass changeit
+```
+
+Notes and caveats:
+
+- The default keystore password for `cacerts` is `changeit` unless your distribution overrides it.
+- On **hosted runners** the change applies only to the current job's JDK and is discarded when the job ends, so include the import step in every job that needs it.
+- On **self-hosted runners**, importing into a tool-cache JDK persists for as long as that cached version remains on the runner; if you want it to survive JDK reinstalls, pre-seed the CA into your runner image or re-run the import step each time.
+- Prefer giving the certificate a stable, descriptive `-alias` so re-runs are idempotent (re-importing the same alias will fail; add `keytool -delete -alias internal-ca ...` first if you re-run within a long-lived runner).
+
+This documents the post-install workflow; there is no dedicated action input for supplying a custom `cacerts` file.
+
