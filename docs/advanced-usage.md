@@ -270,6 +270,9 @@ steps:
 ## Installing Java from local file
 If your use-case requires a custom distribution or a version that is not provided by setup-java, you can download it manually and setup-java will take care of the installation and caching on the VM:
 
+> [!NOTE]
+> This approach also lets you use builds that setup-java does not provide directly, such as **Early Access (EA)** or other unreleased JDK builds (for example, an upcoming feature release or a loom/valhalla preview build). Download the desired archive in a prior step and point `jdkFile` at it; setup-java will extract, install, and cache it just like a supported distribution. When targeting multiple architectures, select the correct binary per architecture in your workflow (for example, with a build matrix).
+
 ```yaml
 steps:
 - run: |
@@ -282,6 +285,23 @@ steps:
     java-version: '11.0.0'
     architecture: x64
     
+- run: java --version
+```
+
+For example, to use an **Early Access** build (such as an upcoming feature release from [jdk.java.net](https://jdk.java.net/)) that is not yet available through a regular distribution:
+
+```yaml
+steps:
+- run: |
+    download_url="https://download.java.net/java/early_access/jdk25/36/GPL/openjdk-25-ea+36_linux-x64_bin.tar.gz"
+    wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'jdkfile'
+    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    java-version: '25-ea'
+    architecture: x64
+
 - run: java --version
 ```
 
