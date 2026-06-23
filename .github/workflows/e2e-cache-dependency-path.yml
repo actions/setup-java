@@ -11,6 +11,9 @@ on:
     paths-ignore:
       - '**.md'
 
+permissions:
+  contents: read
+
 defaults:
   run:
     shell: bash
@@ -25,6 +28,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Run setup-java with the cache for gradle
         uses: ./
         id: setup-java
@@ -52,6 +57,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Run setup-java with the cache for gradle
         uses: ./
         id: setup-java
@@ -77,6 +84,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Run setup-java with the cache for gradle
         uses: ./
         id: setup-java
