@@ -52241,7 +52241,7 @@ else {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.DISTRIBUTIONS_ONLY_MAJOR_VERSION = exports.INPUT_MVN_TOOLCHAIN_VENDOR = exports.INPUT_MVN_TOOLCHAIN_ID = exports.MVN_TOOLCHAINS_FILE = exports.MVN_SETTINGS_FILE = exports.M2_DIR = exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE_DEPENDENCY_PATH = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION_FILE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
+exports.DISTRIBUTIONS_ONLY_MAJOR_VERSION = exports.INPUT_MVN_TOOLCHAIN_VENDOR = exports.INPUT_MVN_TOOLCHAIN_ID = exports.MVN_TOOLCHAINS_FILE = exports.MVN_SETTINGS_FILE = exports.M2_DIR = exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE_DEPENDENCY_PATH = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = exports.INPUT_VERIFY_SIGNATURE = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION_FILE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
 exports.MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
 exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_JAVA_VERSION_FILE = 'java-version-file';
@@ -52250,6 +52250,8 @@ exports.INPUT_JAVA_PACKAGE = 'java-package';
 exports.INPUT_DISTRIBUTION = 'distribution';
 exports.INPUT_JDK_FILE = 'jdkFile';
 exports.INPUT_CHECK_LATEST = 'check-latest';
+exports.INPUT_VERIFY_SIGNATURE = 'verify-signature';
+exports.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
 exports.INPUT_SERVER_ID = 'server-id';
 exports.INPUT_SERVER_USERNAME = 'server-username';
 exports.INPUT_SERVER_PASSWORD = 'server-password';
@@ -52311,11 +52313,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.deleteKey = exports.importKey = exports.PRIVATE_KEY_FILE = void 0;
+exports.verifyPackageSignature = exports.deleteKey = exports.importKey = exports.PRIVATE_KEY_FILE = void 0;
 const fs = __importStar(__nccwpck_require__(79896));
 const path = __importStar(__nccwpck_require__(16928));
 const io = __importStar(__nccwpck_require__(94994));
 const exec = __importStar(__nccwpck_require__(95236));
+const tc = __importStar(__nccwpck_require__(33472));
 const util = __importStar(__nccwpck_require__(54527));
 exports.PRIVATE_KEY_FILE = path.join(util.getTempDir(), 'private-key.asc');
 const PRIVATE_KEY_FINGERPRINT_REGEX = /\w{40}/;
@@ -52355,6 +52358,31 @@ function deleteKey(keyFingerprint) {
     });
 }
 exports.deleteKey = deleteKey;
+function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const signaturePath = yield tc.downloadTool(signatureUrl);
+        let gpgHome;
+        try {
+            gpgHome = fs.mkdtempSync(path.join(util.getTempDir(), 'verify-signature-gpg-home-'));
+        }
+        catch (error) {
+            throw new Error(`Failed to create temporary GPG home directory for signature verification: ${error.message}`);
+        }
+        const env = Object.assign(Object.assign({}, process.env), { GNUPGHOME: gpgHome });
+        try {
+            const publicKeyFile = path.join(gpgHome, 'public-key.asc');
+            fs.writeFileSync(publicKeyFile, publicKeyContent, { encoding: 'utf-8' });
+            const options = { silent: true, env };
+            yield exec.exec('gpg', ['--batch', '--import', publicKeyFile], options);
+            yield exec.exec('gpg', ['--batch', '--verify', signaturePath, archivePath], options);
+        }
+        finally {
+            yield io.rmRF(signaturePath);
+            yield io.rmRF(gpgHome);
+        }
+    });
+}
+exports.verifyPackageSignature = verifyPackageSignature;
 
 
 /***/ }),
