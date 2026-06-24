@@ -32,6 +32,8 @@ async function run() {
       constants.INPUT_VERIFY_SIGNATURE,
       false
     );
+    const verifySignaturePublicKey =
+      core.getInput(constants.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
 
     core.startGroup('Installed distributions');
@@ -49,6 +51,7 @@ async function run() {
       packageType,
       checkLatest,
       verifySignature,
+      verifySignaturePublicKey,
       distributionName,
       jdkFile,
       toolchainIds
@@ -106,6 +109,7 @@ async function installVersion(
     packageType,
     checkLatest,
     verifySignature,
+    verifySignaturePublicKey,
     toolchainIds
   } = options;
 
@@ -114,6 +118,7 @@ async function installVersion(
     packageType,
     checkLatest,
     verifySignature,
+    verifySignaturePublicKey,
     version
   };
 
@@ -149,6 +154,7 @@ interface installerInputsOptions {
   packageType: string;
   checkLatest: boolean;
   verifySignature: boolean;
+  verifySignaturePublicKey: string | undefined;
   distributionName: string;
   jdkFile: string;
   toolchainIds: Array<string>;

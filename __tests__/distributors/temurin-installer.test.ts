@@ -364,4 +364,32 @@ describe('downloadTool', () => {
     );
     expect(spyVerifySignature).not.toHaveBeenCalled();
   });
+
+  it('uses custom public key when verifySignaturePublicKey is provided', async () => {
+    const customKey =
+      '-----BEGIN PGP PUBLIC KEY BLOCK-----\ncustom\n-----END PGP PUBLIC KEY BLOCK-----';
+    const distribution = new TemurinDistribution(
+      {
+        version: '17',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false,
+        verifySignature: true,
+        verifySignaturePublicKey: customKey
+      },
+      TemurinImplementation.Hotspot
+    );
+
+    await distribution['downloadTool']({
+      version: '17.0.14+7',
+      url: 'https://example.com/jdk.tar.gz',
+      signatureUrl: 'https://example.com/jdk.tar.gz.sig'
+    });
+
+    expect(spyVerifySignature).toHaveBeenCalledWith(
+      '/tmp/jdk.tar.gz',
+      'https://example.com/jdk.tar.gz.sig',
+      customKey
+    );
+  });
 });

@@ -127,7 +127,7 @@ export class TemurinDistribution extends JavaBase {
         await gpg.verifyPackageSignature(
           javaArchivePath,
           javaRelease.signatureUrl,
-          ADOPTIUM_PUBLIC_KEY
+          this.verifySignaturePublicKey ?? ADOPTIUM_PUBLIC_KEY
         );
       } catch (error) {
         throw new Error(

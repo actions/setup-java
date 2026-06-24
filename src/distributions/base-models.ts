@@ -4,6 +4,7 @@ export interface JavaInstallerOptions {
   packageType: string;
   checkLatest: boolean;
   verifySignature?: boolean;
+  verifySignaturePublicKey?: string;
 }
 
 export interface JavaInstallerResults {

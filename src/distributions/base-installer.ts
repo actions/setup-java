@@ -21,6 +21,7 @@ export abstract class JavaBase {
   protected stable: boolean;
   protected checkLatest: boolean;
   protected verifySignature: boolean;
+  protected verifySignaturePublicKey: string | undefined;
 
   constructor(
     protected distribution: string,
@@ -38,6 +39,7 @@ export abstract class JavaBase {
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
     this.verifySignature = installerOptions.verifySignature ?? false;
+    this.verifySignaturePublicKey = installerOptions.verifySignaturePublicKey;
   }
 
   protected abstract downloadTool(
