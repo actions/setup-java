@@ -67,6 +67,11 @@ export async function verifyPackageSignature(
       path.join(util.getTempDir(), 'verify-signature-gpg-home-')
     );
   } catch (error) {
+    try {
+      await io.rmRF(signaturePath);
+    } catch {
+      // ignore cleanup failures
+    }
     throw new Error(
       `Failed to create temporary GPG home directory for signature verification: ${
         (error as Error).message
