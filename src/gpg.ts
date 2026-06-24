@@ -74,9 +74,9 @@ export async function verifyPackageSignature(
     );
   }
   const env = {...process.env, GNUPGHOME: gpgHome};
-  const publicKeyFile = path.join(gpgHome, 'public-key.asc');
 
   try {
+    const publicKeyFile = path.join(gpgHome, 'public-key.asc');
     fs.writeFileSync(publicKeyFile, publicKeyContent, {encoding: 'utf-8'});
     const options: ExecOptions = {silent: true, env};
     await exec.exec('gpg', ['--batch', '--import', publicKeyFile], options);
