@@ -5,7 +5,7 @@ import os from 'os';
 import {
   TemurinDistribution,
   TemurinImplementation,
-  ADOPTIUM_SIGNATURE_KEY_FINGERPRINT
+  ADOPTIUM_PUBLIC_KEY
 } from '../../src/distributions/temurin/installer';
 import {JavaInstallerOptions} from '../../src/distributions/base-models';
 import * as util from '../../src/util';
@@ -338,7 +338,7 @@ describe('downloadTool', () => {
     expect(spyVerifySignature).toHaveBeenCalledWith(
       '/tmp/jdk.tar.gz',
       'https://example.com/jdk.tar.gz.sig',
-      ADOPTIUM_SIGNATURE_KEY_FINGERPRINT
+      ADOPTIUM_PUBLIC_KEY
     );
   });
 

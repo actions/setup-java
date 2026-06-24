@@ -58,7 +58,7 @@ export async function deleteKey(keyFingerprint: string) {
 export async function verifyPackageSignature(
   archivePath: string,
   signatureUrl: string,
-  keyFingerprint: string
+  publicKeyContent: string
 ) {
   const signaturePath = await tc.downloadTool(signatureUrl);
   let gpgHome: string;
@@ -74,20 +74,12 @@ export async function verifyPackageSignature(
     );
   }
   const env = {...process.env, GNUPGHOME: gpgHome};
+  const publicKeyFile = path.join(gpgHome, 'public-key.asc');
 
   try {
+    fs.writeFileSync(publicKeyFile, publicKeyContent, {encoding: 'utf-8'});
     const options: ExecOptions = {silent: true, env};
-    await exec.exec(
-      'gpg',
-      [
-        '--batch',
-        '--keyserver',
-        'keyserver.ubuntu.com',
-        '--recv-keys',
-        keyFingerprint
-      ],
-      options
-    );
+    await exec.exec('gpg', ['--batch', '--import', publicKeyFile], options);
     await exec.exec(
       'gpg',
       ['--batch', '--verify', signaturePath, archivePath],

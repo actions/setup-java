@@ -60,13 +60,13 @@ describe('gpg tests', () => {
     });
 
     describe('verifyPackageSignature', () => {
-      it('downloads signature and verifies package', async () => {
-        const testFingerprint = '3B04D753C9050D9A5D343F39843C48A565F8F04B';
+      it('imports bundled key and verifies package', async () => {
+        const publicKeyContent = '-----BEGIN PGP PUBLIC KEY BLOCK-----\ntest\n-----END PGP PUBLIC KEY BLOCK-----';
         (tc.downloadTool as jest.Mock).mockResolvedValue('/tmp/jdk.tar.gz.sig');
         await gpg.verifyPackageSignature(
           '/tmp/jdk.tar.gz',
           'https://example.com/jdk.tar.gz.sig',
-          testFingerprint
+          publicKeyContent
         );
 
         expect(tc.downloadTool).toHaveBeenCalledWith(
@@ -75,13 +75,7 @@ describe('gpg tests', () => {
         expect(exec.exec).toHaveBeenNthCalledWith(
           1,
           'gpg',
-          [
-            '--batch',
-            '--keyserver',
-            'keyserver.ubuntu.com',
-            '--recv-keys',
-            testFingerprint
-          ],
+          ['--batch', '--import', expect.stringContaining('public-key.asc')],
           expect.objectContaining({silent: true})
         );
         expect(exec.exec).toHaveBeenNthCalledWith(

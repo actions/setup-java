@@ -52112,7 +52112,7 @@ function deleteKey(keyFingerprint) {
     });
 }
 exports.deleteKey = deleteKey;
-function verifyPackageSignature(archivePath, signatureUrl, keyFingerprint) {
+function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
     return __awaiter(this, void 0, void 0, function* () {
         const signaturePath = yield tc.downloadTool(signatureUrl);
         let gpgHome;
@@ -52123,15 +52123,11 @@ function verifyPackageSignature(archivePath, signatureUrl, keyFingerprint) {
             throw new Error(`Failed to create temporary GPG home directory for signature verification: ${error.message}`);
         }
         const env = Object.assign(Object.assign({}, process.env), { GNUPGHOME: gpgHome });
+        const publicKeyFile = path.join(gpgHome, 'public-key.asc');
         try {
+            fs.writeFileSync(publicKeyFile, publicKeyContent, { encoding: 'utf-8' });
             const options = { silent: true, env };
-            yield exec.exec('gpg', [
-                '--batch',
-                '--keyserver',
-                'keyserver.ubuntu.com',
-                '--recv-keys',
-                keyFingerprint
-            ], options);
+            yield exec.exec('gpg', ['--batch', '--import', publicKeyFile], options);
             yield exec.exec('gpg', ['--batch', '--verify', signaturePath, archivePath], options);
         }
         finally {
