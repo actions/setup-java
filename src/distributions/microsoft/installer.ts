@@ -10,11 +10,15 @@ import {
   getGitHubHttpHeaders,
   renameWinArchive
 } from '../../util';
+import * as gpg from '../../gpg';
+import {MICROSOFT_PUBLIC_KEY} from './microsoft-key';
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 import {TypedResponse} from '@actions/http-client/lib/interfaces';
+
+export {MICROSOFT_PUBLIC_KEY} from './microsoft-key';
 
 export class MicrosoftDistributions extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -28,6 +32,28 @@ export class MicrosoftDistributions extends JavaBase {
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
     let javaArchivePath = await tc.downloadTool(javaRelease.url);
+
+    if (this.verifySignature) {
+      if (!javaRelease.signatureUrl) {
+        throw new Error(
+          `Input 'verify-signature' is enabled, but no signature URL was found for Microsoft Build of OpenJDK version ${javaRelease.version}.`
+        );
+      }
+      core.info(`Verifying Java package signature...`);
+      try {
+        await gpg.verifyPackageSignature(
+          javaArchivePath,
+          javaRelease.signatureUrl,
+          this.verifySignaturePublicKey ?? MICROSOFT_PUBLIC_KEY
+        );
+      } catch (error) {
+        throw new Error(
+          `Failed to verify signature for Microsoft Build of OpenJDK version ${javaRelease.version} from ${javaRelease.signatureUrl}: ${
+            (error as Error).message
+          }`
+        );
+      }
+    }
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
@@ -82,8 +108,13 @@ export class MicrosoftDistributions extends JavaBase {
 
     return {
       url: foundRelease.files[0].download_url,
+      signatureUrl: `${foundRelease.files[0].download_url}.sig`,
       version: foundRelease.version
     };
+  }
+
+  protected supportsSignatureVerification(): boolean {
+    return true;
   }
 
   private async getAvailableVersions(): Promise<tc.IToolRelease[] | null> {

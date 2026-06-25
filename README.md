@@ -48,7 +48,7 @@ For information about the latest releases, recent updates, and newly supported d
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
-  - `verify-signature`: Verifies downloaded Java package signatures when supported by the selected distribution. Currently supported for `temurin`. If set to `true` for unsupported distributions, the action fails.
+  - `verify-signature`: Verifies downloaded Java package signatures when supported by the selected distribution. Currently supported for `temurin` and `microsoft`. If set to `true` for unsupported distributions, the action fails.
 
   - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
 

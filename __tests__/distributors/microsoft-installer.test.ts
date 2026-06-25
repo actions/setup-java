@@ -1,8 +1,15 @@
-import {MicrosoftDistributions} from '../../src/distributions/microsoft/installer';
+import {
+  MicrosoftDistributions,
+  MICROSOFT_PUBLIC_KEY
+} from '../../src/distributions/microsoft/installer';
 import os from 'os';
 import data from '../data/microsoft.json';
 import * as httpm from '@actions/http-client';
 import * as core from '@actions/core';
+import * as tc from '@actions/tool-cache';
+import * as gpg from '../../src/gpg';
+import * as util from '../../src/util';
+import fs from 'fs';
 
 describe('findPackageForDownload', () => {
   let distribution: MicrosoftDistributions;
@@ -97,6 +104,7 @@ describe('findPackageForDownload', () => {
       .replace('{{OS_TYPE}}', os)
       .replace('{{ARCHIVE_TYPE}}', archive);
     expect(result.url).toBe(url);
+    expect(result.signatureUrl).toBe(`${url}.sig`);
   });
 
   it.each([
@@ -181,5 +189,120 @@ describe('findPackageForDownload', () => {
     await expect(distribution['findPackageForDownload']('8')).rejects.toThrow(
       /No matching version found for SemVer */
     );
+  });
+});
+
+describe('downloadTool', () => {
+  let spyDownloadTool: jest.SpyInstance;
+  let spyExtractJdkFile: jest.SpyInstance;
+  let spyCacheDir: jest.SpyInstance;
+  let spyVerifySignature: jest.SpyInstance;
+  let distribution: MicrosoftDistributions;
+
+  beforeEach(() => {
+    jest
+      .spyOn(os, 'platform')
+      .mockReturnValue(process.platform as ReturnType<typeof os.platform>);
+
+    distribution = new MicrosoftDistributions({
+      version: '17',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    spyDownloadTool = jest.spyOn(tc, 'downloadTool');
+    spyDownloadTool.mockImplementation(async () => {
+      return '/tmp/jdk.tar.gz';
+    });
+
+    spyExtractJdkFile = jest.spyOn(util, 'extractJdkFile');
+    spyExtractJdkFile.mockImplementation(async () => {
+      return '/tmp/unpacked';
+    });
+
+    jest.spyOn(fs, 'readdirSync').mockReturnValue(['jdk'] as any);
+    spyCacheDir = jest.spyOn(tc, 'cacheDir');
+    spyCacheDir.mockImplementation(async () => {
+      return '/tmp/cached';
+    });
+
+    spyVerifySignature = jest.spyOn(gpg, 'verifyPackageSignature');
+    spyVerifySignature.mockImplementation(async () => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('verifies signature when enabled', async () => {
+    const signedDistribution = new MicrosoftDistributions({
+      version: '17',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false,
+      verifySignature: true
+    });
+
+    await signedDistribution['downloadTool']({
+      version: '17.0.14+7',
+      url: 'https://example.com/jdk.tar.gz',
+      signatureUrl: 'https://example.com/jdk.tar.gz.sig'
+    });
+
+    expect(spyVerifySignature).toHaveBeenCalledWith(
+      '/tmp/jdk.tar.gz',
+      'https://example.com/jdk.tar.gz.sig',
+      MICROSOFT_PUBLIC_KEY
+    );
+  });
+
+  it('uses custom public key when verifySignaturePublicKey is provided', async () => {
+    const customKey =
+      '-----BEGIN PGP PUBLIC KEY BLOCK-----\ncustom\n-----END PGP PUBLIC KEY BLOCK-----';
+    const signedDistribution = new MicrosoftDistributions({
+      version: '17',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false,
+      verifySignature: true,
+      verifySignaturePublicKey: customKey
+    });
+
+    await signedDistribution['downloadTool']({
+      version: '17.0.14+7',
+      url: 'https://example.com/jdk.tar.gz',
+      signatureUrl: 'https://example.com/jdk.tar.gz.sig'
+    });
+
+    expect(spyVerifySignature).toHaveBeenCalledWith(
+      '/tmp/jdk.tar.gz',
+      'https://example.com/jdk.tar.gz.sig',
+      customKey
+    );
+  });
+
+  it('fails when signature is missing and verification is enabled', async () => {
+    const signedDistribution = new MicrosoftDistributions({
+      version: '17',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false,
+      verifySignature: true
+    });
+
+    await expect(
+      signedDistribution['downloadTool']({
+        version: '17.0.14+7',
+        url: 'https://example.com/jdk.tar.gz'
+      })
+    ).rejects.toThrow(
+      "Input 'verify-signature' is enabled, but no signature URL was found for Microsoft Build of OpenJDK version 17.0.14+7."
+    );
+    expect(spyVerifySignature).not.toHaveBeenCalled();
+  });
+
+  it('supports signature verification', () => {
+    expect(distribution['supportsSignatureVerification']()).toBe(true);
   });
 });
