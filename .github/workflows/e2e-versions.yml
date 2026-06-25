@@ -339,7 +339,9 @@ jobs:
         version: ['21', '17']
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: setup-java with signature verification
         uses: ./
         id: setup-java
@@ -348,30 +350,10 @@ jobs:
           distribution: temurin
           verify-signature: true
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
-        shell: bash
-
-  setup-java-temurin-signature-verification:
-    name: temurin ${{ matrix.version }} signature verification - ${{ matrix.os }}
-    needs: setup-java-major-minor-versions
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        version: ['21', '17']
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: setup-java with signature verification
-        uses: ./
-        id: setup-java
-        with:
-          java-version: ${{ matrix.version }}
-          distribution: temurin
-          verify-signature: true
-      - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_VERSION: ${{ matrix.version }}
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
   setup-java-microsoft-signature-verification:
@@ -385,7 +367,9 @@ jobs:
         version: ['21', '17']
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: setup-java with signature verification
         uses: ./
         id: setup-java
@@ -394,7 +378,10 @@ jobs:
           distribution: microsoft
           verify-signature: true
       - name: Verify Java
-        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        env:
+          JAVA_VERSION: ${{ matrix.version }}
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
   setup-java-ea-versions-sapmachine:
