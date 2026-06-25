@@ -61,7 +61,8 @@ describe('gpg tests', () => {
 
     describe('verifyPackageSignature', () => {
       it('imports bundled key and verifies package', async () => {
-        const publicKeyContent = '-----BEGIN PGP PUBLIC KEY BLOCK-----\ntest\n-----END PGP PUBLIC KEY BLOCK-----';
+        const publicKeyContent =
+          '-----BEGIN PGP PUBLIC KEY BLOCK-----\ntest\n-----END PGP PUBLIC KEY BLOCK-----';
         (tc.downloadTool as jest.Mock).mockResolvedValue('/tmp/jdk.tar.gz.sig');
         await gpg.verifyPackageSignature(
           '/tmp/jdk.tar.gz',

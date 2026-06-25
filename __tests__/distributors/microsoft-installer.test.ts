@@ -221,7 +221,9 @@ describe('findPackageForDownload', () => {
 
     const result = await distribution['findPackageForDownload']('17.0.10');
 
-    expect(result.signatureUrl).toBe('https://example.test/jdk.tar.gz.custom.sig');
+    expect(result.signatureUrl).toBe(
+      'https://example.test/jdk.tar.gz.custom.sig'
+    );
   });
 });
 
