@@ -48,9 +48,7 @@ export class MicrosoftDistributions extends JavaBase {
         );
       } catch (error) {
         throw new Error(
-          `Failed to verify signature for Microsoft Build of OpenJDK version ${javaRelease.version} from ${javaRelease.signatureUrl}: ${
-            (error as Error).message
-          }`
+          `Failed to verify signature for Microsoft Build of OpenJDK version ${javaRelease.version}. Signature URL: ${javaRelease.signatureUrl}. Error: ${(error as Error).message}`
         );
       }
     }
@@ -106,9 +104,15 @@ export class MicrosoftDistributions extends JavaBase {
       throw this.createVersionNotFoundError(range, availableVersionStrings);
     }
 
+    const file = foundRelease.files[0] as {
+      download_url: string;
+      signature_url?: string;
+    };
+    const signatureUrl = file.signature_url ?? `${file.download_url}.sig`;
+
     return {
-      url: foundRelease.files[0].download_url,
-      signatureUrl: `${foundRelease.files[0].download_url}.sig`,
+      url: file.download_url,
+      signatureUrl,
       version: foundRelease.version
     };
   }

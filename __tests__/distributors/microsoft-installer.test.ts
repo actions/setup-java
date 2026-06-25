@@ -190,6 +190,34 @@ describe('findPackageForDownload', () => {
       /No matching version found for SemVer */
     );
   });
+
+  it('uses manifest-provided signature URL when available', async () => {
+    spyGetManifestFromRepo.mockReturnValue({
+      result: [
+        {
+          version: '17.0.10',
+          stable: true,
+          release_url: 'https://example.test',
+          files: [
+            {
+              filename: 'microsoft-jdk-17.0.10-linux-x64.tar.gz',
+              arch: 'x64',
+              platform: 'linux',
+              download_url: 'https://example.test/jdk.tar.gz',
+              signature_url: 'https://example.test/jdk.tar.gz.custom.sig'
+            }
+          ]
+        }
+      ],
+      statusCode: 200,
+      headers: {}
+    });
+    jest.spyOn(os, 'platform').mockReturnValue('linux');
+
+    const result = await distribution['findPackageForDownload']('17.0.10');
+
+    expect(result.signatureUrl).toBe('https://example.test/jdk.tar.gz.custom.sig');
+  });
 });
 
 describe('downloadTool', () => {
