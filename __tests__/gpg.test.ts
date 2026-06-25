@@ -50,9 +50,9 @@ describe('gpg tests', () => {
       expect(gpg.toGpgPath('D:\\a\\_temp\\gpg-home')).toBe(
         '/d/a/_temp/gpg-home'
       );
-      expect(gpg.toGpgPath('C:\\Users\\runner\\AppData\\Local\\Temp\\key.asc')).toBe(
-        '/c/Users/runner/AppData/Local/Temp/key.asc'
-      );
+      expect(
+        gpg.toGpgPath('C:\\Users\\runner\\AppData\\Local\\Temp\\key.asc')
+      ).toBe('/c/Users/runner/AppData/Local/Temp/key.asc');
     });
 
     it('handles uppercase and lowercase drive letters on Windows', () => {
