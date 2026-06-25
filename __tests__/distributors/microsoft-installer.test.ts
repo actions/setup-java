@@ -262,6 +262,10 @@ describe('downloadTool', () => {
       return '/tmp/cached';
     });
 
+    jest
+      .spyOn(util, 'renameWinArchive')
+      .mockImplementation((archivePath: string) => `${archivePath}.zip`);
+
     spyVerifySignature = jest.spyOn(gpg, 'verifyPackageSignature');
     spyVerifySignature.mockImplementation(async () => {});
   });
