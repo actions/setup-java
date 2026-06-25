@@ -351,6 +351,29 @@ jobs:
         run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
         shell: bash
 
+  setup-java-temurin-signature-verification:
+    name: temurin ${{ matrix.version }} signature verification - ${{ matrix.os }}
+    needs: setup-java-major-minor-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        version: ['21', '17']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: setup-java with signature verification
+        uses: ./
+        id: setup-java
+        with:
+          java-version: ${{ matrix.version }}
+          distribution: temurin
+          verify-signature: true
+      - name: Verify Java
+        run: bash __tests__/verify-java.sh "${{ matrix.version }}" "${{ steps.setup-java.outputs.path }}"
+        shell: bash
+
   setup-java-ea-versions-sapmachine:
     name: sapmachine ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
