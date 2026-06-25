@@ -32,6 +32,35 @@ describe('gpg tests', () => {
     }
   });
 
+  describe('toGpgPath', () => {
+    const originalPlatform = process.platform;
+
+    afterEach(() => {
+      Object.defineProperty(process, 'platform', {value: originalPlatform});
+    });
+
+    it('returns path unchanged on non-Windows platforms', () => {
+      Object.defineProperty(process, 'platform', {value: 'linux'});
+      expect(gpg.toGpgPath('/tmp/some/path')).toBe('/tmp/some/path');
+      expect(gpg.toGpgPath('D:\\a\\_temp\\file')).toBe('D:\\a\\_temp\\file');
+    });
+
+    it('converts Windows backslashes and drive letter to POSIX path on Windows', () => {
+      Object.defineProperty(process, 'platform', {value: 'win32'});
+      expect(gpg.toGpgPath('D:\\a\\_temp\\gpg-home')).toBe(
+        '/d/a/_temp/gpg-home'
+      );
+      expect(gpg.toGpgPath('C:\\Users\\runner\\AppData\\Local\\Temp\\key.asc')).toBe(
+        '/c/Users/runner/AppData/Local/Temp/key.asc'
+      );
+    });
+
+    it('handles uppercase and lowercase drive letters on Windows', () => {
+      Object.defineProperty(process, 'platform', {value: 'win32'});
+      expect(gpg.toGpgPath('d:\\a\\_temp\\file')).toBe('/d/a/_temp/file');
+    });
+  });
+
   describe('importKey', () => {
     it('attempts to import private key and returns null key id on failure', async () => {
       const privateKey = 'KEY CONTENTS';

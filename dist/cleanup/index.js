@@ -52313,7 +52313,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.verifyPackageSignature = exports.deleteKey = exports.importKey = exports.PRIVATE_KEY_FILE = void 0;
+exports.verifyPackageSignature = exports.deleteKey = exports.importKey = exports.toGpgPath = exports.PRIVATE_KEY_FILE = void 0;
 const fs = __importStar(__nccwpck_require__(79896));
 const path = __importStar(__nccwpck_require__(16928));
 const io = __importStar(__nccwpck_require__(94994));
@@ -52322,6 +52322,18 @@ const tc = __importStar(__nccwpck_require__(33472));
 const util = __importStar(__nccwpck_require__(54527));
 exports.PRIVATE_KEY_FILE = path.join(util.getTempDir(), 'private-key.asc');
 const PRIVATE_KEY_FINGERPRINT_REGEX = /\w{40}/;
+// Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
+// The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
+// internally. Passing Windows paths with backslashes can cause fatal GPG errors
+// (exit code 2), so all paths passed to GPG must be in POSIX format on Windows.
+function toGpgPath(p) {
+    if (process.platform !== 'win32')
+        return p;
+    return p
+        .replace(/\\/g, '/')
+        .replace(/^([A-Za-z]):\//, (_, drive) => `/${drive.toLowerCase()}/`);
+}
+exports.toGpgPath = toGpgPath;
 function importKey(privateKey) {
     return __awaiter(this, void 0, void 0, function* () {
         fs.writeFileSync(exports.PRIVATE_KEY_FILE, privateKey, {
@@ -52378,8 +52390,21 @@ function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
             const publicKeyFile = path.join(gpgHome, 'public-key.asc');
             fs.writeFileSync(publicKeyFile, publicKeyContent, { encoding: 'utf-8' });
             const options = { silent: true };
-            yield exec.exec('gpg', ['--homedir', gpgHome, '--batch', '--import', publicKeyFile], options);
-            yield exec.exec('gpg', ['--homedir', gpgHome, '--batch', '--verify', signaturePath, archivePath], options);
+            yield exec.exec('gpg', [
+                '--homedir',
+                toGpgPath(gpgHome),
+                '--batch',
+                '--import',
+                toGpgPath(publicKeyFile)
+            ], options);
+            yield exec.exec('gpg', [
+                '--homedir',
+                toGpgPath(gpgHome),
+                '--batch',
+                '--verify',
+                toGpgPath(signaturePath),
+                toGpgPath(archivePath)
+            ], options);
         }
         finally {
             yield io.rmRF(signaturePath);
