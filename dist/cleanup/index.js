@@ -52366,6 +52366,12 @@ function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
             gpgHome = fs.mkdtempSync(path.join(util.getTempDir(), 'verify-signature-gpg-home-'));
         }
         catch (error) {
+            try {
+                yield io.rmRF(signaturePath);
+            }
+            catch (_a) {
+                // ignore cleanup failures
+            }
             throw new Error(`Failed to create temporary GPG home directory for signature verification: ${error.message}`);
         }
         const env = Object.assign(Object.assign({}, process.env), { GNUPGHOME: gpgHome });
