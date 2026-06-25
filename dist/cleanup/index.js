@@ -52374,13 +52374,12 @@ function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
             }
             throw new Error(`Failed to create temporary GPG home directory for signature verification: ${error.message}`);
         }
-        const env = Object.assign(Object.assign({}, process.env), { GNUPGHOME: gpgHome });
         try {
             const publicKeyFile = path.join(gpgHome, 'public-key.asc');
             fs.writeFileSync(publicKeyFile, publicKeyContent, { encoding: 'utf-8' });
-            const options = { silent: true, env };
-            yield exec.exec('gpg', ['--batch', '--import', publicKeyFile], options);
-            yield exec.exec('gpg', ['--batch', '--verify', signaturePath, archivePath], options);
+            const options = { silent: true };
+            yield exec.exec('gpg', ['--homedir', gpgHome, '--batch', '--import', publicKeyFile], options);
+            yield exec.exec('gpg', ['--homedir', gpgHome, '--batch', '--verify', signaturePath, archivePath], options);
         }
         finally {
             yield io.rmRF(signaturePath);

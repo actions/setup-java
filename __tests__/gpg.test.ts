@@ -76,13 +76,26 @@ describe('gpg tests', () => {
         expect(exec.exec).toHaveBeenNthCalledWith(
           1,
           'gpg',
-          ['--batch', '--import', expect.stringContaining('public-key.asc')],
+          [
+            '--homedir',
+            expect.any(String),
+            '--batch',
+            '--import',
+            expect.stringContaining('public-key.asc')
+          ],
           expect.objectContaining({silent: true})
         );
         expect(exec.exec).toHaveBeenNthCalledWith(
           2,
           'gpg',
-          ['--batch', '--verify', '/tmp/jdk.tar.gz.sig', '/tmp/jdk.tar.gz'],
+          [
+            '--homedir',
+            expect.any(String),
+            '--batch',
+            '--verify',
+            '/tmp/jdk.tar.gz.sig',
+            '/tmp/jdk.tar.gz'
+          ],
           expect.objectContaining({silent: true})
         );
       });

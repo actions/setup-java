@@ -78,16 +78,18 @@ export async function verifyPackageSignature(
       }`
     );
   }
-  const env = {...process.env, GNUPGHOME: gpgHome};
-
   try {
     const publicKeyFile = path.join(gpgHome, 'public-key.asc');
     fs.writeFileSync(publicKeyFile, publicKeyContent, {encoding: 'utf-8'});
-    const options: ExecOptions = {silent: true, env};
-    await exec.exec('gpg', ['--batch', '--import', publicKeyFile], options);
+    const options: ExecOptions = {silent: true};
     await exec.exec(
       'gpg',
-      ['--batch', '--verify', signaturePath, archivePath],
+      ['--homedir', gpgHome, '--batch', '--import', publicKeyFile],
+      options
+    );
+    await exec.exec(
+      'gpg',
+      ['--homedir', gpgHome, '--batch', '--verify', signaturePath, archivePath],
       options
     );
   } finally {
