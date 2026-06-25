@@ -15,7 +15,7 @@
     "lint:fix": "eslint --config ./.eslintrc.js \"**/*.ts\" --fix",
     "check": "npm run format-check && npm run lint && npm run build && npm test",
     "fix": "npm run format && npm run lint:fix && npm run build",
-    "prepare": "husky",
+    "prepare": "husky install",
     "prerelease": "npm run-script build",
     "release": "git add -f dist/setup/index.js dist/cleanup/index.js",
     "test": "jest"
