@@ -41,6 +41,9 @@ inputs:
        authentication to the Apache Maven repository. Default is $GITHUB_TOKEN'
     required: false
     default: 'GITHUB_TOKEN'
+  mvn-server-credentials:
+    description: 'Optional multiline list of Maven server credentials in the format "server-id:USERNAME_ENV:PASSWORD_ENV". When provided, this overrides server-id/server-username/server-password and writes multiple <server> entries in settings.xml.'
+    required: false
   settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false

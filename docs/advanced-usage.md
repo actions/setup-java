@@ -473,6 +473,57 @@ The two `settings.xml` files created from the above example look like the follow
 
 If you don't want to overwrite the `settings.xml` file, you can set `overwrite-settings: false`
 
+### Multiple repositories
+
+When release and snapshot artifacts are deployed to different repositories, you can configure multiple Maven servers in one run.
+
+Use `mvn-server-credentials` with one entry per line in the format:
+`server-id:USERNAME_ENV:PASSWORD_ENV`
+
+#### YAML example
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: Set up Apache Maven repositories
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+        mvn-server-credentials: |
+          releases:ARTIFACTORY_USERNAME:ARTIFACTORY_TOKEN
+          snapshots:SNAPSHOT_ARTIFACTORY_USERNAME:SNAPSHOT_ARTIFACTORY_TOKEN
+        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE
+```
+
+Generated `settings.xml`:
+```xml
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <servers>
+    <server>
+      <id>releases</id>
+      <username>${env.ARTIFACTORY_USERNAME}</username>
+      <password>${env.ARTIFACTORY_TOKEN}</password>
+    </server>
+    <server>
+      <id>snapshots</id>
+      <username>${env.SNAPSHOT_ARTIFACTORY_USERNAME}</username>
+      <password>${env.SNAPSHOT_ARTIFACTORY_TOKEN}</password>
+    </server>
+    <server>
+      <id>gpg.passphrase</id>
+      <passphrase>${env.MAVEN_GPG_PASSPHRASE}</passphrase>
+    </server>
+  </servers>
+</settings>
+```
+
 ### Extra setup for pom.xml:
 
 The Maven GPG Plugin configuration in the pom.xml file should contain the following structure to avoid possible issues like `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`:
