@@ -20,6 +20,7 @@ export abstract class JavaBase {
   protected packageType: string;
   protected stable: boolean;
   protected checkLatest: boolean;
+  protected setDefault: boolean;
 
   constructor(
     protected distribution: string,
@@ -36,6 +37,10 @@ export abstract class JavaBase {
     this.architecture = installerOptions.architecture || os.arch();
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
+    this.setDefault =
+      installerOptions.setDefault !== undefined
+        ? installerOptions.setDefault
+        : true;
   }
 
   protected abstract downloadTool(
@@ -169,8 +174,15 @@ export abstract class JavaBase {
       foundJava.path = macOSPostfixPath;
     }
 
-    core.info(`Setting Java ${foundJava.version} as the default`);
-    this.setJavaDefault(foundJava.version, foundJava.path);
+    if (this.setDefault) {
+      core.info(`Setting Java ${foundJava.version} as the default`);
+      this.setJavaDefault(foundJava.version, foundJava.path);
+    } else {
+      core.info(
+        `Installing Java ${foundJava.version} (not setting as default)`
+      );
+      this.setJavaEnvironment(foundJava.version, foundJava.path);
+    }
 
     return foundJava;
   }
@@ -298,9 +310,13 @@ export abstract class JavaBase {
   }
 
   protected setJavaDefault(version: string, toolPath: string) {
-    const majorVersion = version.split('.')[0];
     core.exportVariable('JAVA_HOME', toolPath);
     core.addPath(path.join(toolPath, 'bin'));
+    this.setJavaEnvironment(version, toolPath);
+  }
+
+  protected setJavaEnvironment(version: string, toolPath: string) {
+    const majorVersion = version.split('.')[0];
     core.setOutput('distribution', this.distribution);
     core.setOutput('path', toolPath);
     core.setOutput('version', version);

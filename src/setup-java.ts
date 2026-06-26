@@ -28,6 +28,7 @@ async function run() {
       constants.INPUT_CACHE_DEPENDENCY_PATH
     );
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
+    const setDefault = getBooleanInput(constants.INPUT_SET_DEFAULT, true);
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
 
     core.startGroup('Installed distributions');
@@ -44,6 +45,7 @@ async function run() {
       architecture,
       packageType,
       checkLatest,
+      setDefault,
       distributionName,
       jdkFile,
       toolchainIds
@@ -100,6 +102,7 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
+    setDefault,
     toolchainIds
   } = options;
 
@@ -107,6 +110,7 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
+    setDefault,
     version
   };
 
@@ -141,6 +145,7 @@ interface installerInputsOptions {
   architecture: string;
   packageType: string;
   checkLatest: boolean;
+  setDefault: boolean;
   distributionName: string;
   jdkFile: string;
   toolchainIds: Array<string>;

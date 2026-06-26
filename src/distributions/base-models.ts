@@ -3,6 +3,7 @@ export interface JavaInstallerOptions {
   architecture: string;
   packageType: string;
   checkLatest: boolean;
+  setDefault?: boolean;
 }
 
 export interface JavaInstallerResults {
