@@ -666,18 +666,17 @@ steps:
   Supported files are `.java-version`, `.tool-versions` and `.sdkmanrc`.
   * In `.java-version` file, only the version should be specified (e.g., 17.0.7). The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv).
   * In `.tool-versions` file, java version should be preceded by the java keyword (e.g., java 17.0.7). The `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)).
-  * In `.sdkmanrc` file, java version should be preceded by the `java=` prefix (e.g., java=17.0.7-tem) and include the distribution. The `.sdkmanrc` file supports version specifications in accordance with [file format](https://sdkman.io/usage#env-command), see [Sdkman! documentation](https://sdkman.io/jdks) for more information.
+  * In `.sdkmanrc` file, java version should be preceded by the `java=` prefix (e.g., `java=17.0.7-tem`). When a recognized SDKMAN distribution suffix is present, setup-java can infer the `distribution` input automatically. Supported suffix mappings are: `tem` -> `temurin`, `sem` -> `semeru`, `albba`/`dragonwell` -> `dragonwell`, `zulu` -> `zulu`, `amzn` -> `corretto`, `graal`/`graalce` -> `graalvm`, `librca` -> `liberica`, `ms` -> `microsoft`, `oracle` -> `oracle`, `sapmchn` -> `sapmachine`, `jbr` -> `jetbrains`. Unrecognized suffixes require setting `distribution` explicitly. The `.sdkmanrc` file supports version specifications in accordance with [file format](https://sdkman.io/usage#env-command), see [Sdkman! documentation](https://sdkman.io/jdks) for more information.
 
     
   If both `java-version` and `java-version-file` **inputs** are provided, the `java-version` input will be used.
 
-**Example step using `Sdkman!`**:
+**Example step using `Sdkman!`** (distribution inferred from `.sdkmanrc`):
 ```yml
   - name: Setup java
     uses: actions/setup-java@v5
     with:
       java-version-file: '.sdkmanrc'
-      distribution: 'temurin'
 ```
 
 **Example `.sdkmanrc`**:
