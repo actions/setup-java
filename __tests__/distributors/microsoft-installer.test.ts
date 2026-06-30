@@ -196,6 +196,35 @@ describe('findPackageForDownload', () => {
     );
   });
 
+  it('prefers Alpine package when running on Alpine and requesting JDK 17', async () => {
+    jest.spyOn(distribution as any, 'isRunningOnAlpine').mockReturnValue(true);
+
+    const result = await distribution['findPackageForDownload']('17.0.9');
+
+    expect(result.version).toBe('17.0.9');
+    expect(result.url).toBe(
+      'https://aka.ms/download-jdk/microsoft-jdk-17.0.9-alpine-x64.tar.gz'
+    );
+    expect(result.signatureUrl).toBe(
+      'https://aka.ms/download-jdk/microsoft-jdk-17.0.9-alpine-x64.tar.gz.sig'
+    );
+  });
+
+  it('falls back to generic linux manifest matching for unsupported major streams on Alpine', async () => {
+    jest.spyOn(distribution as any, 'isRunningOnAlpine').mockReturnValue(true);
+    jest.spyOn(os, 'platform').mockReturnValue('linux');
+
+    const result = await distribution['findPackageForDownload']('21.x');
+
+    expect(result.version).toBe('21.0.0');
+    expect(result.url).toBe(
+      'https://aka.ms/download-jdk/microsoft-jdk-21.0.0-linux-x64.tar.gz'
+    );
+    expect(result.signatureUrl).toBe(
+      'https://aka.ms/download-jdk/microsoft-jdk-21.0.0-linux-x64.tar.gz.sig'
+    );
+  });
+
   it('uses manifest-provided signature URL when available', async () => {
     spyGetManifestFromRepo.mockReturnValue({
       result: [
