@@ -87,10 +87,20 @@ describe('findPackageForDownload', () => {
       const url = resolvedVersion.url;
       const options = {method: 'HEAD'};
 
-      https.request(url, options, res => {
-        // JetBrains uses 403 for inexistent packages
-        expect(res.statusCode).not.toBe(403);
-        res.resume();
+      await new Promise<void>((resolve, reject) => {
+        const request = https.request(url, options, res => {
+          try {
+            // JetBrains uses 403 for non-existent packages
+            expect(res.statusCode).not.toBe(403);
+            res.resume();
+            res.on('end', resolve);
+          } catch (error) {
+            reject(error);
+          }
+        });
+
+        request.on('error', reject);
+        request.end();
       });
     }
   );
