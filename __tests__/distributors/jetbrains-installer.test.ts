@@ -89,14 +89,20 @@ describe('findPackageForDownload', () => {
 
       await new Promise<void>((resolve, reject) => {
         const request = https.request(url, options, res => {
+          let assertionError: unknown;
+
           try {
             // JetBrains uses 403 for non-existent packages
             expect(res.statusCode).not.toBe(403);
-            res.resume();
-            res.on('end', resolve);
           } catch (error) {
-            reject(error);
+            assertionError = error;
           }
+
+          res.resume();
+          res.once('error', reject);
+          res.once('end', () =>
+            assertionError ? reject(assertionError as Error) : resolve()
+          );
         });
 
         request.on('error', reject);
