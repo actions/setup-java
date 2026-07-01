@@ -8,7 +8,6 @@ import {
   extractJdkFile,
   getDownloadArchiveExtension,
   getGitHubHttpHeaders,
-  isVersionSatisfies,
   renameWinArchive
 } from '../../util';
 import * as gpg from '../../gpg';
@@ -17,7 +16,6 @@ import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
-import semver from 'semver';
 import {TypedResponse} from '@actions/http-client/lib/interfaces';
 
 export {MICROSOFT_PUBLIC_KEY} from './microsoft-key';
@@ -99,30 +97,8 @@ export class MicrosoftDistributions extends JavaBase {
       throw new Error('Could not load manifest for Microsoft Build of OpenJDK');
     }
 
-    let foundRelease: tc.IToolRelease | undefined;
+    const foundRelease = await tc.findFromManifest(range, true, manifest, arch);
 
-    if (this.isRunningOnAlpine() && this.isAlpineSupportedVersion(range)) {
-      foundRelease = this.findFromManifestForPlatform(
-        range,
-        manifest,
-        arch,
-        'alpine'
-      );
-      if (foundRelease) {
-        core.debug(`Resolved Alpine package for Microsoft OpenJDK ${range}`);
-      }
-    } else if (this.isRunningOnAlpine()) {
-      core.debug(
-        `No Alpine package found for Microsoft OpenJDK ${range}, defaulting to standard linux package`
-      );
-    }
-
-    // Runs if user is not running on alpine, or if no Alpine package was found
-    if (!foundRelease) {
-      foundRelease = await tc.findFromManifest(range, true, manifest, arch);
-    }
-
-    // Runs if failed to find any matching package
     if (!foundRelease) {
       const availableVersionStrings = manifest.map(item => item.version);
       throw this.createVersionNotFoundError(range, availableVersionStrings);
@@ -139,44 +115,6 @@ export class MicrosoftDistributions extends JavaBase {
       signatureUrl,
       version: foundRelease.version
     };
-  }
-
-  private findFromManifestForPlatform(
-    range: string,
-    manifest: tc.IToolRelease[],
-    arch: string,
-    platform: string
-  ): tc.IToolRelease | undefined {
-    const matched = manifest
-      .filter(release => release.stable)
-      .filter(release => isVersionSatisfies(range, release.version))
-      .map(release => {
-        const matchedFile = release.files.find(
-          (file: tc.IToolReleaseFile) =>
-            file.arch === arch && file.platform === platform
-        );
-        if (!matchedFile) {
-          return null;
-        }
-
-        return {
-          ...release,
-          files: [matchedFile]
-        };
-      })
-      .filter((release): release is tc.IToolRelease => release !== null)
-      .sort((a, b) => -semver.compareBuild(a.version, b.version));
-
-    return matched[0];
-  }
-
-  private isAlpineSupportedVersion(range: string): boolean {
-    const minVersion = semver.minVersion(range);
-    return !!minVersion && (minVersion.major === 11 || minVersion.major === 17);
-  }
-
-  private isRunningOnAlpine(): boolean {
-    return process.platform === 'linux' && fs.existsSync('/etc/alpine-release');
   }
 
   protected supportsSignatureVerification(): boolean {
