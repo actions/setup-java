@@ -41,6 +41,10 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
+  - `verify-signature`: Verifies downloaded Java package signatures when supported by the selected distribution. Currently supported for `temurin` and `microsoft`. If set to `true` for unsupported distributions, the action fails.
+
+  - `verify-signature-public-key`: ASCII-armored GPG public key used to verify the downloaded package signature. Overrides the default bundled key for the selected distribution.
+
   - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
 
   - `cache-dependency-path`: The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.

@@ -3,6 +3,8 @@ export interface JavaInstallerOptions {
   architecture: string;
   packageType: string;
   checkLatest: boolean;
+  verifySignature?: boolean;
+  verifySignaturePublicKey?: string;
 }
 
 export interface JavaInstallerResults {
@@ -13,4 +15,5 @@ export interface JavaInstallerResults {
 export interface JavaDownloadRelease {
   version: string;
   url: string;
+  signatureUrl?: string;
 }
