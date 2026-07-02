@@ -464,6 +464,24 @@ describe('setupJava', () => {
     }
   );
 
+  it('should fail when verify-signature is enabled for unsupported distributions', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false,
+      verifySignature: true
+    });
+
+    await expect(mockJavaBase.setupJava()).rejects.toThrow(
+      "Input 'verify-signature' is not supported for distribution 'Empty'."
+    );
+    expect(spyTcFindAllVersions).not.toHaveBeenCalled();
+    expect(spyCoreAddPath).not.toHaveBeenCalled();
+    expect(spyCoreExportVariable).not.toHaveBeenCalled();
+    expect(spyCoreSetOutput).not.toHaveBeenCalled();
+  });
+
   it.each([
     [
       {
