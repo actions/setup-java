@@ -99,6 +99,7 @@ export class KonaDistribution extends JavaBase {
 
     if (core.isDebug()) {
       core.startGroup('Print information about available releases');
+      console.timeEnd('Retrieving available releases for Kona took'); // eslint-disable-line no-console
       core.debug(availableReleases.map(item => item.version).join(', '));
       core.endGroup();
     }
