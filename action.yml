@@ -26,6 +26,13 @@ inputs:
     description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec'
     required: false
     default: false
+  verify-signature:
+    description: 'Verify downloaded Java package signatures when supported by the selected distribution'
+    required: false
+    default: false
+  verify-signature-public-key:
+    description: 'ASCII-armored GPG public key used to verify the downloaded package signature. Overrides the default bundled key for the selected distribution.'
+    required: false
   server-id:
     description: 'ID of the distributionManagement repository in the pom.xml
        file. Default is `github`'
