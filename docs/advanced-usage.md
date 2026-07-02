@@ -19,6 +19,7 @@
 - [Testing against different Java distributions](#Testing-against-different-Java-distributions)
 - [Testing against different platforms](#Testing-against-different-platforms)
 - [Publishing using Apache Maven](#Publishing-using-Apache-Maven)
+- [Maven transfer progress (download logs)](#Maven-transfer-progress-download-logs)
 - [Publishing using Gradle](#Publishing-using-Gradle)
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](#Modifying-Maven-Toolchains)
@@ -527,6 +528,36 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
 ```
+
+## Maven transfer progress (download logs)
+
+By default, Maven prints a line for every artifact it downloads, which can add hundreds of noisy lines to CI logs. To keep logs clean, `setup-java` sets the [`MAVEN_ARGS`](https://maven.apache.org/configure.html#maven_args-environment-variable) environment variable to include `-ntp` (`--no-transfer-progress`) so that subsequent Maven invocations in the job suppress this transfer progress output.
+
+This is enabled by default. Any existing `MAVEN_ARGS` value is preserved (the flag is appended, not overwritten), and the flag is not added twice if you already set it yourself.
+
+If you want to keep the download/transfer progress in your logs, set `show-download-progress: true`:
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-java@v5
+      with:
+        distribution: '<distribution>'
+        java-version: '21'
+        show-download-progress: true # keep Maven download/transfer progress in the logs
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+```
+
+***NOTES***:
+- `MAVEN_ARGS` is honored by Maven 3.9.0+ and the Maven Wrapper (`mvnw`). Older Maven versions ignore it, so on those you can pass `--no-transfer-progress` on the command line instead.
+- This setting only affects Maven. It has no effect on Gradle, sbt, or other build tools.
+- `-ntp` only controls transfer/progress output; it does not change whether Maven runs in batch mode. Use `-B`/`--batch-mode` (or `<interactiveMode>false</interactiveMode>` in `settings.xml`) if you also want non-interactive runs.
 
 ## Publishing using Gradle
 ```yaml
