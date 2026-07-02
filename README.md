@@ -118,6 +118,7 @@ Currently, the following distributions are supported:
 | `graalvm` | [Oracle GraalVM](https://www.graalvm.org/) | [`graalvm` license](https://www.oracle.com/downloads/licenses/graal-free-license.html)
 | `graalvm-community` | [GraalVM Community](https://github.com/graalvm/graalvm-ce-builds/releases) | [`graalvm-community` license](https://github.com/oracle/graal/blob/master/LICENSE)
 | `jetbrains` | [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime/) | [`jetbrains` license](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE)
+| `kona` | [Tencent Kona JDK](https://tencent.github.io/konajdk/) | [`kona` license](https://tencent.github.io/konajdk/LICENSE.txt)
 | `jdkfile` | Custom JDK Installation | |
 
 > [!NOTE]
@@ -281,6 +282,7 @@ In the example above multiple JDKs are installed for the same job. The result af
   - [SapMachine](docs/advanced-usage.md#SapMachine)
   - [GraalVM](docs/advanced-usage.md#GraalVM)
   - [JetBrains](docs/advanced-usage.md#JetBrains)
+  - [Tencent Kona](docs/advanced-usage.md#Tencent-Kona)
 - [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](docs/advanced-usage.md#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](docs/advanced-usage.md#Installing-Java-from-local-file)
