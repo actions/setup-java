@@ -650,6 +650,170 @@ describe('toolchains tests', () => {
     ).toEqual(result);
   }, 100000);
 
+  it('preserves custom root attributes on existing toolchains.xml', async () => {
+    const jdkInfo = {
+      version: '17',
+      vendor: 'Eclipse Temurin',
+      id: 'temurin_17',
+      jdkHome: '/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.1-12/x64'
+    };
+
+    const originalFile = `<toolchains xmlns="http://maven.apache.org/TOOLCHAINS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/TOOLCHAINS/1.0.0 http://maven.apache.org/xsd/toolchains-1.0.0.xsd">
+        <toolchain>
+          <type>jdk</type>
+          <provides>
+            <version>1.6</version>
+            <vendor>Sun</vendor>
+            <id>sun_1.6</id>
+          </provides>
+          <configuration>
+            <jdkHome>/opt/jdk/sun/1.6</jdkHome>
+          </configuration>
+        </toolchain>
+      </toolchains>`;
+    const result = `<?xml version="1.0"?>
+<toolchains xmlns="http://maven.apache.org/TOOLCHAINS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/TOOLCHAINS/1.0.0 http://maven.apache.org/xsd/toolchains-1.0.0.xsd">
+  <toolchain>
+    <type>jdk</type>
+    <provides>
+      <version>17</version>
+      <vendor>Eclipse Temurin</vendor>
+      <id>temurin_17</id>
+    </provides>
+    <configuration>
+      <jdkHome>/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.1-12/x64</jdkHome>
+    </configuration>
+  </toolchain>
+  <toolchain>
+    <type>jdk</type>
+    <provides>
+      <version>1.6</version>
+      <vendor>Sun</vendor>
+      <id>sun_1.6</id>
+    </provides>
+    <configuration>
+      <jdkHome>/opt/jdk/sun/1.6</jdkHome>
+    </configuration>
+  </toolchain>
+</toolchains>`;
+
+    fs.mkdirSync(m2Dir, {recursive: true});
+    fs.writeFileSync(toolchainsFile, originalFile);
+    expect(fs.existsSync(m2Dir)).toBe(true);
+    expect(fs.existsSync(toolchainsFile)).toBe(true);
+
+    await toolchains.createToolchainsSettings({
+      jdkInfo,
+      settingsDirectory: m2Dir,
+      overwriteSettings: true
+    });
+
+    expect(fs.existsSync(m2Dir)).toBe(true);
+    expect(fs.existsSync(toolchainsFile)).toBe(true);
+    expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
+      toolchains.generateToolchainDefinition(
+        originalFile,
+        jdkInfo.version,
+        jdkInfo.vendor,
+        jdkInfo.id,
+        jdkInfo.jdkHome
+      )
+    );
+    expect(
+      toolchains.generateToolchainDefinition(
+        originalFile,
+        jdkInfo.version,
+        jdkInfo.vendor,
+        jdkInfo.id,
+        jdkInfo.jdkHome
+      )
+    ).toEqual(result);
+  }, 100000);
+
+  it('keeps partially-formed jdk toolchains without an id instead of crashing', async () => {
+    const jdkInfo = {
+      version: '17',
+      vendor: 'Eclipse Temurin',
+      id: 'temurin_17',
+      jdkHome: '/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.1-12/x64'
+    };
+
+    const originalFile = `<toolchains>
+        <toolchain>
+          <type>jdk</type>
+          <provides>
+            <version>1.6</version>
+            <vendor>Sun</vendor>
+          </provides>
+          <configuration>
+            <jdkHome>/opt/jdk/sun/1.6</jdkHome>
+          </configuration>
+        </toolchain>
+      </toolchains>`;
+    const result = `<?xml version="1.0"?>
+<toolchains xmlns="http://maven.apache.org/TOOLCHAINS/1.1.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd">
+  <toolchain>
+    <type>jdk</type>
+    <provides>
+      <version>17</version>
+      <vendor>Eclipse Temurin</vendor>
+      <id>temurin_17</id>
+    </provides>
+    <configuration>
+      <jdkHome>/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.1-12/x64</jdkHome>
+    </configuration>
+  </toolchain>
+  <toolchain>
+    <type>jdk</type>
+    <provides>
+      <version>1.6</version>
+      <vendor>Sun</vendor>
+    </provides>
+    <configuration>
+      <jdkHome>/opt/jdk/sun/1.6</jdkHome>
+    </configuration>
+  </toolchain>
+</toolchains>`;
+
+    fs.mkdirSync(m2Dir, {recursive: true});
+    fs.writeFileSync(toolchainsFile, originalFile);
+    expect(fs.existsSync(m2Dir)).toBe(true);
+    expect(fs.existsSync(toolchainsFile)).toBe(true);
+
+    await toolchains.createToolchainsSettings({
+      jdkInfo,
+      settingsDirectory: m2Dir,
+      overwriteSettings: true
+    });
+
+    expect(fs.existsSync(m2Dir)).toBe(true);
+    expect(fs.existsSync(toolchainsFile)).toBe(true);
+    expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
+      toolchains.generateToolchainDefinition(
+        originalFile,
+        jdkInfo.version,
+        jdkInfo.vendor,
+        jdkInfo.id,
+        jdkInfo.jdkHome
+      )
+    );
+    expect(
+      toolchains.generateToolchainDefinition(
+        originalFile,
+        jdkInfo.version,
+        jdkInfo.vendor,
+        jdkInfo.id,
+        jdkInfo.jdkHome
+      )
+    ).toEqual(result);
+  }, 100000);
+
   it('does not overwrite existing toolchains.xml files', async () => {
     const jdkInfo = {
       version: '17',

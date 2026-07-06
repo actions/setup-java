@@ -96,6 +96,13 @@ export function generateToolchainDefinition(
       }
     }
   ];
+  // default root attributes, used when the existing file does not declare its own
+  let rootAttributes: Record<string, string> = {
+    '@xmlns': 'http://maven.apache.org/TOOLCHAINS/1.1.0',
+    '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+    '@xsi:schemaLocation':
+      'http://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd'
+  };
   if (original?.length) {
     // convert existing toolchains into TS native objects for better handling
     // xmlbuilder2 will convert the document into a `{toolchains: { toolchain: [] | {} }}` structure
@@ -103,13 +110,24 @@ export function generateToolchainDefinition(
     const jsObj = xmlCreate(original)
       .root()
       .toObject() as unknown as ExtractedToolchains;
-    if (jsObj.toolchains && jsObj.toolchains.toolchain) {
-      // in case only a single child exists xmlbuilder2 will not create an array and using verbose = true equally doesn't work here
-      // See https://oozcitak.github.io/xmlbuilder2/serialization.html#js-object-and-map-serializers for details
-      if (Array.isArray(jsObj.toolchains.toolchain)) {
-        jsToolchains.push(...jsObj.toolchains.toolchain);
-      } else {
-        jsToolchains.push(jsObj.toolchains.toolchain);
+    if (jsObj.toolchains) {
+      // preserve the existing root attributes (xmlns, schemaLocation, …) so we don't
+      // silently rewrite user-managed metadata or change the effective XML namespace;
+      // xmlbuilder2 exposes attributes as `@`-prefixed keys on the element object
+      const existingAttributes = Object.fromEntries(
+        Object.entries(jsObj.toolchains).filter(([key]) => key.startsWith('@'))
+      ) as Record<string, string>;
+      // fall back to the defaults only for attributes the existing file is missing
+      rootAttributes = {...rootAttributes, ...existingAttributes};
+
+      if (jsObj.toolchains.toolchain) {
+        // in case only a single child exists xmlbuilder2 will not create an array and using verbose = true equally doesn't work here
+        // See https://oozcitak.github.io/xmlbuilder2/serialization.html#js-object-and-map-serializers for details
+        if (Array.isArray(jsObj.toolchains.toolchain)) {
+          jsToolchains.push(...jsObj.toolchains.toolchain);
+        } else {
+          jsToolchains.push(jsObj.toolchains.toolchain);
+        }
       }
     }
 
@@ -119,20 +137,19 @@ export function generateToolchainDefinition(
       (value, index, self) =>
         // ensure non-jdk toolchains are kept in the results, we must not touch them because they belong to the user
         value.type !== 'jdk' ||
+        // keep toolchains that lack a usable string id (e.g. partially-formed user files);
+        // we cannot safely deduplicate them and must not crash while reading them
+        typeof value.provides?.id !== 'string' ||
         index ===
           self.findIndex(
-            t => t.type === value.type && t.provides.id === value.provides.id
+            t => t.type === value.type && t.provides?.id === value.provides?.id
           )
     );
   }
 
-  // TODO: technically bad because we shouldn't re-create the toolchains root node (with possibly different schema values) if it already exists, however, just overriding the toolchain array with xmlbuilder2 is … uh non-trivial
   return xmlCreate({
     toolchains: {
-      '@xmlns': 'http://maven.apache.org/TOOLCHAINS/1.1.0',
-      '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
-      '@xsi:schemaLocation':
-        'http://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd',
+      ...rootAttributes,
       toolchain: jsToolchains
     }
   }).end({
@@ -181,7 +198,9 @@ async function writeToolchainsFileToDisk(
 
 interface ExtractedToolchains {
   toolchains: {
-    toolchain: Toolchain[] | Toolchain;
+    // root attributes such as xmlns / schemaLocation are exposed as `@`-prefixed keys
+    [attribute: `@${string}`]: string;
+    toolchain?: Toolchain[] | Toolchain;
   };
 }
 
