@@ -47,7 +47,7 @@
     "@actions/glob": "^0.5.1",
     "@actions/http-client": "^3.0.2",
     "@actions/io": "^2.0.0",
-    "@actions/tool-cache": "^3.0.1",
+    "@actions/tool-cache": "^4.0.0",
     "semver": "^7.6.0",
     "xmlbuilder2": "^4.0.3"
   },
