@@ -26,6 +26,13 @@ inputs:
     description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec'
     required: false
     default: false
+  verify-signature:
+    description: 'Verify downloaded Java package signatures when supported by the selected distribution'
+    required: false
+    default: false
+  verify-signature-public-key:
+    description: 'ASCII-armored GPG public key used to verify the downloaded package signature. Overrides the default bundled key for the selected distribution.'
+    required: false
   server-id:
     description: 'ID of the distributionManagement repository in the pom.xml
        file. Default is `github`'
@@ -75,6 +82,10 @@ inputs:
   mvn-toolchain-vendor:
     description: 'Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file'
     required: false
+  show-download-progress:
+    description: 'Whether Maven should print artifact download/transfer progress to the build log. When "false" (default) the action sets "-ntp" (--no-transfer-progress) in MAVEN_ARGS to produce cleaner logs. Set to "true" to keep the progress output. Has no effect on non-Maven builds.'
+    required: false
+    default: false
 outputs:
   distribution:
     description: 'Distribution of Java that has been installed'

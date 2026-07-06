@@ -6,6 +6,8 @@ export const INPUT_JAVA_PACKAGE = 'java-package';
 export const INPUT_DISTRIBUTION = 'distribution';
 export const INPUT_JDK_FILE = 'jdkFile';
 export const INPUT_CHECK_LATEST = 'check-latest';
+export const INPUT_VERIFY_SIGNATURE = 'verify-signature';
+export const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
 export const INPUT_SERVER_ID = 'server-id';
 export const INPUT_SERVER_USERNAME = 'server-username';
 export const INPUT_SERVER_PASSWORD = 'server-password';
@@ -28,5 +30,10 @@ export const MVN_SETTINGS_FILE = 'settings.xml';
 export const MVN_TOOLCHAINS_FILE = 'toolchains.xml';
 export const INPUT_MVN_TOOLCHAIN_ID = 'mvn-toolchain-id';
 export const INPUT_MVN_TOOLCHAIN_VENDOR = 'mvn-toolchain-vendor';
+export const INPUT_SHOW_DOWNLOAD_PROGRESS = 'show-download-progress';
+
+export const MAVEN_ARGS_ENV = 'MAVEN_ARGS';
+export const MAVEN_NO_TRANSFER_PROGRESS_FLAG = '-ntp';
+export const MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = '--no-transfer-progress';
 
 export const DISTRIBUTIONS_ONLY_MAJOR_VERSION = ['corretto'];
