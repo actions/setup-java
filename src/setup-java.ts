@@ -12,6 +12,7 @@ import {restore} from './cache';
 import * as path from 'path';
 import {getJavaDistribution} from './distributions/distribution-factory';
 import {JavaInstallerOptions} from './distributions/base-models';
+import {configureMavenArgs} from './maven-args';
 
 async function run() {
   try {
@@ -87,6 +88,7 @@ async function run() {
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
     await auth.configureAuthentication();
+    configureMavenArgs();
     if (cache && isCacheFeatureAvailable()) {
       await restore(cache, cacheDependencyPath);
     }
