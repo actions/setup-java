@@ -6,6 +6,7 @@ export const INPUT_JAVA_PACKAGE = 'java-package';
 export const INPUT_DISTRIBUTION = 'distribution';
 export const INPUT_JDK_FILE = 'jdkFile';
 export const INPUT_CHECK_LATEST = 'check-latest';
+export const INPUT_SET_DEFAULT = 'set-default';
 export const INPUT_VERIFY_SIGNATURE = 'verify-signature';
 export const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
 export const INPUT_SERVER_ID = 'server-id';

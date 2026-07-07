@@ -669,3 +669,77 @@ jobs:
           JAVA_PATH: ${{ steps.setup-java.outputs.path }}
         run: bash __tests__/verify-java.sh "17.0.10" "$JAVA_PATH"
         shell: bash
+
+  setup-java-set-default:
+    name: set-default option - ${{ matrix.os }}
+    needs: setup-java-major-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Java 17 as default
+        uses: ./
+        id: setup-java-17
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Java 21 without setting as default
+        uses: ./
+        id: setup-java-21
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          set-default: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify JAVA_HOME still points to Java 17
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME"
+          echo "Java 17 path=${{ steps.setup-java-17.outputs.path }}"
+          if [ "$JAVA_HOME" != "${{ steps.setup-java-17.outputs.path }}" ]; then
+            echo "JAVA_HOME should still point to Java 17"
+            exit 1
+          fi
+        shell: bash
+      - name: Verify java -version reports Java 17
+        run: |
+          JAVA_VERSION=$(java -version 2>&1 | head -1)
+          echo "java -version: $JAVA_VERSION"
+          if ! echo "$JAVA_VERSION" | grep -q "17"; then
+            echo "Default java should still be version 17"
+            exit 1
+          fi
+        shell: bash
+      - name: Verify JAVA_HOME_21 env var is set
+        run: |
+          $envName = "JAVA_HOME_21_${env:RUNNER_ARCH}"
+          $JavaVersionPath = [Environment]::GetEnvironmentVariable($envName)
+          if (-not $JavaVersionPath) {
+            Write-Host "$envName is not set"
+            exit 1
+          }
+          if (-not (Test-Path "$JavaVersionPath")) {
+            Write-Host "$envName path does not exist: $JavaVersionPath"
+            exit 1
+          }
+          Write-Host "$envName=$JavaVersionPath"
+        shell: pwsh
+      - name: Verify Java 21 outputs are set
+        run: |
+          echo "Java 21 path=${{ steps.setup-java-21.outputs.path }}"
+          echo "Java 21 version=${{ steps.setup-java-21.outputs.version }}"
+          if [ -z "${{ steps.setup-java-21.outputs.path }}" ]; then
+            echo "Java 21 path output should be set"
+            exit 1
+          fi
+          if [ -z "${{ steps.setup-java-21.outputs.version }}" ]; then
+            echo "Java 21 version output should be set"
+            exit 1
+          fi
+        shell: bash

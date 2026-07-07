@@ -29,6 +29,7 @@ async function run() {
       constants.INPUT_CACHE_DEPENDENCY_PATH
     );
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
+    const setDefault = getBooleanInput(constants.INPUT_SET_DEFAULT, true);
     const verifySignature = getBooleanInput(
       constants.INPUT_VERIFY_SIGNATURE,
       false
@@ -51,6 +52,7 @@ async function run() {
       architecture,
       packageType,
       checkLatest,
+      setDefault,
       verifySignature,
       verifySignaturePublicKey,
       distributionName,
@@ -110,6 +112,7 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
+    setDefault,
     verifySignature,
     verifySignaturePublicKey,
     toolchainIds
@@ -119,6 +122,7 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
+    setDefault,
     verifySignature,
     verifySignaturePublicKey,
     version
@@ -155,6 +159,7 @@ interface installerInputsOptions {
   architecture: string;
   packageType: string;
   checkLatest: boolean;
+  setDefault: boolean;
   verifySignature: boolean;
   verifySignaturePublicKey: string | undefined;
   distributionName: string;

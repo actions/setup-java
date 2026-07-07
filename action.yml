@@ -26,6 +26,10 @@ inputs:
     description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec'
     required: false
     default: false
+  set-default:
+    description: 'Set this option to false if you want to install a JDK but not make it the default. When false, JAVA_HOME and PATH are not updated, but JAVA_HOME_<major>_<arch> is still set.'
+    required: false
+    default: true
   verify-signature:
     description: 'Verify downloaded Java package signatures when supported by the selected distribution'
     required: false
