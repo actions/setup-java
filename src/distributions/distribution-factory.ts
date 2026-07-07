@@ -16,6 +16,7 @@ import {
   GraalVMDistribution
 } from './graalvm/installer';
 import {JetBrainsDistribution} from './jetbrains/installer';
+import {KonaDistribution} from './kona/installer';
 
 enum JavaDistribution {
   Adopt = 'adopt',
@@ -33,7 +34,8 @@ enum JavaDistribution {
   SapMachine = 'sapmachine',
   GraalVM = 'graalvm',
   GraalVMCommunity = 'graalvm-community',
-  JetBrains = 'jetbrains'
+  JetBrains = 'jetbrains',
+  Kona = 'kona'
 }
 
 export function getJavaDistribution(
@@ -82,6 +84,8 @@ export function getJavaDistribution(
       return new GraalVMCommunityDistribution(installerOptions);
     case JavaDistribution.JetBrains:
       return new JetBrainsDistribution(installerOptions);
+    case JavaDistribution.Kona:
+      return new KonaDistribution(installerOptions);
     default:
       return null;
   }
