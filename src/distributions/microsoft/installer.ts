@@ -7,7 +7,6 @@ import {
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
-  getGitHubHttpHeaders,
   renameWinArchive
 } from '../../util';
 import * as gpg from '../../gpg';
@@ -122,18 +121,12 @@ export class MicrosoftDistributions extends JavaBase {
   }
 
   private async getAvailableVersions(): Promise<tc.IToolRelease[] | null> {
-    // TODO get these dynamically!
-    // We will need Microsoft to add an endpoint where we can query for versions.
-    const owner = 'actions';
-    const repository = 'setup-java';
+    const owner = 'microsoft';
+    const repository = 'openjdk-adoptium-marketplace-data';
     const branch = 'main';
-    const filePath =
-      'src/distributions/microsoft/microsoft-openjdk-versions.json';
-
+    const filePath = 'general_info/microsoft-openjdk-versions.json';
     let releases: tc.IToolRelease[] | null = null;
-    const fileUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
-
-    const headers = getGitHubHttpHeaders();
+    const fileUrl = `https://raw.githubusercontent.com/${owner}/${repository}/refs/heads/${branch}/${filePath}`;
 
     let response: TypedResponse<tc.IToolRelease[]> | null = null;
 
@@ -142,7 +135,7 @@ export class MicrosoftDistributions extends JavaBase {
     }
 
     try {
-      response = await this.http.getJson<tc.IToolRelease[]>(fileUrl, headers);
+      response = await this.http.getJson<tc.IToolRelease[]>(fileUrl);
       if (!response.result) {
         return null;
       }
