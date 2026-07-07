@@ -6,7 +6,11 @@ import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
-import {INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION} from './constants';
+import {
+  INPUT_JOB_STATUS,
+  DISTRIBUTIONS_ONLY_MAJOR_VERSION,
+  SUPPORTED_DISTRIBUTIONS
+} from './constants';
 import {OutgoingHttpHeaders} from 'http';
 
 export function getTempDir() {
@@ -147,13 +151,16 @@ export function getVersionFromFileContent(
   const versionFileName = getFileName(versionFile);
   if (versionFileName == '.tool-versions') {
     javaVersionRegExp =
-      /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
+      /^java\s+(?:(?<distribution>\S*?)-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
   } else if (versionFileName == '.sdkmanrc') {
     // Match both version and optional distribution identifier
     javaVersionRegExp =
       /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
   } else {
-    javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+    // .java-version (jenv), version optionally prefixed with a distribution
+    // identifier, e.g. `temurin-21.0.5` or `openjdk64-11.0.2`.
+    javaVersionRegExp =
+      /(?:(?<distribution>[a-zA-Z][a-zA-Z0-9-]*?)-)?(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
   }
 
   const match = content.match(javaVersionRegExp);
@@ -168,6 +175,21 @@ export function getVersionFromFileContent(
     core.debug(
       `Parsed distribution '${extractedDistribution}' from SDKMAN identifier '${sdkmanDist}'`
     );
+  }
+
+  // Extract distribution from .java-version (jenv) or .tool-versions (asdf) file
+  if (
+    versionFileName != '.sdkmanrc' &&
+    match?.groups?.distribution &&
+    capturedVersion
+  ) {
+    const fileDistribution = match.groups.distribution;
+    extractedDistribution = mapJavaVersionFileDistribution(fileDistribution);
+    if (extractedDistribution) {
+      core.debug(
+        `Parsed distribution '${extractedDistribution}' from identifier '${fileDistribution}' in '${versionFileName}'`
+      );
+    }
   }
 
   core.debug(
@@ -233,6 +255,33 @@ function mapSdkmanDistribution(sdkmanDist: string): string | undefined {
     );
   }
   return mapped;
+}
+
+// Map a distribution identifier found in a `.java-version` (jenv) or
+// `.tool-versions` (asdf) file to a setup-java distribution name.
+// jenv-style identifiers may carry an architecture suffix (e.g. `openjdk64`,
+// `temurin64`), which is stripped before matching. Identifiers that do not map
+// to a supported distribution (e.g. the generic `openjdk`) are ignored so the
+// `distribution` input is used instead.
+function mapJavaVersionFileDistribution(
+  identifier: string
+): string | undefined {
+  const normalized = identifier.toLowerCase();
+
+  if (SUPPORTED_DISTRIBUTIONS.includes(normalized)) {
+    return normalized;
+  }
+
+  // Strip a trailing architecture suffix (e.g. `temurin64` -> `temurin`).
+  const withoutArch = normalized.replace(/(32|64)$/, '');
+  if (SUPPORTED_DISTRIBUTIONS.includes(withoutArch)) {
+    return withoutArch;
+  }
+
+  core.debug(
+    `Distribution identifier '${identifier}' from version file is not a supported distribution; falling back to the 'distribution' input.`
+  );
+  return undefined;
 }
 
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`

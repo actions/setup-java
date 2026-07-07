@@ -243,6 +243,76 @@ describe('getVersionFromFileContent', () => {
       );
     });
   });
+
+  describe('.java-version', () => {
+    it.each([
+      ['temurin-21.0.5', '21.0.5', 'temurin'],
+      ['temurin-21.0.5+11.0.LTS', '21.0.5+11.0.LTS', 'temurin'],
+      ['zulu64-8.0.202', '8.0.202', 'zulu'],
+      ['temurin64-17', '17', 'temurin'],
+      ['corretto-17', '17', 'corretto'], // corretto reduced to major version
+      ['graalvm-community-17.0.9', '17.0.9', 'graalvm-community']
+    ])(
+      'parsing %s should return version %s and distribution %s',
+      (content: string, expectedVersion: string, expectedDist: string) => {
+        const actual = getVersionFromFileContent(content, '', '.java-version');
+        expect(actual?.version).toBe(expectedVersion);
+        expect(actual?.distribution).toBe(expectedDist);
+      }
+    );
+
+    it.each([
+      ['17.0.7', '17.0.7'],
+      ['17', '17'],
+      ['15-ea', '15-ea'],
+      ['15.0.0-ea', '15.0.0-ea'],
+      ['8.0.282+8', '8.0.282+8'],
+      ['1.8.0.202', '8.0.202'],
+      ['openjdk64-11.0.2', '11.0.2'] // generic openjdk prefix is not a supported distribution
+    ])(
+      'parsing %s should return version %s and undefined distribution',
+      (content: string, expectedVersion: string) => {
+        const actual = getVersionFromFileContent(
+          content,
+          'temurin',
+          '.java-version'
+        );
+        expect(actual?.version).toBe(expectedVersion);
+        expect(actual?.distribution).toBeUndefined();
+      }
+    );
+  });
+
+  describe('.tool-versions', () => {
+    it.each([
+      ['java temurin-21.0.5+11.0.LTS', '21.0.5+11.0.LTS', 'temurin'],
+      ['java corretto-11', '11', 'corretto']
+    ])(
+      'parsing %s should return version %s and distribution %s',
+      (content: string, expectedVersion: string, expectedDist: string) => {
+        const actual = getVersionFromFileContent(content, '', '.tool-versions');
+        expect(actual?.version).toBe(expectedVersion);
+        expect(actual?.distribution).toBe(expectedDist);
+      }
+    );
+
+    it.each([
+      ['java 17', '17'],
+      ['java 17.0.10', '17.0.10'],
+      ['java openjdk64-17.0.10', '17.0.10'] // generic openjdk prefix is ignored
+    ])(
+      'parsing %s should return version %s and undefined distribution',
+      (content: string, expectedVersion: string) => {
+        const actual = getVersionFromFileContent(
+          content,
+          'temurin',
+          '.tool-versions'
+        );
+        expect(actual?.version).toBe(expectedVersion);
+        expect(actual?.distribution).toBeUndefined();
+      }
+    );
+  });
 });
 
 describe('isGhes', () => {

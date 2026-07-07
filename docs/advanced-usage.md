@@ -779,8 +779,8 @@ steps:
   If the `java-version-file` input is specified, the action will extract the version from the file and install it.
   
   Supported files are `.java-version`, `.tool-versions` and `.sdkmanrc`.
-  * In `.java-version` file, only the version should be specified (e.g., 17.0.7). The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv).
-  * In `.tool-versions` file, java version should be preceded by the java keyword (e.g., java 17.0.7). The `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)).
+  * In `.java-version` file, only the version should be specified (e.g., 17.0.7). The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv). A [supported distribution](#supported-distributions) may optionally be specified as a prefix (e.g., `temurin-17.0.7`), in which case setup-java infers the `distribution` input automatically. Generic prefixes that are not a supported distribution (e.g., `openjdk64-17.0.7`) are ignored and require setting `distribution` explicitly.
+  * In `.tool-versions` file, java version should be preceded by the java keyword (e.g., java 17.0.7). The `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)). As with `.java-version`, a supported distribution may be specified as a prefix (e.g., `java temurin-17.0.7`) to infer the `distribution` input automatically.
   * In `.sdkmanrc` file, java version should be preceded by the `java=` prefix (e.g., `java=17.0.7-tem`). When a recognized SDKMAN distribution suffix is present, setup-java can infer the `distribution` input automatically. Unrecognized suffixes require setting `distribution` explicitly. The `.sdkmanrc` file supports version specifications in accordance with [file format](https://sdkman.io/usage#env-command), see [Sdkman! documentation](https://sdkman.io/jdks) for more information.
 
     Supported SDKMAN suffix mappings:
@@ -816,12 +816,26 @@ steps:
 java=17.0.7-tem
 ```
 
+**Example step using `.java-version`** (distribution inferred from the file):
+```yml
+  - name: Setup java
+    uses: actions/setup-java@v5
+    with:
+      java-version-file: '.java-version'
+```
+
+**Example `.java-version`** (distribution inferred from the `temurin-` prefix):
+```
+temurin-17.0.7
+```
+
 Valid entry options (does not apply to `.sdkmanrc`):
 ```
 major versions: 8, 11, 16, 17, 21
 more specific versions: 8.0.282+8, 8.0.232, 11.0, 11.0.4, 17.0
 early access (EA) versions: 15-ea, 15.0.0-ea
 versions with specified distribution: openjdk64-11.0.2
+versions with inferred distribution: temurin-17.0.7, corretto-21
 LTS versions : temurin-21.0.5+11.0.LTS
 ```
 If the file contains multiple versions, only the first one will be recognized.

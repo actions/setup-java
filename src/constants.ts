@@ -38,3 +38,24 @@ export const MAVEN_NO_TRANSFER_PROGRESS_FLAG = '-ntp';
 export const MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = '--no-transfer-progress';
 
 export const DISTRIBUTIONS_ONLY_MAJOR_VERSION = ['corretto'];
+
+// Distribution names supported by the `distribution` input. Used to validate
+// distribution identifiers inferred from a `.java-version`/`.tool-versions` file.
+export const SUPPORTED_DISTRIBUTIONS = [
+  'adopt',
+  'adopt-hotspot',
+  'adopt-openj9',
+  'temurin',
+  'zulu',
+  'liberica',
+  'microsoft',
+  'semeru',
+  'corretto',
+  'oracle',
+  'dragonwell',
+  'sapmachine',
+  'graalvm',
+  'graalvm-community',
+  'jetbrains',
+  'kona'
+];

@@ -31,7 +31,7 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `java-version-file`: The path to a file containing java version. Supported file types are `.java-version`, `.tool-versions`, and `.sdkmanrc`. See more details in [about .java-version-file](docs/advanced-usage.md#Java-version-file).
 
-  - `distribution`: Java [distribution](#supported-distributions). Required unless `java-version-file` points to `.sdkmanrc` with a recognized distribution suffix (for example `java=21.0.5-tem`).
+  - `distribution`: Java [distribution](#supported-distributions). Required unless `java-version-file` specifies a recognized distribution, for example a `.sdkmanrc` distribution suffix (`java=21.0.5-tem`) or a `.java-version`/`.tool-versions` distribution prefix (`temurin-21.0.5`).
 
   - `java-package`: The packaging variant of the chosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
 

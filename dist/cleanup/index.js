@@ -52241,7 +52241,7 @@ else {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.DISTRIBUTIONS_ONLY_MAJOR_VERSION = exports.MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = exports.MAVEN_NO_TRANSFER_PROGRESS_FLAG = exports.MAVEN_ARGS_ENV = exports.INPUT_SHOW_DOWNLOAD_PROGRESS = exports.INPUT_MVN_TOOLCHAIN_VENDOR = exports.INPUT_MVN_TOOLCHAIN_ID = exports.MVN_TOOLCHAINS_FILE = exports.MVN_SETTINGS_FILE = exports.M2_DIR = exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE_DEPENDENCY_PATH = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = exports.INPUT_VERIFY_SIGNATURE = exports.INPUT_SET_DEFAULT = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION_FILE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
+exports.SUPPORTED_DISTRIBUTIONS = exports.DISTRIBUTIONS_ONLY_MAJOR_VERSION = exports.MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = exports.MAVEN_NO_TRANSFER_PROGRESS_FLAG = exports.MAVEN_ARGS_ENV = exports.INPUT_SHOW_DOWNLOAD_PROGRESS = exports.INPUT_MVN_TOOLCHAIN_VENDOR = exports.INPUT_MVN_TOOLCHAIN_ID = exports.MVN_TOOLCHAINS_FILE = exports.MVN_SETTINGS_FILE = exports.M2_DIR = exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE_DEPENDENCY_PATH = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = exports.INPUT_VERIFY_SIGNATURE = exports.INPUT_SET_DEFAULT = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION_FILE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
 exports.MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
 exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_JAVA_VERSION_FILE = 'java-version-file';
@@ -52276,6 +52276,26 @@ exports.MAVEN_ARGS_ENV = 'MAVEN_ARGS';
 exports.MAVEN_NO_TRANSFER_PROGRESS_FLAG = '-ntp';
 exports.MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = '--no-transfer-progress';
 exports.DISTRIBUTIONS_ONLY_MAJOR_VERSION = ['corretto'];
+// Distribution names supported by the `distribution` input. Used to validate
+// distribution identifiers inferred from a `.java-version`/`.tool-versions` file.
+exports.SUPPORTED_DISTRIBUTIONS = [
+    'adopt',
+    'adopt-hotspot',
+    'adopt-openj9',
+    'temurin',
+    'zulu',
+    'liberica',
+    'microsoft',
+    'semeru',
+    'corretto',
+    'oracle',
+    'dragonwell',
+    'sapmachine',
+    'graalvm',
+    'graalvm-community',
+    'jetbrains',
+    'kona'
+];
 
 
 /***/ }),
@@ -52572,7 +52592,7 @@ function isCacheFeatureAvailable() {
 }
 exports.isCacheFeatureAvailable = isCacheFeatureAvailable;
 function getVersionFromFileContent(content, distributionName, versionFile) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     let javaVersionRegExp;
     let extractedDistribution;
     function getFileName(versionFile) {
@@ -52581,7 +52601,7 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     const versionFileName = getFileName(versionFile);
     if (versionFileName == '.tool-versions') {
         javaVersionRegExp =
-            /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
+            /^java\s+(?:(?<distribution>\S*?)-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
     }
     else if (versionFileName == '.sdkmanrc') {
         // Match both version and optional distribution identifier
@@ -52589,7 +52609,10 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
             /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
     }
     else {
-        javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+        // .java-version (jenv), version optionally prefixed with a distribution
+        // identifier, e.g. `temurin-21.0.5` or `openjdk64-11.0.2`.
+        javaVersionRegExp =
+            /(?:(?<distribution>[a-zA-Z][a-zA-Z0-9-]*?)-)?(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
     }
     const match = content.match(javaVersionRegExp);
     const capturedVersion = ((_a = match === null || match === void 0 ? void 0 : match.groups) === null || _a === void 0 ? void 0 : _a.version)
@@ -52600,6 +52623,16 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
         const sdkmanDist = match.groups.distribution;
         extractedDistribution = mapSdkmanDistribution(sdkmanDist);
         core.debug(`Parsed distribution '${extractedDistribution}' from SDKMAN identifier '${sdkmanDist}'`);
+    }
+    // Extract distribution from .java-version (jenv) or .tool-versions (asdf) file
+    if (versionFileName != '.sdkmanrc' &&
+        ((_c = match === null || match === void 0 ? void 0 : match.groups) === null || _c === void 0 ? void 0 : _c.distribution) &&
+        capturedVersion) {
+        const fileDistribution = match.groups.distribution;
+        extractedDistribution = mapJavaVersionFileDistribution(fileDistribution);
+        if (extractedDistribution) {
+            core.debug(`Parsed distribution '${extractedDistribution}' from identifier '${fileDistribution}' in '${versionFileName}'`);
+        }
     }
     core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
     if (!capturedVersion) {
@@ -52617,7 +52650,7 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     // Apply DISTRIBUTIONS_ONLY_MAJOR_VERSION logic whenever the effective distribution
     // (either explicitly provided or extracted from the version file) is in the list.
     if (constants_1.DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(extractedDistribution || distributionName)) {
-        const coerceVersion = (_c = semver.coerce(version)) !== null && _c !== void 0 ? _c : version;
+        const coerceVersion = (_d = semver.coerce(version)) !== null && _d !== void 0 ? _d : version;
         version = semver.major(coerceVersion).toString();
     }
     return {
@@ -52649,6 +52682,25 @@ function mapSdkmanDistribution(sdkmanDist) {
         core.warning(`Unknown SDKMAN distribution identifier '${sdkmanDist}'. Please specify the distribution explicitly.`);
     }
     return mapped;
+}
+// Map a distribution identifier found in a `.java-version` (jenv) or
+// `.tool-versions` (asdf) file to a setup-java distribution name.
+// jenv-style identifiers may carry an architecture suffix (e.g. `openjdk64`,
+// `temurin64`), which is stripped before matching. Identifiers that do not map
+// to a supported distribution (e.g. the generic `openjdk`) are ignored so the
+// `distribution` input is used instead.
+function mapJavaVersionFileDistribution(identifier) {
+    const normalized = identifier.toLowerCase();
+    if (constants_1.SUPPORTED_DISTRIBUTIONS.includes(normalized)) {
+        return normalized;
+    }
+    // Strip a trailing architecture suffix (e.g. `temurin64` -> `temurin`).
+    const withoutArch = normalized.replace(/(32|64)$/, '');
+    if (constants_1.SUPPORTED_DISTRIBUTIONS.includes(withoutArch)) {
+        return withoutArch;
+    }
+    core.debug(`Distribution identifier '${identifier}' from version file is not a supported distribution; falling back to the 'distribution' input.`);
+    return undefined;
 }
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
 function avoidOldNotation(content) {

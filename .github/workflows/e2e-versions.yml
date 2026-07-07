@@ -670,6 +670,36 @@ jobs:
         run: bash __tests__/verify-java.sh "17.0.10" "$JAVA_PATH"
         shell: bash
 
+  setup-java-version-from-file-with-inferred-dist:
+    name: distribution inferred from file '${{ matrix.java-version-file }}' - ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        java-version-file: ['.java-version', '.tool-versions']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Create .java-version file
+        shell: bash
+        run: echo "temurin-17.0.10" > .java-version
+      - name: Create .tool-versions file
+        shell: bash
+        run: echo "java temurin-17.0.10" > .tool-versions
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          java-version-file: ${{matrix.java-version-file }}
+      - name: Verify Java
+        env:
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "17.0.10" "$JAVA_PATH"
+        shell: bash
+
   setup-java-set-default:
     name: set-default option - ${{ matrix.os }}
     needs: setup-java-major-versions
