@@ -601,6 +601,44 @@ jobs:
 - This setting only affects Maven. It has no effect on Gradle, sbt, or other build tools.
 - `-ntp` only controls transfer/progress output; it does not change whether Maven runs in batch mode. Use `-B`/`--batch-mode` (or `<interactiveMode>false</interactiveMode>` in `settings.xml`) if you also want non-interactive runs.
 
+## Java problem matcher (compiler annotations)
+
+`setup-java` registers a [problem matcher](https://github.com/actions/toolkit/blob/main/docs/problem-matchers.md) for Java after installing the JDK. It scans the log output of subsequent steps and turns `javac` diagnostics into GitHub [annotations](https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message) that appear in the run summary and inline on the affected files. It matches two kinds of lines:
+
+- Compiler errors and warnings, e.g. `App.java:12: error: cannot find symbol` (owner `javac`).
+- Uncaught exception stack traces, e.g. `Exception in thread "main" ...` (owner `java`).
+
+This is enabled by default and requires no configuration.
+
+### Disabling the problem matcher
+
+There is no action input to turn the matcher off, but you can disable it for the rest of the job with the built-in [`remove-matcher`](https://github.com/actions/toolkit/blob/main/docs/problem-matchers.md#remove-a-problem-matcher) workflow command. Pass the matcher **owner** (not a file name); the Java matcher defines two owners, `javac` and `java`, so remove both to fully suppress it:
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-java@v5
+      with:
+        distribution: '<distribution>'
+        java-version: '21'
+
+    - name: Disable the Java problem matcher
+      run: |
+        echo "::remove-matcher owner=javac::"
+        echo "::remove-matcher owner=java::"
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+```
+
+***NOTES***:
+- `remove-matcher` only stops annotations from being created; the underlying compiler output is unchanged, so a failing `javac`/build still fails the step.
+- The command is scoped to the job, so add the step right after `setup-java` (and before your build) in every job where you want the matcher disabled.
+
 ## Publishing using Gradle
 ```yaml
 jobs:
