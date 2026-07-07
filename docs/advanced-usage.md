@@ -608,7 +608,7 @@ jobs:
 `setup-java` registers a [problem matcher](https://github.com/actions/toolkit/blob/main/docs/problem-matchers.md) for Java after installing the JDK. It scans the log output of subsequent steps and turns `javac` diagnostics into GitHub [annotations](https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message) that appear in the run summary and inline on the affected files. It matches two kinds of lines:
 
 - Compiler errors and warnings, e.g. `App.java:12: error: cannot find symbol` (owner `javac`).
-- Uncaught exception stack traces, e.g. `Exception in thread "main" ...` (owner `java`).
+- Uncaught-exception header lines, e.g. `Exception in thread "main" ...`; because these lines have no file or line captures, they appear as log/run-level annotations rather than inline file annotations (owner `java`).
 
 This is enabled by default and requires no configuration.
 
