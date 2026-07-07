@@ -183,7 +183,8 @@ describe('getVersionFromFileContent', () => {
       ['java=11.0.25-sapmchn', '11.0.25', 'sapmachine'],
       ['java=21.0.5-jbr', '21.0.5', 'jetbrains'],
       ['java=11.0.25-sem', '11.0.25', 'semeru'],
-      ['java=17.0.13-dragonwell', '17.0.13', 'dragonwell']
+      ['java=17.0.13-dragonwell', '17.0.13', 'dragonwell'],
+      ['java=21.0.5-kona', '21.0.5', 'kona']
     ])(
       'parsing %s should return version %s and distribution %s',
       (content: string, expectedVersion: string, expectedDist: string) => {

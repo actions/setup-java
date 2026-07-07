@@ -222,7 +222,8 @@ function mapSdkmanDistribution(sdkmanDist: string): string | undefined {
     oracle: 'oracle',
     sapmchn: 'sapmachine',
     jbr: 'jetbrains',
-    dragonwell: 'dragonwell'
+    dragonwell: 'dragonwell',
+    kona: 'kona'
   };
 
   const mapped = distributionMap[sdkmanDist.toLowerCase()];
