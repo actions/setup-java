@@ -12,13 +12,12 @@ import {restore} from './cache';
 import * as path from 'path';
 import {getJavaDistribution} from './distributions/distribution-factory';
 import {JavaInstallerOptions} from './distributions/base-models';
+import {configureMavenArgs} from './maven-args';
 
 async function run() {
   try {
     const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
-    const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, {
-      required: true
-    });
+    let distributionName = core.getInput(constants.INPUT_DISTRIBUTION);
     const versionFile = core.getInput(constants.INPUT_JAVA_VERSION_FILE);
     const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
     const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
@@ -28,6 +27,13 @@ async function run() {
       constants.INPUT_CACHE_DEPENDENCY_PATH
     );
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
+    const setDefault = getBooleanInput(constants.INPUT_SET_DEFAULT, true);
+    const verifySignature = getBooleanInput(
+      constants.INPUT_VERIFY_SIGNATURE,
+      false
+    );
+    const verifySignaturePublicKey =
+      core.getInput(constants.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
 
     core.startGroup('Installed distributions');
@@ -40,45 +46,78 @@ async function run() {
       throw new Error('java-version or java-version-file input expected');
     }
 
-    const installerInputsOptions: installerInputsOptions = {
-      architecture,
-      packageType,
-      checkLatest,
-      distributionName,
-      jdkFile,
-      toolchainIds
-    };
-
     if (!versions.length) {
       core.debug(
         'java-version input is empty, looking for java-version-file input'
       );
       const content = fs.readFileSync(versionFile).toString().trim();
 
-      const version = getVersionFromFileContent(
+      const versionInfo = getVersionFromFileContent(
         content,
         distributionName,
         versionFile
       );
-      core.debug(`Parsed version from file '${version}'`);
+      core.debug(`Parsed version from file '${versionInfo?.version}'`);
 
-      if (!version) {
+      if (!versionInfo) {
         throw new Error(
           `No supported version was found in file ${versionFile}`
         );
       }
 
-      await installVersion(version, installerInputsOptions);
-    }
+      // Use distribution from file if available, otherwise use the input
+      if (versionInfo.distribution) {
+        core.info(
+          `Using distribution '${versionInfo.distribution}' from ${versionFile}`
+        );
+        distributionName = versionInfo.distribution;
+      } else if (!distributionName) {
+        throw new Error(
+          'distribution input is required when not specified in the version file'
+        );
+      }
 
-    for (const [index, version] of versions.entries()) {
-      await installVersion(version, installerInputsOptions, index);
+      const installerInputsOptions: installerInputsOptions = {
+        architecture,
+        packageType,
+        checkLatest,
+        setDefault,
+        verifySignature,
+        verifySignaturePublicKey,
+        distributionName,
+        jdkFile,
+        toolchainIds
+      };
+
+      await installVersion(versionInfo.version, installerInputsOptions);
+    } else {
+      // When using java-version input, distribution is still required
+      if (!distributionName) {
+        throw new Error('distribution input is required');
+      }
+
+      const installerInputsOptions: installerInputsOptions = {
+        architecture,
+        packageType,
+        checkLatest,
+        setDefault,
+        verifySignature,
+        verifySignaturePublicKey,
+        distributionName,
+        jdkFile,
+        toolchainIds
+      };
+
+      for (const [index, version] of versions.entries()) {
+        await installVersion(version, installerInputsOptions, index);
+      }
     }
     core.endGroup();
     const matchersPath = path.join(__dirname, '..', '..', '.github');
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
     await auth.configureAuthentication();
+    configureMavenArgs();
     if (cache && isCacheFeatureAvailable()) {
       await restore(cache, cacheDependencyPath);
     }
@@ -100,6 +139,9 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
+    setDefault,
+    verifySignature,
+    verifySignaturePublicKey,
     toolchainIds
   } = options;
 
@@ -107,6 +149,9 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
+    setDefault,
+    verifySignature,
+    verifySignaturePublicKey,
     version
   };
 
@@ -141,6 +186,9 @@ interface installerInputsOptions {
   architecture: string;
   packageType: string;
   checkLatest: boolean;
+  setDefault: boolean;
+  verifySignature: boolean;
+  verifySignaturePublicKey: string | undefined;
   distributionName: string;
   jdkFile: string;
   toolchainIds: Array<string>;

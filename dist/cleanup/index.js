@@ -52245,7 +52245,7 @@ else {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.DISTRIBUTIONS_ONLY_MAJOR_VERSION = exports.INPUT_MVN_TOOLCHAIN_VENDOR = exports.INPUT_MVN_TOOLCHAIN_ID = exports.MVN_TOOLCHAINS_FILE = exports.MVN_SETTINGS_FILE = exports.M2_DIR = exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE_DEPENDENCY_PATH = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION_FILE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
+exports.DISTRIBUTIONS_ONLY_MAJOR_VERSION = exports.MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = exports.MAVEN_NO_TRANSFER_PROGRESS_FLAG = exports.MAVEN_ARGS_ENV = exports.INPUT_SHOW_DOWNLOAD_PROGRESS = exports.INPUT_MVN_TOOLCHAIN_VENDOR = exports.INPUT_MVN_TOOLCHAIN_ID = exports.MVN_TOOLCHAINS_FILE = exports.MVN_SETTINGS_FILE = exports.M2_DIR = exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE_DEPENDENCY_PATH = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = exports.INPUT_VERIFY_SIGNATURE = exports.INPUT_SET_DEFAULT = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION_FILE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
 exports.MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
 exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_JAVA_VERSION_FILE = 'java-version-file';
@@ -52254,6 +52254,9 @@ exports.INPUT_JAVA_PACKAGE = 'java-package';
 exports.INPUT_DISTRIBUTION = 'distribution';
 exports.INPUT_JDK_FILE = 'jdkFile';
 exports.INPUT_CHECK_LATEST = 'check-latest';
+exports.INPUT_SET_DEFAULT = 'set-default';
+exports.INPUT_VERIFY_SIGNATURE = 'verify-signature';
+exports.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
 exports.INPUT_SERVER_ID = 'server-id';
 exports.INPUT_SERVER_USERNAME = 'server-username';
 exports.INPUT_SERVER_PASSWORD = 'server-password';
@@ -52272,6 +52275,10 @@ exports.MVN_SETTINGS_FILE = 'settings.xml';
 exports.MVN_TOOLCHAINS_FILE = 'toolchains.xml';
 exports.INPUT_MVN_TOOLCHAIN_ID = 'mvn-toolchain-id';
 exports.INPUT_MVN_TOOLCHAIN_VENDOR = 'mvn-toolchain-vendor';
+exports.INPUT_SHOW_DOWNLOAD_PROGRESS = 'show-download-progress';
+exports.MAVEN_ARGS_ENV = 'MAVEN_ARGS';
+exports.MAVEN_NO_TRANSFER_PROGRESS_FLAG = '-ntp';
+exports.MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = '--no-transfer-progress';
 exports.DISTRIBUTIONS_ONLY_MAJOR_VERSION = ['corretto'];
 
 
@@ -52315,14 +52322,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.deleteKey = exports.importKey = exports.PRIVATE_KEY_FILE = void 0;
+exports.verifyPackageSignature = exports.deleteKey = exports.importKey = exports.toGpgPath = exports.PRIVATE_KEY_FILE = void 0;
 const fs = __importStar(__nccwpck_require__(79896));
 const path = __importStar(__nccwpck_require__(16928));
 const io = __importStar(__nccwpck_require__(94994));
 const exec = __importStar(__nccwpck_require__(95236));
+const tc = __importStar(__nccwpck_require__(33472));
 const util = __importStar(__nccwpck_require__(54527));
 exports.PRIVATE_KEY_FILE = path.join(util.getTempDir(), 'private-key.asc');
 const PRIVATE_KEY_FINGERPRINT_REGEX = /\w{40}/;
+// Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
+// The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
+// internally. Passing Windows paths with backslashes can cause fatal GPG errors
+// (exit code 2), so all paths passed to GPG must be in POSIX format on Windows.
+function toGpgPath(p) {
+    if (process.platform !== 'win32')
+        return p;
+    return p
+        .replace(/\\/g, '/')
+        .replace(/^([A-Za-z]):\//, (_, drive) => `/${drive.toLowerCase()}/`);
+}
+exports.toGpgPath = toGpgPath;
 function importKey(privateKey) {
     return __awaiter(this, void 0, void 0, function* () {
         fs.writeFileSync(exports.PRIVATE_KEY_FILE, privateKey, {
@@ -52359,6 +52379,49 @@ function deleteKey(keyFingerprint) {
     });
 }
 exports.deleteKey = deleteKey;
+function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const signaturePath = yield tc.downloadTool(signatureUrl);
+        let gpgHome;
+        try {
+            gpgHome = fs.mkdtempSync(path.join(util.getTempDir(), 'verify-signature-gpg-home-'));
+        }
+        catch (error) {
+            try {
+                yield io.rmRF(signaturePath);
+            }
+            catch (_a) {
+                // ignore cleanup failures
+            }
+            throw new Error(`Failed to create temporary GPG home directory for signature verification: ${error.message}`);
+        }
+        try {
+            const publicKeyFile = path.join(gpgHome, 'public-key.asc');
+            fs.writeFileSync(publicKeyFile, publicKeyContent, { encoding: 'utf-8' });
+            const options = { silent: true };
+            yield exec.exec('gpg', [
+                '--homedir',
+                toGpgPath(gpgHome),
+                '--batch',
+                '--import',
+                toGpgPath(publicKeyFile)
+            ], options);
+            yield exec.exec('gpg', [
+                '--homedir',
+                toGpgPath(gpgHome),
+                '--batch',
+                '--verify',
+                toGpgPath(signaturePath),
+                toGpgPath(archivePath)
+            ], options);
+        }
+        finally {
+            yield io.rmRF(signaturePath);
+            yield io.rmRF(gpgHome);
+        }
+    });
+}
+exports.verifyPackageSignature = verifyPackageSignature;
 
 
 /***/ }),
@@ -52513,8 +52576,9 @@ function isCacheFeatureAvailable() {
 }
 exports.isCacheFeatureAvailable = isCacheFeatureAvailable;
 function getVersionFromFileContent(content, distributionName, versionFile) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c;
     let javaVersionRegExp;
+    let extractedDistribution;
     function getFileName(versionFile) {
         return path_1.default.basename(versionFile);
     }
@@ -52524,14 +52588,23 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
             /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
     }
     else if (versionFileName == '.sdkmanrc') {
-        javaVersionRegExp = /^java\s*=\s*(?<version>[^-]+)/m;
+        // Match both version and optional distribution identifier
+        javaVersionRegExp =
+            /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
     }
     else {
         javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
     }
-    const capturedVersion = ((_b = (_a = content.match(javaVersionRegExp)) === null || _a === void 0 ? void 0 : _a.groups) === null || _b === void 0 ? void 0 : _b.version)
-        ? (_d = (_c = content.match(javaVersionRegExp)) === null || _c === void 0 ? void 0 : _c.groups) === null || _d === void 0 ? void 0 : _d.version
+    const match = content.match(javaVersionRegExp);
+    const capturedVersion = ((_a = match === null || match === void 0 ? void 0 : match.groups) === null || _a === void 0 ? void 0 : _a.version)
+        ? match.groups.version
         : '';
+    // Extract distribution from .sdkmanrc file
+    if (versionFileName == '.sdkmanrc' && ((_b = match === null || match === void 0 ? void 0 : match.groups) === null || _b === void 0 ? void 0 : _b.distribution)) {
+        const sdkmanDist = match.groups.distribution;
+        extractedDistribution = mapSdkmanDistribution(sdkmanDist);
+        core.debug(`Parsed distribution '${extractedDistribution}' from SDKMAN identifier '${sdkmanDist}'`);
+    }
     core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
     if (!capturedVersion) {
         return null;
@@ -52545,13 +52618,42 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     if (!version) {
         return null;
     }
-    if (constants_1.DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(distributionName)) {
-        const coerceVersion = (_e = semver.coerce(version)) !== null && _e !== void 0 ? _e : version;
+    // Apply DISTRIBUTIONS_ONLY_MAJOR_VERSION logic whenever the effective distribution
+    // (either explicitly provided or extracted from the version file) is in the list.
+    if (constants_1.DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(extractedDistribution || distributionName)) {
+        const coerceVersion = (_c = semver.coerce(version)) !== null && _c !== void 0 ? _c : version;
         version = semver.major(coerceVersion).toString();
     }
-    return version.toString();
+    return {
+        version: version.toString(),
+        distribution: extractedDistribution
+    };
 }
 exports.getVersionFromFileContent = getVersionFromFileContent;
+// Map SDKMAN distribution identifiers to setup-java distribution names
+function mapSdkmanDistribution(sdkmanDist) {
+    const distributionMap = {
+        tem: 'temurin',
+        sem: 'semeru',
+        albba: 'dragonwell',
+        zulu: 'zulu',
+        amzn: 'corretto',
+        graal: 'graalvm',
+        graalce: 'graalvm',
+        librca: 'liberica',
+        ms: 'microsoft',
+        oracle: 'oracle',
+        sapmchn: 'sapmachine',
+        jbr: 'jetbrains',
+        dragonwell: 'dragonwell',
+        kona: 'kona'
+    };
+    const mapped = distributionMap[sdkmanDist.toLowerCase()];
+    if (!mapped) {
+        core.warning(`Unknown SDKMAN distribution identifier '${sdkmanDist}'. Please specify the distribution explicitly.`);
+    }
+    return mapped;
+}
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
 function avoidOldNotation(content) {
     return content.startsWith('1.') ? content.substring(2) : content;

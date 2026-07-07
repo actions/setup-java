@@ -20,6 +20,9 @@ export abstract class JavaBase {
   protected packageType: string;
   protected stable: boolean;
   protected checkLatest: boolean;
+  protected setDefault: boolean;
+  protected verifySignature: boolean;
+  protected verifySignaturePublicKey: string | undefined;
 
   constructor(
     protected distribution: string,
@@ -36,6 +39,12 @@ export abstract class JavaBase {
     this.architecture = installerOptions.architecture || os.arch();
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
+    this.setDefault =
+      installerOptions.setDefault !== undefined
+        ? installerOptions.setDefault
+        : true;
+    this.verifySignature = installerOptions.verifySignature ?? false;
+    this.verifySignaturePublicKey = installerOptions.verifySignaturePublicKey;
   }
 
   protected abstract downloadTool(
@@ -46,6 +55,12 @@ export abstract class JavaBase {
   ): Promise<JavaDownloadRelease>;
 
   public async setupJava(): Promise<JavaInstallerResults> {
+    if (this.verifySignature && !this.supportsSignatureVerification()) {
+      throw new Error(
+        `Input 'verify-signature' is not supported for distribution '${this.distribution}'.`
+      );
+    }
+
     let foundJava = this.findInToolcache();
     if (foundJava && !this.checkLatest) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
@@ -169,14 +184,25 @@ export abstract class JavaBase {
       foundJava.path = macOSPostfixPath;
     }
 
-    core.info(`Setting Java ${foundJava.version} as the default`);
-    this.setJavaDefault(foundJava.version, foundJava.path);
+    if (this.setDefault) {
+      core.info(`Setting Java ${foundJava.version} as the default`);
+      this.setJavaDefault(foundJava.version, foundJava.path);
+    } else {
+      core.info(
+        `Installing Java ${foundJava.version} (not setting as default)`
+      );
+      this.setJavaEnvironment(foundJava.version, foundJava.path);
+    }
 
     return foundJava;
   }
 
   protected get toolcacheFolderName(): string {
     return `Java_${this.distribution}_${this.packageType}`;
+  }
+
+  protected supportsSignatureVerification(): boolean {
+    return false;
   }
 
   protected getToolcacheVersionName(version: string): string {
@@ -298,9 +324,13 @@ export abstract class JavaBase {
   }
 
   protected setJavaDefault(version: string, toolPath: string) {
-    const majorVersion = version.split('.')[0];
     core.exportVariable('JAVA_HOME', toolPath);
     core.addPath(path.join(toolPath, 'bin'));
+    this.setJavaEnvironment(version, toolPath);
+  }
+
+  protected setJavaEnvironment(version: string, toolPath: string) {
+    const majorVersion = version.split('.')[0];
     core.setOutput('distribution', this.distribution);
     core.setOutput('path', toolPath);
     core.setOutput('version', version);

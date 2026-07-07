@@ -464,6 +464,24 @@ describe('setupJava', () => {
     }
   );
 
+  it('should fail when verify-signature is enabled for unsupported distributions', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false,
+      verifySignature: true
+    });
+
+    await expect(mockJavaBase.setupJava()).rejects.toThrow(
+      "Input 'verify-signature' is not supported for distribution 'Empty'."
+    );
+    expect(spyTcFindAllVersions).not.toHaveBeenCalled();
+    expect(spyCoreAddPath).not.toHaveBeenCalled();
+    expect(spyCoreExportVariable).not.toHaveBeenCalled();
+    expect(spyCoreSetOutput).not.toHaveBeenCalled();
+  });
+
   it.each([
     [
       {
@@ -544,6 +562,110 @@ describe('setupJava', () => {
     expect(spyCoreAddPath).not.toHaveBeenCalled();
     expect(spyCoreExportVariable).not.toHaveBeenCalled();
     expect(spyCoreSetOutput).not.toHaveBeenCalled();
+  });
+
+  it('should not set JAVA_HOME and PATH when setDefault is false', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false,
+      setDefault: false
+    });
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: installedJavaVersion,
+      path: javaPath
+    });
+    expect(spyCoreExportVariable).not.toHaveBeenCalledWith(
+      'JAVA_HOME',
+      expect.anything()
+    );
+    expect(spyCoreAddPath).not.toHaveBeenCalled();
+    expect(spyCoreExportVariable).toHaveBeenCalledWith(
+      'JAVA_HOME_11_X86',
+      javaPath
+    );
+    expect(spyCoreSetOutput).toHaveBeenCalledWith(
+      'version',
+      installedJavaVersion
+    );
+    expect(spyCoreSetOutput).toHaveBeenCalledWith('path', javaPath);
+    expect(spyCoreSetOutput).toHaveBeenCalledWith('distribution', 'Empty');
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      `Installing Java ${installedJavaVersion} (not setting as default)`
+    );
+  });
+
+  it('should set JAVA_HOME and PATH when setDefault is true', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false,
+      setDefault: true
+    });
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: installedJavaVersion,
+      path: javaPath
+    });
+    expect(spyCoreExportVariable).toHaveBeenCalledWith('JAVA_HOME', javaPath);
+    expect(spyCoreAddPath).toHaveBeenCalledWith(path.join(javaPath, 'bin'));
+    expect(spyCoreExportVariable).toHaveBeenCalledWith(
+      'JAVA_HOME_11_X86',
+      javaPath
+    );
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      `Setting Java ${installedJavaVersion} as the default`
+    );
+  });
+
+  it('should default to setting as default when setDefault is not specified', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: installedJavaVersion,
+      path: javaPath
+    });
+    expect(spyCoreExportVariable).toHaveBeenCalledWith('JAVA_HOME', javaPath);
+    expect(spyCoreAddPath).toHaveBeenCalledWith(path.join(javaPath, 'bin'));
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      `Setting Java ${installedJavaVersion} as the default`
+    );
+  });
+
+  it('should download and not set default when setDefault is false', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false,
+      setDefault: false
+    });
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: '11.0.9',
+      path: path.join('toolcache', 'Java_Empty_jdk', '11.0.9', 'x64')
+    });
+    expect(spyCoreExportVariable).not.toHaveBeenCalledWith(
+      'JAVA_HOME',
+      expect.anything()
+    );
+    expect(spyCoreAddPath).not.toHaveBeenCalled();
+    expect(spyCoreExportVariable).toHaveBeenCalledWith(
+      'JAVA_HOME_11_X64',
+      path.join('toolcache', 'Java_Empty_jdk', '11.0.9', 'x64')
+    );
+    expect(spyCoreSetOutput).toHaveBeenCalledWith('version', '11.0.9');
+    expect(spyCoreSetOutput).toHaveBeenCalledWith(
+      'path',
+      path.join('toolcache', 'Java_Empty_jdk', '11.0.9', 'x64')
+    );
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      'Installing Java 11.0.9 (not setting as default)'
+    );
   });
 });
 
