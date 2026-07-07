@@ -147,6 +147,8 @@ The workflow output `cache-hit` is set to indicate if an exact match was found f
 
 The cache input is optional, and caching is turned off by default.
 
+**Maven Wrapper:** when `cache: 'maven'` is enabled, the action also caches and restores the Maven Wrapper distribution downloaded to `~/.m2/wrapper/dists` (in addition to the local repository), so wrapper-based (`./mvnw`) builds don't re-download the wrapper on every run. This is keyed on `**/.mvn/wrapper/maven-wrapper.properties` as shown above.
+
 #### Caching gradle dependencies
 ```yaml
 steps:

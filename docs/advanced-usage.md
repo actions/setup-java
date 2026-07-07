@@ -516,6 +516,8 @@ The two `settings.xml` files created from the above example look like the follow
 
 ***NOTE***: The `settings.xml` file is created in the Actions `$HOME/.m2` directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See [below](#apache-maven-with-a-settings-path) for using the `settings-path` to change your `settings.xml` file location.
 
+***NOTE***: The generated `settings.xml` sets `<interactiveMode>false</interactiveMode>` so that Maven never blocks a CI run waiting on an interactive prompt. This is applied automatically whenever the action generates `settings.xml`.
+
 If you don't want to overwrite the `settings.xml` file, you can set `overwrite-settings: false`
 
 ### Extra setup for pom.xml:
