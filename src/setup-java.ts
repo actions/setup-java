@@ -12,6 +12,7 @@ import {restore} from './cache';
 import * as path from 'path';
 import {getJavaDistribution} from './distributions/distribution-factory';
 import {JavaInstallerOptions} from './distributions/base-models';
+import {configureMavenArgs} from './maven-args';
 
 async function run() {
   try {
@@ -26,6 +27,13 @@ async function run() {
       constants.INPUT_CACHE_DEPENDENCY_PATH
     );
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
+    const setDefault = getBooleanInput(constants.INPUT_SET_DEFAULT, true);
+    const verifySignature = getBooleanInput(
+      constants.INPUT_VERIFY_SIGNATURE,
+      false
+    );
+    const verifySignaturePublicKey =
+      core.getInput(constants.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
     let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
 
     core.startGroup('Installed distributions');
@@ -73,6 +81,9 @@ async function run() {
         architecture,
         packageType,
         checkLatest,
+        setDefault,
+        verifySignature,
+        verifySignaturePublicKey,
         distributionName,
         jdkFile,
         toolchainIds
@@ -89,6 +100,9 @@ async function run() {
         architecture,
         packageType,
         checkLatest,
+        setDefault,
+        verifySignature,
+        verifySignaturePublicKey,
         distributionName,
         jdkFile,
         toolchainIds
@@ -103,6 +117,7 @@ async function run() {
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
     await auth.configureAuthentication();
+    configureMavenArgs();
     if (cache && isCacheFeatureAvailable()) {
       await restore(cache, cacheDependencyPath);
     }
@@ -124,6 +139,9 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
+    setDefault,
+    verifySignature,
+    verifySignaturePublicKey,
     toolchainIds
   } = options;
 
@@ -131,6 +149,9 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
+    setDefault,
+    verifySignature,
+    verifySignaturePublicKey,
     version
   };
 
@@ -165,6 +186,9 @@ interface installerInputsOptions {
   architecture: string;
   packageType: string;
   checkLatest: boolean;
+  setDefault: boolean;
+  verifySignature: boolean;
+  verifySignaturePublicKey: string | undefined;
   distributionName: string;
   jdkFile: string;
   toolchainIds: Array<string>;

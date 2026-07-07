@@ -12,13 +12,16 @@
   - [GraalVM](#GraalVM)
   - [GraalVM Community](#GraalVM-Community)
   - [JetBrains](#JetBrains)
+  - [Tencent Kona](#Tencent-Kona)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
   - [JavaFX Maven project](#JavaFX-Maven-project)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
+- [Installing JDK without setting as default](#Installing-JDK-without-setting-as-default)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
 - [Testing against different Java distributions](#Testing-against-different-Java-distributions)
 - [Testing against different platforms](#Testing-against-different-platforms)
 - [Publishing using Apache Maven](#Publishing-using-Apache-Maven)
+- [Maven transfer progress (download logs)](#Maven-transfer-progress-download-logs)
 - [Publishing using Gradle](#Publishing-using-Gradle)
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](#Modifying-Maven-Toolchains)
@@ -233,6 +236,18 @@ The available package types are:
 - `jdk+ft` - JBRSDK (FreeType)
 - `jre+ft` - JBR (FreeType)
 
+### Tencent Kona
+**NOTE:** Tencent Kona supports major versions 8, 11, 17 and 21, and provides jdk only.
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'kona'
+    java-version: '21'
+- run: java --version
+```
 
 ## Installing custom Java package type
 ```yaml
@@ -282,6 +297,34 @@ steps:
     architecture: x86 # optional - default value derived from the runner machine
 - run: java --version
 ```
+
+## Installing JDK without setting as default
+
+When installing multiple JDKs, the last one installed becomes the default (`JAVA_HOME`, `PATH`). Use the `set-default` option to install a JDK without overriding the default. The installed JDK is still discoverable via the `JAVA_HOME_<major>_<arch>` environment variable (e.g. `JAVA_HOME_21_X64`).
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'temurin'
+    java-version: '17'
+- uses: actions/setup-java@v5
+  id: setup-java-21
+  with:
+    distribution: 'temurin'
+    java-version: '21'
+    set-default: false
+- run: |
+    echo "Default java:"
+    java -version
+    echo "Java 21 home: $JAVA_HOME_21_X64"
+    echo "Java 21 path from output: ${{ steps.setup-java-21.outputs.path }}"
+```
+
+In this example, `JAVA_HOME` and `java` on `PATH` point to Java 17, while Java 21 is available via `JAVA_HOME_21_X64` or the step output `path`.
+
+> **Note:** When a single step installs multiple JDKs via a multiline `java-version`, the `set-default` value applies to all of them. With `set-default: false`, none of those JDKs become the default; each remains discoverable through its `JAVA_HOME_<major>_<arch>` variable. Regardless of `set-default`, installed JDKs are still registered in the Maven toolchains file, so they can be selected via Maven toolchains.
 
 ## Installing Java from local file
 If your use-case requires a custom distribution or a version that is not provided by setup-java, you can download it manually and setup-java will take care of the installation and caching on the VM:
@@ -436,6 +479,7 @@ The two `settings.xml` files created from the above example look like the follow
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <interactiveMode>false</interactiveMode>
   <servers>
     <server>
       <id>github</id>
@@ -455,6 +499,7 @@ The two `settings.xml` files created from the above example look like the follow
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <interactiveMode>false</interactiveMode>
   <servers>
     <server>
       <id>maven</id>
@@ -470,6 +515,8 @@ The two `settings.xml` files created from the above example look like the follow
 ```
 
 ***NOTE***: The `settings.xml` file is created in the Actions `$HOME/.m2` directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See [below](#apache-maven-with-a-settings-path) for using the `settings-path` to change your `settings.xml` file location.
+
+***NOTE***: The generated `settings.xml` sets `<interactiveMode>false</interactiveMode>` so that Maven never blocks a CI run waiting on an interactive prompt. This is applied automatically whenever the action generates `settings.xml`.
 
 If you don't want to overwrite the `settings.xml` file, you can set `overwrite-settings: false`
 
@@ -525,6 +572,74 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
 ```
+
+## Maven transfer progress (download logs)
+
+By default, Maven prints a line for every artifact it downloads, which can add hundreds of noisy lines to CI logs. To keep logs clean, `setup-java` sets the [`MAVEN_ARGS`](https://maven.apache.org/configure.html#maven_args-environment-variable) environment variable to include `-ntp` (`--no-transfer-progress`) so that subsequent Maven invocations in the job suppress this transfer progress output.
+
+This is enabled by default. Any existing `MAVEN_ARGS` value is preserved (the flag is appended, not overwritten), and the flag is not added twice if you already set it yourself.
+
+If you want to keep the download/transfer progress in your logs, set `show-download-progress: true`:
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-java@v5
+      with:
+        distribution: '<distribution>'
+        java-version: '21'
+        show-download-progress: true # keep Maven download/transfer progress in the logs
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+```
+
+***NOTES***:
+- `MAVEN_ARGS` is honored by Maven 3.9.0+ and the Maven Wrapper (`mvnw`). Older Maven versions ignore it, so on those you can pass `--no-transfer-progress` on the command line instead.
+- This setting only affects Maven. It has no effect on Gradle, sbt, or other build tools.
+- `-ntp` only controls transfer/progress output; it does not change whether Maven runs in batch mode. Use `-B`/`--batch-mode` (or `<interactiveMode>false</interactiveMode>` in `settings.xml`) if you also want non-interactive runs.
+
+## Java problem matcher (compiler annotations)
+
+`setup-java` registers a [problem matcher](https://github.com/actions/toolkit/blob/main/docs/problem-matchers.md) for Java after installing the JDK. It scans the log output of subsequent steps and turns `javac` diagnostics into GitHub [annotations](https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message) that appear in the run summary and inline on the affected files. It matches two kinds of lines:
+
+- Compiler errors and warnings, e.g. `App.java:12: error: cannot find symbol` (owner `javac`).
+- Uncaught-exception header lines, e.g. `Exception in thread "main" ...`; because these lines have no file or line captures, they appear as log/run-level annotations rather than inline file annotations (owner `java`).
+
+This is enabled by default and requires no configuration.
+
+### Disabling the problem matcher
+
+There is no action input to turn the matcher off, but you can disable it for the rest of the job with the built-in [`remove-matcher`](https://github.com/actions/toolkit/blob/main/docs/problem-matchers.md#remove-a-problem-matcher) workflow command. Pass the matcher **owner** (not a file name); the Java matcher defines two owners, `javac` and `java`, so remove both to fully suppress it:
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-java@v5
+      with:
+        distribution: '<distribution>'
+        java-version: '21'
+
+    - name: Disable the Java problem matcher
+      run: |
+        echo "::remove-matcher owner=javac::"
+        echo "::remove-matcher owner=java::"
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+```
+
+***NOTES***:
+- `remove-matcher` only stops annotations from being created; the underlying compiler output is unchanged, so a failing `javac`/build still fails the step.
+- The command is scoped to the job, so add the step right after `setup-java` (and before your build) in every job where you want the matcher disabled.
 
 ## Publishing using Gradle
 ```yaml
