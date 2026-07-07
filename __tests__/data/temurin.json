@@ -15,7 +15,8 @@
           "link": "https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_linux_hotspot_16.0.2_7.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_linux_hotspot_16.0.2_7.tar.gz.json",
           "name": "OpenJDK16U-jdk_x64_linux_hotspot_16.0.2_7.tar.gz",
-          "size": 205463525
+          "size": 205463525,
+          "signature_link": "https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_linux_hotspot_16.0.2_7.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-16.0.2+7_adopt",
@@ -44,7 +45,8 @@
           "link": "https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_mac_hotspot_16.0.2_7.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_mac_hotspot_16.0.2_7.tar.gz.json",
           "name": "OpenJDK16U-jdk_x64_mac_hotspot_16.0.2_7.tar.gz",
-          "size": 206621395
+          "size": 206621395,
+          "signature_link": "https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_mac_hotspot_16.0.2_7.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-16.0.2+7_adopt",
@@ -73,7 +75,8 @@
           "link": "https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_windows_hotspot_16.0.2_7.zip",
           "metadata_link": "https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_windows_hotspot_16.0.2_7.zip.json",
           "name": "OpenJDK16U-jdk_x64_windows_hotspot_16.0.2_7.zip",
-          "size": 203448494
+          "size": 203448494,
+          "signature_link": "https://github.com/adoptium/temurin16-binaries/releases/download/jdk-16.0.2%2B7/OpenJDK16U-jdk_x64_windows_hotspot_16.0.2_7.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-16.0.2+7_adopt",
@@ -113,7 +116,8 @@
           "link": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u302b08.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u302b08.tar.gz.json",
           "name": "OpenJDK8U-jdk_x64_linux_hotspot_8u302b08.tar.gz",
-          "size": 102954777
+          "size": 102954777,
+          "signature_link": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_x64_linux_hotspot_8u302b08.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk8u302-b08",
@@ -142,7 +146,8 @@
           "link": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_x64_mac_hotspot_8u302b08.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_x64_mac_hotspot_8u302b08.tar.gz.json",
           "name": "OpenJDK8U-jdk_x64_mac_hotspot_8u302b08.tar.gz",
-          "size": 107303398
+          "size": 107303398,
+          "signature_link": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_x64_mac_hotspot_8u302b08.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk8u302-b08",
@@ -171,7 +176,8 @@
           "link": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_x64_windows_hotspot_8u302b08.zip",
           "metadata_link": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_x64_windows_hotspot_8u302b08.zip.json",
           "name": "OpenJDK8U-jdk_x64_windows_hotspot_8u302b08.zip",
-          "size": 104297671
+          "size": 104297671,
+          "signature_link": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u302-b08/OpenJDK8U-jdk_x64_windows_hotspot_8u302b08.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk8u302-b08",
@@ -211,7 +217,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-31-00-07.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-31-00-07.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-31-00-07.tar.gz",
-          "size": 188909250
+          "size": 188909250,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-31-00-07.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+33_adopt-16-ge39bf269d60",
@@ -240,7 +247,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-31-00-07.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-31-00-07.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-31-00-07.tar.gz",
-          "size": 192952713
+          "size": 192952713,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-31-00-07.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+33_adopt-219-ge39bf269d60",
@@ -260,7 +268,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-31-00-07.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-31-00-07.tar.gz.json",
           "name": "OpenJDK17-jdk_arm_linux_hotspot_2021-07-31-00-07.tar.gz",
-          "size": 188816971
+          "size": 188816971,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-31-00-07.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+33_adopt-16-ge39bf269d60",
@@ -280,7 +289,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-31-00-07.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-31-00-07.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-31-00-07.tar.gz",
-          "size": 182299353
+          "size": 182299353,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-31-00-07.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+33_adopt-219-ge39bf269d60",
@@ -300,7 +310,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-31-00-07.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-31-00-07.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-31-00-07.tar.gz",
-          "size": 187674392
+          "size": 187674392,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-31-00-07.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+33_adopt-46-gea8d2c72e83",
@@ -320,7 +331,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-31-00-07.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-31-00-07.tar.gz.json",
           "name": "OpenJDK17-jdk_s390x_linux_hotspot_2021-07-31-00-07.tar.gz",
-          "size": 179501342
+          "size": 179501342,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-31-00-07.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+33_adopt-21-ge39bf269d60",
@@ -340,7 +352,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-29-23-34.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-29-23-34.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-29-23-34.tar.gz",
-          "size": 192126971
+          "size": 192126971,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-29-23-34.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+33_adopt-219-ge39bf269d60",
@@ -360,7 +373,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-31-00-07.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-31-00-07.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_linux_hotspot_2021-07-31-00-07.tar.gz",
-          "size": 192015878
+          "size": 192015878,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-31-00-07.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+33_adopt-21-ge39bf269d60",
@@ -389,7 +403,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-31-00-07.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-31-00-07.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_mac_hotspot_2021-07-31-00-07.tar.gz",
-          "size": 192422068
+          "size": 192422068,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-31-00-07.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+33_adopt-219-ge39bf269d60",
@@ -418,7 +433,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-31-00-07.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-31-00-07.zip.json",
           "name": "OpenJDK17-jdk_x64_windows_hotspot_2021-07-31-00-07.zip",
-          "size": 188694175
+          "size": 188694175,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-31-00-07.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+33_adopt-219-ge39bf269d60",
@@ -447,7 +463,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-31-00-07.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-31-00-07.zip.json",
           "name": "OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-31-00-07.zip",
-          "size": 184618115
+          "size": 184618115,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-31-00-07.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+33_adopt-219-ge39bf269d60",
@@ -489,7 +506,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-27-23-34.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-27-23-34.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-27-23-34.tar.gz",
-          "size": 192125161
+          "size": 192125161,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-31-00-07-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-27-23-34.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+32_adopt-242-gce1857dd7a1",
@@ -531,7 +549,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-23-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-23-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-23-03-09.tar.gz",
-          "size": 188911467
+          "size": 188911467,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-23-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+32_adopt-42-g4596b4e9d4e",
@@ -560,7 +579,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-23-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-23-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-23-03-09.tar.gz",
-          "size": 192950510
+          "size": 192950510,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-23-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+32_adopt-217-g4596b4e9d4e",
@@ -580,7 +600,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-23-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-23-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_arm_linux_hotspot_2021-07-23-03-09.tar.gz",
-          "size": 188815685
+          "size": 188815685,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-23-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+32_adopt-36-g4596b4e9d4e",
@@ -600,7 +621,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-23-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-23-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-23-03-09.tar.gz",
-          "size": 182307654
+          "size": 182307654,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-23-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+32_adopt-217-g4596b4e9d4e",
@@ -620,7 +642,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-23-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-23-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-23-03-09.tar.gz",
-          "size": 187698851
+          "size": 187698851,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-23-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+32_adopt-36-g4596b4e9d4e",
@@ -640,7 +663,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-23-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-23-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_s390x_linux_hotspot_2021-07-23-03-09.tar.gz",
-          "size": 179501218
+          "size": 179501218,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-23-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+32_adopt-40-g4596b4e9d4e",
@@ -660,7 +684,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-22-23-30.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-22-23-30.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-22-23-30.tar.gz",
-          "size": 192124471
+          "size": 192124471,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-22-23-30.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+32_adopt-217-g4596b4e9d4e",
@@ -680,7 +705,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-23-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-23-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_linux_hotspot_2021-07-23-03-09.tar.gz",
-          "size": 192015026
+          "size": 192015026,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-23-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+32_adopt-40-g4596b4e9d4e",
@@ -709,7 +735,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-23-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-23-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_mac_hotspot_2021-07-23-03-09.tar.gz",
-          "size": 193003513
+          "size": 193003513,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-23-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+32_adopt-217-g4596b4e9d4e",
@@ -738,7 +765,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-23-03-09.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-23-03-09.zip.json",
           "name": "OpenJDK17-jdk_x64_windows_hotspot_2021-07-23-03-09.zip",
-          "size": 188694996
+          "size": 188694996,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-23-03-09.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+32_adopt-217-g4596b4e9d4e",
@@ -767,7 +795,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-23-03-09.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-23-03-09.zip.json",
           "name": "OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-23-03-09.zip",
-          "size": 184626937
+          "size": 184626937,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-23-03-09-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-23-03-09.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+32_adopt-217-g4596b4e9d4e",
@@ -809,7 +838,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-21-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-21-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-21-03-09.tar.gz",
-          "size": 188891565
+          "size": 188891565,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-21-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "a342f28aaec",
@@ -829,7 +859,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-21-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-21-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_arm_linux_hotspot_2021-07-21-03-09.tar.gz",
-          "size": 188790907
+          "size": 188790907,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-21-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "a342f28aaec",
@@ -849,7 +880,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-21-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-21-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-21-03-09.tar.gz",
-          "size": 182276594
+          "size": 182276594,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-21-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-191-ga342f28aaec",
@@ -869,7 +901,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-21-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-21-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-21-03-09.tar.gz",
-          "size": 187678422
+          "size": 187678422,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-21-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-26-ga342f28aaec",
@@ -889,7 +922,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-21-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-21-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_s390x_linux_hotspot_2021-07-21-03-09.tar.gz",
-          "size": 179475721
+          "size": 179475721,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-21-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-26-ga342f28aaec",
@@ -909,7 +943,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-20-23-34.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-20-23-34.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-20-23-34.tar.gz",
-          "size": 192104689
+          "size": 192104689,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-20-23-34.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-191-ga342f28aaec",
@@ -929,7 +964,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-21-03-09.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-21-03-09.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_linux_hotspot_2021-07-21-03-09.tar.gz",
-          "size": 191982821
+          "size": 191982821,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-21-03-09.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "a342f28aaec",
@@ -958,7 +994,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-21-03-09.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-21-03-09.zip.json",
           "name": "OpenJDK17-jdk_x64_windows_hotspot_2021-07-21-03-09.zip",
-          "size": 188685330
+          "size": 188685330,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-21-03-09.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-191-ga342f28aaec",
@@ -987,7 +1024,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-21-03-09.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-21-03-09.zip.json",
           "name": "OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-21-03-09.zip",
-          "size": 184607457
+          "size": 184607457,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-21-03-09-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-21-03-09.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-191-ga342f28aaec",
@@ -1029,7 +1067,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-16-10-58.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-16-10-58.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-16-10-58.tar.gz",
-          "size": 188896773
+          "size": 188896773,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-16-10-58.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-14-g20418a26958",
@@ -1058,7 +1097,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-16-10-58.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-16-10-58.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-16-10-58.tar.gz",
-          "size": 192948484
+          "size": 192948484,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-16-10-58.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-179-g20418a26958",
@@ -1078,7 +1118,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-16-10-58.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-16-10-58.tar.gz.json",
           "name": "OpenJDK17-jdk_arm_linux_hotspot_2021-07-16-10-58.tar.gz",
-          "size": 188791964
+          "size": 188791964,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-16-10-58.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-14-g20418a26958",
@@ -1098,7 +1139,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-16-10-58.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-16-10-58.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-16-10-58.tar.gz",
-          "size": 182281944
+          "size": 182281944,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-16-10-58.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-179-g20418a26958",
@@ -1118,7 +1160,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-16-10-58.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-16-10-58.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-16-10-58.tar.gz",
-          "size": 187650365
+          "size": 187650365,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-16-10-58.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-23-g20418a26958",
@@ -1138,7 +1181,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-16-10-58.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-16-10-58.tar.gz.json",
           "name": "OpenJDK17-jdk_s390x_linux_hotspot_2021-07-16-10-58.tar.gz",
-          "size": 179483622
+          "size": 179483622,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-16-10-58.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-55-g20418a26958",
@@ -1158,7 +1202,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-15-23-34.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-15-23-34.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-15-23-34.tar.gz",
-          "size": 192108731
+          "size": 192108731,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-15-23-34.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-179-g20418a26958",
@@ -1178,7 +1223,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-16-10-58.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-16-10-58.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_linux_hotspot_2021-07-16-10-58.tar.gz",
-          "size": 191985123
+          "size": 191985123,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-16-10-58.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-14-g20418a26958",
@@ -1207,7 +1253,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-16-10-58.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-16-10-58.zip.json",
           "name": "OpenJDK17-jdk_x64_windows_hotspot_2021-07-16-10-58.zip",
-          "size": 188688539
+          "size": 188688539,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-16-10-58.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-179-g20418a26958",
@@ -1236,7 +1283,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-16-10-58.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-16-10-58.zip.json",
           "name": "OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-16-10-58.zip",
-          "size": 184612045
+          "size": 184612045,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-16-10-58-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-16-10-58.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+31_adopt-179-g20418a26958",
@@ -1278,7 +1326,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-14-11-30.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-14-11-30.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-14-11-30.tar.gz",
-          "size": 188899456
+          "size": 188899456,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-14-11-30.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "ce22197617d",
@@ -1307,7 +1356,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-14-11-30.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-14-11-30.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-14-11-30.tar.gz",
-          "size": 192953428
+          "size": 192953428,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-14-11-30.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-200-gce22197617d",
@@ -1327,7 +1377,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-14-11-30.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-14-11-30.tar.gz.json",
           "name": "OpenJDK17-jdk_arm_linux_hotspot_2021-07-14-11-30.tar.gz",
-          "size": 188792852
+          "size": 188792852,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-14-11-30.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-66-gce22197617d",
@@ -1347,7 +1398,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-14-11-30.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-14-11-30.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-14-11-30.tar.gz",
-          "size": 187678600
+          "size": 187678600,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-14-11-30.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "ce22197617d",
@@ -1367,7 +1419,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-14-11-30.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-14-11-30.tar.gz.json",
           "name": "OpenJDK17-jdk_s390x_linux_hotspot_2021-07-14-11-30.tar.gz",
-          "size": 179480996
+          "size": 179480996,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-14-11-30.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "ce22197617d",
@@ -1387,7 +1440,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-13-23-34.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-13-23-34.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-13-23-34.tar.gz",
-          "size": 192105446
+          "size": 192105446,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-13-23-34.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-200-gce22197617d",
@@ -1407,7 +1461,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-14-11-30.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-14-11-30.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_linux_hotspot_2021-07-14-11-30.tar.gz",
-          "size": 191986856
+          "size": 191986856,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-14-11-30.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "ce22197617d",
@@ -1436,7 +1491,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-14-11-30.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-14-11-30.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_mac_hotspot_2021-07-14-11-30.tar.gz",
-          "size": 192995067
+          "size": 192995067,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-14-11-30.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-200-gce22197617d",
@@ -1465,7 +1521,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-14-11-30.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-14-11-30.zip.json",
           "name": "OpenJDK17-jdk_x64_windows_hotspot_2021-07-14-11-30.zip",
-          "size": 188686556
+          "size": 188686556,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-14-11-30.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-200-gce22197617d",
@@ -1494,7 +1551,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-14-11-30.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-14-11-30.zip.json",
           "name": "OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-14-11-30.zip",
-          "size": 184620492
+          "size": 184620492,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-14-11-30-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-14-11-30.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-200-gce22197617d",
@@ -1536,7 +1594,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-09-12-54.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-09-12-54.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-09-12-54.tar.gz",
-          "size": 188896299
+          "size": 188896299,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-09-12-54.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-164-g3e7e5bc2003",
@@ -1565,7 +1624,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-09-12-54.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-09-12-54.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-09-12-54.tar.gz",
-          "size": 192941671
+          "size": 192941671,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-09-12-54.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-164-g3e7e5bc2003",
@@ -1585,7 +1645,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-09-12-54.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-09-12-54.tar.gz.json",
           "name": "OpenJDK17-jdk_arm_linux_hotspot_2021-07-09-12-54.tar.gz",
-          "size": 188838708
+          "size": 188838708,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-09-12-54.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-161-g3e7e5bc2003",
@@ -1605,7 +1666,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-09-12-54.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-09-12-54.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-09-12-54.tar.gz",
-          "size": 182274073
+          "size": 182274073,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-09-12-54.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-40-g3e7e5bc2003",
@@ -1625,7 +1687,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-09-12-54.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-09-12-54.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-09-12-54.tar.gz",
-          "size": 187666608
+          "size": 187666608,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-09-12-54.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-40-g3e7e5bc2003",
@@ -1645,7 +1708,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-09-12-54.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-09-12-54.tar.gz.json",
           "name": "OpenJDK17-jdk_s390x_linux_hotspot_2021-07-09-12-54.tar.gz",
-          "size": 179472325
+          "size": 179472325,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-09-12-54.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-30-g3e7e5bc2003",
@@ -1665,7 +1729,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-08-23-35.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-08-23-35.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-08-23-35.tar.gz",
-          "size": 192098387
+          "size": 192098387,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-08-23-35.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-164-g3e7e5bc2003",
@@ -1685,7 +1750,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-09-12-54.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-09-12-54.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_linux_hotspot_2021-07-09-12-54.tar.gz",
-          "size": 191983708
+          "size": 191983708,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-09-12-54.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-164-g3e7e5bc2003",
@@ -1714,7 +1780,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-09-12-54.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-09-12-54.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_mac_hotspot_2021-07-09-12-54.tar.gz",
-          "size": 193004476
+          "size": 193004476,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-09-12-54.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-164-g3e7e5bc2003",
@@ -1743,7 +1810,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-09-12-54.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-09-12-54.zip.json",
           "name": "OpenJDK17-jdk_x64_windows_hotspot_2021-07-09-12-54.zip",
-          "size": 188681640
+          "size": 188681640,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-09-12-54.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-164-g3e7e5bc2003",
@@ -1772,7 +1840,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-09-12-54.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-09-12-54.zip.json",
           "name": "OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-09-12-54.zip",
-          "size": 184605514
+          "size": 184605514,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-09-12-54-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-09-12-54.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+30_adopt-164-g3e7e5bc2003",
@@ -1823,7 +1892,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-07-11-35.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-07-11-35.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-07-11-35.tar.gz",
-          "size": 192962903
+          "size": 192962903,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-07-11-35.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-172-g06428c22b61",
@@ -1843,7 +1913,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-07-11-35.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-07-11-35.tar.gz.json",
           "name": "OpenJDK17-jdk_arm_linux_hotspot_2021-07-07-11-35.tar.gz",
-          "size": 188800217
+          "size": 188800217,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-07-11-35.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "06428c22b61",
@@ -1863,7 +1934,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-07-11-35.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-07-11-35.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-07-11-35.tar.gz",
-          "size": 187663978
+          "size": 187663978,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-07-11-35.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-78-g06428c22b61",
@@ -1883,7 +1955,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-07-11-35.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-07-11-35.tar.gz.json",
           "name": "OpenJDK17-jdk_s390x_linux_hotspot_2021-07-07-11-35.tar.gz",
-          "size": 179496669
+          "size": 179496669,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-07-11-35.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-78-g06428c22b61",
@@ -1903,7 +1976,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-06-23-34.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-06-23-34.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-06-23-34.tar.gz",
-          "size": 192113242
+          "size": 192113242,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-06-23-34.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-172-g06428c22b61",
@@ -1923,7 +1997,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-07-11-35.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-07-11-35.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_linux_hotspot_2021-07-07-11-35.tar.gz",
-          "size": 192021951
+          "size": 192021951,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-07-11-35.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-172-g06428c22b61",
@@ -1952,7 +2027,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-07-11-35.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-07-11-35.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_mac_hotspot_2021-07-07-11-35.tar.gz",
-          "size": 193018554
+          "size": 193018554,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-07-11-35.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-172-g06428c22b61",
@@ -1981,7 +2057,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-07-11-35.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-07-11-35.zip.json",
           "name": "OpenJDK17-jdk_x64_windows_hotspot_2021-07-07-11-35.zip",
-          "size": 188702463
+          "size": 188702463,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-07-11-35-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-07-11-35.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-172-g06428c22b61",
@@ -2023,7 +2100,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-02-12-00.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-02-12-00.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-02-12-00.tar.gz",
-          "size": 188953178
+          "size": 188953178,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-07-02-12-00.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-138-g6d3debb5c12",
@@ -2052,7 +2130,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-02-12-00.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-02-12-00.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-02-12-00.tar.gz",
-          "size": 192957934
+          "size": 192957934,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-07-02-12-00.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-138-g6d3debb5c12",
@@ -2072,7 +2151,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-02-12-00.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-02-12-00.tar.gz.json",
           "name": "OpenJDK17-jdk_arm_linux_hotspot_2021-07-02-12-00.tar.gz",
-          "size": 188797466
+          "size": 188797466,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-07-02-12-00.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-43-g6d3debb5c12",
@@ -2092,7 +2172,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-02-12-00.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-02-12-00.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-02-12-00.tar.gz",
-          "size": 182292580
+          "size": 182292580,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-07-02-12-00.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-138-g6d3debb5c12",
@@ -2112,7 +2193,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-02-12-00.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-02-12-00.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-02-12-00.tar.gz",
-          "size": 187684930
+          "size": 187684930,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-07-02-12-00.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-64-g6d3debb5c12",
@@ -2132,7 +2214,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-02-12-00.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-02-12-00.tar.gz.json",
           "name": "OpenJDK17-jdk_s390x_linux_hotspot_2021-07-02-12-00.tar.gz",
-          "size": 179484390
+          "size": 179484390,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-07-02-12-00.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-54-g6d3debb5c12",
@@ -2152,7 +2235,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-01-23-30.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-01-23-30.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-01-23-30.tar.gz",
-          "size": 192114561
+          "size": 192114561,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-07-01-23-30.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-138-g6d3debb5c12",
@@ -2172,7 +2256,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-02-12-00.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-02-12-00.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_linux_hotspot_2021-07-02-12-00.tar.gz",
-          "size": 192014644
+          "size": 192014644,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-07-02-12-00.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-138-g6d3debb5c12",
@@ -2201,7 +2286,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-02-12-00.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-02-12-00.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_mac_hotspot_2021-07-02-12-00.tar.gz",
-          "size": 192425033
+          "size": 192425033,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-07-02-12-00.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-138-g6d3debb5c12",
@@ -2230,7 +2316,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-02-12-00.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-02-12-00.zip.json",
           "name": "OpenJDK17-jdk_x64_windows_hotspot_2021-07-02-12-00.zip",
-          "size": 188697393
+          "size": 188697393,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-07-02-12-00.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-138-g6d3debb5c12",
@@ -2259,7 +2346,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-02-12-00.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-02-12-00.zip.json",
           "name": "OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-02-12-00.zip",
-          "size": 184618232
+          "size": 184618232,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-07-02-12-00-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-07-02-12-00.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+29_adopt-138-g6d3debb5c12",
@@ -2301,7 +2389,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-06-30-09-16.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-06-30-09-16.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_linux_hotspot_2021-06-30-09-16.tar.gz",
-          "size": 188940191
+          "size": 188940191,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_aarch64_linux_hotspot_2021-06-30-09-16.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+28_adopt-130-g0fe0d0825e7",
@@ -2330,7 +2419,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-06-30-09-16.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-06-30-09-16.tar.gz.json",
           "name": "OpenJDK17-jdk_aarch64_mac_hotspot_2021-06-30-09-16.tar.gz",
-          "size": 192953718
+          "size": 192953718,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_aarch64_mac_hotspot_2021-06-30-09-16.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+28_adopt-130-g0fe0d0825e7",
@@ -2350,7 +2440,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-06-30-09-16.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-06-30-09-16.tar.gz.json",
           "name": "OpenJDK17-jdk_arm_linux_hotspot_2021-06-30-09-16.tar.gz",
-          "size": 188795343
+          "size": 188795343,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_arm_linux_hotspot_2021-06-30-09-16.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "0fe0d0825e7",
@@ -2370,7 +2461,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-06-30-09-16.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-06-30-09-16.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64_aix_hotspot_2021-06-30-09-16.tar.gz",
-          "size": 182285782
+          "size": 182285782,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_ppc64_aix_hotspot_2021-06-30-09-16.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "0fe0d0825e7",
@@ -2390,7 +2482,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-06-30-09-16.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-06-30-09-16.tar.gz.json",
           "name": "OpenJDK17-jdk_ppc64le_linux_hotspot_2021-06-30-09-16.tar.gz",
-          "size": 187652430
+          "size": 187652430,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_ppc64le_linux_hotspot_2021-06-30-09-16.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "0fe0d0825e7",
@@ -2410,7 +2503,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-06-30-09-16.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-06-30-09-16.tar.gz.json",
           "name": "OpenJDK17-jdk_s390x_linux_hotspot_2021-06-30-09-16.tar.gz",
-          "size": 179489547
+          "size": 179489547,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_s390x_linux_hotspot_2021-06-30-09-16.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "0fe0d0825e7",
@@ -2430,7 +2524,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-06-29-23-33.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-06-29-23-33.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-06-29-23-33.tar.gz",
-          "size": 192109453
+          "size": 192109453,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x64_alpine-linux_hotspot_2021-06-29-23-33.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+28_adopt-130-g0fe0d0825e7",
@@ -2450,7 +2545,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-06-30-09-16.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-06-30-09-16.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_linux_hotspot_2021-06-30-09-16.tar.gz",
-          "size": 192013559
+          "size": 192013559,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x64_linux_hotspot_2021-06-30-09-16.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+28_adopt-130-g0fe0d0825e7",
@@ -2479,7 +2575,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-06-30-09-16.tar.gz",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-06-30-09-16.tar.gz.json",
           "name": "OpenJDK17-jdk_x64_mac_hotspot_2021-06-30-09-16.tar.gz",
-          "size": 192419518
+          "size": 192419518,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x64_mac_hotspot_2021-06-30-09-16.tar.gz.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+28_adopt-130-g0fe0d0825e7",
@@ -2508,7 +2605,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-06-30-09-16.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-06-30-09-16.zip.json",
           "name": "OpenJDK17-jdk_x64_windows_hotspot_2021-06-30-09-16.zip",
-          "size": 188672489
+          "size": 188672489,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x64_windows_hotspot_2021-06-30-09-16.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+28_adopt-130-g0fe0d0825e7",
@@ -2537,7 +2635,8 @@
           "link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-06-30-09-16.zip",
           "metadata_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-06-30-09-16.zip.json",
           "name": "OpenJDK17-jdk_x86-32_windows_hotspot_2021-06-30-09-16.zip",
-          "size": 184626094
+          "size": 184626094,
+          "signature_link": "https://github.com/adoptium/temurin17-binaries/releases/download/jdk17-2021-06-30-09-16-beta/OpenJDK17-jdk_x86-32_windows_hotspot_2021-06-30-09-16.zip.sig"
         },
         "project": "jdk",
         "scm_ref": "jdk-17+28_adopt-132-g23fbf51b850",

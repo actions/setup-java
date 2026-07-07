@@ -127,8 +127,7 @@ export class CorrettoDistribution extends JavaBase {
 
   private getAvailableVersionsForPlatform(
     eligibleVersions:
-      | ICorrettoAllAvailableVersions['os']['arch']['imageType']
-      | undefined
+      ICorrettoAllAvailableVersions['os']['arch']['imageType'] | undefined
   ): ICorrettoAvailableVersions[] {
     const availableVersions: ICorrettoAvailableVersions[] = [];
 
