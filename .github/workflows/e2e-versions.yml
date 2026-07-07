@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   setup-java-major-versions:
-    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -97,7 +97,7 @@ jobs:
         shell: bash
 
   setup-java-alpine-linux:
-    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - alpine-linux - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - alpine-linux - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     container:
       image: alpine:3.21
@@ -128,7 +128,7 @@ jobs:
         shell: bash
 
   setup-java-major-minor-versions:
-    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
     needs: setup-java-major-versions
     runs-on: ${{ matrix.os }}
     strategy:
@@ -276,7 +276,7 @@ jobs:
         shell: bash
 
   setup-java-ea-versions-zulu:
-    name: zulu ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    name: zulu ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
@@ -303,7 +303,7 @@ jobs:
         shell: bash
 
   setup-java-ea-versions-temurin:
-    name: temurin ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    name: temurin ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
@@ -386,7 +386,7 @@ jobs:
         shell: bash
 
   setup-java-ea-versions-sapmachine:
-    name: sapmachine ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    name: sapmachine ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
