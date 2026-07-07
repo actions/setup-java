@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
+import semver from 'semver';
 
 import fs from 'fs';
 import path from 'path';
@@ -14,7 +15,8 @@ import {
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
-  isVersionSatisfies
+  isVersionSatisfies,
+  renameWinArchive
 } from '../../util';
 
 export class KonaDistribution extends JavaBase {
@@ -33,14 +35,18 @@ export class KonaDistribution extends JavaBase {
     core.info(`Extracting Java archive...`);
 
     const extension = getDownloadArchiveExtension();
-    const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
+    const archivePath =
+      process.platform === 'win32'
+        ? renameWinArchive(javaArchivePath)
+        : javaArchivePath;
+    const extractedJavaPath = await extractJdkFile(archivePath, extension);
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
-    const archivePath = path.join(extractedJavaPath, archiveName);
+    const jdkDirectory = path.join(extractedJavaPath, archiveName);
     const version = this.getToolcacheVersionName(javaRelease.version);
 
     const javaPath = await tc.cacheDir(
-      archivePath,
+      jdkDirectory,
       this.toolcacheFolderName,
       version,
       this.architecture
@@ -70,7 +76,8 @@ export class KonaDistribution extends JavaBase {
           version: item.version,
           url: item.downloadUrl
         } as JavaDownloadRelease;
-      });
+      })
+      .sort((a, b) => -semver.compareBuild(a.version, b.version));
 
     if (!releases.length) {
       throw new Error(
