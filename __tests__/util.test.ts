@@ -247,6 +247,7 @@ describe('getVersionFromFileContent', () => {
   describe('.java-version', () => {
     it.each([
       ['temurin-21.0.5', '21.0.5', 'temurin'],
+      ['temurin-17', '17', 'temurin'], // hyphen separator is not captured into the distribution
       ['temurin-21.0.5+11.0.LTS', '21.0.5+11.0.LTS', 'temurin'],
       ['zulu64-8.0.202', '8.0.202', 'zulu'],
       ['temurin64-17', '17', 'temurin'],
