@@ -5,7 +5,7 @@ import semver from 'semver';
 import fs from 'fs';
 import path from 'path';
 
-import {JavaBase} from '../base-installer';
+import {JavaBase} from '../base-installer.js';
 import {
   convertVersionToSemver,
   extractJdkFile,
@@ -13,13 +13,13 @@ import {
   getGitHubHttpHeaders,
   isVersionSatisfies,
   renameWinArchive
-} from '../../util';
-import {IDragonwellVersions, IDragonwellAllVersions} from './models';
+} from '../../util.js';
+import {IDragonwellVersions, IDragonwellAllVersions} from './models.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 
 export class DragonwellDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {

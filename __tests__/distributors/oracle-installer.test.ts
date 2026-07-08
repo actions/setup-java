@@ -1,14 +1,53 @@
-import {OracleDistribution} from '../../src/distributions/oracle/installer';
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
 import os from 'os';
-import * as core from '@actions/core';
-import {getDownloadArchiveExtension} from '../../src/util';
 import {HttpClient} from '@actions/http-client';
 
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const {OracleDistribution} =
+  await import('../../src/distributions/oracle/installer.js');
+const {getDownloadArchiveExtension} = await import('../../src/util.js');
+
 describe('findPackageForDownload', () => {
-  let distribution: OracleDistribution;
-  let spyDebug: jest.SpyInstance;
-  let spyHttpClient: jest.SpyInstance;
-  let spyCoreError: jest.SpyInstance;
+  let distribution: InstanceType<typeof OracleDistribution>;
+  let spyDebug: any;
+  let spyHttpClient: any;
+  let spyCoreError: any;
 
   beforeEach(() => {
     distribution = new OracleDistribution({
@@ -18,11 +57,11 @@ describe('findPackageForDownload', () => {
       checkLatest: false
     });
 
-    spyDebug = jest.spyOn(core, 'debug');
+    spyDebug = core.debug as jest.Mock;
     spyDebug.mockImplementation(() => {});
 
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
   });
 

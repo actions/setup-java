@@ -1,14 +1,53 @@
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
 import https from 'https';
 import {HttpClient} from '@actions/http-client';
-import {JetBrainsDistribution} from '../../src/distributions/jetbrains/installer';
 
-import manifestData from '../data/jetbrains.json';
+import manifestData from '../data/jetbrains.json' with {type: 'json'};
 import os from 'os';
-import * as core from '@actions/core';
+
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const {JetBrainsDistribution} =
+  await import('../../src/distributions/jetbrains/installer.js');
 
 describe('getAvailableVersions', () => {
-  let spyHttpClient: jest.SpyInstance;
-  let spyCoreError: jest.SpyInstance;
+  let spyHttpClient: any;
+  let spyCoreError: any;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -19,7 +58,7 @@ describe('getAvailableVersions', () => {
     });
 
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
   });
 
@@ -31,11 +70,17 @@ describe('getAvailableVersions', () => {
 
   it('load available versions', async () => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
-    spyHttpClient.mockReturnValueOnce({
-      statusCode: 200,
-      headers: {},
-      result: manifestData as any
-    });
+    spyHttpClient
+      .mockReturnValueOnce({
+        statusCode: 200,
+        headers: {},
+        result: manifestData as any
+      })
+      .mockReturnValue({
+        statusCode: 200,
+        headers: {},
+        result: []
+      });
 
     const distribution = new JetBrainsDistribution({
       version: '17',

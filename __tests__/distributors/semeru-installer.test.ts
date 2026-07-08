@@ -1,15 +1,53 @@
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
+import type {JavaInstallerOptions} from '../../src/distributions/base-models.js';
 import {HttpClient} from '@actions/http-client';
 
-import {JavaInstallerOptions} from '../../src/distributions/base-models';
-import {SemeruDistribution} from '../../src/distributions/semeru/installer';
+import manifestData from '../data/semeru.json' with {type: 'json'};
 
-import manifestData from '../data/semeru.json';
-import * as core from '@actions/core';
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const {SemeruDistribution} =
+  await import('../../src/distributions/semeru/installer.js');
 
 describe('getAvailableVersions', () => {
-  let spyHttpClient: jest.SpyInstance;
-  let spyCoreError: jest.SpyInstance;
-  let spyCoreWarning: jest.SpyInstance;
+  let spyHttpClient: any;
+  let spyCoreError: any;
+  let spyCoreWarning: any;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -19,9 +57,9 @@ describe('getAvailableVersions', () => {
       result: []
     });
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
-    spyCoreWarning = jest.spyOn(core, 'warning');
+    spyCoreWarning = core.warning as jest.Mock;
     spyCoreWarning.mockImplementation(() => {});
   });
 

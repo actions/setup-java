@@ -1,42 +1,68 @@
-import * as core from '@actions/core';
+import {afterEach, beforeEach, describe, expect, it, jest} from '@jest/globals';
 
-import {configureMavenArgs} from '../src/maven-args';
-import {
+const mockGetInput = jest.fn<(...args: any[]) => any>();
+const mockExportVariable = jest.fn<(...args: any[]) => any>();
+const mockInfo = jest.fn<(...args: any[]) => any>();
+const mockDebug = jest.fn<(...args: any[]) => any>();
+const mockWarning = jest.fn<(...args: any[]) => any>();
+
+jest.unstable_mockModule('@actions/core', () => ({
+  getInput: mockGetInput,
+  exportVariable: mockExportVariable,
+  info: mockInfo,
+  debug: mockDebug,
+  warning: mockWarning,
+  setSecret: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  addPath: jest.fn(),
+  getMultilineInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getState: jest.fn(),
+  saveState: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn(),
+  isDebug: jest.fn(),
+  setCommandEcho: jest.fn(),
+  getIDToken: jest.fn(),
+  ExitCode: {Success: 0, Failure: 1},
+  summary: {},
+  markdownSummary: {},
+  platform: {},
+  toPosixPath: jest.fn(),
+  toWin32Path: jest.fn(),
+  toPlatformPath: jest.fn()
+}));
+
+const {configureMavenArgs} = await import('../src/maven-args.js');
+const {
   INPUT_SHOW_DOWNLOAD_PROGRESS,
   MAVEN_ARGS_ENV,
   MAVEN_NO_TRANSFER_PROGRESS_FLAG
-} from '../src/constants';
+} = await import('../src/constants.js');
 
 describe('configureMavenArgs', () => {
   let inputs: Record<string, string>;
-  let spyGetInput: jest.SpyInstance;
-  let spyExportVariable: jest.SpyInstance;
-  let spyInfo: jest.SpyInstance;
-  let spyDebug: jest.SpyInstance;
   const originalMavenArgs = process.env[MAVEN_ARGS_ENV];
 
   beforeEach(() => {
     inputs = {};
 
-    spyGetInput = jest.spyOn(core, 'getInput');
-    spyGetInput.mockImplementation((name: string) => inputs[name] ?? '');
-
-    spyExportVariable = jest.spyOn(core, 'exportVariable');
-    spyExportVariable.mockImplementation((name: string, value: string) => {
+    mockGetInput.mockImplementation((name: string) => inputs[name] ?? '');
+    mockExportVariable.mockImplementation((name: string, value: string) => {
       process.env[name] = value;
     });
-
-    spyInfo = jest.spyOn(core, 'info');
-    spyInfo.mockImplementation(() => undefined);
-
-    spyDebug = jest.spyOn(core, 'debug');
-    spyDebug.mockImplementation(() => undefined);
+    mockInfo.mockImplementation(() => undefined);
+    mockDebug.mockImplementation(() => undefined);
 
     delete process.env[MAVEN_ARGS_ENV];
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    jest.resetAllMocks();
     if (originalMavenArgs === undefined) {
       delete process.env[MAVEN_ARGS_ENV];
     } else {
@@ -47,7 +73,7 @@ describe('configureMavenArgs', () => {
   it('sets MAVEN_ARGS with -ntp by default', () => {
     configureMavenArgs();
 
-    expect(spyExportVariable).toHaveBeenCalledWith(
+    expect(mockExportVariable).toHaveBeenCalledWith(
       MAVEN_ARGS_ENV,
       MAVEN_NO_TRANSFER_PROGRESS_FLAG
     );
@@ -59,7 +85,7 @@ describe('configureMavenArgs', () => {
 
     configureMavenArgs();
 
-    expect(spyExportVariable).not.toHaveBeenCalled();
+    expect(mockExportVariable).not.toHaveBeenCalled();
     expect(process.env[MAVEN_ARGS_ENV]).toBeUndefined();
   });
 
@@ -68,7 +94,7 @@ describe('configureMavenArgs', () => {
 
     configureMavenArgs();
 
-    expect(spyExportVariable).toHaveBeenCalledWith(
+    expect(mockExportVariable).toHaveBeenCalledWith(
       MAVEN_ARGS_ENV,
       `-B -Dstyle.color=always ${MAVEN_NO_TRANSFER_PROGRESS_FLAG}`
     );
@@ -79,7 +105,7 @@ describe('configureMavenArgs', () => {
 
     configureMavenArgs();
 
-    expect(spyExportVariable).not.toHaveBeenCalled();
+    expect(mockExportVariable).not.toHaveBeenCalled();
     expect(process.env[MAVEN_ARGS_ENV]).toBe('-B -ntp');
   });
 
@@ -88,7 +114,7 @@ describe('configureMavenArgs', () => {
 
     configureMavenArgs();
 
-    expect(spyExportVariable).not.toHaveBeenCalled();
+    expect(mockExportVariable).not.toHaveBeenCalled();
     expect(process.env[MAVEN_ARGS_ENV]).toBe('--no-transfer-progress -B');
   });
 
@@ -98,7 +124,7 @@ describe('configureMavenArgs', () => {
 
     configureMavenArgs();
 
-    expect(spyExportVariable).not.toHaveBeenCalled();
+    expect(mockExportVariable).not.toHaveBeenCalled();
     expect(process.env[MAVEN_ARGS_ENV]).toBe('-B');
   });
 });

@@ -4,16 +4,16 @@ import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
-import * as gpg from '../../gpg';
+import * as gpg from '../../gpg.js';
 
-import {ADOPTIUM_PUBLIC_KEY} from './adoptium-key';
-import {JavaBase} from '../base-installer';
-import {ITemurinAvailableVersions} from './models';
+import {ADOPTIUM_PUBLIC_KEY} from './adoptium-key.js';
+import {JavaBase} from '../base-installer.js';
+import {ITemurinAvailableVersions} from './models.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 import {
   extractJdkFile,
   getNextPageUrlFromLinkHeader,
@@ -22,9 +22,9 @@ import {
   renameWinArchive,
   MAX_PAGINATION_PAGES,
   validatePaginationUrl
-} from '../../util';
+} from '../../util.js';
 
-export {ADOPTIUM_PUBLIC_KEY} from './adoptium-key';
+export {ADOPTIUM_PUBLIC_KEY} from './adoptium-key.js';
 
 export enum TemurinImplementation {
   Hotspot = 'Hotspot'
@@ -102,7 +102,8 @@ export class TemurinDistribution extends JavaBase {
         throw new Error(
           `Failed to verify signature for Temurin version ${javaRelease.version} from ${javaRelease.signatureUrl}: ${
             (error as Error).message
-          }`
+          }`,
+          {cause: error}
         );
       }
     }

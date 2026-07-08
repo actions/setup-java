@@ -4,18 +4,19 @@ import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 
-import {JavaBase} from '../base-installer';
+import {JavaBase} from '../base-installer.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
   renameWinArchive
-} from '../../util';
+} from '../../util.js';
 import {HttpCodes} from '@actions/http-client';
+import {OsVersions} from './models.js';
 
 const ORACLE_DL_BASE = 'https://download.oracle.com/java';
 

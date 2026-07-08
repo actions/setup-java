@@ -10,8 +10,11 @@ allowed:
   - mit
   - cc0-1.0
   - unlicense
+  - blueoak-1.0.0
 
 reviewed:
   npm:
     - "@actions/http-client" # MIT (license text present), but detected as "other"
     - "argparse" # Python Software Foundation License (PSF), but detected as "other"
+    - "balanced-match"
+    - "brace-expansion"

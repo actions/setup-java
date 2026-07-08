@@ -1,23 +1,63 @@
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
+import {fileURLToPath} from 'url';
 import * as fs from 'fs';
 import os from 'os';
 import * as path from 'path';
-import * as core from '@actions/core';
 import * as io from '@actions/io';
-import * as toolchains from '../src/toolchains';
-import {M2_DIR, MVN_TOOLCHAINS_FILE} from '../src/constants';
 
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const toolchains = await import('../src/toolchains.js');
+const {M2_DIR, MVN_TOOLCHAINS_FILE} = await import('../src/constants.js');
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const m2Dir = path.join(__dirname, M2_DIR);
 const toolchainsFile = path.join(m2Dir, MVN_TOOLCHAINS_FILE);
 
 describe('toolchains tests', () => {
-  let spyOSHomedir: jest.SpyInstance;
-  let spyInfo: jest.SpyInstance;
+  let spyOSHomedir: any;
+  let spyInfo: any;
 
   beforeEach(async () => {
     await io.rmRF(m2Dir);
     spyOSHomedir = jest.spyOn(os, 'homedir');
     spyOSHomedir.mockReturnValue(__dirname);
-    spyInfo = jest.spyOn(core, 'info');
+    spyInfo = core.info as jest.Mock;
     spyInfo.mockImplementation(() => null);
   }, 300000);
 
@@ -894,6 +934,11 @@ describe('toolchains tests', () => {
     const id = 'temurin_17';
     const jdkHome =
       '/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.1-12/x64';
+
+    (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
+      if (name === 'settings-path') return m2Dir;
+      return '';
+    });
 
     await toolchains.configureToolchains(
       version,

@@ -3,8 +3,8 @@ import * as path from 'path';
 import * as io from '@actions/io';
 import * as exec from '@actions/exec';
 import * as tc from '@actions/tool-cache';
-import * as util from './util';
-import {ExecOptions} from '@actions/exec/lib/interfaces';
+import * as util from './util.js';
+import {ExecOptions} from '@actions/exec';
 
 export const PRIVATE_KEY_FILE = path.join(util.getTempDir(), 'private-key.asc');
 
@@ -86,7 +86,8 @@ export async function verifyPackageSignature(
     throw new Error(
       `Failed to create temporary GPG home directory for signature verification: ${
         (error as Error).message
-      }`
+      }`,
+      {cause: error}
     );
   }
   try {

@@ -4,14 +4,14 @@ import * as core from '@actions/core';
 import fs from 'fs';
 import path from 'path';
 
-import {JavaBase} from '../base-installer';
+import {JavaBase} from '../base-installer.js';
 import {
   JavaInstallerOptions,
   JavaDownloadRelease,
   JavaInstallerResults
-} from '../base-models';
-import {extractJdkFile} from '../../util';
-import {MACOS_JAVA_CONTENT_POSTFIX} from '../../constants';
+} from '../base-models.js';
+import {extractJdkFile} from '../../util.js';
+import {MACOS_JAVA_CONTENT_POSTFIX} from '../../constants.js';
 
 export class LocalDistribution extends JavaBase {
   constructor(

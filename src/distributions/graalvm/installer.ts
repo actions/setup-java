@@ -3,14 +3,14 @@ import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
-import {JavaBase} from '../base-installer';
+import {JavaBase} from '../base-installer.js';
 import {HttpCodes} from '@actions/http-client';
-import {GraalVMEAVersion} from './models';
+import {GraalVMEAVersion} from './models.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 import {
   convertVersionToSemver,
   extractJdkFile,
@@ -21,7 +21,7 @@ import {
   MAX_PAGINATION_PAGES,
   renameWinArchive,
   validatePaginationUrl
-} from '../../util';
+} from '../../util.js';
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm';
 const GRAALVM_DOWNLOAD_URL = 'https://www.graalvm.org/downloads/';
@@ -300,17 +300,20 @@ export class GraalVMDistribution extends JavaBase {
         // Check if it's a 404 error (file not found)
         if (error.message?.includes('404')) {
           throw new Error(
-            `GraalVM EA version '${javaEaVersion}' not found. Please verify the version exists in the EA builds repository.`
+            `GraalVM EA version '${javaEaVersion}' not found. Please verify the version exists in the EA builds repository.`,
+            {cause: error}
           );
         }
         // Re-throw with more context
         throw new Error(
-          `Failed to fetch GraalVM EA version information for '${javaEaVersion}': ${error.message}`
+          `Failed to fetch GraalVM EA version information for '${javaEaVersion}': ${error.message}`,
+          {cause: error}
         );
       }
       // If it's not an Error instance, throw a generic error
       throw new Error(
-        `Failed to fetch GraalVM EA version information for '${javaEaVersion}'`
+        `Failed to fetch GraalVM EA version information for '${javaEaVersion}'`,
+        {cause: error}
       );
     }
   }

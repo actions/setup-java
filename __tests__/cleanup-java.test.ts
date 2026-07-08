@@ -1,32 +1,87 @@
-import {run as cleanup} from '../src/cleanup-java';
-import * as core from '@actions/core';
-import * as cache from '@actions/cache';
-import * as util from '../src/util';
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
+
+// Mock @actions/cache before importing source modules
+const real_cache_module = await import('@actions/cache');
+jest.unstable_mockModule('@actions/cache', () => ({
+  ...real_cache_module,
+  saveCache: jest.fn(),
+  restoreCache: jest.fn()
+}));
+
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+const real_util_module = await import('../src/util.js');
+jest.unstable_mockModule('../src/util.js', () => ({
+  ...real_util_module,
+  extractJdkFile: jest.fn(),
+  getDownloadArchiveExtension: jest.fn(),
+  getToolcachePath: jest.fn(),
+  isJobStatusSuccess: jest.fn(),
+  renameWinArchive: jest.fn(),
+  isVersionSatisfies: real_util_module.isVersionSatisfies,
+  getTempDir: real_util_module.getTempDir
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const cache = await import('@actions/cache');
+const {run: cleanup} = await import('../src/cleanup-java.js');
+const util = await import('../src/util.js');
 
 describe('cleanup', () => {
-  let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>;
-  let spyInfo: jest.SpyInstance<void, Parameters<typeof core.info>>;
-  let spyCacheSave: jest.SpyInstance<
-    ReturnType<typeof cache.saveCache>,
-    Parameters<typeof cache.saveCache>
-  >;
-  let spyJobStatusSuccess: jest.SpyInstance;
-  let spyCoreError: jest.SpyInstance;
+  let spyWarning: any;
+  let spyInfo: any;
+  let spyCacheSave: any;
+  let spyJobStatusSuccess: any;
+  let spyCoreError: any;
 
   beforeEach(() => {
-    spyWarning = jest.spyOn(core, 'warning');
+    spyWarning = core.warning as jest.Mock;
     spyWarning.mockImplementation(() => null);
 
-    spyInfo = jest.spyOn(core, 'info');
+    spyInfo = core.info as jest.Mock;
     spyInfo.mockImplementation(() => null);
 
-    spyCacheSave = jest.spyOn(cache, 'saveCache');
+    spyCacheSave = cache.saveCache as jest.Mock;
 
-    spyJobStatusSuccess = jest.spyOn(util, 'isJobStatusSuccess');
+    spyJobStatusSuccess = util.isJobStatusSuccess as jest.Mock;
     spyJobStatusSuccess.mockReturnValue(true);
 
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
 
     createStateForSuccessfulRestore();
@@ -47,7 +102,7 @@ describe('cleanup', () => {
         )
       )
     );
-    jest.spyOn(core, 'getInput').mockImplementation((name: string) => {
+    (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
       return name === 'cache' ? 'gradle' : '';
     });
     await cleanup();
@@ -59,7 +114,7 @@ describe('cleanup', () => {
     spyCacheSave.mockImplementation((paths: string[], key: string) =>
       Promise.reject(new Error('Unexpected error'))
     );
-    jest.spyOn(core, 'getInput').mockImplementation((name: string) => {
+    (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
       return name === 'cache' ? 'gradle' : '';
     });
     await cleanup();
@@ -68,14 +123,14 @@ describe('cleanup', () => {
 });
 
 function resetState() {
-  jest.spyOn(core, 'getState').mockReset();
+  (core.getState as jest.Mock).mockReset();
 }
 
 /**
  * Create states to emulate a successful restore process.
  */
 function createStateForSuccessfulRestore() {
-  jest.spyOn(core, 'getState').mockImplementation(name => {
+  (core.getState as jest.Mock<any>).mockImplementation((name: any) => {
     switch (name) {
       case 'cache-primary-key':
         return 'setup-java-cache-primary-key';

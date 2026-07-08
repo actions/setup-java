@@ -1,24 +1,24 @@
-import {JavaBase} from '../base-installer';
+import {JavaBase} from '../base-installer.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
   getGitHubHttpHeaders,
   renameWinArchive
-} from '../../util';
-import * as gpg from '../../gpg';
-import {MICROSOFT_PUBLIC_KEY} from './microsoft-key';
+} from '../../util.js';
+import * as gpg from '../../gpg.js';
+import {MICROSOFT_PUBLIC_KEY} from './microsoft-key.js';
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 import {TypedResponse} from '@actions/http-client/lib/interfaces';
 
-export {MICROSOFT_PUBLIC_KEY} from './microsoft-key';
+export {MICROSOFT_PUBLIC_KEY} from './microsoft-key.js';
 
 export class MicrosoftDistributions extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -48,7 +48,8 @@ export class MicrosoftDistributions extends JavaBase {
         );
       } catch (error) {
         throw new Error(
-          `Failed to verify signature for Microsoft Build of OpenJDK version ${javaRelease.version}. Signature URL: ${javaRelease.signatureUrl}. Error: ${(error as Error).message}`
+          `Failed to verify signature for Microsoft Build of OpenJDK version ${javaRelease.version}. Signature URL: ${javaRelease.signatureUrl}. Error: ${(error as Error).message}`,
+          {cause: error}
         );
       }
     }

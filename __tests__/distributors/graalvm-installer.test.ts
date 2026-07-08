@@ -1,53 +1,116 @@
-import * as core from '@actions/core';
-import * as tc from '@actions/tool-cache';
-import * as http from '@actions/http-client';
-import fs from 'fs';
-import path from 'path';
 import {
-  GraalVMCommunityDistribution,
-  GraalVMDistribution
-} from '../../src/distributions/graalvm/installer';
-import {getJavaDistribution} from '../../src/distributions/distribution-factory';
-import {JavaInstallerOptions} from '../../src/distributions/base-models';
-import * as util from '../../src/util';
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
+import path from 'path';
 
-jest.mock('@actions/core');
-jest.mock('@actions/tool-cache');
-jest.mock('@actions/http-client');
+// Mock @actions modules
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
 
-jest.mock('../../src/util', () => ({
-  ...jest.requireActual('../../src/util'),
+jest.unstable_mockModule('@actions/tool-cache', () => ({
+  find: jest.fn(),
+  findAllVersions: jest.fn(),
+  downloadTool: jest.fn(),
+  extractZip: jest.fn(),
+  extractTar: jest.fn(),
+  extract7z: jest.fn(),
+  extractXar: jest.fn(),
+  cacheDir: jest.fn(),
+  cacheFile: jest.fn(),
+  getManifestFromRepo: jest.fn(),
+  findFromManifest: jest.fn(),
+  evaluateVersions: jest.fn()
+}));
+
+jest.unstable_mockModule('@actions/http-client', () => ({
+  HttpClient: jest.fn().mockImplementation(() => ({
+    getJson: jest.fn(),
+    head: jest.fn(),
+    get: jest.fn()
+  })),
+  HttpClientError: class HttpClientError extends Error {
+    statusCode: number;
+    constructor(message: string, statusCode: number) {
+      super(message);
+      this.statusCode = statusCode;
+    }
+  },
+  HttpCodes: {OK: 200, NotFound: 404, Unauthorized: 401, Forbidden: 403}
+}));
+
+// Get real util first, then mock specific functions
+const realUtil = await import('../../src/util.js');
+jest.unstable_mockModule('../../src/util.js', () => ({
+  ...realUtil,
   extractJdkFile: jest.fn(),
   getDownloadArchiveExtension: jest.fn(),
   renameWinArchive: jest.fn(),
   getGitHubHttpHeaders: jest.fn().mockReturnValue({Accept: 'application/json'})
 }));
 
-jest.mock('fs', () => ({
-  ...jest.requireActual('fs'),
+const real_fs_module = await import('fs');
+jest.unstable_mockModule('fs', () => ({
+  ...real_fs_module,
+  default: {
+    ...real_fs_module.default,
+    readdirSync: jest.fn(),
+    existsSync: jest.fn()
+  },
   readdirSync: jest.fn(),
   existsSync: jest.fn()
 }));
 
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const tc = await import('@actions/tool-cache');
+const http = await import('@actions/http-client');
+const fs = (await import('fs')).default;
+const util = await import('../../src/util.js');
+const {GraalVMCommunityDistribution, GraalVMDistribution} =
+  await import('../../src/distributions/graalvm/installer.js');
+const {getJavaDistribution} =
+  await import('../../src/distributions/distribution-factory.js');
+
+import type {JavaInstallerOptions} from '../../src/distributions/base-models.js';
+
 beforeAll(() => {
   process.env.NODE_ENV = 'test';
-
-  if (!jest.isMockFunction(http.HttpClient)) {
-    throw new Error('HTTP client must be mocked in tests!');
-  }
-
-  if (!jest.isMockFunction(tc.downloadTool)) {
-    throw new Error('Tool cache downloadTool must be mocked in tests!');
-  }
-
   console.log('✅ All external dependencies are properly mocked');
 });
 
 describe('GraalVMDistribution', () => {
-  let distribution: GraalVMDistribution;
-  let communityDistribution: GraalVMCommunityDistribution;
-  let mockHttpClient: jest.Mocked<http.HttpClient>;
-  let spyCoreError: jest.SpyInstance;
+  let distribution: InstanceType<typeof GraalVMDistribution>;
+  let communityDistribution: InstanceType<typeof GraalVMCommunityDistribution>;
+  let mockHttpClient: any;
+  let spyCoreError: any;
 
   const defaultOptions: JavaInstallerOptions = {
     version: '17',
@@ -62,23 +125,20 @@ describe('GraalVMDistribution', () => {
     distribution = new GraalVMDistribution(defaultOptions);
     communityDistribution = new GraalVMCommunityDistribution(defaultOptions);
 
-    mockHttpClient = new http.HttpClient() as jest.Mocked<http.HttpClient>;
+    mockHttpClient = new (http.HttpClient as any)();
     (distribution as any).http = mockHttpClient;
     (communityDistribution as any).http = mockHttpClient;
 
-    (util.getDownloadArchiveExtension as jest.Mock).mockReturnValue('tar.gz');
+    (util.getDownloadArchiveExtension as jest.Mock<any>).mockReturnValue(
+      'tar.gz'
+    );
 
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
   });
 
   afterAll(() => {
-    expect(jest.isMockFunction(http.HttpClient)).toBe(true);
-
-    expect(jest.isMockFunction(tc.downloadTool)).toBe(true);
-    expect(jest.isMockFunction(tc.cacheDir)).toBe(true);
-
     jest.restoreAllMocks();
     jest.clearAllMocks();
   });
@@ -113,20 +173,24 @@ describe('GraalVMDistribution', () => {
     };
 
     beforeEach(() => {
-      (tc.downloadTool as jest.Mock).mockResolvedValue('/tmp/archive.tar.gz');
-      (tc.cacheDir as jest.Mock).mockResolvedValue('/cached/java/path');
+      (tc.downloadTool as any).mockResolvedValue('/tmp/archive.tar.gz');
+      (tc.cacheDir as any).mockResolvedValue('/cached/java/path');
 
-      (util.extractJdkFile as jest.Mock).mockResolvedValue('/tmp/extracted');
+      (util.extractJdkFile as any).mockResolvedValue('/tmp/extracted');
 
       // Mock renameWinArchive - it returns the same path (no renaming)
-      (util.renameWinArchive as jest.Mock).mockImplementation((p: string) => p);
+      (util.renameWinArchive as any).mockImplementation((p: string) => p);
 
-      (util.getDownloadArchiveExtension as jest.Mock).mockReturnValue('tar.gz');
+      (util.getDownloadArchiveExtension as jest.Mock<any>).mockReturnValue(
+        'tar.gz'
+      );
 
       // Mock fs.existsSync to return true for extracted path
-      (fs.existsSync as jest.Mock).mockReturnValue(true);
+      (fs.existsSync as jest.Mock<any>).mockReturnValue(true);
 
-      (fs.readdirSync as jest.Mock).mockReturnValue(['graalvm-jdk-17.0.5']);
+      (fs.readdirSync as jest.Mock<any>).mockReturnValue([
+        'graalvm-jdk-17.0.5'
+      ]);
 
       jest
         .spyOn(distribution as any, 'getToolcacheVersionName')
@@ -173,7 +237,7 @@ describe('GraalVMDistribution', () => {
     });
 
     it('should throw error when extracted path does not exist', async () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(false);
+      (fs.existsSync as jest.Mock<any>).mockReturnValue(false);
 
       await expect(
         (distribution as any).downloadTool(javaRelease)
@@ -187,8 +251,8 @@ describe('GraalVMDistribution', () => {
     });
 
     it('should throw error when extracted directory is empty', async () => {
-      (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.readdirSync as jest.Mock).mockReturnValue([]);
+      (fs.existsSync as jest.Mock<any>).mockReturnValue(true);
+      (fs.readdirSync as jest.Mock<any>).mockReturnValue([]);
 
       await expect(
         (distribution as any).downloadTool(javaRelease)
@@ -203,7 +267,7 @@ describe('GraalVMDistribution', () => {
 
     it('should handle download errors', async () => {
       const downloadError = new Error('Network error during download');
-      (tc.downloadTool as jest.Mock).mockRejectedValue(downloadError);
+      (tc.downloadTool as any).mockRejectedValue(downloadError);
 
       await expect(
         (distribution as any).downloadTool(javaRelease)
@@ -216,7 +280,7 @@ describe('GraalVMDistribution', () => {
 
     it('should handle extraction errors', async () => {
       const extractError = new Error('Failed to extract archive');
-      (util.extractJdkFile as jest.Mock).mockRejectedValue(extractError);
+      (util.extractJdkFile as any).mockRejectedValue(extractError);
 
       await expect(
         (distribution as any).downloadTool(javaRelease)
@@ -229,8 +293,10 @@ describe('GraalVMDistribution', () => {
 
     it('should handle different archive extensions', async () => {
       // Test with a .zip file
-      (util.getDownloadArchiveExtension as jest.Mock).mockReturnValue('zip');
-      (tc.downloadTool as jest.Mock).mockResolvedValue('/tmp/archive.zip');
+      (util.getDownloadArchiveExtension as jest.Mock<any>).mockReturnValue(
+        'zip'
+      );
+      (tc.downloadTool as any).mockResolvedValue('/tmp/archive.zip');
 
       const zipRelease = {
         version: '17.0.5',
@@ -309,7 +375,7 @@ describe('GraalVMDistribution', () => {
       it('should construct correct URL for specific version', async () => {
         const mockResponse = {
           message: {statusCode: 200}
-        } as http.HttpClientResponse;
+        } as any;
         mockHttpClient.head.mockResolvedValue(mockResponse);
 
         const result = await (distribution as any).findPackageForDownload(
@@ -326,7 +392,7 @@ describe('GraalVMDistribution', () => {
       it('should construct correct URL for major version (latest)', async () => {
         const mockResponse = {
           message: {statusCode: 200}
-        } as http.HttpClientResponse;
+        } as any;
         mockHttpClient.head.mockResolvedValue(mockResponse);
 
         const result = await (distribution as any).findPackageForDownload('21');
@@ -374,7 +440,7 @@ describe('GraalVMDistribution', () => {
       it('should throw error when file not found (404)', async () => {
         const mockResponse = {
           message: {statusCode: 404}
-        } as http.HttpClientResponse;
+        } as any;
         mockHttpClient.head.mockResolvedValue(mockResponse);
 
         // Verify the error is thrown with the expected message
@@ -395,7 +461,7 @@ describe('GraalVMDistribution', () => {
       it('should throw error for unauthorized access (401)', async () => {
         const mockResponse = {
           message: {statusCode: 401}
-        } as http.HttpClientResponse;
+        } as any;
         mockHttpClient.head.mockResolvedValue(mockResponse);
 
         await expect(
@@ -408,7 +474,7 @@ describe('GraalVMDistribution', () => {
       it('should throw error for forbidden access (403)', async () => {
         const mockResponse = {
           message: {statusCode: 403}
-        } as http.HttpClientResponse;
+        } as any;
         mockHttpClient.head.mockResolvedValue(mockResponse);
 
         await expect(
@@ -424,7 +490,7 @@ describe('GraalVMDistribution', () => {
             statusCode: 500,
             statusMessage: 'Internal Server Error'
           }
-        } as http.HttpClientResponse;
+        } as any;
         mockHttpClient.head.mockResolvedValue(mockResponse);
 
         await expect(
@@ -437,7 +503,7 @@ describe('GraalVMDistribution', () => {
       it('should throw error for other HTTP errors without status message', async () => {
         const mockResponse = {
           message: {statusCode: 500}
-        } as http.HttpClientResponse;
+        } as any;
         mockHttpClient.head.mockResolvedValue(mockResponse);
 
         await expect(
@@ -713,7 +779,7 @@ describe('GraalVMDistribution', () => {
       }
     ];
 
-    let fetchEASpy: jest.SpyInstance;
+    let fetchEASpy: any;
 
     beforeEach(() => {
       fetchEASpy = jest.spyOn(distribution as any, 'fetchEAJson');
@@ -932,7 +998,7 @@ describe('GraalVMDistribution', () => {
 
         const mockResponse = {
           message: {statusCode: 200}
-        } as http.HttpClientResponse;
+        } as any;
         mockHttpClient.head.mockResolvedValue(mockResponse);
 
         const result = await (distribution as any).findPackageForDownload('17');
@@ -960,7 +1026,7 @@ describe('GraalVMDistribution', () => {
 
         const mockResponse = {
           message: {statusCode: 200}
-        } as http.HttpClientResponse;
+        } as any;
         mockHttpClient.head.mockResolvedValue(mockResponse);
 
         const result = await (distribution as any).findPackageForDownload('17');

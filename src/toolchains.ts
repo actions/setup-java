@@ -3,9 +3,9 @@ import * as os from 'os';
 import * as path from 'path';
 import * as core from '@actions/core';
 import * as io from '@actions/io';
-import * as constants from './constants';
+import * as constants from './constants.js';
 
-import {getBooleanInput} from './util';
+import {getBooleanInput} from './util.js';
 import {create as xmlCreate} from 'xmlbuilder2';
 
 interface JdkInfo {
