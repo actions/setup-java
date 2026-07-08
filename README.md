@@ -138,7 +138,7 @@ Currently, the following distributions are supported:
 The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
 
 - gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, and `**/versions.properties`
-- maven: `**/pom.xml` and `**/.mvn/wrapper/maven-wrapper.properties`
+- maven: `**/pom.xml`, `**/.mvn/wrapper/maven-wrapper.properties`, and `**/.mvn/extensions.xml`
 - sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.scala`, `**/project/**.sbt`
 
 When the option `cache-dependency-path` is specified, the hash is based on the matching file. This option supports wildcards and a list of file names, and is especially useful for monorepos.
