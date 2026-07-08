@@ -330,7 +330,7 @@ In this example, `JAVA_HOME` and `java` on `PATH` point to Java 17, while Java 2
 If your use-case requires a custom distribution or a version that is not provided by setup-java, you can download it manually and setup-java will take care of the installation and caching on the VM:
 
 > [!NOTE]
-> This approach also lets you use builds that setup-java does not provide directly, such as **Early Access (EA)** or other unreleased JDK builds (for example, an upcoming feature release or a Loom/Valhalla preview build). Download the desired archive in a prior step and point `jdkFile` at it; setup-java will extract, install, and cache it just like a supported distribution. When targeting multiple architectures, select the correct binary per architecture in your workflow (for example, with a build matrix).
+> This approach also lets you use builds that setup-java does not provide directly, such as **Early Access (EA)** or other unreleased JDK builds (for example, an upcoming feature release or a Loom/Valhalla preview build). Download the desired archive in a prior step and point `jdk-file` at it; setup-java will extract, install, and cache it just like a supported distribution. When targeting multiple architectures, select the correct binary per architecture in your workflow (for example, with a build matrix).
 
 ```yaml
 steps:
@@ -340,7 +340,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'jdkfile'
-    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    jdk-file: ${{ runner.temp }}/java_package.tar.gz
     java-version: '11.0.0'
     architecture: x64
     
@@ -357,7 +357,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'jdkfile'
-    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    jdk-file: ${{ runner.temp }}/java_package.tar.gz
     java-version: '25.0.0-ea.36'
     architecture: x64
 
@@ -383,7 +383,7 @@ If your use-case requires a custom distribution (in the example, alpine-linux is
       - uses: actions/setup-java@v5
         with:
           distribution: 'jdkfile'
-          jdkFile: ${{ runner.temp }}/java_package.tar.gz
+          jdk-file: ${{ runner.temp }}/java_package.tar.gz
           java-version: {{ steps.fetch_latest_jdk.outputs.java_version }}
           architecture: x64
        - run: java --version
@@ -708,7 +708,7 @@ The result is a Toolchain with entries for JDKs 8, 11 and 15. You can even combi
 - uses: actions/setup-java@v5
   with:
     distribution: 'jdkfile'
-    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    jdk-file: ${{ runner.temp }}/java_package.tar.gz
     java-version: '1.6'
     architecture: x64
 ```
@@ -725,7 +725,7 @@ Each JDK provider will receive a default `vendor` using the `distribution` input
 - uses: actions/setup-java@v5
   with:
     distribution: 'jdkfile'
-    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    jdk-file: ${{ runner.temp }}/java_package.tar.gz
     java-version: '1.6'
     architecture: x64
     mvn-toolchain-vendor: 'Oracle'

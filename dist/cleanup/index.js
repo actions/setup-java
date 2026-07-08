@@ -95834,7 +95834,8 @@ const INPUT_JAVA_VERSION_FILE = 'java-version-file';
 const INPUT_ARCHITECTURE = 'architecture';
 const INPUT_JAVA_PACKAGE = 'java-package';
 const INPUT_DISTRIBUTION = 'distribution';
-const INPUT_JDK_FILE = 'jdkFile';
+const INPUT_JDK_FILE = 'jdk-file';
+const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
 const INPUT_CHECK_LATEST = 'check-latest';
 const INPUT_SET_DEFAULT = 'set-default';
 const INPUT_VERIFY_SIGNATURE = 'verify-signature';
@@ -95992,7 +95993,9 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     if (versionFileName == '.tool-versions' && match?.groups?.distribution) {
         const asdfDist = match.groups.distribution;
         extractedDistribution = mapAsdfDistribution(asdfDist);
-        core.debug(`Parsed distribution '${extractedDistribution}' from asdf identifier '${asdfDist}'`);
+        if (extractedDistribution) {
+            core.debug(`Parsed distribution '${extractedDistribution}' from asdf identifier '${asdfDist}'`);
+        }
     }
     core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
     if (!capturedVersion) {
