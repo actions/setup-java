@@ -88,7 +88,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&arch=x86&release_status=ga&availability_types=ca&page=1&page_size=100'
+      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&arch=i686&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -97,7 +97,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&arch=x86&release_status=ea&availability_types=ca&page=1&page_size=100'
+      '?os=windows&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&arch=i686&release_status=ea&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -226,7 +226,7 @@ describe('getAvailableVersions', () => {
 describe('getArchitectureOptions', () => {
   it.each([
     [{architecture: 'x64'}, 'x64'],
-    [{architecture: 'x86'}, 'x86'],
+    [{architecture: 'x86'}, 'i686'],
     [{architecture: 'aarch64'}, 'aarch64'],
     [{architecture: 'arm64'}, 'aarch64'],
     [{architecture: 'arm'}, 'arm']
