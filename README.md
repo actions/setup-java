@@ -149,7 +149,7 @@ When the option `cache-dependency-path` is specified, the hash is based on the m
 
 The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
 
-The workflow output `cache-primary-key` exposes the primary cache key computed by the action for the configured build tool. It is useful for composing with [`actions/cache`](https://github.com/actions/cache) or [`actions/cache/restore`](https://github.com/actions/cache/tree/main/restore) in later steps or dependent jobs that need to reuse the exact same key. It is empty when caching is not enabled.
+The workflow output `cache-primary-key` exposes the primary cache key computed by the action for the configured build tool. It is useful for composing with [`actions/cache`](https://github.com/actions/cache) or [`actions/cache/restore`](https://github.com/actions/cache/tree/main/restore) in later steps or dependent jobs that need to reuse the exact same key. It is empty when caching is not enabled or when caching is skipped (for example, when the cache service is unavailable).
 
 The cache input is optional, and caching is turned off by default.
 
