@@ -185,7 +185,11 @@ export class ZuluDistribution extends JavaBase {
       case 'x64':
         return 'x64';
       case 'x86':
-        return 'x86';
+        // The Azul Metadata API's "x86" value returns both 32-bit (i686) and
+        // 64-bit (x64) packages, which are indistinguishable by version and
+        // would let a 32-bit request resolve to a 64-bit JDK. Use "i686" to
+        // target only genuine 32-bit builds, matching the legacy API behavior.
+        return 'i686';
       case 'aarch64':
       case 'arm64':
         return 'aarch64';
