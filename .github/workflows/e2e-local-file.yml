@@ -47,7 +47,7 @@ jobs:
         id: setup-java
         with:
           distribution: 'jdkfile'
-          jdkFile: ${{ runner.temp }}/${{ env.LocalFilename }}
+          jdk-file: ${{ runner.temp }}/${{ env.LocalFilename }}
           java-version: '11.0.0-ea'
           architecture: x64
       - name: Verify Java version
@@ -88,7 +88,7 @@ jobs:
         id: setup-java
         with:
           distribution: 'jdkfile'
-          jdkFile: ${{ runner.temp }}/${{ env.LocalFilename }}
+          jdk-file: ${{ runner.temp }}/${{ env.LocalFilename }}
           java-version: '11.0.0-ea'
           architecture: x64
       - name: Verify Java version
@@ -129,6 +129,7 @@ jobs:
         id: setup-java
         with:
           distribution: 'jdkfile'
+          # Intentionally uses the deprecated `jdkFile` alias to keep it covered.
           jdkFile: ${{ runner.temp }}/${{ env.LocalFilename }}
           java-version: '11.0.0-ea'
           architecture: x64
