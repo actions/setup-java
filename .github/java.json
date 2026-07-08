@@ -21,6 +21,19 @@
                     "message": 4
                 }
             ]
+        },
+        {
+            "owner": "maven-javac",
+            "pattern": [
+                {
+                    "regexp": "^\\[(WARNING|ERROR)\\]\\s+(.+?\\.java):\\[(\\d+),(\\d+)\\]\\s+(.+)$",
+                    "severity": 1,
+                    "file": 2,
+                    "line": 3,
+                    "column": 4,
+                    "message": 5
+                }
+            ]
         }
     ]
 }
