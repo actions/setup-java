@@ -296,6 +296,72 @@ describe('getVersionFromFileContent', () => {
       );
     });
   });
+
+  describe('.tool-versions', () => {
+    it.each([
+      ['java temurin-17.0.3+7', '17.0.3+7', 'temurin'],
+      ['java temurin-jre-17.0.3+7', '17.0.3+7', 'temurin'],
+      ['java adoptopenjdk-11.0.16+8', '11.0.16+8', 'temurin'],
+      ['java adoptopenjdk-openj9-11.0.16+8', '11.0.16+8', 'temurin'],
+      ['java zulu-11.56.19', '11.56.19', 'zulu'],
+      ['java corretto-17.0.13.11.1', '17', 'corretto'], // corretto -> major only
+      ['java liberica-11.0.15+10', '11.0.15+10', 'liberica'],
+      ['java microsoft-11.0.13.8.1', '11.0.13', 'microsoft'],
+      ['java semeru-openj9-11.0.25+9', '11.0.25+9', 'semeru'],
+      ['java ibm-openj9-11.0.25+9', '11.0.25+9', 'semeru'],
+      ['java dragonwell-17.0.13.0.13+11', '17.0.13', 'dragonwell'],
+      ['java graalvm-22.3.0+java17', '22.3.0+java17', 'graalvm'],
+      ['java graalvm-community-22.3.0', '22.3.0', 'graalvm-community'],
+      ['java oracle-graalvm-21.0.5', '21.0.5', 'graalvm'],
+      ['java oracle-21.0.5', '21.0.5', 'oracle'],
+      ['java sapmachine-21.0.5', '21.0.5', 'sapmachine'],
+      ['java kona-17.0.13', '17.0.13', 'kona'],
+      ['java jetbrains-21.0.5', '21.0.5', 'jetbrains']
+    ])(
+      'parsing %s should return version %s and distribution %s',
+      (content: string, expectedVersion: string, expectedDist: string) => {
+        const actual = getVersionFromFileContent(
+          content,
+          'openjdk',
+          '.tool-versions'
+        );
+        expect(actual?.version).toBe(expectedVersion);
+        expect(actual?.distribution).toBe(expectedDist);
+      }
+    );
+
+    it.each([
+      ['java 17.0.7', '17.0.7'],
+      ['java 17', '17'],
+      ['java 1.8', '8'],
+      ['java 21-ea', '21-ea']
+    ])(
+      'parsing prefix-less %s should return version %s and no distribution',
+      (content: string, expectedVersion: string) => {
+        const actual = getVersionFromFileContent(
+          content,
+          'temurin',
+          '.tool-versions'
+        );
+        expect(actual?.version).toBe(expectedVersion);
+        expect(actual?.distribution).toBeUndefined();
+      }
+    );
+
+    it('should warn and return undefined distribution for unsupported vendor', () => {
+      const warnSpy = jest.spyOn(core, 'warning');
+      const actual = getVersionFromFileContent(
+        'java openjdk-17.0.7',
+        'temurin',
+        '.tool-versions'
+      );
+      expect(actual?.version).toBe('17.0.7');
+      expect(actual?.distribution).toBeUndefined();
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Unknown asdf distribution identifier')
+      );
+    });
+  });
 });
 
 describe('isGhes', () => {

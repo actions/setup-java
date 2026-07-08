@@ -95965,8 +95965,10 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     }
     const versionFileName = getFileName(versionFile);
     if (versionFileName == '.tool-versions') {
+        // Capture an optional asdf-java vendor prefix (e.g. `temurin-`, `corretto-`)
+        // in the `distribution` group so it can be mapped to a setup-java distribution.
         javaVersionRegExp =
-            /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
+            /^java\s+(?:(?<distribution>\S*)-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
     }
     else if (versionFileName == '.sdkmanrc') {
         // Match both version and optional distribution identifier
@@ -95985,6 +95987,12 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
         const sdkmanDist = match.groups.distribution;
         extractedDistribution = mapSdkmanDistribution(sdkmanDist);
         core.debug(`Parsed distribution '${extractedDistribution}' from SDKMAN identifier '${sdkmanDist}'`);
+    }
+    // Extract distribution from asdf .tool-versions file
+    if (versionFileName == '.tool-versions' && match?.groups?.distribution) {
+        const asdfDist = match.groups.distribution;
+        extractedDistribution = mapAsdfDistribution(asdfDist);
+        core.debug(`Parsed distribution '${extractedDistribution}' from asdf identifier '${asdfDist}'`);
     }
     core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
     if (!capturedVersion) {
@@ -96031,6 +96039,43 @@ function mapSdkmanDistribution(sdkmanDist) {
     const mapped = distributionMap[sdkmanDist.toLowerCase()];
     if (!mapped) {
         core.warning(`Unknown SDKMAN distribution identifier '${sdkmanDist}'. Please specify the distribution explicitly.`);
+    }
+    return mapped;
+}
+// Map asdf-java (.tool-versions) vendor identifiers to setup-java distribution names.
+// asdf-java encodes the vendor as a prefix on the version string, e.g.
+// `java temurin-17.0.3+7` or `java semeru-openj9-11.0.25+9`. Packaging variants
+// (`-jre`, `-musl`, `-openj9`, `-crac`, `-javafx`, ...) are collapsed onto the
+// base vendor since setup-java does not distinguish them here.
+function mapAsdfDistribution(asdfDist) {
+    const normalized = asdfDist.toLowerCase();
+    // Multi-segment vendors that map to a distinct setup-java distribution.
+    if (normalized.startsWith('graalvm-community')) {
+        return 'graalvm-community';
+    }
+    if (normalized.startsWith('oracle-graalvm')) {
+        return 'graalvm';
+    }
+    const baseVendor = normalized.split('-')[0];
+    const distributionMap = {
+        temurin: 'temurin',
+        adoptopenjdk: 'temurin',
+        zulu: 'zulu',
+        corretto: 'corretto',
+        liberica: 'liberica',
+        microsoft: 'microsoft',
+        semeru: 'semeru',
+        ibm: 'semeru',
+        dragonwell: 'dragonwell',
+        graalvm: 'graalvm',
+        oracle: 'oracle',
+        sapmachine: 'sapmachine',
+        kona: 'kona',
+        jetbrains: 'jetbrains'
+    };
+    const mapped = distributionMap[baseVendor];
+    if (!mapped) {
+        core.warning(`Unknown asdf distribution identifier '${asdfDist}'. Please specify the distribution explicitly.`);
     }
     return mapped;
 }
