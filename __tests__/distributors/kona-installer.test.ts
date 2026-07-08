@@ -1,6 +1,6 @@
 import {KonaDistribution} from '../../src/distributions/kona/installer.js';
 
-import manifestData from '../data/kona.json';
+import manifestData from '../data/kona.json' with {type: 'json'};
 
 function mockDistr(
   version: string,
