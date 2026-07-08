@@ -63,7 +63,7 @@ describe('getAvailableVersions', () => {
     spyHttpClient.mockReturnValue({
       statusCode: 200,
       headers: {},
-      result: manifestData as IZuluVersions[]
+      result: [] as IZuluVersions[]
     });
 
     spyUtilGetDownloadArchiveExtension =
@@ -89,7 +89,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=linux&ext=zip&bundle_type=jdk&javafx=false&arch=x86&hw_bitness=32&release_status=ga'
+      '?os=linux_glibc&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&arch=x86&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -98,7 +98,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=linux&ext=zip&bundle_type=jdk&javafx=false&arch=x86&hw_bitness=32&release_status=ea'
+      '?os=linux_glibc&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&arch=x86&release_status=ea&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -107,7 +107,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=linux&ext=zip&bundle_type=jdk&javafx=false&arch=x86&hw_bitness=64&release_status=ga'
+      '?os=linux_glibc&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -116,7 +116,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jre',
         checkLatest: false
       },
-      '?os=linux&ext=zip&bundle_type=jre&javafx=false&arch=x86&hw_bitness=64&release_status=ga'
+      '?os=linux_glibc&archive_type=zip&java_package_type=jre&javafx_bundled=false&crac_supported=false&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -125,7 +125,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk+fx',
         checkLatest: false
       },
-      '?os=linux&ext=zip&bundle_type=jdk&javafx=true&arch=x86&hw_bitness=64&release_status=ga&features=fx'
+      '?os=linux_glibc&archive_type=zip&java_package_type=jdk&javafx_bundled=true&crac_supported=false&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -134,7 +134,16 @@ describe('getAvailableVersions', () => {
         packageType: 'jre+fx',
         checkLatest: false
       },
-      '?os=linux&ext=zip&bundle_type=jre&javafx=true&arch=x86&hw_bitness=64&release_status=ga&features=fx'
+      '?os=linux_glibc&archive_type=zip&java_package_type=jre&javafx_bundled=true&crac_supported=false&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=100'
+    ],
+    [
+      {
+        version: '8',
+        architecture: 'x64',
+        packageType: 'jdk+crac',
+        checkLatest: false
+      },
+      '?os=linux_glibc&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=true&arch=x64&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -143,7 +152,7 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=linux&ext=zip&bundle_type=jdk&javafx=false&arch=arm&hw_bitness=64&release_status=ga'
+      '?os=linux_glibc&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&arch=aarch64&release_status=ga&availability_types=ca&page=1&page_size=100'
     ],
     [
       {
@@ -152,12 +161,12 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       },
-      '?os=linux&ext=zip&bundle_type=jdk&javafx=false&arch=arm&hw_bitness=&release_status=ga'
+      '?os=linux_glibc&archive_type=zip&java_package_type=jdk&javafx_bundled=false&crac_supported=false&arch=arm&release_status=ga&availability_types=ca&page=1&page_size=100'
     ]
   ])('build correct url for %s -> %s', async (input, parsedUrl) => {
     const distribution = new ZuluDistribution(input);
-    distribution['getPlatformOption'] = () => 'linux';
-    const buildUrl = `https://api.azul.com/zulu/download/community/v1.0/bundles/${parsedUrl}`;
+    distribution['getPlatformOption'] = () => 'linux_glibc';
+    const buildUrl = `https://api.azul.com/metadata/v1/zulu/packages/${parsedUrl}`;
 
     await distribution['getAvailableVersions']();
 
@@ -165,16 +174,12 @@ describe('getAvailableVersions', () => {
     expect(spyHttpClient.mock.calls[0][0]).toBe(buildUrl);
   });
 
-  type DistroArch = {
-    bitness: string;
-    arch: string;
-  };
   it.each([
-    ['amd64', {bitness: '64', arch: 'x86'}],
-    ['arm64', {bitness: '64', arch: 'arm'}]
+    ['amd64', 'x64'],
+    ['arm64', 'aarch64']
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',
-    async (osArch: string, distroArch: DistroArch) => {
+    async (osArch: string, distroArch: string) => {
       jest
         .spyOn(os, 'arch')
         .mockReturnValue(osArch as ReturnType<typeof os.arch>);
@@ -185,10 +190,10 @@ describe('getAvailableVersions', () => {
         packageType: 'jdk',
         checkLatest: false
       });
-      distribution['getPlatformOption'] = () => 'linux';
+      distribution['getPlatformOption'] = () => 'linux_glibc';
       // Override extension for linux default arch case to match util behavior
       spyUtilGetDownloadArchiveExtension.mockReturnValue('tar.gz');
-      const buildUrl = `https://api.azul.com/zulu/download/community/v1.0/bundles/?os=linux&ext=tar.gz&bundle_type=jdk&javafx=false&arch=${distroArch.arch}&hw_bitness=${distroArch.bitness}&release_status=ga`;
+      const buildUrl = `https://api.azul.com/metadata/v1/zulu/packages/?os=linux_glibc&archive_type=tar.gz&java_package_type=jdk&javafx_bundled=false&crac_supported=false&arch=${distroArch}&release_status=ga&availability_types=ca&page=1&page_size=100`;
 
       await distribution['getAvailableVersions']();
 
@@ -198,6 +203,18 @@ describe('getAvailableVersions', () => {
   );
 
   it('load available versions', async () => {
+    spyHttpClient
+      .mockReturnValueOnce({
+        statusCode: 200,
+        headers: {},
+        result: manifestData as IZuluVersions[]
+      })
+      .mockReturnValueOnce({
+        statusCode: 200,
+        headers: {},
+        result: [] as IZuluVersions[]
+      });
+
     const distribution = new ZuluDistribution({
       version: '11',
       architecture: 'x86',
@@ -211,10 +228,11 @@ describe('getAvailableVersions', () => {
 
 describe('getArchitectureOptions', () => {
   it.each([
-    [{architecture: 'x64'}, {arch: 'x86', hw_bitness: '64', abi: ''}],
-    [{architecture: 'x86'}, {arch: 'x86', hw_bitness: '32', abi: ''}],
-    [{architecture: 'x32'}, {arch: 'x32', hw_bitness: '', abi: ''}],
-    [{architecture: 'arm'}, {arch: 'arm', hw_bitness: '', abi: ''}]
+    [{architecture: 'x64'}, 'x64'],
+    [{architecture: 'x86'}, 'x86'],
+    [{architecture: 'aarch64'}, 'aarch64'],
+    [{architecture: 'arm64'}, 'aarch64'],
+    [{architecture: 'arm'}, 'arm']
   ])('%s -> %s', (input, expected) => {
     const distribution = new ZuluDistribution({
       version: '11',
@@ -222,7 +240,7 @@ describe('getArchitectureOptions', () => {
       packageType: 'jdk',
       checkLatest: false
     });
-    expect(distribution['getArchitectureOptions']()).toEqual(expected);
+    expect(distribution['getArchitectureOptions']()).toBe(expected);
   });
 });
 
