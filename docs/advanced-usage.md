@@ -780,7 +780,27 @@ steps:
   
   Supported files are `.java-version`, `.tool-versions` and `.sdkmanrc`.
   * In `.java-version` file, only the version should be specified (e.g., 17.0.7). The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv).
-  * In `.tool-versions` file, java version should be preceded by the java keyword (e.g., java 17.0.7). The `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)).
+  * In `.tool-versions` file, java version should be preceded by the java keyword (e.g., java 17.0.7). The `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)). When the entry includes an [asdf-java](https://github.com/halcyon/asdf-java) vendor prefix (e.g. `java temurin-17.0.3+7`), setup-java can infer the `distribution` input automatically. Unrecognized vendor prefixes require setting `distribution` explicitly.
+
+    Supported asdf-java vendor prefix mappings (packaging variants such as `-jre`, `-musl`, `-openj9`, `-crac`, `-javafx` are collapsed onto the base vendor):
+
+    | asdf-java vendor prefix | setup-java distribution |
+    | ----------------------- | ----------------------- |
+    | `temurin` | `temurin` |
+    | `adoptopenjdk` | `temurin` |
+    | `zulu` | `zulu` |
+    | `corretto` | `corretto` |
+    | `liberica` | `liberica` |
+    | `microsoft` | `microsoft` |
+    | `semeru`, `ibm` | `semeru` |
+    | `dragonwell` | `dragonwell` |
+    | `graalvm`, `oracle-graalvm` | `graalvm` |
+    | `graalvm-community` | `graalvm-community` |
+    | `oracle` | `oracle` |
+    | `sapmachine` | `sapmachine` |
+    | `kona` | `kona` |
+    | `jetbrains` | `jetbrains` |
+
   * In `.sdkmanrc` file, java version should be preceded by the `java=` prefix (e.g., `java=17.0.7-tem`). When a recognized SDKMAN distribution suffix is present, setup-java can infer the `distribution` input automatically. Unrecognized suffixes require setting `distribution` explicitly. The `.sdkmanrc` file supports version specifications in accordance with [file format](https://sdkman.io/usage#env-command), see [Sdkman! documentation](https://sdkman.io/jdks) for more information.
 
     Supported SDKMAN suffix mappings:
@@ -814,6 +834,19 @@ steps:
 **Example `.sdkmanrc`**:
 ```
 java=17.0.7-tem
+```
+
+**Example step using `asdf`** (distribution inferred from `.tool-versions`):
+```yml
+  - name: Setup java
+    uses: actions/setup-java@v5
+    with:
+      java-version-file: '.tool-versions'
+```
+
+**Example `.tool-versions`**:
+```
+java temurin-17.0.7+7
 ```
 
 Valid entry options (does not apply to `.sdkmanrc`):
