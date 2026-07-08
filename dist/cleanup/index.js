@@ -52245,14 +52245,15 @@ else {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.DISTRIBUTIONS_ONLY_MAJOR_VERSION = exports.MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = exports.MAVEN_NO_TRANSFER_PROGRESS_FLAG = exports.MAVEN_ARGS_ENV = exports.INPUT_SHOW_DOWNLOAD_PROGRESS = exports.INPUT_MVN_TOOLCHAIN_VENDOR = exports.INPUT_MVN_TOOLCHAIN_ID = exports.MVN_TOOLCHAINS_FILE = exports.MVN_SETTINGS_FILE = exports.M2_DIR = exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE_DEPENDENCY_PATH = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = exports.INPUT_VERIFY_SIGNATURE = exports.INPUT_SET_DEFAULT = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION_FILE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
+exports.DISTRIBUTIONS_ONLY_MAJOR_VERSION = exports.MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = exports.MAVEN_NO_TRANSFER_PROGRESS_FLAG = exports.MAVEN_ARGS_ENV = exports.INPUT_SHOW_DOWNLOAD_PROGRESS = exports.INPUT_MVN_TOOLCHAIN_VENDOR = exports.INPUT_MVN_TOOLCHAIN_ID = exports.MVN_TOOLCHAINS_FILE = exports.MVN_SETTINGS_FILE = exports.M2_DIR = exports.STATE_GPG_PRIVATE_KEY_FINGERPRINT = exports.INPUT_JOB_STATUS = exports.INPUT_CACHE_DEPENDENCY_PATH = exports.INPUT_CACHE = exports.INPUT_DEFAULT_GPG_PASSPHRASE = exports.INPUT_DEFAULT_GPG_PRIVATE_KEY = exports.INPUT_GPG_PASSPHRASE = exports.INPUT_GPG_PRIVATE_KEY = exports.INPUT_OVERWRITE_SETTINGS = exports.INPUT_SETTINGS_PATH = exports.INPUT_SERVER_PASSWORD = exports.INPUT_SERVER_USERNAME = exports.INPUT_SERVER_ID = exports.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = exports.INPUT_VERIFY_SIGNATURE = exports.INPUT_SET_DEFAULT = exports.INPUT_CHECK_LATEST = exports.INPUT_JDK_FILE_DEPRECATED = exports.INPUT_JDK_FILE = exports.INPUT_DISTRIBUTION = exports.INPUT_JAVA_PACKAGE = exports.INPUT_ARCHITECTURE = exports.INPUT_JAVA_VERSION_FILE = exports.INPUT_JAVA_VERSION = exports.MACOS_JAVA_CONTENT_POSTFIX = void 0;
 exports.MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
 exports.INPUT_JAVA_VERSION = 'java-version';
 exports.INPUT_JAVA_VERSION_FILE = 'java-version-file';
 exports.INPUT_ARCHITECTURE = 'architecture';
 exports.INPUT_JAVA_PACKAGE = 'java-package';
 exports.INPUT_DISTRIBUTION = 'distribution';
-exports.INPUT_JDK_FILE = 'jdkFile';
+exports.INPUT_JDK_FILE = 'jdk-file';
+exports.INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
 exports.INPUT_CHECK_LATEST = 'check-latest';
 exports.INPUT_SET_DEFAULT = 'set-default';
 exports.INPUT_VERIFY_SIGNATURE = 'verify-signature';
@@ -52576,7 +52577,7 @@ function isCacheFeatureAvailable() {
 }
 exports.isCacheFeatureAvailable = isCacheFeatureAvailable;
 function getVersionFromFileContent(content, distributionName, versionFile) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     let javaVersionRegExp;
     let extractedDistribution;
     function getFileName(versionFile) {
@@ -52584,8 +52585,10 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     }
     const versionFileName = getFileName(versionFile);
     if (versionFileName == '.tool-versions') {
+        // Capture an optional asdf-java vendor prefix (e.g. `temurin-`, `corretto-`)
+        // in the `distribution` group so it can be mapped to a setup-java distribution.
         javaVersionRegExp =
-            /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
+            /^java\s+(?:(?<distribution>\S*)-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
     }
     else if (versionFileName == '.sdkmanrc') {
         // Match both version and optional distribution identifier
@@ -52605,6 +52608,14 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
         extractedDistribution = mapSdkmanDistribution(sdkmanDist);
         core.debug(`Parsed distribution '${extractedDistribution}' from SDKMAN identifier '${sdkmanDist}'`);
     }
+    // Extract distribution from asdf .tool-versions file
+    if (versionFileName == '.tool-versions' && ((_c = match === null || match === void 0 ? void 0 : match.groups) === null || _c === void 0 ? void 0 : _c.distribution)) {
+        const asdfDist = match.groups.distribution;
+        extractedDistribution = mapAsdfDistribution(asdfDist);
+        if (extractedDistribution) {
+            core.debug(`Parsed distribution '${extractedDistribution}' from asdf identifier '${asdfDist}'`);
+        }
+    }
     core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
     if (!capturedVersion) {
         return null;
@@ -52621,7 +52632,7 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     // Apply DISTRIBUTIONS_ONLY_MAJOR_VERSION logic whenever the effective distribution
     // (either explicitly provided or extracted from the version file) is in the list.
     if (constants_1.DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(extractedDistribution || distributionName)) {
-        const coerceVersion = (_c = semver.coerce(version)) !== null && _c !== void 0 ? _c : version;
+        const coerceVersion = (_d = semver.coerce(version)) !== null && _d !== void 0 ? _d : version;
         version = semver.major(coerceVersion).toString();
     }
     return {
@@ -52651,6 +52662,43 @@ function mapSdkmanDistribution(sdkmanDist) {
     const mapped = distributionMap[sdkmanDist.toLowerCase()];
     if (!mapped) {
         core.warning(`Unknown SDKMAN distribution identifier '${sdkmanDist}'. Please specify the distribution explicitly.`);
+    }
+    return mapped;
+}
+// Map asdf-java (.tool-versions) vendor identifiers to setup-java distribution names.
+// asdf-java encodes the vendor as a prefix on the version string, e.g.
+// `java temurin-17.0.3+7` or `java semeru-openj9-11.0.25+9`. Packaging variants
+// (`-jre`, `-musl`, `-openj9`, `-crac`, `-javafx`, ...) are collapsed onto the
+// base vendor since setup-java does not distinguish them here.
+function mapAsdfDistribution(asdfDist) {
+    const normalized = asdfDist.toLowerCase();
+    // Multi-segment vendors that map to a distinct setup-java distribution.
+    if (normalized.startsWith('graalvm-community')) {
+        return 'graalvm-community';
+    }
+    if (normalized.startsWith('oracle-graalvm')) {
+        return 'graalvm';
+    }
+    const baseVendor = normalized.split('-')[0];
+    const distributionMap = {
+        temurin: 'temurin',
+        adoptopenjdk: 'temurin',
+        zulu: 'zulu',
+        corretto: 'corretto',
+        liberica: 'liberica',
+        microsoft: 'microsoft',
+        semeru: 'semeru',
+        ibm: 'semeru',
+        dragonwell: 'dragonwell',
+        graalvm: 'graalvm',
+        oracle: 'oracle',
+        sapmachine: 'sapmachine',
+        kona: 'kona',
+        jetbrains: 'jetbrains'
+    };
+    const mapped = distributionMap[baseVendor];
+    if (!mapped) {
+        core.warning(`Unknown asdf distribution identifier '${asdfDist}'. Please specify the distribution explicitly.`);
     }
     return mapped;
 }
