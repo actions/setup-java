@@ -5,19 +5,19 @@ import semver from 'semver';
 import fs from 'fs';
 import path from 'path';
 
-import {JavaBase} from '../base-installer';
-import {IKonaReleaseInfo, IKonaRelease} from './models';
+import {JavaBase} from '../base-installer.js';
+import {IKonaReleaseInfo, IKonaRelease} from './models.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
   isVersionSatisfies,
   renameWinArchive
-} from '../../util';
+} from '../../util.js';
 
 export class KonaDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {

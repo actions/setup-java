@@ -18,6 +18,10 @@ The `setup-java` action provides the following functionality for GitHub Actions 
 
 This action allows you to work with Java and Scala projects.
 
+## Breaking changes in V6
+
+- **Migrated to ESM** to enable support for the latest `@actions/*` package versions.
+
 ## Breaking changes in V5
 
 - Upgraded action from node20 to node24

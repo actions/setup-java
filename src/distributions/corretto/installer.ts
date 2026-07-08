@@ -7,17 +7,17 @@ import {
   getDownloadArchiveExtension,
   convertVersionToSemver,
   renameWinArchive
-} from '../../util';
-import {JavaBase} from '../base-installer';
+} from '../../util.js';
+import {JavaBase} from '../base-installer.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 import {
   ICorrettoAllAvailableVersions,
   ICorrettoAvailableVersions
-} from './models';
+} from './models.js';
 
 export class CorrettoDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {

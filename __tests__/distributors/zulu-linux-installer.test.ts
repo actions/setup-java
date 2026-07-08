@@ -1,17 +1,62 @@
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
+import type {IZuluVersions} from '../../src/distributions/zulu/models.js';
 import {HttpClient} from '@actions/http-client';
 import * as semver from 'semver';
-import {ZuluDistribution} from '../../src/distributions/zulu/installer';
-import {IZuluVersions} from '../../src/distributions/zulu/models';
-import * as utils from '../../src/util';
 import os from 'os';
-import * as core from '@actions/core';
 
-import manifestData from '../data/zulu-linux.json';
+import manifestData from '../data/zulu-linux.json' with {type: 'json'};
+
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+const real_util_module = await import('../../src/util.js');
+jest.unstable_mockModule('../../src/util.js', () => ({
+  ...real_util_module,
+  getDownloadArchiveExtension: jest.fn()
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const {ZuluDistribution} =
+  await import('../../src/distributions/zulu/installer.js');
+const utils = await import('../../src/util.js');
 
 describe('getAvailableVersions', () => {
-  let spyHttpClient: jest.SpyInstance;
-  let spyUtilGetDownloadArchiveExtension: jest.SpyInstance;
-  let spyCoreError: jest.SpyInstance;
+  let spyHttpClient: any;
+  let spyUtilGetDownloadArchiveExtension: any;
+  let spyCoreError: any;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -21,14 +66,12 @@ describe('getAvailableVersions', () => {
       result: manifestData as IZuluVersions[]
     });
 
-    spyUtilGetDownloadArchiveExtension = jest.spyOn(
-      utils,
-      'getDownloadArchiveExtension'
-    );
+    spyUtilGetDownloadArchiveExtension =
+      utils.getDownloadArchiveExtension as jest.Mock<any>;
     spyUtilGetDownloadArchiveExtension.mockReturnValue('zip');
 
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
   });
 

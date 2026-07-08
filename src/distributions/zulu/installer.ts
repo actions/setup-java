@@ -5,20 +5,20 @@ import path from 'path';
 import fs from 'fs';
 import semver from 'semver';
 
-import {JavaBase} from '../base-installer';
-import {IZuluVersions} from './models';
+import {JavaBase} from '../base-installer.js';
+import {IZuluVersions} from './models.js';
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
   convertVersionToSemver,
   isVersionSatisfies,
   renameWinArchive
-} from '../../util';
+} from '../../util.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 
 export class ZuluDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {

@@ -1,20 +1,29 @@
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterAll,
+  afterEach
+} from '@jest/globals';
+import {fileURLToPath} from 'url';
 import * as path from 'path';
 import * as io from '@actions/io';
-import * as exec from '@actions/exec';
-import * as tc from '@actions/tool-cache';
-import * as gpg from '../src/gpg';
 
-jest.mock('@actions/exec', () => {
-  return {
-    exec: jest.fn()
-  };
-});
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-jest.mock('@actions/tool-cache', () => {
-  return {
-    downloadTool: jest.fn()
-  };
-});
+jest.unstable_mockModule('@actions/exec', () => ({
+  exec: jest.fn()
+}));
+
+jest.unstable_mockModule('@actions/tool-cache', () => ({
+  downloadTool: jest.fn()
+}));
+
+const exec = await import('@actions/exec');
+const tc = await import('@actions/tool-cache');
+const gpg = await import('../src/gpg.js');
 
 const tempDir = path.join(__dirname, 'runner', 'temp');
 process.env['RUNNER_TEMP'] = tempDir;
@@ -92,7 +101,9 @@ describe('gpg tests', () => {
       it('imports bundled key and verifies package', async () => {
         const publicKeyContent =
           '-----BEGIN PGP PUBLIC KEY BLOCK-----\ntest\n-----END PGP PUBLIC KEY BLOCK-----';
-        (tc.downloadTool as jest.Mock).mockResolvedValue('/tmp/jdk.tar.gz.sig');
+        (tc.downloadTool as jest.Mock<any>).mockResolvedValue(
+          '/tmp/jdk.tar.gz.sig'
+        );
         await gpg.verifyPackageSignature(
           '/tmp/jdk.tar.gz',
           'https://example.com/jdk.tar.gz.sig',

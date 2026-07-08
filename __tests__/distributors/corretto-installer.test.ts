@@ -1,17 +1,62 @@
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
+import type {JavaInstallerOptions} from '../../src/distributions/base-models.js';
 import {HttpClient} from '@actions/http-client';
-import {JavaInstallerOptions} from '../../src/distributions/base-models';
 
-import {CorrettoDistribution} from '../../src/distributions/corretto/installer';
-import * as util from '../../src/util';
 import os from 'os';
-import * as core from '@actions/core';
 
-import manifestData from '../data/corretto.json';
+import manifestData from '../data/corretto.json' with {type: 'json'};
+
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+const real_util_module = await import('../../src/util.js');
+jest.unstable_mockModule('../../src/util.js', () => ({
+  ...real_util_module,
+  getDownloadArchiveExtension: jest.fn()
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const {CorrettoDistribution} =
+  await import('../../src/distributions/corretto/installer.js');
+const util = await import('../../src/util.js');
 
 describe('getAvailableVersions', () => {
-  let spyHttpClient: jest.SpyInstance;
-  let spyGetDownloadArchiveExtension: jest.SpyInstance;
-  let spyCoreError: jest.SpyInstance;
+  let spyHttpClient: ReturnType<typeof jest.spyOn>;
+  let spyGetDownloadArchiveExtension: any;
+  let spyCoreError: any;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -20,13 +65,11 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: manifestData
     });
-    spyGetDownloadArchiveExtension = jest.spyOn(
-      util,
-      'getDownloadArchiveExtension'
-    );
+    spyGetDownloadArchiveExtension =
+      util.getDownloadArchiveExtension as jest.Mock;
 
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
   });
 
@@ -235,7 +278,7 @@ describe('getAvailableVersions', () => {
   });
 
   const mockPlatform = (
-    distribution: CorrettoDistribution,
+    distribution: InstanceType<typeof CorrettoDistribution>,
     platform: string
   ) => {
     distribution['getPlatformOption'] = () => platform;

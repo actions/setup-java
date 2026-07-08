@@ -4,13 +4,13 @@ import * as fs from 'fs';
 import semver from 'semver';
 import path from 'path';
 import * as httpm from '@actions/http-client';
-import {getToolcachePath, isVersionSatisfies} from '../util';
+import {getToolcachePath, isVersionSatisfies} from '../util.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from './base-models';
-import {MACOS_JAVA_CONTENT_POSTFIX} from '../constants';
+} from './base-models.js';
+import {MACOS_JAVA_CONTENT_POSTFIX} from '../constants.js';
 import os from 'os';
 
 export abstract class JavaBase {

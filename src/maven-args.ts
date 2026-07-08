@@ -1,11 +1,11 @@
 import * as core from '@actions/core';
-import {getBooleanInput} from './util';
+import {getBooleanInput} from './util.js';
 import {
   INPUT_SHOW_DOWNLOAD_PROGRESS,
   MAVEN_ARGS_ENV,
   MAVEN_NO_TRANSFER_PROGRESS_FLAG,
   MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG
-} from './constants';
+} from './constants.js';
 
 /**
  * Configures the MAVEN_ARGS environment variable so that Maven suppresses

@@ -1,8 +1,9 @@
 import * as core from '@actions/core';
-import * as gpg from './gpg';
-import * as constants from './constants';
-import {isJobStatusSuccess} from './util';
-import {save} from './cache';
+import * as gpg from './gpg.js';
+import * as constants from './constants.js';
+import {isJobStatusSuccess} from './util.js';
+import {save} from './cache.js';
+import {fileURLToPath} from 'url';
 
 async function removePrivateKeyFromKeychain() {
   if (core.getInput(constants.INPUT_GPG_PRIVATE_KEY, {required: false})) {
@@ -52,7 +53,7 @@ export async function run() {
   await ignoreError(saveCache());
 }
 
-if (require.main === module) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   run();
 } else {
   // https://nodejs.org/api/modules.html#modules_accessing_the_main_module

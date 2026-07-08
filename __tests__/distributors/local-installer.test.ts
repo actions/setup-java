@@ -1,37 +1,101 @@
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
 import fs from 'fs';
-
-import * as tc from '@actions/tool-cache';
-import * as core from '@actions/core';
 
 import path from 'path';
 import * as semver from 'semver';
-import * as util from '../../src/util';
 
-import {LocalDistribution} from '../../src/distributions/local/installer';
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+jest.unstable_mockModule('@actions/tool-cache', () => ({
+  find: jest.fn(),
+  findAllVersions: jest.fn(),
+  downloadTool: jest.fn(),
+  extractZip: jest.fn(),
+  extractTar: jest.fn(),
+  extract7z: jest.fn(),
+  extractXar: jest.fn(),
+  cacheDir: jest.fn(),
+  cacheFile: jest.fn(),
+  getManifestFromRepo: jest.fn(),
+  findFromManifest: jest.fn(),
+  evaluateVersions: jest.fn()
+}));
+
+const real_util_module = await import('../../src/util.js');
+jest.unstable_mockModule('../../src/util.js', () => ({
+  ...real_util_module,
+  extractJdkFile: jest.fn(),
+  getDownloadArchiveExtension: jest.fn(),
+  getToolcachePath: jest.fn(),
+  isJobStatusSuccess: jest.fn(),
+  renameWinArchive: jest.fn(),
+  isVersionSatisfies: real_util_module.isVersionSatisfies,
+  getTempDir: real_util_module.getTempDir
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const tc = await import('@actions/tool-cache');
+const util = await import('../../src/util.js');
+const {LocalDistribution} =
+  await import('../../src/distributions/local/installer.js');
 
 describe('setupJava', () => {
   const actualJavaVersion = '11.1.10';
   const javaPath = path.join('Java_jdkfile_jdk', actualJavaVersion, 'x86');
 
-  let mockJavaBase: LocalDistribution;
+  let mockJavaBase: InstanceType<typeof LocalDistribution>;
 
-  let spyGetToolcachePath: jest.SpyInstance;
-  let spyTcCacheDir: jest.SpyInstance;
-  let spyTcFindAllVersions: jest.SpyInstance;
-  let spyCoreDebug: jest.SpyInstance;
-  let spyCoreInfo: jest.SpyInstance;
-  let spyCoreExportVariable: jest.SpyInstance;
-  let spyCoreAddPath: jest.SpyInstance;
-  let spyCoreSetOutput: jest.SpyInstance;
-  let spyFsStat: jest.SpyInstance;
-  let spyFsReadDir: jest.SpyInstance;
-  let spyUtilsExtractJdkFile: jest.SpyInstance;
-  let spyPathResolve: jest.SpyInstance;
-  let spyCoreError: jest.SpyInstance;
+  let spyGetToolcachePath: any;
+  let spyTcCacheDir: any;
+  let spyTcFindAllVersions: any;
+  let spyCoreDebug: any;
+  let spyCoreInfo: any;
+  let spyCoreExportVariable: any;
+  let spyCoreAddPath: any;
+  let spyCoreSetOutput: any;
+  let spyFsStat: any;
+  let spyFsReadDir: any;
+  let spyUtilsExtractJdkFile: any;
+  let spyPathResolve: any;
+  let spyCoreError: any;
   const expectedJdkFile = 'JavaLocalJdkFile';
 
   beforeEach(() => {
-    spyGetToolcachePath = jest.spyOn(util, 'getToolcachePath');
+    spyGetToolcachePath = util.getToolcachePath as jest.Mock;
     spyGetToolcachePath.mockImplementation(
       (toolname: string, javaVersion: string, architecture: string) => {
         const semverVersion = new semver.Range(javaVersion);
@@ -49,7 +113,7 @@ describe('setupJava', () => {
       }
     );
 
-    spyTcCacheDir = jest.spyOn(tc, 'cacheDir');
+    spyTcCacheDir = tc.cacheDir as jest.Mock;
     spyTcCacheDir.mockImplementation(
       (
         archivePath: string,
@@ -59,23 +123,23 @@ describe('setupJava', () => {
       ) => path.join(toolcacheFolderName, version, architecture)
     );
 
-    spyTcFindAllVersions = jest.spyOn(tc, 'findAllVersions');
+    spyTcFindAllVersions = tc.findAllVersions as jest.Mock;
     spyTcFindAllVersions.mockReturnValue([actualJavaVersion]);
 
     // Spy on core methods
-    spyCoreDebug = jest.spyOn(core, 'debug');
+    spyCoreDebug = core.debug as jest.Mock;
     spyCoreDebug.mockImplementation(() => undefined);
 
-    spyCoreInfo = jest.spyOn(core, 'info');
+    spyCoreInfo = core.info as jest.Mock;
     spyCoreInfo.mockImplementation(() => undefined);
 
-    spyCoreAddPath = jest.spyOn(core, 'addPath');
+    spyCoreAddPath = core.addPath as jest.Mock;
     spyCoreAddPath.mockImplementation(() => undefined);
 
-    spyCoreExportVariable = jest.spyOn(core, 'exportVariable');
+    spyCoreExportVariable = core.exportVariable as jest.Mock;
     spyCoreExportVariable.mockImplementation(() => undefined);
 
-    spyCoreSetOutput = jest.spyOn(core, 'setOutput');
+    spyCoreSetOutput = core.setOutput as jest.Mock;
     spyCoreSetOutput.mockImplementation(() => undefined);
 
     // Spy on fs methods
@@ -88,7 +152,7 @@ describe('setupJava', () => {
     });
 
     // Spy on util methods
-    spyUtilsExtractJdkFile = jest.spyOn(util, 'extractJdkFile');
+    spyUtilsExtractJdkFile = util.extractJdkFile as jest.Mock;
     spyUtilsExtractJdkFile.mockImplementation(() => 'some/random/path/');
 
     // Spy on path methods
@@ -96,7 +160,7 @@ describe('setupJava', () => {
     spyPathResolve.mockImplementation((path: string) => path);
 
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
   });
 

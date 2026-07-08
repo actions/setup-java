@@ -6,7 +6,10 @@ import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
-import {INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION} from './constants';
+import {
+  INPUT_JOB_STATUS,
+  DISTRIBUTIONS_ONLY_MAJOR_VERSION
+} from './constants.js';
 import {OutgoingHttpHeaders} from 'http';
 
 export function getTempDir() {

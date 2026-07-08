@@ -10,14 +10,14 @@ import {
   getDownloadArchiveExtension,
   isVersionSatisfies,
   renameWinArchive
-} from '../../util';
-import {JavaBase} from '../base-installer';
+} from '../../util.js';
+import {JavaBase} from '../base-installer.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
-import {ISapMachineAllVersions, ISapMachineVersions} from './models';
+} from '../base-models.js';
+import {ISapMachineAllVersions, ISapMachineVersions} from './models.js';
 
 export class SapMachineDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {

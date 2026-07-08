@@ -1,4 +1,4 @@
-import {KonaDistribution} from '../../src/distributions/kona/installer';
+import {KonaDistribution} from '../../src/distributions/kona/installer.js';
 
 import manifestData from '../data/kona.json';
 

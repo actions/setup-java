@@ -5,13 +5,13 @@ import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
 
-import {JavaBase} from '../base-installer';
-import {IAdoptAvailableVersions} from './models';
+import {JavaBase} from '../base-installer.js';
+import {IAdoptAvailableVersions} from './models.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 import {
   extractJdkFile,
   getNextPageUrlFromLinkHeader,
@@ -20,8 +20,11 @@ import {
   renameWinArchive,
   MAX_PAGINATION_PAGES,
   validatePaginationUrl
-} from '../../util';
-import {TemurinDistribution, TemurinImplementation} from '../temurin/installer';
+} from '../../util.js';
+import {
+  TemurinDistribution,
+  TemurinImplementation
+} from '../temurin/installer.js';
 
 export enum AdoptImplementation {
   Hotspot = 'Hotspot',

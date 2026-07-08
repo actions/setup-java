@@ -1,23 +1,92 @@
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
+import type {JavaInstallerOptions} from '../../src/distributions/base-models.js';
+import type {TemurinImplementation as TemurinImplementationType} from '../../src/distributions/temurin/installer.js';
 import {HttpClient} from '@actions/http-client';
-import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import os from 'os';
-import {
-  TemurinDistribution,
-  TemurinImplementation,
-  ADOPTIUM_PUBLIC_KEY
-} from '../../src/distributions/temurin/installer';
-import {JavaInstallerOptions} from '../../src/distributions/base-models';
-import * as util from '../../src/util';
-import * as gpg from '../../src/gpg';
 
-import manifestData from '../data/temurin.json';
-import * as core from '@actions/core';
+import manifestData from '../data/temurin.json' with {type: 'json'};
+
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+jest.unstable_mockModule('@actions/tool-cache', () => ({
+  find: jest.fn(),
+  findAllVersions: jest.fn(),
+  downloadTool: jest.fn(),
+  extractZip: jest.fn(),
+  extractTar: jest.fn(),
+  extract7z: jest.fn(),
+  extractXar: jest.fn(),
+  cacheDir: jest.fn(),
+  cacheFile: jest.fn(),
+  getManifestFromRepo: jest.fn(),
+  findFromManifest: jest.fn(),
+  evaluateVersions: jest.fn()
+}));
+
+const real_util_module = await import('../../src/util.js');
+jest.unstable_mockModule('../../src/util.js', () => ({
+  ...real_util_module,
+  extractJdkFile: jest.fn(),
+  getDownloadArchiveExtension: jest.fn(),
+  getToolcachePath: jest.fn(),
+  isJobStatusSuccess: jest.fn(),
+  renameWinArchive: jest.fn(),
+  isVersionSatisfies: real_util_module.isVersionSatisfies,
+  getTempDir: real_util_module.getTempDir
+}));
+
+jest.unstable_mockModule('../../src/gpg.js', () => ({
+  importKey: jest.fn(),
+  deleteKey: jest.fn(),
+  verifyPackageSignature: jest.fn()
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const gpg = await import('../../src/gpg.js');
+const tc = await import('@actions/tool-cache');
+const {TemurinDistribution, TemurinImplementation, ADOPTIUM_PUBLIC_KEY} =
+  await import('../../src/distributions/temurin/installer.js');
+const util = await import('../../src/util.js');
 
 describe('getAvailableVersions', () => {
-  let spyHttpClient: jest.SpyInstance;
-  let spyCoreError: jest.SpyInstance;
-  let spyCoreWarning: jest.SpyInstance;
+  let spyHttpClient: any;
+  let spyCoreError: any;
+  let spyCoreWarning: any;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -27,9 +96,9 @@ describe('getAvailableVersions', () => {
       result: []
     });
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
-    spyCoreWarning = jest.spyOn(core, 'warning');
+    spyCoreWarning = core.warning as jest.Mock;
     spyCoreWarning.mockImplementation(() => {});
   });
 
@@ -84,7 +153,7 @@ describe('getAvailableVersions', () => {
     'build correct url for %s',
     async (
       installerOptions: JavaInstallerOptions,
-      impl: TemurinImplementation,
+      impl: TemurinImplementationType,
       expectedParameters
     ) => {
       const distribution = new TemurinDistribution(installerOptions, impl);
@@ -163,7 +232,11 @@ describe('getAvailableVersions', () => {
     [TemurinImplementation.Hotspot, 'jre', 'Java_Temurin-Hotspot_jre']
   ])(
     'find right toolchain folder',
-    (impl: TemurinImplementation, packageType: string, expected: string) => {
+    (
+      impl: TemurinImplementationType,
+      packageType: string,
+      expected: string
+    ) => {
       const distribution = new TemurinDistribution(
         {
           version: '8',
@@ -289,25 +362,25 @@ describe('findPackageForDownload', () => {
 });
 
 describe('downloadTool', () => {
-  let spyDownloadTool: jest.SpyInstance;
-  let spyVerifySignature: jest.SpyInstance;
-  let spyExtractJdkFile: jest.SpyInstance;
-  let spyCacheDir: jest.SpyInstance;
-  let spyReadDirSync: jest.SpyInstance;
-  let spyRenameWinArchive: jest.SpyInstance;
+  let spyDownloadTool: any;
+  let spyVerifySignature: any;
+  let spyExtractJdkFile: any;
+  let spyCacheDir: any;
+  let spyReadDirSync: any;
+  let spyRenameWinArchive: any;
 
   beforeEach(() => {
-    spyDownloadTool = jest.spyOn(tc, 'downloadTool');
+    spyDownloadTool = tc.downloadTool as jest.Mock;
     spyDownloadTool.mockResolvedValue('/tmp/jdk.tar.gz');
-    spyVerifySignature = jest.spyOn(gpg, 'verifyPackageSignature');
+    spyVerifySignature = gpg.verifyPackageSignature as jest.Mock;
     spyVerifySignature.mockResolvedValue(undefined);
-    spyExtractJdkFile = jest.spyOn(util, 'extractJdkFile');
+    spyExtractJdkFile = util.extractJdkFile as jest.Mock;
     spyExtractJdkFile.mockResolvedValue('/tmp/extracted');
-    spyCacheDir = jest.spyOn(tc, 'cacheDir');
+    spyCacheDir = tc.cacheDir as jest.Mock;
     spyCacheDir.mockResolvedValue('/tmp/toolcache');
     spyReadDirSync = jest.spyOn(fs, 'readdirSync');
     spyReadDirSync.mockReturnValue(['jdk-17'] as any);
-    spyRenameWinArchive = jest.spyOn(util, 'renameWinArchive');
+    spyRenameWinArchive = util.renameWinArchive as jest.Mock;
     spyRenameWinArchive.mockReturnValue('/tmp/jdk.tar.gz.zip');
   });
 

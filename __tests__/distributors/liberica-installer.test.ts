@@ -1,17 +1,56 @@
-import {LibericaDistributions} from '../../src/distributions/liberica/installer';
 import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
+import type {
   ArchitectureOptions,
   LibericaVersion
-} from '../../src/distributions/liberica/models';
+} from '../../src/distributions/liberica/models.js';
 import {HttpClient} from '@actions/http-client';
 import os from 'os';
-import * as core from '@actions/core';
 
-import manifestData from '../data/liberica.json';
+import manifestData from '../data/liberica.json' with {type: 'json'};
+
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const {LibericaDistributions} =
+  await import('../../src/distributions/liberica/installer.js');
 
 describe('getAvailableVersions', () => {
-  let spyHttpClient: jest.SpyInstance;
-  let spyCoreError: jest.SpyInstance;
+  let spyHttpClient: any;
+  let spyCoreError: any;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -22,7 +61,7 @@ describe('getAvailableVersions', () => {
     });
 
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
   });
 
@@ -184,7 +223,7 @@ describe('getArchitectureOptions', () => {
 });
 
 describe('findPackageForDownload', () => {
-  let distribution: LibericaDistributions;
+  let distribution: InstanceType<typeof LibericaDistributions>;
 
   beforeEach(() => {
     distribution = new LibericaDistributions({

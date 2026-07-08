@@ -1,24 +1,63 @@
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
+import {fileURLToPath} from 'url';
 import * as io from '@actions/io';
-import * as core from '@actions/core';
 import * as fs from 'fs';
 import * as path from 'path';
 import os from 'os';
 
-import * as auth from '../src/auth';
-import {M2_DIR, MVN_SETTINGS_FILE} from '../src/constants';
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
 
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const auth = await import('../src/auth.js');
+const {M2_DIR, MVN_SETTINGS_FILE} = await import('../src/constants.js');
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const m2Dir = path.join(__dirname, M2_DIR);
 const settingsFile = path.join(m2Dir, MVN_SETTINGS_FILE);
 
 describe('auth tests', () => {
-  let spyOSHomedir: jest.SpyInstance;
-  let spyInfo: jest.SpyInstance;
+  let spyOSHomedir: any;
+  let spyInfo: any;
 
   beforeEach(async () => {
     await io.rmRF(m2Dir);
     spyOSHomedir = jest.spyOn(os, 'homedir');
     spyOSHomedir.mockReturnValue(__dirname);
-    spyInfo = jest.spyOn(core, 'info');
+    spyInfo = core.info as jest.Mock;
     spyInfo.mockImplementation(() => null);
   }, 300000);
 

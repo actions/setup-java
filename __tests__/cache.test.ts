@@ -1,23 +1,84 @@
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
 import {mkdtempSync} from 'fs';
 import {tmpdir} from 'os';
 import {join} from 'path';
-import {restore, save} from '../src/cache';
 import * as fs from 'fs';
 import * as os from 'os';
-import * as core from '@actions/core';
-import * as cache from '@actions/cache';
-import * as glob from '@actions/glob';
+
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+jest.unstable_mockModule('@actions/cache', () => ({
+  restoreCache: jest.fn(),
+  saveCache: jest.fn(),
+  isFeatureAvailable: jest.fn(),
+  ValidationError: class ValidationError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'ValidationError';
+    }
+  },
+  ReserveCacheError: class ReserveCacheError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'ReserveCacheError';
+    }
+  }
+}));
+
+jest.unstable_mockModule('@actions/glob', () => ({
+  hashFiles: jest.fn(),
+  create: jest.fn()
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const cache = await import('@actions/cache');
+const glob = await import('@actions/glob');
+const {restore, save} = await import('../src/cache.js');
 
 describe('dependency cache', () => {
   const ORIGINAL_RUNNER_OS = process.env['RUNNER_OS'];
   const ORIGINAL_GITHUB_WORKSPACE = process.env['GITHUB_WORKSPACE'];
   const ORIGINAL_CWD = process.cwd();
   let workspace: string;
-  let spyInfo: jest.SpyInstance<void, Parameters<typeof core.info>>;
-  let spyWarning: jest.SpyInstance<void, Parameters<typeof core.warning>>;
-  let spyDebug: jest.SpyInstance<void, Parameters<typeof core.debug>>;
-  let spySaveState: jest.SpyInstance<void, Parameters<typeof core.saveState>>;
-  let spyCoreError: jest.SpyInstance;
+  let spyInfo: any;
+  let spyWarning: any;
+  let spyDebug: any;
+  let spySaveState: any;
+  let spyCoreError: any;
 
   beforeEach(() => {
     workspace = mkdtempSync(join(tmpdir(), 'setup-java-cache-'));
@@ -41,20 +102,20 @@ describe('dependency cache', () => {
   });
 
   beforeEach(() => {
-    spyInfo = jest.spyOn(core, 'info');
+    spyInfo = core.info as jest.Mock;
     spyInfo.mockImplementation(() => null);
 
-    spyWarning = jest.spyOn(core, 'warning');
+    spyWarning = core.warning as jest.Mock;
     spyWarning.mockImplementation(() => null);
 
-    spyDebug = jest.spyOn(core, 'debug');
+    spyDebug = core.debug as jest.Mock;
     spyDebug.mockImplementation(() => null);
 
-    spySaveState = jest.spyOn(core, 'saveState');
+    spySaveState = core.saveState as jest.Mock;
     spySaveState.mockImplementation(() => null);
 
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
   });
 
@@ -70,22 +131,15 @@ describe('dependency cache', () => {
   });
 
   describe('restore', () => {
-    let spyCacheRestore: jest.SpyInstance<
-      ReturnType<typeof cache.restoreCache>,
-      Parameters<typeof cache.restoreCache>
-    >;
-    let spyGlobHashFiles: jest.SpyInstance<
-      ReturnType<typeof glob.hashFiles>,
-      Parameters<typeof glob.hashFiles>
-    >;
+    let spyCacheRestore: any;
+    let spyGlobHashFiles: any;
 
     beforeEach(() => {
-      spyCacheRestore = jest
-        .spyOn(cache, 'restoreCache')
-        .mockImplementation((paths: string[], primaryKey: string) =>
-          Promise.resolve(undefined)
-        );
-      spyGlobHashFiles = jest.spyOn(glob, 'hashFiles');
+      spyCacheRestore = (cache.restoreCache as any).mockImplementation(
+        (paths: string[], primaryKey: string) => Promise.resolve(undefined)
+      );
+      spyGlobHashFiles = glob.hashFiles as jest.Mock;
+      spyGlobHashFiles.mockResolvedValue('hash-stub');
       spyWarning.mockImplementation(() => null);
     });
 
@@ -97,6 +151,7 @@ describe('dependency cache', () => {
 
     describe('for maven', () => {
       it('throws error if no pom.xml or maven-wrapper.properties found', async () => {
+        spyGlobHashFiles.mockResolvedValue('');
         await expect(restore('maven', '')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
@@ -144,6 +199,7 @@ describe('dependency cache', () => {
     });
     describe('for gradle', () => {
       it('throws error if no build.gradle found', async () => {
+        spyGlobHashFiles.mockResolvedValue('');
         await expect(restore('gradle', '')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
@@ -199,6 +255,7 @@ describe('dependency cache', () => {
     });
     describe('for sbt', () => {
       it('throws error if no build.sbt found', async () => {
+        spyGlobHashFiles.mockResolvedValue('');
         await expect(restore('sbt', '')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
@@ -217,6 +274,13 @@ describe('dependency cache', () => {
         expect(spyInfo).toHaveBeenCalledWith('sbt cache is not found');
       });
       it('detects scala and sbt changes under **/project/ folder', async () => {
+        let callCount = 0;
+        spyGlobHashFiles.mockImplementation(async () => {
+          callCount++;
+          // Return same hash for first two calls, different for third
+          return callCount <= 2 ? 'hash-v1' : 'hash-v2';
+        });
+
         createFile(join(workspace, 'build.sbt'));
         createDirectory(join(workspace, 'project'));
         createFile(join(workspace, 'project/DependenciesV1.scala'));
@@ -252,6 +316,7 @@ describe('dependency cache', () => {
     });
     describe('cache-dependency-path', () => {
       it('throws error if no matching dependency file found', async () => {
+        spyGlobHashFiles.mockResolvedValue('');
         createFile(join(workspace, 'build.gradle.kts'));
         await expect(
           restore('gradle', 'sub-project/**/build.gradle.kts')
@@ -293,17 +358,12 @@ describe('dependency cache', () => {
     });
   });
   describe('save', () => {
-    let spyCacheSave: jest.SpyInstance<
-      ReturnType<typeof cache.saveCache>,
-      Parameters<typeof cache.saveCache>
-    >;
+    let spyCacheSave: any;
 
     beforeEach(() => {
-      spyCacheSave = jest
-        .spyOn(cache, 'saveCache')
-        .mockImplementation((paths: string[], key: string) =>
-          Promise.resolve(0)
-        );
+      spyCacheSave = (cache.saveCache as any).mockImplementation(
+        (paths: string[], key: string) => Promise.resolve(0)
+      );
       spyWarning.mockImplementation(() => null);
     });
 
@@ -463,14 +523,14 @@ describe('dependency cache', () => {
 });
 
 function resetState() {
-  jest.spyOn(core, 'getState').mockReset();
+  (core.getState as jest.Mock).mockReset();
 }
 
 /**
  * Create states to emulate a restore process without build file.
  */
 function createStateForMissingBuildFile() {
-  jest.spyOn(core, 'getState').mockImplementation(name => {
+  (core.getState as jest.Mock<any>).mockImplementation((name: any) => {
     switch (name) {
       case 'cache-primary-key':
         return 'setup-java-cache-';
@@ -484,7 +544,7 @@ function createStateForMissingBuildFile() {
  * Create states to emulate a successful restore process.
  */
 function createStateForSuccessfulRestore() {
-  jest.spyOn(core, 'getState').mockImplementation(name => {
+  (core.getState as jest.Mock<any>).mockImplementation((name: any) => {
     switch (name) {
       case 'cache-primary-key':
         return 'setup-java-cache-primary-key';
