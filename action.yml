@@ -19,9 +19,13 @@ inputs:
   architecture:
     description: "The architecture of the package (defaults to the action runner's architecture)"
     required: false
-  jdkFile:
+  jdk-file:
     description: 'Path to where the compressed JDK is located'
     required: false
+  jdkFile:
+    description: 'Deprecated alias for `jdk-file`. Path to where the compressed JDK is located. Use `jdk-file` instead; this alias may be removed in a future release.'
+    required: false
+    deprecationMessage: 'The `jdkFile` input is deprecated. Use `jdk-file` instead.'
   check-latest:
     description: 'Set this option if you want the action to check for the latest available version that satisfies the version spec'
     required: false

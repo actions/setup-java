@@ -21,7 +21,7 @@ async function run() {
     const versionFile = core.getInput(constants.INPUT_JAVA_VERSION_FILE);
     const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
     const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
-    const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
+    const jdkFile = getJdkFileInput();
     const cache = core.getInput(constants.INPUT_CACHE);
     const cacheDependencyPath = core.getInput(
       constants.INPUT_CACHE_DEPENDENCY_PATH
@@ -127,6 +127,19 @@ async function run() {
 }
 
 run();
+
+function getJdkFileInput(): string {
+  const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
+  const deprecatedJdkFile = core.getInput(constants.INPUT_JDK_FILE_DEPRECATED);
+
+  if (deprecatedJdkFile) {
+    core.warning(
+      `The '${constants.INPUT_JDK_FILE_DEPRECATED}' input is deprecated and may be removed in a future release. Please use '${constants.INPUT_JDK_FILE}' instead.`
+    );
+  }
+
+  return jdkFile || deprecatedJdkFile;
+}
 
 async function installVersion(
   version: string,
