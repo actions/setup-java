@@ -99607,7 +99607,11 @@ const supportedPackageManager = [
             (0,external_path_.join)(external_os_default().homedir(), '.m2', 'wrapper', 'dists')
         ],
         // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---maven
-        pattern: ['**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties']
+        pattern: [
+            '**/pom.xml',
+            '**/.mvn/wrapper/maven-wrapper.properties',
+            '**/.mvn/extensions.xml'
+        ]
     },
     {
         id: 'gradle',

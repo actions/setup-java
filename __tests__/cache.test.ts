@@ -150,12 +150,12 @@ describe('dependency cache', () => {
     });
 
     describe('for maven', () => {
-      it('throws error if no pom.xml or maven-wrapper.properties found', async () => {
+      it('throws error if no pom.xml, maven-wrapper.properties, or extensions.xml found', async () => {
         spyGlobHashFiles.mockResolvedValue('');
         await expect(restore('maven', '')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/pom.xml,**/.mvn/wrapper/maven-wrapper.properties], make sure you have checked out the target repository`
+          )} matched to [**/pom.xml,**/.mvn/wrapper/maven-wrapper.properties,**/.mvn/extensions.xml], make sure you have checked out the target repository`
         );
       });
       it('downloads cache based on pom.xml', async () => {
@@ -170,7 +170,7 @@ describe('dependency cache', () => {
           expect.any(String)
         );
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
-          '**/pom.xml\n**/.mvn/wrapper/maven-wrapper.properties'
+          '**/pom.xml\n**/.mvn/wrapper/maven-wrapper.properties\n**/.mvn/extensions.xml'
         );
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith('maven cache is not found');
@@ -191,7 +191,25 @@ describe('dependency cache', () => {
           expect.any(String)
         );
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
-          '**/pom.xml\n**/.mvn/wrapper/maven-wrapper.properties'
+          '**/pom.xml\n**/.mvn/wrapper/maven-wrapper.properties\n**/.mvn/extensions.xml'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+        expect(spyInfo).toHaveBeenCalledWith('maven cache is not found');
+      });
+      it('downloads cache based on extensions.xml', async () => {
+        createDirectory(join(workspace, '.mvn'));
+        createFile(join(workspace, '.mvn', 'extensions.xml'));
+
+        await restore('maven', '');
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [
+            join(os.homedir(), '.m2', 'repository'),
+            join(os.homedir(), '.m2', 'wrapper', 'dists')
+          ],
+          expect.any(String)
+        );
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/pom.xml\n**/.mvn/wrapper/maven-wrapper.properties\n**/.mvn/extensions.xml'
         );
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith('maven cache is not found');
