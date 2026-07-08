@@ -103,6 +103,8 @@ outputs:
     description: 'Path to where the java environment has been installed (same as $JAVA_HOME)'
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'
+  cache-primary-key:
+    description: 'The primary cache key computed by the action for the configured build tool. Empty when caching is not enabled or when caching is skipped (e.g. cache service unavailable). Useful for composing with actions/cache or actions/cache/restore across jobs.'
 runs:
   using: 'node24'
   main: 'dist/setup/index.js'
