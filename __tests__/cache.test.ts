@@ -78,6 +78,10 @@ describe('dependency cache', () => {
       ReturnType<typeof glob.hashFiles>,
       Parameters<typeof glob.hashFiles>
     >;
+    let spySetOutput: jest.SpyInstance<
+      ReturnType<typeof core.setOutput>,
+      Parameters<typeof core.setOutput>
+    >;
 
     beforeEach(() => {
       spyCacheRestore = jest
@@ -86,6 +90,7 @@ describe('dependency cache', () => {
           Promise.resolve(undefined)
         );
       spyGlobHashFiles = jest.spyOn(glob, 'hashFiles');
+      spySetOutput = jest.spyOn(core, 'setOutput').mockImplementation(() => {});
       spyWarning.mockImplementation(() => null);
     });
 
@@ -119,6 +124,15 @@ describe('dependency cache', () => {
         );
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith('maven cache is not found');
+      });
+      it('sets the cache-primary-key output', async () => {
+        createFile(join(workspace, 'pom.xml'));
+
+        await restore('maven', '');
+        expect(spySetOutput).toHaveBeenCalledWith(
+          'cache-primary-key',
+          expect.stringContaining('setup-java-')
+        );
       });
       it('downloads cache based on maven-wrapper.properties', async () => {
         createDirectory(join(workspace, '.mvn'));
