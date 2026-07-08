@@ -25,7 +25,7 @@ steps:
 - uses: actions/setup-java@v2
   with:
     distribution: 'jdkfile'
-    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    jdk-file: ${{ runner.temp }}/java_package.tar.gz
     java-version: '11.0.0'
     architecture: x64
 ```
