@@ -149,6 +149,8 @@ When the option `cache-dependency-path` is specified, the hash is based on the m
 
 The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
 
+The workflow output `cache-primary-key` exposes the primary cache key computed by the action for the configured build tool. It is useful for composing with [`actions/cache`](https://github.com/actions/cache) or [`actions/cache/restore`](https://github.com/actions/cache/tree/main/restore) in later steps or dependent jobs that need to reuse the exact same key. It is empty when caching is not enabled.
+
 The cache input is optional, and caching is turned off by default.
 
 **Maven Wrapper:** when `cache: 'maven'` is enabled, the action also caches and restores the Maven Wrapper distribution downloaded to `~/.m2/wrapper/dists` (in addition to the local repository), so wrapper-based (`./mvnw`) builds don't re-download the wrapper on every run. This is keyed on `**/.mvn/wrapper/maven-wrapper.properties` as shown above.
