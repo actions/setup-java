@@ -41,7 +41,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
 - run: java --version
 ```
 
@@ -66,8 +66,8 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'zulu'
-    java-version: '21'
-    java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
+    java-version: '25'
+    java-package: jdk # optional (jdk, jre, jdk+fx, jre+fx, jdk+crac, or jre+crac) - defaults to jdk
 - run: java --version
 ```
 
@@ -79,7 +79,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'liberica'
-    java-version: '21'
+    java-version: '25'
     java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
 - run: java --version
 ```
@@ -92,7 +92,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'microsoft'
-    java-version: '21'
+    java-version: '25'
 - run: java --version
 ```
 
@@ -107,7 +107,7 @@ uses: actions/setup-java@v5
 with:
   token: ${{ secrets.GH_DOTCOM_TOKEN }}
   distribution: 'microsoft'
-  java-version: '21'
+  java-version: '25'
 ```
 
 If the runner is not able to access github.com, any Java versions requested during a workflow run must come from the runner's tool cache. See "[Setting up the tool cache on self-hosted runners without internet access](https://docs.github.com/en/enterprise-server@3.2/admin/github-actions/managing-access-to-actions-from-githubcom/setting-up-the-tool-cache-on-self-hosted-runners-without-internet-access)" for more information.
@@ -121,7 +121,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'corretto'
-    java-version: '21'
+    java-version: '25'
 - run: java --version
 ```
 
@@ -134,7 +134,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'oracle'
-    java-version: '21'
+    java-version: '25'
 - run: java --version
 ```
 
@@ -159,7 +159,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'sapmachine'
-    java-version: '21'
+    java-version: '25'
 - run: java --version
 ```
 
@@ -172,7 +172,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'graalvm'
-    java-version: '21'
+    java-version: '25'
 - run: |
     java --version
     native-image --version
@@ -256,7 +256,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: '<distribution>'
-    java-version: '11'
+    java-version: '25'
     java-package: jdk # optional (jdk or jre) - defaults to jdk
 - run: java --version
 ```
@@ -271,7 +271,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'zulu'
-    java-version: '21'
+    java-version: '25'
     java-package: jdk+fx
     cache: maven
 - name: Build with Maven
@@ -293,7 +293,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: '<distribution>'
-    java-version: '11'
+    java-version: '25'
     architecture: x86 # optional - default value derived from the runner machine
 - run: java --version
 ```
