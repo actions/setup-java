@@ -179,9 +179,11 @@ export function getVersionFromFileContent(
   if (versionFileName == '.tool-versions' && match?.groups?.distribution) {
     const asdfDist = match.groups.distribution;
     extractedDistribution = mapAsdfDistribution(asdfDist);
-    core.debug(
-      `Parsed distribution '${extractedDistribution}' from asdf identifier '${asdfDist}'`
-    );
+    if (extractedDistribution) {
+      core.debug(
+        `Parsed distribution '${extractedDistribution}' from asdf identifier '${asdfDist}'`
+      );
+    }
   }
 
   core.debug(
