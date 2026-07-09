@@ -334,8 +334,10 @@ steps:
 ```
 
 Separate seed job — useful for a matrix where different legs run different goals
-(`test`, `verify`, `-Pprofile1`, …) but all share the same `~/.m2` cache. The
-seed job creates a comprehensive cache that the other jobs then reuse:
+(`test`, `check`, `verify`, `-Pprofile1`, ...) but all share the same `~/.m2`
+cache. Without a seed, whichever job finishes first creates the cache from its
+own partial `.m2`, and parallel jobs race to save an equally partial cache; the
+seed job instead creates one comprehensive cache that every other job reuses:
 
 ```yaml
 jobs:
