@@ -364,15 +364,28 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
       throw new Error('GraalVM Community does not provide early access builds');
     }
 
-    // The `latest` alias is normalized to the SemVer wildcard. Resolve the newest
-    // available GA major from the Adoptium API so it can be matched against the
-    // published GraalVM Community releases.
+    const arch = this.getSupportedArchitecture();
+
+    // GraalVM Community publishes its releases on GitHub, so the `latest` alias
+    // (normalized to the SemVer wildcard `x`) can float to the newest GA it
+    // actually ships. Unlike Oracle GraalVM (which has no listing endpoint and
+    // must derive the newest major from the Adoptium API), we match against the
+    // real release list here, so `latest` never fails when GraalVM lags behind a
+    // brand-new Java major.
+    let platform: OsVersions;
+    let extension: string;
     if (this.latest) {
-      range = (await getLatestMajorVersion(this.http)).toString();
+      if (this.packageType !== 'jdk') {
+        throw new Error(
+          `${this.distribution} provides only the \`jdk\` package type`
+        );
+      }
+      platform = this.getPlatform();
+      extension = getDownloadArchiveExtension();
+    } else {
+      ({platform, extension} = this.validateStableBuildRequest(range));
     }
 
-    const arch = this.getSupportedArchitecture();
-    const {platform, extension} = this.validateStableBuildRequest(range);
     // GraalVM Community asset names embed the platform, architecture and
     // archive type, e.g. `graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz`.
     const assetSuffix = `_${platform}-${arch}_bin.${extension}`;

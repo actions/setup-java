@@ -1170,6 +1170,60 @@ describe('GraalVMDistribution', () => {
         });
       });
 
+      it('resolves latest to the newest GA across all Community majors without calling Adoptium', async () => {
+        const latestCommunity = new GraalVMCommunityDistribution({
+          ...defaultOptions,
+          version: 'latest'
+        });
+        (latestCommunity as any).http = mockHttpClient;
+        jest.spyOn(latestCommunity, 'getPlatform').mockReturnValue('linux');
+
+        mockHttpClient.getJson.mockResolvedValue({
+          result: [
+            {
+              draft: false,
+              prerelease: false,
+              assets: [
+                {
+                  name: 'graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
+                  browser_download_url:
+                    'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz'
+                }
+              ]
+            },
+            {
+              draft: false,
+              prerelease: false,
+              assets: [
+                {
+                  name: 'graalvm-community-jdk-24.0.1_linux-x64_bin.tar.gz',
+                  browser_download_url:
+                    'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-24.0.1/graalvm-community-jdk-24.0.1_linux-x64_bin.tar.gz'
+                }
+              ]
+            }
+          ],
+          statusCode: 200,
+          headers: {}
+        });
+
+        const result = await (latestCommunity as any).findPackageForDownload(
+          'x'
+        );
+
+        expect(result).toEqual({
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-24.0.1/graalvm-community-jdk-24.0.1_linux-x64_bin.tar.gz',
+          version: '24.0.1'
+        });
+        // The Community release list is authoritative, so the Adoptium
+        // most_recent_feature_release endpoint must not be consulted.
+        expect(mockHttpClient.getJson).toHaveBeenCalledTimes(1);
+        expect(mockHttpClient.getJson).toHaveBeenCalledWith(
+          expect.stringContaining('graalvm-ce-builds/releases'),
+          expect.anything()
+        );
+      });
+
       it('should reject GraalVM Community early access requests', async () => {
         (communityDistribution as any).stable = false;
 
