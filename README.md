@@ -189,6 +189,46 @@ steps:
   run: mvn -B package --file pom.xml
 ```
 
+##### Ensuring plugin dependencies are cached
+
+Maven resolves **plugin** dependencies lazily — only for the goals that actually
+run. This means the job that first creates the cache determines what gets saved:
+a run that only executes `mvn compile` never resolves plugins bound to later
+phases (for example `maven-shade-plugin` and its dependencies `plexus-archiver`,
+`commons-compress`, `aircompressor`, `xz`), so those artifacts are missing from
+the cache and get re-downloaded by every subsequent `test`/`verify`/`package`
+job. Because the action does not re-save the cache on a hit, once an incomplete
+cache exists it is never completed.
+
+To populate `~/.m2` as comprehensively as possible on the run that creates the
+cache, add a **seed** step that resolves project *and* plugin dependencies before
+your build:
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'temurin'
+    java-version: '25'
+    cache: 'maven'
+- name: Seed the Maven cache (resolve project + plugin dependencies)
+  run: mvn -B dependency:go-offline dependency:resolve-plugins
+- name: Build with Maven
+  run: mvn -B verify --file pom.xml
+```
+
+> [!NOTE]
+> The seed only helps on the run that *creates* the cache for the current
+> `pom.xml` hash. On an existing repository whose cache is already incomplete,
+> later runs get a cache hit and the extra downloads are not saved — invalidate
+> the cache once (for example by changing `cache-dependency-path` or clearing the
+> repository's caches) so a complete cache is created. Static resolution is also
+> not exhaustive (profile-gated plugins, conditionally-active modules, and
+> artifacts a plugin fetches at execution time can still be missed). See
+> [Ensuring the Maven cache is complete](docs/advanced-usage.md#ensuring-the-maven-cache-is-complete-plugin-dependencies)
+> in the Advanced usage guide for a fuller explanation and examples.
+
 #### Caching sbt dependencies
 ```yaml
 steps:
