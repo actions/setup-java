@@ -104,6 +104,7 @@ steps:
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation. The values below are examples, not an exhaustive list:
 - major versions, such as: `8`, `11`, `16`, `17`, `21`, `25`
 - more specific versions: `8.0.282+8`, `8.0.232`, `11.0`, `11.0.4`, `17.0`
+- multi-field Java versions (JEP 322), such as: `11.0.9.1`, `18.0.1.1`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`
 - the `latest` alias, which floats to the newest available stable (GA) release
 
@@ -196,6 +197,13 @@ steps:
 - name: Build with Maven
   run: mvn -B package --file pom.xml
 ```
+
+> [!NOTE]
+> Maven resolves plugin dependencies lazily, so a cache created by a "thin" goal
+> (e.g. `mvn compile`) can be missing plugin dependencies that later
+> `test`/`verify`/`package` jobs then re-download on every run. See
+> [Ensuring the Maven cache is complete](docs/advanced-usage.md#ensuring-the-maven-cache-is-complete-plugin-dependencies)
+> for how to seed a complete cache.
 
 #### Caching sbt dependencies
 ```yaml

@@ -15,6 +15,7 @@
   - [Tencent Kona](#Tencent-Kona)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
   - [JavaFX Maven project](#JavaFX-Maven-project)
+- [Ensuring the Maven cache is complete (plugin dependencies)](#ensuring-the-maven-cache-is-complete-plugin-dependencies)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing JDK without setting as default](#Installing-JDK-without-setting-as-default)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -284,6 +285,117 @@ To run the JavaFX application in CI:
 - name: Run with Maven
   run: mvn --no-transfer-progress javafx:run
 ```
+
+## Ensuring the Maven cache is complete (plugin dependencies)
+
+When you enable `cache: maven`, the action caches your local Maven repository
+(`~/.m2/repository`) keyed on a hash of your `pom.xml` files, and — at the end of
+the job — saves whatever was downloaded during that run. It does **not** re-save
+the cache when the key already matches (a cache *hit*).
+
+Maven resolves **plugin** dependencies lazily: it only downloads the plugins and
+plugin dependencies required by the goals that actually execute. As a result, the
+run that first creates the cache determines what is stored. If that run executed a
+"thin" goal such as `mvn compile`, plugins bound to later phases are never
+resolved. For example, `maven-shade-plugin` (bound to `package`) pulls in
+`plexus-archiver`, `commons-compress`, `io.airlift:aircompressor` and
+`org.tukaani:xz` — none of which a `compile` run downloads. Those artifacts are
+therefore absent from the cache, and because the action does not re-save on a
+hit, every later `test`/`verify`/`package` job re-downloads them on every run.
+
+### Seed the cache with a resolution step
+
+To populate `~/.m2` as comprehensively as possible on the run that creates the
+cache, run a dependency-resolution "seed" command before your build. Choose a
+command based on how thorough you need it to be:
+
+| Seed command | Resolves plugin dependencies? | Notes |
+|--------------|:-----------------------------:|-------|
+| `mvn dependency:resolve` | No | Resolves project dependencies only — misses plugin dependencies (e.g. `aircompressor`). |
+| `mvn dependency:resolve-plugins` | Yes | Resolves plugins **and their dependencies**. |
+| `mvn dependency:go-offline` | Yes | Resolves project and plugin dependencies (a superset). |
+| `mvn dependency:go-offline dependency:resolve-plugins` | Yes (most thorough) | Recommended default. Use `dependency:resolve dependency:resolve-plugins` if `go-offline` is flaky or insufficient for your project. |
+
+Single job — seed, then build (the cache saved at the end of this run contains
+the full set):
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'temurin'
+    java-version: '25'
+    cache: 'maven'
+- name: Seed the Maven cache
+  run: mvn -B dependency:go-offline dependency:resolve-plugins
+- name: Build with Maven
+  run: mvn -B verify --file pom.xml
+```
+
+Separate seed job — useful for a matrix where different legs run different goals
+(`test`, `check`, `verify`, `-Pprofile1`, ...) but all share the same `~/.m2`
+cache. Without a seed, whichever job finishes first creates the cache from its
+own partial `.m2`, and parallel jobs race to save an equally partial cache; the
+seed job instead creates one comprehensive cache that every other job reuses:
+
+```yaml
+jobs:
+  seed-cache:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-java@v5
+      with:
+        distribution: 'temurin'
+        java-version: '25'
+        cache: 'maven'
+    - name: Seed the Maven cache
+      run: mvn -B dependency:go-offline dependency:resolve-plugins
+
+  build:
+    needs: seed-cache
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goal: ['test', 'verify', 'test -Pprofile1']
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-java@v5
+      with:
+        distribution: 'temurin'
+        java-version: '25'
+        cache: 'maven'
+    - name: Build
+      run: mvn -B ${{ matrix.goal }} --file pom.xml
+```
+
+### Caveats
+
+- **The seed only helps on the run that creates the cache.** Once a cache exists
+  for the current `pom.xml` hash, later runs get a hit and any additional
+  downloads are not saved. On an existing repository whose cache is already
+  incomplete, invalidate it once (for example by changing `cache-dependency-path`
+  or deleting the repository's caches) so a complete cache is created from the
+  seed.
+- **Static resolution is not exhaustive.** `go-offline`/`resolve-plugins` resolve
+  the statically declared plugin set for the *active* profiles and modules.
+  Profile-gated plugins, conditionally-active modules, and artifacts a plugin
+  fetches at execution time may still be missed. For the most complete cache,
+  seed with the fullest goal set your CI actually uses (for example
+  `mvn -B verify` with every profile enabled).
+- **Multi-module projects:** run the seed at the reactor root so every module's
+  plugins are resolved.
+
+> [!NOTE]
+> The same "the cache stores only what the creating run downloaded, and is not
+> re-saved on a hit" behavior applies to `cache: gradle`, since Gradle also
+> resolves dependencies and plugin/buildscript classpaths lazily. Gradle has no
+> direct equivalent of `dependency:go-offline`, so for complete and fine-grained
+> dependency caching on Gradle projects we recommend
+> [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle),
+> which provides purpose-built caching (see the
+> [setup-gradle documentation](https://github.com/gradle/actions/blob/main/docs/setup-gradle.md)).
 
 ## Installing custom Java architecture
 

@@ -4,7 +4,11 @@ import * as fs from 'fs';
 import semver from 'semver';
 import path from 'path';
 import * as httpm from '@actions/http-client';
-import {getToolcachePath, isVersionSatisfies} from '../util.js';
+import {
+  convertVersionToSemver,
+  getToolcachePath,
+  isVersionSatisfies
+} from '../util.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
@@ -286,6 +290,15 @@ export abstract class JavaBase {
       // transform '11.0.3-ea.2' -> '11.0.3+2'
       version = version.replace('-ea.', '+');
       stable = false;
+    }
+
+    // Java uses a versioning scheme (JEP 322) that can contain more numeric
+    // fields than SemVer allows, e.g. '18.0.1.1' or '11.0.9.1'. Convert such
+    // exact versions to SemVer build notation ('18.0.1+1') so they are
+    // accepted. Ranges and versions that already carry build metadata are
+    // left untouched.
+    if (/^\d+(\.\d+){3,}$/.test(version)) {
+      version = convertVersionToSemver(version);
     }
 
     if (!semver.validRange(version)) {
