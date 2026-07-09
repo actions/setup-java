@@ -385,6 +385,16 @@ jobs:
 - **Multi-module projects:** run the seed at the reactor root so every module's
   plugins are resolved.
 
+> [!NOTE]
+> The same "the cache stores only what the creating run downloaded, and is not
+> re-saved on a hit" behavior applies to `cache: gradle`, since Gradle also
+> resolves dependencies and plugin/buildscript classpaths lazily. Gradle has no
+> direct equivalent of `dependency:go-offline`, so for complete and fine-grained
+> dependency caching on Gradle projects we recommend
+> [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle),
+> which provides purpose-built caching (see the
+> [setup-gradle documentation](https://github.com/gradle/actions/blob/main/docs/setup-gradle.md)).
+
 ## Installing custom Java architecture
 
 ```yaml
