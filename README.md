@@ -18,9 +18,9 @@ The `setup-java` action provides the following functionality for GitHub Actions 
 
 This action allows you to work with Java and Scala projects.
 
-## Breaking changes in V6
+## What's new in V6
 
-- **Migrated to ESM** to enable support for the latest `@actions/*` package versions.
+- **Migrated to ESM** to enable support for the latest `@actions/*` package versions. This is an internal implementation change only. No changes are required to your workflow configuration, and the action's behavior is unchanged. Existing builds continue to work as before.
 
 ## Breaking changes in V5
 
