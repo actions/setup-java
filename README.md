@@ -190,6 +190,13 @@ steps:
   run: mvn -B package --file pom.xml
 ```
 
+> [!NOTE]
+> Maven resolves plugin dependencies lazily, so a cache created by a "thin" goal
+> (e.g. `mvn compile`) can be missing plugin dependencies that later
+> `test`/`verify`/`package` jobs then re-download on every run. See
+> [Ensuring the Maven cache is complete](docs/advanced-usage.md#ensuring-the-maven-cache-is-complete-plugin-dependencies)
+> for how to seed a complete cache.
+
 #### Caching sbt dependencies
 ```yaml
 steps:
