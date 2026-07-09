@@ -312,6 +312,24 @@ describe('findPackageForDownload', () => {
     expect(resolvedVersion.signatureUrl).toBeDefined();
   });
 
+  it('version "latest" is normalized to the newest available version', async () => {
+    const distribution = new TemurinDistribution(
+      {
+        version: 'latest',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
+      TemurinImplementation.Hotspot
+    );
+    distribution['getAvailableVersions'] = async () => manifestData as any;
+    // normalizeVersion turns `latest` into the wildcard carried on `this.version`
+    const resolvedVersion = await distribution['findPackageForDownload'](
+      distribution['version']
+    );
+    expect(resolvedVersion.version).toBe('16.0.2+7');
+  });
+
   it('version is found but binaries list is empty', async () => {
     const distribution = new TemurinDistribution(
       {

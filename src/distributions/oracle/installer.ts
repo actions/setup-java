@@ -13,6 +13,7 @@ import {
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
+  getLatestMajorVersion,
   renameWinArchive
 } from '../../util.js';
 import {HttpCodes} from '@actions/http-client';
@@ -73,6 +74,14 @@ export class OracleDistribution extends JavaBase {
     const platform = this.getPlatform();
     const extension = getDownloadArchiveExtension();
 
+    // The `latest` alias is normalized to the SemVer wildcard. Oracle builds its
+    // download URLs from a concrete major and has no endpoint to list releases,
+    // so resolve the newest available GA major from the Adoptium API and use it.
+    if (this.latest) {
+      const latestMajor = await getLatestMajorVersion(this.http);
+      range = latestMajor.toString();
+    }
+
     const isOnlyMajorProvided = !range.includes('.');
     const major = isOnlyMajorProvided ? range : range.split('.')[0];
 
@@ -111,6 +120,12 @@ export class OracleDistribution extends JavaBase {
           `Http request for Oracle JDK failed with status code: ${response.message.statusCode}`
         );
       }
+    }
+
+    if (this.latest) {
+      const error = this.createVersionNotFoundError(range);
+      error.message += `\nThe latest Java major version (${range}) is not yet available for the Oracle JDK distribution. Please specify a concrete version instead of 'latest'.`;
+      throw error;
     }
 
     throw this.createVersionNotFoundError(range);

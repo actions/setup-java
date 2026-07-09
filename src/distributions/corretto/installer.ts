@@ -59,10 +59,22 @@ export class CorrettoDistribution extends JavaBase {
     if (!this.stable) {
       throw new Error('Early access versions are not supported');
     }
+    const availableVersions = await this.getAvailableVersions();
+
+    // The `latest` alias is normalized to the SemVer wildcard, but Corretto
+    // matches on an exact major version, so resolve it to the newest available
+    // major from Corretto's own list.
+    if (this.latest) {
+      const latestMajor = availableVersions
+        .map(item => parseInt(item.version, 10))
+        .filter(major => !Number.isNaN(major))
+        .reduce((max, current) => (current > max ? current : max), 0);
+      version = latestMajor.toString();
+    }
+
     if (version.includes('.')) {
       throw new Error('Only major versions are supported');
     }
-    const availableVersions = await this.getAvailableVersions();
     const matchingVersions = availableVersions
       .filter(item => item.version == version)
       .map(item => {

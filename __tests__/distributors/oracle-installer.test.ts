@@ -174,3 +174,59 @@ describe('findPackageForDownload', () => {
     );
   });
 });
+describe('findPackageForDownload with latest', () => {
+  let spyHttpClientHead: any;
+  let spyHttpClientGetJson: any;
+
+  beforeEach(() => {
+    (core.debug as jest.Mock).mockImplementation(() => {});
+    (core.error as jest.Mock).mockImplementation(() => {});
+    spyHttpClientGetJson = jest.spyOn(HttpClient.prototype, 'getJson');
+    spyHttpClientGetJson.mockResolvedValue({
+      statusCode: 200,
+      result: {most_recent_feature_release: 25},
+      headers: {}
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('resolves the newest major version from the Adoptium API', async () => {
+    spyHttpClientHead = jest.spyOn(HttpClient.prototype, 'head');
+    spyHttpClientHead.mockResolvedValue({message: {statusCode: 200}});
+
+    const distribution = new OracleDistribution({
+      version: 'latest',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    const result = await distribution['findPackageForDownload']('x');
+    const osType = distribution.getPlatform();
+    const archiveType = getDownloadArchiveExtension();
+
+    expect(result.version).toBe('25');
+    expect(result.url).toBe(
+      `https://download.oracle.com/java/25/latest/jdk-25_${osType}-x64_bin.${archiveType}`
+    );
+  });
+
+  it('throws an actionable error when the latest major is not yet available', async () => {
+    spyHttpClientHead = jest.spyOn(HttpClient.prototype, 'head');
+    spyHttpClientHead.mockResolvedValue({message: {statusCode: 404}});
+
+    const distribution = new OracleDistribution({
+      version: 'latest',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    await expect(distribution['findPackageForDownload']('x')).rejects.toThrow(
+      /is not yet available for the Oracle JDK distribution/
+    );
+  });
+});

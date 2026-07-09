@@ -16,6 +16,7 @@ import {
   extractJdkFile,
   getDownloadArchiveExtension,
   getGitHubHttpHeaders,
+  getLatestMajorVersion,
   getNextPageUrlFromLinkHeader,
   isVersionSatisfies,
   MAX_PAGINATION_PAGES,
@@ -119,6 +120,13 @@ export class GraalVMDistribution extends JavaBase {
       return this.findEABuildDownloadUrl(`${range}-ea`);
     }
 
+    // The `latest` alias is normalized to the SemVer wildcard. Oracle GraalVM
+    // builds its download URLs from a concrete major and has no endpoint to list
+    // releases, so resolve the newest available GA major from the Adoptium API.
+    if (this.latest) {
+      range = (await getLatestMajorVersion(this.http)).toString();
+    }
+
     const {platform, extension, major} = this.validateStableBuildRequest(range);
 
     const fileUrl = this.constructFileUrl(
@@ -203,6 +211,9 @@ export class GraalVMDistribution extends JavaBase {
     if (statusCode === HttpCodes.NotFound) {
       // Create the standard error with additional hint about checking the download URL
       const error = this.createVersionNotFoundError(range);
+      if (this.latest) {
+        error.message += `\nThe latest Java major version (${range}) is not yet available for the ${this.distribution} distribution. Please specify a concrete version instead of 'latest'.`;
+      }
       error.message += `\nPlease check if this version is available at ${GRAALVM_DOWNLOAD_URL} . Pick a version from the list.`;
       throw error;
     }
@@ -351,6 +362,13 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
 
     if (!this.stable) {
       throw new Error('GraalVM Community does not provide early access builds');
+    }
+
+    // The `latest` alias is normalized to the SemVer wildcard. Resolve the newest
+    // available GA major from the Adoptium API so it can be matched against the
+    // published GraalVM Community releases.
+    if (this.latest) {
+      range = (await getLatestMajorVersion(this.http)).toString();
     }
 
     const arch = this.getSupportedArchitecture();

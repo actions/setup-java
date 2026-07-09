@@ -204,6 +204,24 @@ describe('getAvailableVersions', () => {
       expect(availableVersion.url).toBe(expectedLink);
     });
 
+    it('with latest resolves to the newest available major version', async () => {
+      const distribution = new CorrettoDistribution({
+        version: 'latest',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      mockPlatform(distribution, 'linux');
+
+      const availableVersion =
+        await distribution['findPackageForDownload']('x');
+      expect(availableVersion).not.toBeNull();
+      // 18 is the newest major present in the mocked Corretto index
+      expect(availableVersion.url).toBe(
+        'https://corretto.aws/downloads/resources/18.0.0.37.1/amazon-corretto-18.0.0.37.1-linux-x64.tar.gz'
+      );
+    });
+
     it('with unstable version expect to throw not supported error', async () => {
       const version = '18.0.1-ea';
       const distribution = new CorrettoDistribution({

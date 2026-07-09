@@ -22,6 +22,12 @@ export class LocalDistribution extends JavaBase {
   }
 
   public async setupJava(): Promise<JavaInstallerResults> {
+    if (this.latest) {
+      throw new Error(
+        "The 'latest' version alias is not supported for the 'jdkfile' distribution. Please specify a concrete version."
+      );
+    }
+
     let foundJava = this.findInToolcache();
 
     if (foundJava) {

@@ -19,6 +19,7 @@ export abstract class JavaBase {
   protected architecture: string;
   protected packageType: string;
   protected stable: boolean;
+  protected latest: boolean;
   protected checkLatest: boolean;
   protected setDefault: boolean;
   protected verifySignature: boolean;
@@ -33,9 +34,11 @@ export abstract class JavaBase {
       maxRetries: 3
     });
 
-    ({version: this.version, stable: this.stable} = this.normalizeVersion(
-      installerOptions.version
-    ));
+    ({
+      version: this.version,
+      stable: this.stable,
+      latest: this.latest
+    } = this.normalizeVersion(installerOptions.version));
     this.architecture = installerOptions.architecture || os.arch();
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
@@ -62,7 +65,7 @@ export abstract class JavaBase {
     }
 
     let foundJava = this.findInToolcache();
-    if (foundJava && !this.checkLatest) {
+    if (foundJava && !this.checkLatest && !this.latest) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
       core.info('Trying to resolve the latest version from remote');
@@ -263,6 +266,18 @@ export abstract class JavaBase {
 
   protected normalizeVersion(version: string) {
     let stable = true;
+    const latest = false;
+
+    // Support the `latest` alias (case-insensitive), which floats to the newest
+    // available stable/GA release. It is translated to the SemVer wildcard `x`
+    // so the existing "newest satisfying version wins" resolution applies.
+    if (version.trim().toLowerCase() === 'latest') {
+      return {
+        version: 'x',
+        stable: true,
+        latest: true
+      };
+    }
 
     if (version.endsWith('-ea')) {
       version = version.replace(/-ea$/, '');
@@ -281,7 +296,8 @@ export abstract class JavaBase {
 
     return {
       version,
-      stable
+      stable,
+      latest
     };
   }
 

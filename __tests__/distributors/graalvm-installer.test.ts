@@ -417,6 +417,61 @@ describe('GraalVMDistribution', () => {
         );
       });
 
+      describe('latest alias', () => {
+        it('resolves the newest major version from the Adoptium API', async () => {
+          const latestDistribution = new GraalVMDistribution({
+            ...defaultOptions,
+            version: 'latest'
+          });
+          (latestDistribution as any).http = mockHttpClient;
+          jest
+            .spyOn(latestDistribution, 'getPlatform')
+            .mockReturnValue('linux');
+          mockHttpClient.getJson.mockResolvedValue({
+            statusCode: 200,
+            result: {most_recent_feature_release: 25},
+            headers: {}
+          });
+          mockHttpClient.head.mockResolvedValue({
+            message: {statusCode: 200}
+          });
+
+          const result = await (
+            latestDistribution as any
+          ).findPackageForDownload('x');
+
+          expect(result).toEqual({
+            url: 'https://download.oracle.com/graalvm/25/latest/graalvm-jdk-25_linux-x64_bin.tar.gz',
+            version: '25'
+          });
+        });
+
+        it('throws an actionable error when the latest major is not yet available', async () => {
+          const latestDistribution = new GraalVMDistribution({
+            ...defaultOptions,
+            version: 'latest'
+          });
+          (latestDistribution as any).http = mockHttpClient;
+          jest
+            .spyOn(latestDistribution, 'getPlatform')
+            .mockReturnValue('linux');
+          mockHttpClient.getJson.mockResolvedValue({
+            statusCode: 200,
+            result: {most_recent_feature_release: 25},
+            headers: {}
+          });
+          mockHttpClient.head.mockResolvedValue({
+            message: {statusCode: 404}
+          });
+
+          await expect(
+            (latestDistribution as any).findPackageForDownload('x')
+          ).rejects.toThrow(
+            /is not yet available for the GraalVM distribution/
+          );
+        });
+      });
+
       it('should throw error for JDK versions less than 17', async () => {
         await expect(
           (distribution as any).findPackageForDownload('11')

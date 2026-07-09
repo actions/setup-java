@@ -420,6 +420,29 @@ describe('setupJava', () => {
     expect(spyCoreInfo).not.toHaveBeenCalledWith('Trying to download...');
   });
 
+  it('should resolve the latest version from remote when java-version is "latest", even if a version is cached', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: 'latest',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: actualJavaVersion,
+      path: javaPathInstalled
+    });
+
+    // `latest` must bypass the tool-cache short-circuit and always resolve remotely
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      'Trying to resolve the latest version from remote'
+    );
+    expect(spyCoreInfo).toHaveBeenCalledWith('Trying to download...');
+    expect(spyCoreInfo).not.toHaveBeenCalledWith(
+      `Resolved Java ${installedJavaVersion} from tool-cache`
+    );
+  });
+
   it.each([
     [
       {
@@ -744,11 +767,14 @@ describe('normalizeVersion', () => {
   const DummyJavaBase = JavaBase as any;
 
   it.each([
-    ['11', {version: '11', stable: true}],
-    ['11.0', {version: '11.0', stable: true}],
-    ['11.0.10', {version: '11.0.10', stable: true}],
-    ['11-ea', {version: '11', stable: false}],
-    ['11.0.2-ea', {version: '11.0.2', stable: false}]
+    ['11', {version: '11', stable: true, latest: false}],
+    ['11.0', {version: '11.0', stable: true, latest: false}],
+    ['11.0.10', {version: '11.0.10', stable: true, latest: false}],
+    ['11-ea', {version: '11', stable: false, latest: false}],
+    ['11.0.2-ea', {version: '11.0.2', stable: false, latest: false}],
+    ['latest', {version: 'x', stable: true, latest: true}],
+    ['LATEST', {version: 'x', stable: true, latest: true}],
+    ['  Latest  ', {version: 'x', stable: true, latest: true}]
   ])('normalizeVersion from %s to %s', (input, expected) => {
     expect(DummyJavaBase.prototype.normalizeVersion.call(null, input)).toEqual(
       expected
