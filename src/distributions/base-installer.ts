@@ -275,12 +275,24 @@ export abstract class JavaBase {
     // Support the `latest` alias (case-insensitive), which floats to the newest
     // available stable/GA release. It is translated to the SemVer wildcard `x`
     // so the existing "newest satisfying version wins" resolution applies.
-    if (version.trim().toLowerCase() === 'latest') {
+    const normalized = version.trim().toLowerCase();
+    if (normalized === 'latest') {
       return {
         version: 'x',
         stable: true,
         latest: true
       };
+    }
+
+    // Reject `latest` combined with any qualifier (e.g. `latest-ea`). Such inputs
+    // would otherwise have their `-ea` suffix stripped and fall through to the
+    // generic SemVer check, which fails with a confusing "'latest' is not valid
+    // SemVer" message even though `latest` is a supported value. Fail early with a
+    // targeted explanation instead.
+    if (normalized.startsWith('latest')) {
+      throw new Error(
+        `The 'latest' alias resolves stable (GA) releases only and cannot be combined with '-ea' or other qualifiers (received '${version}'). Use 'latest' on its own, or specify a concrete version.`
+      );
     }
 
     if (version.endsWith('-ea')) {

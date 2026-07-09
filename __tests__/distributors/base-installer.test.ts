@@ -793,6 +793,17 @@ describe('normalizeVersion', () => {
       `The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`
     );
   });
+
+  it.each(['latest-ea', 'latest.1', 'LATEST-EA', '  latest-ea  '])(
+    'normalizeVersion should throw a targeted error for latest combined with a qualifier (%s)',
+    version => {
+      expect(
+        DummyJavaBase.prototype.normalizeVersion.bind(null, version)
+      ).toThrow(
+        `The 'latest' alias resolves stable (GA) releases only and cannot be combined with '-ea' or other qualifiers (received '${version}'). Use 'latest' on its own, or specify a concrete version.`
+      );
+    }
+  );
 });
 
 describe('createVersionNotFoundError', () => {
