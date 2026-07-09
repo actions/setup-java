@@ -65,11 +65,17 @@ export class CorrettoDistribution extends JavaBase {
     // matches on an exact major version, so resolve it to the newest available
     // major from Corretto's own list.
     if (this.latest) {
-      const latestMajor = availableVersions
+      const majors = availableVersions
         .map(item => parseInt(item.version, 10))
-        .filter(major => !Number.isNaN(major))
-        .reduce((max, current) => (current > max ? current : max), 0);
-      version = latestMajor.toString();
+        .filter(major => Number.isFinite(major) && major > 0);
+
+      if (majors.length === 0) {
+        throw new Error(
+          'Could not determine the latest available Corretto major version from remote metadata'
+        );
+      }
+
+      version = Math.max(...majors).toString();
     }
 
     if (version.includes('.')) {
