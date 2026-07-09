@@ -104,6 +104,7 @@ steps:
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation. The values below are examples, not an exhaustive list:
 - major versions, such as: `8`, `11`, `16`, `17`, `21`, `25`
 - more specific versions: `8.0.282+8`, `8.0.232`, `11.0`, `11.0.4`, `17.0`
+- multi-field Java versions (JEP 322), such as: `11.0.9.1`, `18.0.1.1`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`
 
 #### Supported distributions

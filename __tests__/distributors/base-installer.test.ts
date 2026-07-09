@@ -748,7 +748,11 @@ describe('normalizeVersion', () => {
     ['11.0', {version: '11.0', stable: true}],
     ['11.0.10', {version: '11.0.10', stable: true}],
     ['11-ea', {version: '11', stable: false}],
-    ['11.0.2-ea', {version: '11.0.2', stable: false}]
+    ['11.0.2-ea', {version: '11.0.2', stable: false}],
+    ['18.0.1.1', {version: '18.0.1+1', stable: true}],
+    ['11.0.9.1', {version: '11.0.9+1', stable: true}],
+    ['12.0.2.1.0', {version: '12.0.2+1.0', stable: true}],
+    ['18.0.1.1-ea', {version: '18.0.1+1', stable: false}]
   ])('normalizeVersion from %s to %s', (input, expected) => {
     expect(DummyJavaBase.prototype.normalizeVersion.call(null, input)).toEqual(
       expected
