@@ -99735,7 +99735,7 @@ async function restore(id, cacheDependencyPath) {
     const primaryKey = await computeCacheKey(packageManager, cacheDependencyPath);
     core.debug(`primary key is ${primaryKey}`);
     core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
-    core.setOutput('cache-primary-key', primaryKey);
+    core.setOutput(STATE_CACHE_PRIMARY_KEY, primaryKey);
     // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
     const matchedKey = await cache.restoreCache(packageManager.path, primaryKey);
     if (matchedKey) {
