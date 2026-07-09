@@ -20,7 +20,7 @@ This action allows you to work with Java and Scala projects.
 
 ## What's new in V6
 
-- **Migrated to ESM** to enable support for the latest `@actions/*` package versions. This is an internal implementation change only. No changes are required to your workflow configuration, and the action's behavior is unchanged. Existing builds continue to work as before.
+- **Migrated to ESM** to enable support for the latest `@actions/*` package versions. This is an internal implementation change only. No changes are required to your workflow configuration, and the action's behavior is unchanged. Existing workflows continue to work as before.
 
 ## Breaking changes in V5
 
