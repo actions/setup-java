@@ -72,10 +72,7 @@ const supportedPackageManager: PackageManager[] = [
   },
   {
     id: 'gradle',
-    path: [
-      join(os.homedir(), '.gradle', 'caches'),
-      join(os.homedir(), '.gradle', 'wrapper')
-    ],
+    path: [join(os.homedir(), '.gradle', 'caches')],
     // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---gradle
     pattern: [
       '**/*.gradle*',
@@ -84,6 +81,17 @@ const supportedPackageManager: PackageManager[] = [
       'buildSrc/**/Dependencies.kt',
       'gradle/*.versions.toml',
       '**/versions.properties'
+    ],
+    // The Gradle wrapper distribution only depends on the wrapper properties,
+    // which change very rarely, so it is cached separately from the Gradle
+    // caches. This keeps it available across the frequent *.gradle* changes
+    // that rotate the main cache key. See issue #1095.
+    additionalCaches: [
+      {
+        name: 'gradle-wrapper',
+        path: [join(os.homedir(), '.gradle', 'wrapper')],
+        pattern: ['**/gradle-wrapper.properties']
+      }
     ]
   },
   {
