@@ -322,11 +322,12 @@ async function saveAdditionalCache(
   try {
     const cacheId = await cache.saveCache(additionalCache.path, primaryKey);
     if (cacheId === -1) {
-      core.debug(`Cache was not saved for the key: ${primaryKey}`);
+      core.debug(
+        `${additionalCache.name} cache was not saved for the key: ${primaryKey}`
+      );
       return;
     }
-    core.info(`Cache saved with the key: ${primaryKey}`);
-  } catch (error) {
+    core.info(`${additionalCache.name} cache saved with the key: ${primaryKey}`);
     const err = error as Error;
 
     if (err.name === cache.ReserveCacheError.name) {
