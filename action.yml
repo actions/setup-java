@@ -4,7 +4,7 @@ description: 'Set up a specific version of the Java JDK and add the
 author: 'GitHub'
 inputs:
   java-version:
-    description: 'The Java version to set up. Takes a whole or semver Java version. See examples of supported syntax in README file'
+    description: 'The Java version to set up. Takes a whole or semver Java version, or the "latest" alias to use the newest available stable release. See examples of supported syntax in README file'
     required: false
   java-version-file:
     description: 'The path to a file containing the Java version to set up (.java-version, .tool-versions, .sdkmanrc). Used when java-version is not set. See examples of supported syntax in README file'

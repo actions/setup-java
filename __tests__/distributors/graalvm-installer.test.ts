@@ -417,6 +417,61 @@ describe('GraalVMDistribution', () => {
         );
       });
 
+      describe('latest alias', () => {
+        it('resolves the newest major version from the Adoptium API', async () => {
+          const latestDistribution = new GraalVMDistribution({
+            ...defaultOptions,
+            version: 'latest'
+          });
+          (latestDistribution as any).http = mockHttpClient;
+          jest
+            .spyOn(latestDistribution, 'getPlatform')
+            .mockReturnValue('linux');
+          mockHttpClient.getJson.mockResolvedValue({
+            statusCode: 200,
+            result: {most_recent_feature_release: 25},
+            headers: {}
+          });
+          mockHttpClient.head.mockResolvedValue({
+            message: {statusCode: 200}
+          });
+
+          const result = await (
+            latestDistribution as any
+          ).findPackageForDownload('x');
+
+          expect(result).toEqual({
+            url: 'https://download.oracle.com/graalvm/25/latest/graalvm-jdk-25_linux-x64_bin.tar.gz',
+            version: '25'
+          });
+        });
+
+        it('throws an actionable error when the latest major is not yet available', async () => {
+          const latestDistribution = new GraalVMDistribution({
+            ...defaultOptions,
+            version: 'latest'
+          });
+          (latestDistribution as any).http = mockHttpClient;
+          jest
+            .spyOn(latestDistribution, 'getPlatform')
+            .mockReturnValue('linux');
+          mockHttpClient.getJson.mockResolvedValue({
+            statusCode: 200,
+            result: {most_recent_feature_release: 25},
+            headers: {}
+          });
+          mockHttpClient.head.mockResolvedValue({
+            message: {statusCode: 404}
+          });
+
+          await expect(
+            (latestDistribution as any).findPackageForDownload('x')
+          ).rejects.toThrow(
+            /is not yet available for the GraalVM distribution/
+          );
+        });
+      });
+
       it('should throw error for JDK versions less than 17', async () => {
         await expect(
           (distribution as any).findPackageForDownload('11')
@@ -1113,6 +1168,60 @@ describe('GraalVMDistribution', () => {
           url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
           version: '21.0.2'
         });
+      });
+
+      it('resolves latest to the newest GA across all Community majors without calling Adoptium', async () => {
+        const latestCommunity = new GraalVMCommunityDistribution({
+          ...defaultOptions,
+          version: 'latest'
+        });
+        (latestCommunity as any).http = mockHttpClient;
+        jest.spyOn(latestCommunity, 'getPlatform').mockReturnValue('linux');
+
+        mockHttpClient.getJson.mockResolvedValue({
+          result: [
+            {
+              draft: false,
+              prerelease: false,
+              assets: [
+                {
+                  name: 'graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
+                  browser_download_url:
+                    'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz'
+                }
+              ]
+            },
+            {
+              draft: false,
+              prerelease: false,
+              assets: [
+                {
+                  name: 'graalvm-community-jdk-24.0.1_linux-x64_bin.tar.gz',
+                  browser_download_url:
+                    'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-24.0.1/graalvm-community-jdk-24.0.1_linux-x64_bin.tar.gz'
+                }
+              ]
+            }
+          ],
+          statusCode: 200,
+          headers: {}
+        });
+
+        const result = await (latestCommunity as any).findPackageForDownload(
+          'x'
+        );
+
+        expect(result).toEqual({
+          url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-24.0.1/graalvm-community-jdk-24.0.1_linux-x64_bin.tar.gz',
+          version: '24.0.1'
+        });
+        // The Community release list is authoritative, so the Adoptium
+        // most_recent_feature_release endpoint must not be consulted.
+        expect(mockHttpClient.getJson).toHaveBeenCalledTimes(1);
+        expect(mockHttpClient.getJson).toHaveBeenCalledWith(
+          expect.stringContaining('graalvm-ce-builds/releases'),
+          expect.anything()
+        );
       });
 
       it('should reject GraalVM Community early access requests', async () => {

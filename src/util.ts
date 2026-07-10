@@ -6,6 +6,7 @@ import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
+import * as httpm from '@actions/http-client';
 import {
   INPUT_JOB_STATUS,
   DISTRIBUTIONS_ONLY_MAJOR_VERSION
@@ -381,4 +382,34 @@ export function renameWinArchive(javaArchivePath: string): string {
   const javaArchivePathRenamed = `${javaArchivePath}.zip`;
   fs.renameSync(javaArchivePath, javaArchivePathRenamed);
   return javaArchivePathRenamed;
+}
+
+interface IAdoptiumAvailableReleases {
+  most_recent_feature_release: number;
+}
+
+// Resolve the newest available stable/GA feature (major) release.
+//
+// Some distributions (e.g. Oracle, GraalVM) construct their download URLs from a
+// concrete major version and don't expose an endpoint to list every available
+// release, so a bare `latest` alias can't be resolved from their own metadata.
+// The Adoptium (Temurin) API is used as a proxy for "what is the newest GA major
+// version out there", which those distributions typically publish at the same time.
+export async function getLatestMajorVersion(
+  http: httpm.HttpClient
+): Promise<number> {
+  const availableReleasesUrl =
+    'https://api.adoptium.net/v3/info/available_releases';
+
+  const response =
+    await http.getJson<IAdoptiumAvailableReleases>(availableReleasesUrl);
+
+  const mostRecent = response.result?.most_recent_feature_release;
+  if (!mostRecent || Number.isNaN(Number(mostRecent))) {
+    throw new Error(
+      `Could not determine the latest available Java major version from ${availableReleasesUrl}`
+    );
+  }
+
+  return Number(mostRecent);
 }

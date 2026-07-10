@@ -186,8 +186,14 @@ async function installVersion(
   }
 
   const result = await distribution.setupJava();
+
+  // When the `latest` alias is used, the literal input isn't a real version, so
+  // pass the resolved version to the toolchains configuration instead.
+  const isLatest = version.trim().toLowerCase() === 'latest';
+  const toolchainVersion = isLatest ? result.version : version;
+
   await toolchains.configureToolchains(
-    version,
+    toolchainVersion,
     distributionName,
     result.path,
     toolchainIds[toolchainId]

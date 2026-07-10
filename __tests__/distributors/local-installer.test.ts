@@ -170,6 +170,20 @@ describe('setupJava', () => {
     jest.restoreAllMocks();
   });
 
+  it('throws for the latest alias since jdkfile has no version list', async () => {
+    const inputs = {
+      version: 'latest',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false
+    };
+
+    mockJavaBase = new LocalDistribution(inputs, expectedJdkFile);
+    await expect(mockJavaBase.setupJava()).rejects.toThrow(
+      "The 'latest' version alias is not supported for the 'jdkfile' distribution. Please specify a concrete version."
+    );
+  });
+
   it('java is resolved from toolcache, jdkfile is untouched', async () => {
     const inputs = {
       version: actualJavaVersion,

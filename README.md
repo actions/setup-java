@@ -106,6 +106,14 @@ The `java-version` input supports an exact version or a version range using [Sem
 - more specific versions: `8.0.282+8`, `8.0.232`, `11.0`, `11.0.4`, `17.0`
 - multi-field Java versions (JEP 322), such as: `11.0.9.1`, `18.0.1.1`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`
+- the `latest` alias, which floats to the newest available stable (GA) release
+
+> [!NOTE]
+> - `latest` always resolves the newest version from the distribution's remote metadata (it behaves like `check-latest: true`), so it ignores any older version already present in the runner tool cache. This has the same performance trade-off described in [Check latest](#check-latest).
+> - `latest` is only supported through the `java-version` input, not through `java-version-file`, and it resolves stable (GA) releases only — it cannot be combined with `-ea`.
+> - The `jdkfile` distribution does not support `latest`, as it installs from a local file.
+> - For `oracle` and `graalvm` (Oracle GraalVM), `latest` uses the Adoptium API only to determine the newest GA **major version number** — the JDK binary itself is still downloaded from the Oracle / GraalVM servers for that major. Because these distributions have no endpoint to list their own releases, if their servers haven't published the resolved major yet, the action fails and asks you to specify a concrete version. Note the Oracle JDK license caveat below still applies to a floating `latest`.
+> - For `graalvm-community`, `latest` floats to the newest GA release published on GitHub, so it never depends on the Adoptium API and always resolves to the newest major that GraalVM Community actually ships.
 
 #### Supported distributions
 Currently, the following distributions are supported:

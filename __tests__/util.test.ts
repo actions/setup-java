@@ -56,7 +56,8 @@ const {
   isVersionSatisfies,
   isCacheFeatureAvailable,
   isGhes,
-  validatePaginationUrl
+  validatePaginationUrl,
+  getLatestMajorVersion
 } = await import('../src/util.js');
 
 describe('isVersionSatisfies', () => {
@@ -398,5 +399,35 @@ describe('isGhes', () => {
   it('returns true when the GITHUB_SERVER_URL environment variable is set to some other URL', async () => {
     process.env['GITHUB_SERVER_URL'] = 'https://src.onpremise.fabrikam.com';
     expect(isGhes()).toBeTruthy();
+  });
+});
+
+describe('getLatestMajorVersion', () => {
+  const makeHttp = (getJson: jest.Mock) =>
+    ({getJson}) as unknown as import('@actions/http-client').HttpClient;
+
+  it('returns most_recent_feature_release from the Adoptium API', async () => {
+    const getJson = jest.fn(async () => ({
+      statusCode: 200,
+      result: {most_recent_feature_release: 25},
+      headers: {}
+    }));
+
+    await expect(getLatestMajorVersion(makeHttp(getJson))).resolves.toBe(25);
+    expect(getJson).toHaveBeenCalledWith(
+      'https://api.adoptium.net/v3/info/available_releases'
+    );
+  });
+
+  it('throws when the response does not contain a usable value', async () => {
+    const getJson = jest.fn(async () => ({
+      statusCode: 200,
+      result: {},
+      headers: {}
+    }));
+
+    await expect(getLatestMajorVersion(makeHttp(getJson))).rejects.toThrow(
+      'Could not determine the latest available Java major version'
+    );
   });
 });
