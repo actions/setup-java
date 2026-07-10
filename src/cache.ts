@@ -236,9 +236,7 @@ async function restoreAdditionalCache(additionalCache: AdditionalCache) {
       additionalCacheMatchedKeyState(additionalCache.name),
       matchedKey
     );
-    core.info(`Cache restored from key: ${matchedKey}`);
-  } else {
-    core.info(`${additionalCache.name} cache is not found`);
+    core.info(`${additionalCache.name} cache restored from key: ${matchedKey}`);
   }
 }
 
