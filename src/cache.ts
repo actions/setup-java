@@ -327,7 +327,10 @@ async function saveAdditionalCache(
       );
       return;
     }
-    core.info(`${additionalCache.name} cache saved with the key: ${primaryKey}`);
+    core.info(
+      `${additionalCache.name} cache saved with the key: ${primaryKey}`
+    );
+  } catch (error) {
     const err = error as Error;
 
     if (err.name === cache.ReserveCacheError.name) {

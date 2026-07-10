@@ -99825,10 +99825,7 @@ async function restoreAdditionalCache(additionalCache) {
     const matchedKey = await cache.restoreCache(additionalCache.path, primaryKey);
     if (matchedKey) {
         core.saveState(additionalCacheMatchedKeyState(additionalCache.name), matchedKey);
-        core.info(`Cache restored from key: ${matchedKey}`);
-    }
-    else {
-        core.info(`${additionalCache.name} cache is not found`);
+        core.info(`${additionalCache.name} cache restored from key: ${matchedKey}`);
     }
 }
 /**
@@ -99896,10 +99893,10 @@ async function saveAdditionalCache(packageManager, additionalCache) {
     try {
         const cacheId = await cache_saveCache(additionalCache.path, primaryKey);
         if (cacheId === -1) {
-            core_debug(`Cache was not saved for the key: ${primaryKey}`);
+            core_debug(`${additionalCache.name} cache was not saved for the key: ${primaryKey}`);
             return;
         }
-        info(`Cache saved with the key: ${primaryKey}`);
+        info(`${additionalCache.name} cache saved with the key: ${primaryKey}`);
     }
     catch (error) {
         const err = error;
