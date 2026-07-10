@@ -180,6 +180,8 @@ steps:
 ```
 Using the `cache: gradle` provides a simple and effective way to cache Gradle dependencies with minimal configuration.
 
+**Gradle Wrapper:** when `cache: 'gradle'` is enabled, the action also caches and restores the Gradle Wrapper distribution downloaded to `~/.gradle/wrapper` (in addition to the Gradle caches), so wrapper-based (`./gradlew`) builds don't re-download the Gradle distribution. The wrapper distribution is stored in a **separate** cache entry keyed only on `**/gradle-wrapper.properties`, so it stays cached across the frequent `*.gradle*` changes that rotate the main dependency cache key.
+
 For projects that require more advanced `Gradle` caching features, such as caching build outputs, support for Gradle configuration cache, encrypted cache storage, fine-grained cache control (including options to enable or disable the cache, set it to read-only or write-only, perform automated cleanup, and define custom cache rules), or optimized performance for complex CI workflows, consider using [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle).  
 
 For setup details and a comprehensive overview of all available features, visit the [setup-gradle documentation](https://github.com/gradle/actions/blob/main/docs/setup-gradle.md).
