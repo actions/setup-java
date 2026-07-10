@@ -570,6 +570,33 @@ describe('dependency cache', () => {
           expect.any(String)
         );
       });
+      it('does not fail the post step when the wrapper distribution path is missing', async () => {
+        createFile(join(workspace, 'pom.xml'));
+        (core.getState as jest.Mock<any>).mockImplementation((name: any) => {
+          switch (name) {
+            case 'cache-primary-key':
+              return 'setup-java-cache-primary-key';
+            case 'cache-matched-key':
+              return 'setup-java-cache-matched-key';
+            case 'cache-primary-key-maven-wrapper':
+              return 'setup-java-maven-wrapper-key';
+            default:
+              return '';
+          }
+        });
+        spyCacheSave.mockImplementation((paths: string[]) =>
+          paths.includes(join(os.homedir(), '.m2', 'wrapper', 'dists'))
+            ? Promise.reject(
+                new cache.ValidationError(
+                  'Path Validation Error: Path(s) specified in the action for caching do(es) not exist'
+                )
+              )
+            : Promise.resolve(0)
+        );
+
+        await expect(save('maven')).resolves.toBeUndefined();
+        expect(spyWarning).not.toHaveBeenCalled();
+      });
     });
     describe('for gradle', () => {
       it('uploads cache even if no build.gradle found', async () => {

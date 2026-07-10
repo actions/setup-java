@@ -99700,7 +99700,7 @@ const supportedPackageManager = [
         // The Gradle wrapper distribution only depends on the wrapper properties,
         // which change very rarely, so it is cached separately from the Gradle
         // caches. This keeps it available across the frequent *.gradle* changes
-        // that rotate the main cache key. See issue #1095.
+        // that rotate the main cache key. See issue #269.
         additionalCaches: [
             {
                 name: 'gradle-wrapper',
@@ -99900,6 +99900,13 @@ async function saveAdditionalCache(packageManager, additionalCache) {
     }
     catch (error) {
         const err = error;
+        if (err.name === ValidationError.name) {
+            // The cache paths did not resolve, e.g. the wrapper distribution was
+            // never downloaded because a system build tool was used or the download
+            // failed. Optional wrapper caches must not fail the post step, so skip.
+            core_debug(`${additionalCache.name} cache paths do not exist, not saving cache: ${err.message}`);
+            return;
+        }
         if (err.name === ReserveCacheError.name) {
             info(err.message);
         }
