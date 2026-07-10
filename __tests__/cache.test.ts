@@ -230,11 +230,9 @@ describe('dependency cache', () => {
           [join(os.homedir(), '.m2', 'repository')],
           expect.any(String)
         );
-        // Wrapper distribution is restored on its own, keyed only on the
-        // wrapper properties file.
         expect(spyCacheRestore).toHaveBeenCalledWith(
           [join(os.homedir(), '.m2', 'wrapper', 'dists')],
-          expect.stringContaining('setup-java-')
+          expect.stringContaining('maven-wrapper')
         );
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
           '**/.mvn/wrapper/maven-wrapper.properties'
