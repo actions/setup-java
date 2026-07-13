@@ -70,7 +70,7 @@
     "lint-staged": "^17.0.8",
     "prettier": "^3.9.5",
     "ts-jest": "^29.4.11",
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.3"
   },
   "bugs": {
     "url": "https://github.com/actions/setup-java/issues"
