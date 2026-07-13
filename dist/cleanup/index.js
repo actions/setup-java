@@ -95845,6 +95845,7 @@ const INPUT_SERVER_USERNAME = 'server-username';
 const INPUT_SERVER_PASSWORD = 'server-password';
 const INPUT_SETTINGS_PATH = 'settings-path';
 const INPUT_OVERWRITE_SETTINGS = 'overwrite-settings';
+const INPUT_ADD_TOOLCHAIN_ONLY = 'add-toolchain-only';
 const INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 const INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 const INPUT_DEFAULT_GPG_PRIVATE_KEY = (/* unused pure expression or super */ null && (undefined));
