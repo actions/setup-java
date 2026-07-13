@@ -158,5 +158,45 @@
         }
       ]
     }
+  ],
+  "25": [
+    {
+      "version": "25.0.3",
+      "jdkVersion": "25.0.3",
+      "latest": true,
+      "baseUrl": "https://github.com/Tencent/TencentKona-25/releases/download/TencentKona-25.0.3/",
+      "files": [
+        {
+          "os": "linux",
+          "arch": "aarch64",
+          "filename": "TencentKona-25.0.3.b1-jdk_linux-aarch64.tar.gz",
+          "checksum": "2fb77e3ba9c00045ca497ea22210f18dae4bf7df4c87029f5abadd42a5daf8c7"
+        },
+        {
+          "os": "linux",
+          "arch": "x86_64",
+          "filename": "TencentKona-25.0.3.b1-jdk_linux-x86_64.tar.gz",
+          "checksum": "47445e6fad020e834055a705bb48fa3cd0727a2c57ad6f1c5206a45f4efb2d67"
+        },
+        {
+          "os": "macos",
+          "arch": "aarch64",
+          "filename": "TencentKona-25.0.3.b1_jdk_macosx-aarch64_notarized.tar.gz",
+          "checksum": "e29405eff95da412ed7ecc890e6ef5ebbfcd9ab334005b3d32d1700bbe4204d2"
+        },
+        {
+          "os": "macos",
+          "arch": "x86_64",
+          "filename": "TencentKona-25.0.3.b1_jdk_macosx-x86_64_notarized.tar.gz",
+          "checksum": "d512db5c079db16bd3a9c86d9cb979808994e90e4de29e17d27e5219fe488659"
+        },
+        {
+          "os": "windows",
+          "arch": "x86_64",
+          "filename": "TencentKona-25.0.3.b1_jdk_windows-x86_64_signed.zip",
+          "checksum": "865bce92ccbbca75115076e618a98baa1d0f30fcccdce954c0a22bee33d6ae83"
+        }
+      ]
+    }
   ]
 }
