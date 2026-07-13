@@ -832,6 +832,64 @@ The result is a Toolchain with entries for JDKs 8, 11 and 15. You can even combi
 
 This will generate a Toolchains entry with the following values: `version: 1.6`, `vendor: jdkfile`, `id: Oracle_1.6`.
 
+### Installing Multiple JDKs With Updating Toolchains Only
+When installing multiple JDKs in the same workflow run, the `add-toolchain-only` input lets you add the new JDK to Maven's `toolchains.xml` without changing the active environment (JAVA_HOME, PATH) or updating Maven `settings.xml` — unless you explicitly request those changes.
+
+Important defaults introduced with `add-toolchain-only`:
+- If `add-toolchain-only: true` then, unless explicitly overridden:
+  - `set-default` defaults to `false` (the newly installed JDK will not become the process default).
+  - `overwrite-settings` defaults to `false` (Maven `settings.xml` will not be modified by default).
+- You can still explicitly set `set-default: true` or `overwrite-settings: true` to override these defaults.
+
+Simple workflow example
+```yaml
+steps:
+  # First install: make JDK 11 the default for the job
+  - name: Setup JDK 11 (default)
+    uses: actions/setup-java@v3
+    with:
+      distribution: 'temurin'
+      java-version: '11'
+      set-default: true          # JAVA_HOME and PATH will point to this JDK
+
+  # Second install: register JDK 17 in Maven toolchains only
+  - name: Add JDK 17 to Maven toolchains only
+    uses: actions/setup-java@v3
+    with:
+      distribution: 'temurin'
+      java-version: '17'
+      add-toolchain-only: true   # Only add to ~/.m2/toolchains.xml
+      # set-default: false       # implied default when add-toolchain-only: true
+      # overwrite-settings: false# implied default when add-toolchain-only: true
+```
+
+Expected behavior from the example above
+- After the first step:
+  - JAVA_HOME and PATH are updated to point to JDK 11 (because `set-default: true`).
+  - Maven configuration may be updated according to your global defaults / previous options.
+- After the second step:
+  - The JDK 17 entry is added to `~/.m2/toolchains.xml` so Maven toolchain-aware builds can select it.
+  - JAVA_HOME and PATH remain pointing at JDK 11 (no change), because `add-toolchain-only: true` keeps the environment untouched by default.
+  - `~/.m2/settings.xml` is not modified unless you explicitly set `overwrite-settings: true`.
+
+Quick checks you can run in a job to validate
+```bash
+# Check which JAVA_HOME is active
+echo "JAVA_HOME=$JAVA_HOME"
+java -version
+
+# Verify Maven toolchains file contains entries for both JDKs
+cat ~/.m2/toolchains.xml || true
+
+# If you expected settings.xml to be changed:
+cat ~/.m2/settings.xml || true
+```
+
+**Notes and tips**
+- If you want an added JDK to become the runtime default for subsequent steps, set `set-default: true` on that particular `setup-java` invocation (even when `add-toolchain-only` is used).
+- If you rely on a modified `settings.xml` (for example to add servers or mirrors), explicitly set `overwrite-settings: true` on the run that should update it.
+- The `add-toolchain-only` mode is helpful when provisioning multiple JDKs for multi-JDK testing while leaving the job's primary Java environment stable.
+
 ### Modifying The Toolchain Vendor For JDKs
 Each JDK provider will receive a default `vendor` using the `distribution` input value but this can be overridden with the `mvn-toolchain-vendor` parameter as follows.
 
