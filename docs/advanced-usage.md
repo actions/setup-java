@@ -238,7 +238,7 @@ The available package types are:
 - `jre+ft` - JBR (FreeType)
 
 ### Tencent Kona
-**NOTE:** Tencent Kona supports major versions 8, 11, 17 and 21, and provides jdk only.
+**NOTE:** Tencent Kona supports major versions 8, 11, 17, 21 and 25, and provides jdk only.
 
 ```yaml
 steps:
