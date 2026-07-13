@@ -37,7 +37,8 @@ jobs:
             'dragonwell',
             'sapmachine',
             'jetbrains',
-            'kona'
+            'kona',
+            'liberica-nik'
           ] # internally 'adopt-hotspot' is the same as 'adopt'
         version: ['21', '11', '17']
         exclude:
@@ -62,6 +63,15 @@ jobs:
             os: ubuntu-latest
             version: 25
           - distribution: kona
+            os: macos-latest
+            version: 25
+          - distribution: liberica-nik
+            os: windows-latest
+            version: 25
+          - distribution: liberica-nik
+            os: ubuntu-latest
+            version: 25
+          - distribution: liberica-nik
             os: macos-latest
             version: 25
           - distribution: oracle
@@ -449,6 +459,10 @@ jobs:
           - distribution: 'liberica'
             java-package: jre+fx
             version: '11'
+            os: ubuntu-latest
+          - distribution: 'liberica-nik'
+            java-package: jdk+fx
+            version: '21'
             os: ubuntu-latest
           - distribution: 'corretto'
             java-package: jre

@@ -1,0 +1,739 @@
+[
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/25.0.1+3-25.0.1+16/bellsoft-liberica-vm-openjdk25.0.1+16-25.0.1+3-linux-amd64.tar.gz",
+    "version": "25.0.1+3",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "25.0.1+16",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/24.1.0+1-23+38/bellsoft-liberica-vm-openjdk23+38-24.1.0+1-linux-amd64.tar.gz",
+    "version": "24.1.0+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "23+38",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/21.3.2/bellsoft-liberica-vm-openjdk11.0.15.1+2-21.3.2+2-linux-amd64.tar.gz",
+    "version": "21.3.2+2",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.15.1+2",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.3.0/bellsoft-liberica-vm-openjdk17.0.5+8-22.3.0+2-linux-amd64.tar.gz",
+    "version": "22.3.0+2",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.5+8",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.0.9+1-17.0.16+13/bellsoft-liberica-vm-openjdk17.0.16+13-23.0.9+1-linux-amd64.tar.gz",
+    "version": "23.0.9+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.16+13",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/23.0.0/bellsoft-liberica-vm-openjdk17.0.7+7-23.0.0+1-src.tar.gz",
+    "version": "23.0.0+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.7+7",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/25.0.2+1-25.0.2+13/bellsoft-liberica-vm-openjdk25.0.2+13-25.0.2+1-linux-amd64.tar.gz",
+    "version": "25.0.2+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "25.0.2+13",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/24.1.1+1-23.0.1+13/bellsoft-liberica-vm-openjdk23.0.1+13-24.1.1+1-linux-amd64.tar.gz",
+    "version": "24.1.1+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "23.0.1+13",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.0.12+1-17.0.19+12/bellsoft-liberica-vm-openjdk17.0.19+12-23.0.12+1-linux-amd64.tar.gz",
+    "version": "23.0.12+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.19+12",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.0.3+1-17.0.10+13/bellsoft-liberica-vm-openjdk17.0.10+13-23.0.3+1-linux-amd64.tar.gz",
+    "version": "23.0.3+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.10+13",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/21.3.2/bellsoft-liberica-vm-openjdk11-21.3.2-src.tar.gz",
+    "version": "21.3.2+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.15+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.3.3/bellsoft-liberica-vm-openjdk11.0.20+8-22.3.3+1-src.tar.gz",
+    "version": "22.3.3+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.20+8",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.0.8+1-17.0.15+10/bellsoft-liberica-vm-openjdk17.0.15+10-23.0.8+1-linux-amd64.tar.gz",
+    "version": "23.0.8+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.15+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/21.3.3/bellsoft-liberica-vm-openjdk17.0.4-21.3.3-src.tar.gz",
+    "version": "21.3.3+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.4+8",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.1.7+1-21.0.7+9/bellsoft-liberica-vm-openjdk21.0.7+9-23.1.7+1-linux-amd64.tar.gz",
+    "version": "23.1.7+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "21.0.7+9",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.1.8+1-21.0.8+13/bellsoft-liberica-vm-openjdk21.0.8+13-23.1.8+1-linux-amd64.tar.gz",
+    "version": "23.1.8+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "21.0.8+13",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/21.0.0.2/bellsoft-liberica-vm-openjdk11-21.0.0.2-src.tar.gz",
+    "version": "21.0.0.2",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.10+9",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/23.0.1/bellsoft-liberica-vm-openjdk17.0.8+7-23.0.1+1-linux-amd64.tar.gz",
+    "version": "23.0.1+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.8+7",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/24.0.0+1-22+37/bellsoft-liberica-vm-openjdk22+37-24.0.0+1-linux-amd64.tar.gz",
+    "version": "24.0.0+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "22+37",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.1.0/bellsoft-liberica-vm-openjdk17-22.1.0-src.tar.gz",
+    "version": "22.1.0+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.3+7",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/24.0.2+1-22.0.2+11/bellsoft-liberica-vm-openjdk22.0.2+11-24.0.2+1-linux-amd64.tar.gz",
+    "version": "24.0.2+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "22.0.2+11",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/23.0.1/bellsoft-liberica-vm-openjdk20.0.2+10-23.0.1+1-src.tar.gz",
+    "version": "23.0.1+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "20.0.2+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/23.1.0/bellsoft-liberica-vm-openjdk21+37-23.1.0+1-linux-amd64.tar.gz",
+    "version": "23.1.0+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "21+37",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.1.4+3-21.0.4+9/bellsoft-liberica-vm-openjdk21.0.4+9-23.1.4+3-linux-amd64.tar.gz",
+    "version": "23.1.4+3",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "21.0.4+9",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.3.3/bellsoft-liberica-vm-openjdk11.0.20.1+1-22.3.3+2-linux-amd64.tar.gz",
+    "version": "22.3.3+2",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.20.1+1",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.0.4+1-17.0.11+10/bellsoft-liberica-vm-openjdk17.0.11+10-23.0.4+1-linux-amd64.tar.gz",
+    "version": "23.0.4+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.11+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/24.1.2+1-23.0.2+9/bellsoft-liberica-vm-openjdk23.0.2+9-24.1.2+1-linux-amd64.tar.gz",
+    "version": "24.1.2+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "23.0.2+9",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.0.10+1-17.0.17+12/bellsoft-liberica-vm-openjdk17.0.17+12-23.0.10+1-linux-amd64.tar.gz",
+    "version": "23.0.10+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.17+12",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.3.1/bellsoft-liberica-vm-openjdk11.0.18+10-22.3.1+1-src.tar.gz",
+    "version": "22.3.1+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.18+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.0.0.2/bellsoft-liberica-vm-openjdk17-22.0.0.2-src.tar.gz",
+    "version": "22.0.0.2",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.2+9",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.0.0.2/bellsoft-liberica-vm-openjdk11-22.0.0.2-linux-amd64.tar.gz",
+    "version": "22.0.0.2",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.14.1+1",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/25.0.1+2-25.0.1+14/bellsoft-liberica-vm-openjdk25.0.1+14-25.0.1+2-linux-amd64.tar.gz",
+    "version": "25.0.1+2",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "25.0.1+14",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/21.3.3/bellsoft-liberica-vm-openjdk11.0.16-21.3.3-src.tar.gz",
+    "version": "21.3.3+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.16+8",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.1.5+1-21.0.5+11/bellsoft-liberica-vm-openjdk21.0.5+11-23.1.5+1-linux-amd64.tar.gz",
+    "version": "23.1.5+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "21.0.5+11",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.3.4/bellsoft-liberica-vm-openjdk17.0.9+11-22.3.4+1-linux-amd64.tar.gz",
+    "version": "22.3.4+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.9+11",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/25.0.0+1-25+37/bellsoft-liberica-vm-openjdk25+37-25.0.0+1-linux-amd64.tar.gz",
+    "version": "25.0.0+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "25+37",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.3.3/bellsoft-liberica-vm-openjdk17.0.8.1+1-22.3.3+2-linux-amd64.tar.gz",
+    "version": "22.3.3+2",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.8.1+1",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.1.3+1-21.0.3+10/bellsoft-liberica-vm-openjdk21.0.3+10-23.1.3+1-linux-amd64.tar.gz",
+    "version": "23.1.3+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "21.0.3+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/24.2.0+1-24+37/bellsoft-liberica-vm-openjdk24+37-24.2.0+1-linux-amd64.tar.gz",
+    "version": "24.2.0+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "24+37",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/23.1.1/bellsoft-liberica-vm-openjdk21.0.1+12-23.1.1+1-linux-amd64.tar.gz",
+    "version": "23.1.1+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "21.0.1+12",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/21.3.3/bellsoft-liberica-vm-openjdk17.0.4.1-21.3.3-src.tar.gz",
+    "version": "21.3.3+2",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.4.1+1",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.1.11+2-21.0.11+12/bellsoft-liberica-vm-openjdk21.0.11+12-23.1.11+2-linux-amd64.tar.gz",
+    "version": "23.1.11+2",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "21.0.11+12",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.3.2/bellsoft-liberica-vm-openjdk11.0.19+7-22.3.2+1-src.tar.gz",
+    "version": "22.3.2+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.19+7",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.3.4/bellsoft-liberica-vm-openjdk11.0.21+10-22.3.4+1-src.tar.gz",
+    "version": "22.3.4+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.21+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/25.0.3+2-25.0.3+12/bellsoft-liberica-vm-openjdk25.0.3+12-25.0.3+2-linux-amd64.tar.gz",
+    "version": "25.0.3+2",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "25.0.3+12",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/21.3.2/bellsoft-liberica-vm-openjdk17.0.3.1+2-21.3.2+2-linux-amd64.tar.gz",
+    "version": "21.3.2+2",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.3.1+2",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/24.2.1+1-24.0.1+11/bellsoft-liberica-vm-openjdk24.0.1+11-24.2.1+1-linux-amd64.tar.gz",
+    "version": "24.2.1+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "24.0.1+11",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.2.0/bellsoft-liberica-vm-openjdk11.0.16.1+1-22.2.0+3-linux-amd64.tar.gz",
+    "version": "22.2.0+3",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.16.1+1",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.0.6+1-17.0.13+12/bellsoft-liberica-vm-openjdk17.0.13+12-23.0.6+1-linux-amd64.tar.gz",
+    "version": "23.0.6+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.13+12",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/23.0.0/bellsoft-liberica-vm-openjdk20.0.1+10-23.0.0+1-linux-amd64.tar.gz",
+    "version": "23.0.0+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "20.0.1+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.1.10+1-21.0.10+11/bellsoft-liberica-vm-openjdk21.0.10+11-23.1.10+1-linux-amd64.tar.gz",
+    "version": "23.1.10+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "21.0.10+11",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/22.3.1/bellsoft-liberica-vm-openjdk17.0.6+10-22.3.1+1-src.tar.gz",
+    "version": "22.3.1+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.6+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/21.3.0/bellsoft-liberica-vm-openjdk17-21.3.0-src.tar.gz",
+    "version": "21.3.0",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.1+12",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/21.3.0/bellsoft-liberica-vm-openjdk11-21.3.0-src.tar.gz",
+    "version": "21.3.0",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.13+8",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/24.0.1+1-22.0.1+10/bellsoft-liberica-vm-openjdk22.0.1+10-24.0.1+1-linux-amd64.tar.gz",
+    "version": "24.0.1+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "22.0.1+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.0.7+1-17.0.14+10/bellsoft-liberica-vm-openjdk17.0.14+10-23.0.7+1-linux-amd64.tar.gz",
+    "version": "23.0.7+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.14+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/21.1.0/bellsoft-liberica-vm-openjdk11-21.1.0-src.tar.gz",
+    "version": "21.1.0",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.11+9",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.1.6+1-21.0.6+10/bellsoft-liberica-vm-openjdk21.0.6+10-23.1.6+1-linux-amd64.tar.gz",
+    "version": "23.1.6+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "21.0.6+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/25.0.1+1-25.0.1+12/bellsoft-liberica-vm-openjdk25.0.1+12-25.0.1+1-linux-amd64.tar.gz",
+    "version": "25.0.1+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "25.0.1+12",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.1.9+1-21.0.9+12/bellsoft-liberica-vm-openjdk21.0.9+12-23.1.9+1-linux-amd64.tar.gz",
+    "version": "23.1.9+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "21.0.9+12",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/22.3.5+1-11.0.22+12/bellsoft-liberica-vm-openjdk11.0.22+12-22.3.5+1-linux-amd64.tar.gz",
+    "version": "22.3.5+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.22+12",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.0.5+1-17.0.12+10/bellsoft-liberica-vm-openjdk17.0.12+10-23.0.5+1-linux-amd64.tar.gz",
+    "version": "23.0.5+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.12+10",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/21.3.3.1/bellsoft-liberica-vm-openjdk11.0.17+7-21.3.3.1+1-linux-amd64.tar.gz",
+    "version": "21.3.3.1+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.17+7",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://download.bell-sw.com/vm/21.2.0/bellsoft-liberica-vm-openjdk11-21.2.0-linux-amd64.tar.gz",
+    "version": "21.2.0",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "11.0.12+7",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.0.11+1-17.0.18+11/bellsoft-liberica-vm-openjdk17.0.18+11-23.0.11+1-linux-amd64.tar.gz",
+    "version": "23.0.11+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "17.0.18+11",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/23.1.2+1-21.0.2+14/bellsoft-liberica-vm-openjdk21.0.2+14-23.1.2+1-linux-amd64.tar.gz",
+    "version": "23.1.2+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "21.0.2+14",
+        "embedded": true
+      }
+    ]
+  },
+  {
+    "downloadUrl": "https://github.com/bell-sw/LibericaNIK/releases/download/24.2.2+1-24.0.2+13/bellsoft-liberica-vm-openjdk24.0.2+13-24.2.2+1-linux-amd64.tar.gz",
+    "version": "24.2.2+1",
+    "components": [
+      {
+        "component": "liberica",
+        "version": "24.0.2+13",
+        "embedded": true
+      }
+    ]
+  }
+]
