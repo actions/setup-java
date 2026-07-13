@@ -958,7 +958,7 @@ describe('toolchains tests', () => {
 
   it('preserves toolchains from previous executions across multiple setup-java runs', async () => {
     // Regression test for https://github.com/actions/setup-java/issues/1099
-    // Running setup-java several times in the same job (e.g. matrix / multiple
+    // Running setup-java several times in the same job (e.g. multiple steps / multiple
     // java-version entries) must accumulate every JDK in toolchains.xml rather
     // than replacing previously registered entries.
     (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
