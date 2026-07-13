@@ -28,7 +28,9 @@ describe('Check getAvailableReleases', () => {
     ['11', 'linux', 'x86_64', 'linux-x86_64'],
     ['11.0.25', 'macos', 'aarch64', 'macosx-aarch64'],
     ['17.0.13', 'windows', 'x86_64', 'windows-x86_64'],
-    ['21.0.5', 'linux', 'x86_64', 'linux-x86_64']
+    ['21.0.5', 'linux', 'x86_64', 'linux-x86_64'],
+    ['25', 'linux', 'aarch64', 'linux-aarch64'],
+    ['25.0.3', 'macos', 'x86_64', 'macosx-x86_64']
   ])(
     'should get releases with the specified version "%s", OS "%s" and arch "%s"',
     async (
@@ -41,7 +43,7 @@ describe('Check getAvailableReleases', () => {
 
       const releases = await distribution['getAvailableReleases']();
       expect(releases).not.toBeNull();
-      expect(releases.length).toBe(4);
+      expect(releases.length).toBe(5);
       releases.forEach(release =>
         expect(release.downloadUrl).toContain(expectedPattern)
       );
@@ -173,6 +175,37 @@ describe('Check findPackageForDownload', () => {
       'windows',
       'x86_64',
       'https://github.com/Tencent/TencentKona-21/releases/download/TencentKona-21.0.5/TencentKona-21.0.5.b1_jdk_windows-x86_64_signed.zip'
+    ],
+
+    [
+      '25',
+      'linux',
+      'aarch64',
+      'https://github.com/Tencent/TencentKona-25/releases/download/TencentKona-25.0.3/TencentKona-25.0.3.b1-jdk_linux-aarch64.tar.gz'
+    ],
+    [
+      '25.0.3',
+      'linux',
+      'x86_64',
+      'https://github.com/Tencent/TencentKona-25/releases/download/TencentKona-25.0.3/TencentKona-25.0.3.b1-jdk_linux-x86_64.tar.gz'
+    ],
+    [
+      '25.0.3',
+      'macos',
+      'aarch64',
+      'https://github.com/Tencent/TencentKona-25/releases/download/TencentKona-25.0.3/TencentKona-25.0.3.b1_jdk_macosx-aarch64_notarized.tar.gz'
+    ],
+    [
+      '25.0.3',
+      'macos',
+      'x86_64',
+      'https://github.com/Tencent/TencentKona-25/releases/download/TencentKona-25.0.3/TencentKona-25.0.3.b1_jdk_macosx-x86_64_notarized.tar.gz'
+    ],
+    [
+      '25.0.3',
+      'windows',
+      'x86_64',
+      'https://github.com/Tencent/TencentKona-25/releases/download/TencentKona-25.0.3/TencentKona-25.0.3.b1_jdk_windows-x86_64_signed.zip'
     ]
   ])(
     'should return the download URL with the specified version "%s", OS "%s" and arch "%s"',
