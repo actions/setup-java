@@ -45,7 +45,7 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
-  - `set-default`: Set to `false` to install a JDK without making it the default. When `false`, `JAVA_HOME` and `PATH` are not updated, but `JAVA_HOME_<major>_<arch>` is still set so the JDK remains discoverable. Default value: `true`. See [Installing JDK without setting as default](docs/advanced-usage.md#Installing-JDK-without-setting-as-default) for more details.
+  - `set-default`: Set to `false` to install a JDK without making it the default. When `false`, `JAVA_HOME` and `PATH` are not updated, but `JAVA_HOME_<major>_<arch>` is still set so the JDK remains discoverable. Default value: `!add-toolchain-only`. If explcitly set `true`, it will update JAVA_HOME and PATH regardless of `add-toolchain-only`. See [Installing JDK without setting as default](docs/advanced-usage.md#Installing-JDK-without-setting-as-default) for more details.
 
   - `verify-signature`: Verifies downloaded Java package signatures when supported by the selected distribution. Currently supported for `temurin` and `microsoft`. If set to `true` for unsupported distributions, the action fails.
 
@@ -58,7 +58,9 @@ For more details,  see the full release notes on the [releases page](https://git
   #### Maven options
   The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
 
-  - `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists, set this to `false`.
+  - `overwrite-settings`: Overwrite the settings.xml file if it exists. Default is `!add-toolchain-only`. If explcitly set `true`, it will update settings.xml regardless of `add-toolchain-only`.
+
+  - `add-toolchain-only`: Update toolchains.xml only. Default is `false`. No update of settings.xml, no update of JAVA_HOME and PATH unless `overwrite-settings` or `set-default` are explicitly set `true`.
 
   - `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
 
