@@ -31,9 +31,9 @@ inputs:
     required: false
     default: false
   set-default:
-    description: 'Set this option to false if you want to install a JDK but not make it the default. When false, JAVA_HOME and PATH are not updated, but JAVA_HOME_<major>_<arch> is still set.'
+    description: 'Set this option to false if you want to install a JDK but not make it the default. When false, JAVA_HOME and PATH are not updated, but JAVA_HOME_<major>_<arch> is still set. Default is "!add-toolchain-only". If explcitly set "true", it will update JAVA_HOME and PATH regardless of "add-toolchain-only".'
     required: false
-    default: true
+    # DO NOT set a default here! If not explicitly set, the default will be propagated from input 'add-toolchain-only'!
   verify-signature:
     description: 'Verify downloaded Java package signatures when supported by the selected distribution'
     required: false
@@ -60,9 +60,13 @@ inputs:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false
   overwrite-settings:
-    description: 'Overwrite the settings.xml file if it exists. Default is "true".'
+    description: 'Overwrite the settings.xml file if it exists. Default is "!add-toolchain-only". If explcitly set "true", it will update settings.xml regardless of "add-toolchain-only".'
     required: false
-    default: true
+    # DO NOT set a default here! If not explicitly set, the default will be propagated from input 'add-toolchain-only'!
+  add-toolchain-only:
+    description: 'Update toolchains.xml only. Default is "false". No update of settings.xml, no update of JAVA_HOME and PATH unless "overwrite-settings" or "set-default" are explicitly set "true".'
+    required: false
+    default: false
   gpg-private-key:
     description: 'GPG private key to import. Default is empty string.'
     required: false

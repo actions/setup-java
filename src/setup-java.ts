@@ -15,6 +15,20 @@ import {getJavaDistribution} from './distributions/distribution-factory.js';
 import {JavaInstallerOptions} from './distributions/base-models.js';
 import {configureMavenArgs} from './maven-args.js';
 
+interface IInstallerInputsOptions {
+  architecture: string;
+  packageType: string;
+  checkLatest: boolean;
+  setDefault: boolean;
+  overwriteSettings: boolean;
+  addToolchainOnly: boolean;
+  verifySignature: boolean;
+  verifySignaturePublicKey: string | undefined;
+  distributionName: string;
+  jdkFile: string;
+  toolchainIds: Array<string>;
+}
+
 async function run() {
   try {
     const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
@@ -28,7 +42,18 @@ async function run() {
       constants.INPUT_CACHE_DEPENDENCY_PATH
     );
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
-    const setDefault = getBooleanInput(constants.INPUT_SET_DEFAULT, true);
+    const addToolchainOnly = getBooleanInput(
+      constants.INPUT_ADD_TOOLCHAIN_ONLY,
+      false
+    );
+    const setDefault = getBooleanInput(
+      constants.INPUT_SET_DEFAULT,
+      !addToolchainOnly
+    );
+    const overwriteSettings = getBooleanInput(
+      constants.INPUT_OVERWRITE_SETTINGS,
+      !addToolchainOnly
+    );
     const verifySignature = getBooleanInput(
       constants.INPUT_VERIFY_SIGNATURE,
       false
@@ -78,16 +103,18 @@ async function run() {
         );
       }
 
-      const installerInputsOptions: installerInputsOptions = {
-        architecture,
-        packageType,
-        checkLatest,
-        setDefault,
-        verifySignature,
-        verifySignaturePublicKey,
-        distributionName,
-        jdkFile,
-        toolchainIds
+      const installerInputsOptions: IInstallerInputsOptions = {
+        architecture: architecture,
+        packageType: packageType,
+        checkLatest: checkLatest,
+        setDefault: setDefault,
+        overwriteSettings: overwriteSettings,
+        addToolchainOnly: addToolchainOnly,
+        verifySignature: verifySignature,
+        verifySignaturePublicKey: verifySignaturePublicKey,
+        distributionName: distributionName,
+        jdkFile: jdkFile,
+        toolchainIds: toolchainIds
       };
 
       await installVersion(versionInfo.version, installerInputsOptions);
@@ -97,16 +124,18 @@ async function run() {
         throw new Error('distribution input is required');
       }
 
-      const installerInputsOptions: installerInputsOptions = {
-        architecture,
-        packageType,
-        checkLatest,
-        setDefault,
-        verifySignature,
-        verifySignaturePublicKey,
-        distributionName,
-        jdkFile,
-        toolchainIds
+      const installerInputsOptions: IInstallerInputsOptions = {
+        architecture: architecture,
+        packageType: packageType,
+        checkLatest: checkLatest,
+        setDefault: setDefault,
+        overwriteSettings: overwriteSettings,
+        addToolchainOnly: addToolchainOnly,
+        verifySignature: verifySignature,
+        verifySignaturePublicKey: verifySignaturePublicKey,
+        distributionName: distributionName,
+        jdkFile: jdkFile,
+        toolchainIds: toolchainIds
       };
 
       for (const [index, version] of versions.entries()) {
@@ -122,7 +151,7 @@ async function run() {
     );
     core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
 
-    await auth.configureAuthentication();
+    await auth.configureAuthentication(overwriteSettings);
     configureMavenArgs();
     if (cache && isCacheFeatureAvailable()) {
       await restore(cache, cacheDependencyPath);
@@ -149,39 +178,27 @@ function getJdkFileInput(): string {
 
 async function installVersion(
   version: string,
-  options: installerInputsOptions,
+  options: IInstallerInputsOptions,
   toolchainId = 0
 ) {
-  const {
-    distributionName,
-    jdkFile,
-    architecture,
-    packageType,
-    checkLatest,
-    setDefault,
-    verifySignature,
-    verifySignaturePublicKey,
-    toolchainIds
-  } = options;
-
   const installerOptions: JavaInstallerOptions = {
-    architecture,
-    packageType,
-    checkLatest,
-    setDefault,
-    verifySignature,
-    verifySignaturePublicKey,
+    architecture: options.architecture,
+    packageType: options.packageType,
+    checkLatest: options.checkLatest,
+    setDefault: options.setDefault,
+    verifySignature: options.verifySignature,
+    verifySignaturePublicKey: options.verifySignaturePublicKey,
     version
   };
 
   const distribution = getJavaDistribution(
-    distributionName,
+    options.distributionName,
     installerOptions,
-    jdkFile
+    options.jdkFile
   );
   if (!distribution) {
     throw new Error(
-      `No supported distribution was found for input ${distributionName}`
+      `No supported distribution was found for input ${options.distributionName}`
     );
   }
 
@@ -194,27 +211,16 @@ async function installVersion(
 
   await toolchains.configureToolchains(
     toolchainVersion,
-    distributionName,
+    options.distributionName,
     result.path,
-    toolchainIds[toolchainId]
+    options.overwriteSettings || options.addToolchainOnly,
+    options.toolchainIds[toolchainId]
   );
 
   core.info('');
   core.info('Java configuration:');
-  core.info(`  Distribution: ${distributionName}`);
+  core.info(`  Distribution: ${options.distributionName}`);
   core.info(`  Version: ${result.version}`);
   core.info(`  Path: ${result.path}`);
   core.info('');
-}
-
-interface installerInputsOptions {
-  architecture: string;
-  packageType: string;
-  checkLatest: boolean;
-  setDefault: boolean;
-  verifySignature: boolean;
-  verifySignaturePublicKey: string | undefined;
-  distributionName: string;
-  jdkFile: string;
-  toolchainIds: Array<string>;
 }

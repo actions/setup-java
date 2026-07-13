@@ -87,7 +87,7 @@ describe('toolchains tests', () => {
     await toolchains.createToolchainsSettings({
       jdkInfo,
       settingsDirectory: altHome,
-      overwriteSettings: true
+      addToolchain: true
     });
 
     expect(fs.existsSync(m2Dir)).toBe(false);
@@ -136,7 +136,7 @@ describe('toolchains tests', () => {
     await toolchains.createToolchainsSettings({
       jdkInfo,
       settingsDirectory: m2Dir,
-      overwriteSettings: true
+      addToolchain: true
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -218,7 +218,7 @@ describe('toolchains tests', () => {
     await toolchains.createToolchainsSettings({
       jdkInfo,
       settingsDirectory: m2Dir,
-      overwriteSettings: true
+      addToolchain: true
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -304,7 +304,7 @@ describe('toolchains tests', () => {
     await toolchains.createToolchainsSettings({
       jdkInfo,
       settingsDirectory: m2Dir,
-      overwriteSettings: true
+      addToolchain: true
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -382,7 +382,7 @@ describe('toolchains tests', () => {
     await toolchains.createToolchainsSettings({
       jdkInfo,
       settingsDirectory: m2Dir,
-      overwriteSettings: true
+      addToolchain: true
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -453,7 +453,7 @@ describe('toolchains tests', () => {
     await toolchains.createToolchainsSettings({
       jdkInfo,
       settingsDirectory: m2Dir,
-      overwriteSettings: true
+      addToolchain: true
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -546,7 +546,7 @@ describe('toolchains tests', () => {
     await toolchains.createToolchainsSettings({
       jdkInfo,
       settingsDirectory: m2Dir,
-      overwriteSettings: true
+      addToolchain: true
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -606,7 +606,7 @@ describe('toolchains tests', () => {
     await toolchains.createToolchainsSettings({
       jdkInfo,
       settingsDirectory: m2Dir,
-      overwriteSettings: true
+      addToolchain: true
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -665,7 +665,7 @@ describe('toolchains tests', () => {
     await toolchains.createToolchainsSettings({
       jdkInfo,
       settingsDirectory: m2Dir,
-      overwriteSettings: true
+      addToolchain: true
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -749,7 +749,7 @@ describe('toolchains tests', () => {
     await toolchains.createToolchainsSettings({
       jdkInfo,
       settingsDirectory: m2Dir,
-      overwriteSettings: true
+      addToolchain: true
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -829,7 +829,7 @@ describe('toolchains tests', () => {
     await toolchains.createToolchainsSettings({
       jdkInfo,
       settingsDirectory: m2Dir,
-      overwriteSettings: true
+      addToolchain: true
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -884,7 +884,7 @@ describe('toolchains tests', () => {
     await toolchains.createToolchainsSettings({
       jdkInfo,
       settingsDirectory: m2Dir,
-      overwriteSettings: false
+      addToolchain: false
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -944,6 +944,7 @@ describe('toolchains tests', () => {
       version,
       distributionName,
       jdkHome,
+      true,
       undefined
     );
 

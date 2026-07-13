@@ -5,7 +5,6 @@ import * as core from '@actions/core';
 import * as io from '@actions/io';
 import * as constants from './constants.js';
 
-import {getBooleanInput} from './util.js';
 import {create as xmlCreate} from 'xmlbuilder2';
 
 interface JdkInfo {
@@ -19,6 +18,7 @@ export async function configureToolchains(
   version: string,
   distributionName: string,
   jdkHome: string,
+  addToolchain: boolean,
   toolchainId?: string
 ) {
   const vendor =
@@ -27,10 +27,6 @@ export async function configureToolchains(
   const settingsDirectory =
     core.getInput(constants.INPUT_SETTINGS_PATH) ||
     path.join(os.homedir(), constants.M2_DIR);
-  const overwriteSettings = getBooleanInput(
-    constants.INPUT_OVERWRITE_SETTINGS,
-    true
-  );
 
   await createToolchainsSettings({
     jdkInfo: {
@@ -40,18 +36,18 @@ export async function configureToolchains(
       jdkHome
     },
     settingsDirectory,
-    overwriteSettings
+    addToolchain
   });
 }
 
 export async function createToolchainsSettings({
   jdkInfo,
   settingsDirectory,
-  overwriteSettings
+  addToolchain
 }: {
   jdkInfo: JdkInfo;
   settingsDirectory: string;
-  overwriteSettings: boolean;
+  addToolchain: boolean;
 }) {
   core.info(
     `Creating ${constants.MVN_TOOLCHAINS_FILE} for JDK version ${jdkInfo.version} from ${jdkInfo.vendor}`
@@ -71,7 +67,7 @@ export async function createToolchainsSettings({
   await writeToolchainsFileToDisk(
     settingsDirectory,
     updatedToolchains,
-    overwriteSettings
+    addToolchain
   );
 }
 
@@ -175,11 +171,11 @@ async function readExistingToolchainsFile(directory: string) {
 async function writeToolchainsFileToDisk(
   directory: string,
   settings: string,
-  overwriteSettings: boolean
+  addToolchain: boolean
 ) {
   const location = path.join(directory, constants.MVN_TOOLCHAINS_FILE);
   const settingsExists = fs.existsSync(location);
-  if (settingsExists && overwriteSettings) {
+  if (settingsExists && addToolchain) {
     core.info(`Overwriting existing file ${location}`);
   } else if (!settingsExists) {
     core.info(`Writing to ${location}`);
