@@ -756,14 +756,17 @@ jobs:
           Write-Host "$envName=$JavaVersionPath"
         shell: pwsh
       - name: Verify Java 21 outputs are set
+        env:
+          JAVA_21_PATH: ${{ steps.setup-java-21.outputs.path }}
+          JAVA_21_VERSION: ${{ steps.setup-java-21.outputs.version }}
         run: |
-          echo "Java 21 path=${{ steps.setup-java-21.outputs.path }}"
-          echo "Java 21 version=${{ steps.setup-java-21.outputs.version }}"
-          if [ -z "${{ steps.setup-java-21.outputs.path }}" ]; then
+          echo "Java 21 path=$JAVA_21_PATH"
+          echo "Java 21 version=$JAVA_21_VERSION"
+          if [ -z "$JAVA_21_PATH" ]; then
             echo "Java 21 path output should be set"
             exit 1
           fi
-          if [ -z "${{ steps.setup-java-21.outputs.version }}" ]; then
+          if [ -z "$JAVA_21_VERSION" ]; then
             echo "Java 21 version output should be set"
             exit 1
           fi
