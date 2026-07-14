@@ -842,7 +842,7 @@ describe('toolchains tests', () => {
     // The pre-existing (Sun 1.6) toolchain must be preserved ...
     expect(updated).toContain('<id>sun_1.6</id>');
     expect(updated).toContain('<jdkHome>/opt/jdk/sun/1.6</jdkHome>');
-    // ... and the newly installed JDK must be appended.
+    // ... and the newly installed JDK must be included in the merged result.
     expect(updated).toContain('<id>temurin_17</id>');
     expect(updated).toContain('<vendor>Eclipse Temurin</vendor>');
     expect(updated).toContain(`<jdkHome>${jdkInfo.jdkHome}</jdkHome>`);
