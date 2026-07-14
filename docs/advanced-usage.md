@@ -801,6 +801,8 @@ The `setup-java` action generates a basic [Maven Toolchains declaration](https:/
 ### Installing Multiple JDKs With Toolchains
 Subsequent calls to `setup-java` with distinct distribution and version parameters will continue to extend the toolchains declaration and make all specified Java versions available.
 
+Toolchain entries are always merged non-destructively: existing JDK, custom, and user-managed toolchains are preserved, and only an entry with the exact same `type` and `provides.id` is replaced. This behavior is independent of the `overwrite-settings` input, which only controls regeneration of `settings.xml`. As a result, running `setup-java` several times in the same job (for example in multiple steps or with multiple `java-version` values) accumulates every JDK in `toolchains.xml` instead of dropping previously registered entries.
+
 ```yaml
 steps:
 - uses: actions/setup-java@v5
