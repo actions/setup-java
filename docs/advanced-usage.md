@@ -4,6 +4,7 @@
   - [Adopt](#Adopt)
   - [Zulu](#Zulu)
   - [Liberica](#Liberica)
+  - [Liberica Native Image Kit](#Liberica-Native-Image-Kit)
   - [Microsoft](#Microsoft)
   - [Amazon Corretto](#Amazon-Corretto)
   - [Oracle](#Oracle)
@@ -83,6 +84,20 @@ steps:
     java-version: '25'
     java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
 - run: java --version
+```
+
+### Liberica Native Image Kit
+Liberica Native Image Kit (NIK) is a GraalVM-based distribution. `java-version` selects the underlying JDK version (e.g. `17`, `21`, `25`). Use `java-package: jdk+fx` to get the `full` bundle with JavaFX/Swing support; otherwise the `standard` bundle (with extra languages) is installed. Available on Linux, macOS and Windows for `x64` and `aarch64`.
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'liberica-nik'
+    java-version: '25'
+    java-package: jdk # optional (jdk or jdk+fx) - defaults to jdk
+- run: native-image --version
 ```
 
 ### Microsoft
