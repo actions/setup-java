@@ -51968,23 +51968,28 @@ const CACHE_KEY_PREFIX = 'setup-java';
 const supportedPackageManager = [
     {
         id: 'maven',
-        path: [
-            (0, path_1.join)(os_1.default.homedir(), '.m2', 'repository'),
-            (0, path_1.join)(os_1.default.homedir(), '.m2', 'wrapper', 'dists')
-        ],
+        path: [(0, path_1.join)(os_1.default.homedir(), '.m2', 'repository')],
         // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---maven
         pattern: [
             '**/pom.xml',
             '**/.mvn/wrapper/maven-wrapper.properties',
             '**/.mvn/extensions.xml'
+        ],
+        // The Maven wrapper distribution only depends on the wrapper properties,
+        // which change very rarely, so it is cached separately from the local
+        // repository. This keeps it available across the frequent pom.xml changes
+        // that rotate the main cache key. See issue #1095.
+        additionalCaches: [
+            {
+                name: 'maven-wrapper',
+                path: [(0, path_1.join)(os_1.default.homedir(), '.m2', 'wrapper', 'dists')],
+                pattern: ['**/.mvn/wrapper/maven-wrapper.properties']
+            }
         ]
     },
     {
         id: 'gradle',
-        path: [
-            (0, path_1.join)(os_1.default.homedir(), '.gradle', 'caches'),
-            (0, path_1.join)(os_1.default.homedir(), '.gradle', 'wrapper')
-        ],
+        path: [(0, path_1.join)(os_1.default.homedir(), '.gradle', 'caches')],
         // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---gradle
         pattern: [
             '**/*.gradle*',
@@ -51993,6 +51998,17 @@ const supportedPackageManager = [
             'buildSrc/**/Dependencies.kt',
             'gradle/*.versions.toml',
             '**/versions.properties'
+        ],
+        // The Gradle wrapper distribution only depends on the wrapper properties,
+        // which change very rarely, so it is cached separately from the Gradle
+        // caches. This keeps it available across the frequent *.gradle* changes
+        // that rotate the main cache key. See issue #269.
+        additionalCaches: [
+            {
+                name: 'gradle-wrapper',
+                path: [(0, path_1.join)(os_1.default.homedir(), '.gradle', 'wrapper')],
+                pattern: ['**/gradle-wrapper.properties']
+            }
         ]
     },
     {
@@ -52029,6 +52045,19 @@ function findPackageManager(id) {
     return packageManager;
 }
 /**
+ * State keys used to carry an additional cache's restore-time information over
+ * to the post (save) action, scoped by the additional cache name.
+ */
+function additionalCachePrimaryKeyState(name) {
+    return `${STATE_CACHE_PRIMARY_KEY}-${name}`;
+}
+function additionalCacheMatchedKeyState(name) {
+    return `${CACHE_MATCHED_KEY}-${name}`;
+}
+function buildCacheKey(id, fileHash) {
+    return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${process.arch}-${id}-${fileHash}`;
+}
+/**
  * A function that generates a cache key to use.
  * Format of the generated key will be "${{ platform }}-${{ id }}-${{ fileHash }}"".
  * @see {@link https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows#matching-a-cache-key|spec of cache key}
@@ -52042,7 +52071,21 @@ function computeCacheKey(packageManager, cacheDependencyPath) {
         if (!fileHash) {
             throw new Error(`No file in ${process.cwd()} matched to [${pattern}], make sure you have checked out the target repository`);
         }
-        return `${CACHE_KEY_PREFIX}-${process.env['RUNNER_OS']}-${process.arch}-${packageManager.id}-${fileHash}`;
+        return buildCacheKey(packageManager.id, fileHash);
+    });
+}
+/**
+ * Computes the cache key for an additional cache. Unlike {@link computeCacheKey}
+ * this returns undefined (instead of throwing) when no file matches the pattern,
+ * because additional caches are optional features that many projects do not use.
+ */
+function computeAdditionalCacheKey(additionalCache) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const fileHash = yield glob.hashFiles(additionalCache.pattern.join('\n'));
+        if (!fileHash) {
+            return undefined;
+        }
+        return buildCacheKey(additionalCache.name, fileHash);
     });
 }
 /**
@@ -52051,6 +52094,7 @@ function computeCacheKey(packageManager, cacheDependencyPath) {
  * @param cacheDependencyPath The path to a dependency file
  */
 function restore(id, cacheDependencyPath) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const packageManager = findPackageManager(id);
         const primaryKey = yield computeCacheKey(packageManager, cacheDependencyPath);
@@ -52068,19 +52112,48 @@ function restore(id, cacheDependencyPath) {
             core.setOutput('cache-hit', false);
             core.info(`${packageManager.id} cache is not found`);
         }
+        for (const additionalCache of (_a = packageManager.additionalCaches) !== null && _a !== void 0 ? _a : []) {
+            yield restoreAdditionalCache(additionalCache);
+        }
     });
 }
 exports.restore = restore;
+/**
+ * Restore an additional cache (e.g. a build-tool wrapper distribution) that is
+ * keyed independently of the main dependency cache so that it survives changes
+ * to volatile dependency files. Skips silently when the project does not use
+ * the corresponding feature.
+ */
+function restoreAdditionalCache(additionalCache) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const primaryKey = yield computeAdditionalCacheKey(additionalCache);
+        if (!primaryKey) {
+            core.debug(`No file matched [${additionalCache.pattern}] for the ${additionalCache.name} cache, skipping.`);
+            return;
+        }
+        core.debug(`${additionalCache.name} primary key is ${primaryKey}`);
+        core.saveState(additionalCachePrimaryKeyState(additionalCache.name), primaryKey);
+        const matchedKey = yield cache.restoreCache(additionalCache.path, primaryKey);
+        if (matchedKey) {
+            core.saveState(additionalCacheMatchedKeyState(additionalCache.name), matchedKey);
+            core.info(`${additionalCache.name} cache restored from key: ${matchedKey}`);
+        }
+    });
+}
 /**
  * Save the dependency cache
  * @param id ID of the package manager, should be "maven" or "gradle"
  */
 function save(id) {
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         const packageManager = findPackageManager(id);
         const matchedKey = core.getState(CACHE_MATCHED_KEY);
         // Inputs are re-evaluated before the post action, so we want the original key used for restore
         const primaryKey = core.getState(STATE_CACHE_PRIMARY_KEY);
+        for (const additionalCache of (_a = packageManager.additionalCaches) !== null && _a !== void 0 ? _a : []) {
+            yield saveAdditionalCache(packageManager, additionalCache);
+        }
         if (!primaryKey) {
             core.warning('Error retrieving key from state.');
             return;
@@ -52117,6 +52190,52 @@ function save(id) {
     });
 }
 exports.save = save;
+/**
+ * Save an additional cache under its own key. Skips when no key was recorded at
+ * restore time (feature unused) or when the exact key was already restored.
+ */
+function saveAdditionalCache(packageManager, additionalCache) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const primaryKey = core.getState(additionalCachePrimaryKeyState(additionalCache.name));
+        const matchedKey = core.getState(additionalCacheMatchedKeyState(additionalCache.name));
+        if (!primaryKey) {
+            // The feature is not used by this project, nothing to save.
+            core.debug(`No primary key for the ${additionalCache.name} cache, not saving cache.`);
+            return;
+        }
+        else if (matchedKey === primaryKey) {
+            core.info(`Cache hit occurred on the ${additionalCache.name} primary key ${primaryKey}, not saving cache.`);
+            return;
+        }
+        try {
+            const cacheId = yield cache.saveCache(additionalCache.path, primaryKey);
+            if (cacheId === -1) {
+                core.debug(`${additionalCache.name} cache was not saved for the key: ${primaryKey}`);
+                return;
+            }
+            core.info(`${additionalCache.name} cache saved with the key: ${primaryKey}`);
+        }
+        catch (error) {
+            const err = error;
+            if (err.name === cache.ValidationError.name) {
+                // The cache paths did not resolve, e.g. the wrapper distribution was
+                // never downloaded because a system build tool was used or the download
+                // failed. Optional wrapper caches must not fail the post step, so skip.
+                core.debug(`${additionalCache.name} cache paths do not exist, not saving cache: ${err.message}`);
+                return;
+            }
+            if (err.name === cache.ReserveCacheError.name) {
+                core.info(err.message);
+            }
+            else {
+                if (isProbablyGradleDaemonProblem(packageManager, err)) {
+                    core.warning('Failed to save Gradle cache on Windows. If tar.exe reported "Permission denied", try to run Gradle with `--no-daemon` option. Refer to https://github.com/actions/cache/issues/454 for details.');
+                }
+                throw error;
+            }
+        }
+    });
+}
 /**
  * @param packageManager the specified package manager by user
  * @param error the error thrown by the saveCache
