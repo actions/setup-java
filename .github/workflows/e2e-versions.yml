@@ -722,10 +722,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify JAVA_HOME still points to Java 17
+        env:
+          JAVA_17_PATH: ${{ steps.setup-java-17.outputs.path }}
         run: |
           echo "JAVA_HOME=$JAVA_HOME"
-          echo "Java 17 path=${{ steps.setup-java-17.outputs.path }}"
-          if [ "$JAVA_HOME" != "${{ steps.setup-java-17.outputs.path }}" ]; then
+          echo "Java 17 path=$JAVA_17_PATH"
+          if [ "$JAVA_HOME" != "$JAVA_17_PATH" ]; then
             echo "JAVA_HOME should still point to Java 17"
             exit 1
           fi
