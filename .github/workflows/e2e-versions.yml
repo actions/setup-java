@@ -704,6 +704,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Setup Java 17 as default
         uses: ./
         id: setup-java-17
