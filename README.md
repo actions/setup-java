@@ -124,6 +124,7 @@ Currently, the following distributions are supported:
 | `adopt` or `adopt-hotspot` | [AdoptOpenJDK Hotspot](https://adoptopenjdk.net/) | [`adopt-hotspot` license](https://adoptopenjdk.net/about.html) |
 | `adopt-openj9` | [AdoptOpenJDK OpenJ9](https://adoptopenjdk.net/) | [`adopt-openj9` license](https://adoptopenjdk.net/about.html) |
 | `liberica` | [Liberica JDK](https://bell-sw.com/) | [`liberica` license](https://bell-sw.com/liberica_eula/) |
+| `liberica-nik` | [Liberica Native Image Kit](https://bell-sw.com/pages/downloads/native-image-kit/) | [`liberica-nik` license](https://bell-sw.com/liberica_nik_eula/) |
 | `microsoft` | [Microsoft Build of OpenJDK](https://www.microsoft.com/openjdk) | [`microsoft` license](https://docs.microsoft.com/java/openjdk/faq)
 | `corretto` | [Amazon Corretto Build of OpenJDK](https://aws.amazon.com/corretto/) | [`corretto` license](https://aws.amazon.com/corretto/faqs/)
 | `semeru` | [IBM Semeru Runtime Open Edition](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) | [`semeru` license](https://openjdk.java.net/legal/gplv2+ce.html) |
@@ -303,6 +304,7 @@ In the example above multiple JDKs are installed for the same job. The result af
   - [Adopt](docs/advanced-usage.md#Adopt)
   - [Zulu](docs/advanced-usage.md#Zulu)
   - [Liberica](docs/advanced-usage.md#Liberica)
+  - [Liberica Native Image Kit](docs/advanced-usage.md#Liberica-Native-Image-Kit)
   - [Microsoft](docs/advanced-usage.md#Microsoft)
   - [Amazon Corretto](docs/advanced-usage.md#Amazon-Corretto)
   - [Oracle](docs/advanced-usage.md#Oracle)
