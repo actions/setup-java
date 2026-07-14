@@ -304,14 +304,21 @@ To run the JavaFX application in CI:
 ## Ensuring the Maven cache is complete (plugin dependencies)
 
 When you enable `cache: maven`, the action caches your local Maven repository
-(`~/.m2/repository`) and downloaded Maven Wrapper distributions
-(`~/.m2/wrapper/dists`). The cache key is a hash of your Maven inputs — every
+(`~/.m2/repository`). The cache key is a hash of your Maven inputs — every
 `**/pom.xml`, plus `**/.mvn/wrapper/maven-wrapper.properties` and
 `**/.mvn/extensions.xml` — so changing any of those files (for example bumping
 the wrapper version or editing core extensions) produces a new key and
 invalidates the cache. At the end of the job the action saves whatever was
 downloaded during that run. It does **not** re-save the cache when the key
 already matches (a cache *hit*).
+
+Downloaded Maven Wrapper distributions (`~/.m2/wrapper/dists`) are cached in a
+**separate** cache entry keyed only on `**/.mvn/wrapper/maven-wrapper.properties`.
+Because the wrapper distribution changes far less often than your `pom.xml`
+files, this keeps it available across the frequent dependency changes that
+rotate the main cache key, so wrapper-based (`./mvnw`) builds don't re-download
+the Maven distribution on every dependency change. See
+[issue #1095](https://github.com/actions/setup-java/issues/1095).
 
 Maven resolves **plugin** dependencies lazily: it only downloads the plugins and
 plugin dependencies required by the goals that actually execute. As a result, the

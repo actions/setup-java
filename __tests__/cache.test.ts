@@ -166,10 +166,7 @@ describe('dependency cache', () => {
 
         await restore('maven', '');
         expect(spyCacheRestore).toHaveBeenCalledWith(
-          [
-            join(os.homedir(), '.m2', 'repository'),
-            join(os.homedir(), '.m2', 'wrapper', 'dists')
-          ],
+          [join(os.homedir(), '.m2', 'repository')],
           expect.any(String)
         );
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
@@ -196,10 +193,7 @@ describe('dependency cache', () => {
 
         await restore('maven', '');
         expect(spyCacheRestore).toHaveBeenCalledWith(
-          [
-            join(os.homedir(), '.m2', 'repository'),
-            join(os.homedir(), '.m2', 'wrapper', 'dists')
-          ],
+          [join(os.homedir(), '.m2', 'repository')],
           expect.any(String)
         );
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
@@ -214,10 +208,7 @@ describe('dependency cache', () => {
 
         await restore('maven', '');
         expect(spyCacheRestore).toHaveBeenCalledWith(
-          [
-            join(os.homedir(), '.m2', 'repository'),
-            join(os.homedir(), '.m2', 'wrapper', 'dists')
-          ],
+          [join(os.homedir(), '.m2', 'repository')],
           expect.any(String)
         );
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
@@ -225,6 +216,47 @@ describe('dependency cache', () => {
         );
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith('maven cache is not found');
+      });
+      it('restores the maven wrapper distribution cache independently of the main cache', async () => {
+        createDirectory(join(workspace, '.mvn'));
+        createDirectory(join(workspace, '.mvn', 'wrapper'));
+        createFile(
+          join(workspace, '.mvn', 'wrapper', 'maven-wrapper.properties')
+        );
+
+        await restore('maven', '');
+        // Main dependency cache no longer carries the wrapper dists path.
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [join(os.homedir(), '.m2', 'repository')],
+          expect.any(String)
+        );
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [join(os.homedir(), '.m2', 'wrapper', 'dists')],
+          expect.stringContaining('maven-wrapper')
+        );
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/.mvn/wrapper/maven-wrapper.properties'
+        );
+      });
+      it('skips the maven wrapper cache when no wrapper properties exist', async () => {
+        createFile(join(workspace, 'pom.xml'));
+        spyGlobHashFiles.mockImplementation((pattern: string) =>
+          Promise.resolve(
+            pattern === '**/.mvn/wrapper/maven-wrapper.properties'
+              ? ''
+              : 'hash-stub'
+          )
+        );
+
+        await restore('maven', '');
+        // Only the main dependency cache is restored; the wrapper cache path is
+        // never touched because the project does not use mvnw.
+        expect(spyCacheRestore).toHaveBeenCalledTimes(1);
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [join(os.homedir(), '.m2', 'repository')],
+          expect.any(String)
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
       });
     });
     describe('for gradle', () => {
@@ -281,6 +313,43 @@ describe('dependency cache', () => {
         );
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
+      });
+      it('restores the gradle wrapper distribution cache independently of the main cache', async () => {
+        createFile(join(workspace, 'build.gradle'));
+
+        await restore('gradle', '');
+        // Main dependency cache no longer carries the wrapper path.
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [join(os.homedir(), '.gradle', 'caches')],
+          expect.any(String)
+        );
+        // Wrapper distribution is restored on its own, keyed only on the
+        // wrapper properties file.
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [join(os.homedir(), '.gradle', 'wrapper')],
+          expect.stringContaining('setup-java-')
+        );
+        expect(spyGlobHashFiles).toHaveBeenCalledWith(
+          '**/gradle-wrapper.properties'
+        );
+      });
+      it('skips the gradle wrapper cache when no wrapper properties exist', async () => {
+        createFile(join(workspace, 'build.gradle'));
+        spyGlobHashFiles.mockImplementation((pattern: string) =>
+          Promise.resolve(
+            pattern === '**/gradle-wrapper.properties' ? '' : 'hash-stub'
+          )
+        );
+
+        await restore('gradle', '');
+        // Only the main dependency cache is restored; the wrapper cache path is
+        // never touched because the project does not use the gradle wrapper.
+        expect(spyCacheRestore).toHaveBeenCalledTimes(1);
+        expect(spyCacheRestore).toHaveBeenCalledWith(
+          [join(os.homedir(), '.gradle', 'caches')],
+          expect.any(String)
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
       });
     });
     describe('for sbt', () => {
@@ -457,6 +526,77 @@ describe('dependency cache', () => {
           expect.stringMatching(/^Cache saved with the key:.*/)
         );
       });
+      it('saves the maven wrapper distribution cache under its own key', async () => {
+        createFile(join(workspace, 'pom.xml'));
+        (core.getState as jest.Mock<any>).mockImplementation((name: any) => {
+          switch (name) {
+            case 'cache-primary-key':
+              return 'setup-java-cache-primary-key';
+            case 'cache-matched-key':
+              return 'setup-java-cache-matched-key';
+            case 'cache-primary-key-maven-wrapper':
+              return 'setup-java-maven-wrapper-key';
+            default:
+              return '';
+          }
+        });
+
+        await save('maven');
+        expect(spyCacheSave).toHaveBeenCalledWith(
+          [join(os.homedir(), '.m2', 'wrapper', 'dists')],
+          'setup-java-maven-wrapper-key'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+      });
+      it('does not save the maven wrapper cache on an exact wrapper hit', async () => {
+        createFile(join(workspace, 'pom.xml'));
+        (core.getState as jest.Mock<any>).mockImplementation((name: any) => {
+          switch (name) {
+            case 'cache-primary-key':
+              return 'setup-java-cache-primary-key';
+            case 'cache-matched-key':
+              return 'setup-java-cache-matched-key';
+            case 'cache-primary-key-maven-wrapper':
+            case 'cache-matched-key-maven-wrapper':
+              return 'setup-java-maven-wrapper-key';
+            default:
+              return '';
+          }
+        });
+
+        await save('maven');
+        expect(spyCacheSave).not.toHaveBeenCalledWith(
+          [join(os.homedir(), '.m2', 'wrapper', 'dists')],
+          expect.any(String)
+        );
+      });
+      it('does not fail the post step when the wrapper distribution path is missing', async () => {
+        createFile(join(workspace, 'pom.xml'));
+        (core.getState as jest.Mock<any>).mockImplementation((name: any) => {
+          switch (name) {
+            case 'cache-primary-key':
+              return 'setup-java-cache-primary-key';
+            case 'cache-matched-key':
+              return 'setup-java-cache-matched-key';
+            case 'cache-primary-key-maven-wrapper':
+              return 'setup-java-maven-wrapper-key';
+            default:
+              return '';
+          }
+        });
+        spyCacheSave.mockImplementation((paths: string[]) =>
+          paths.includes(join(os.homedir(), '.m2', 'wrapper', 'dists'))
+            ? Promise.reject(
+                new cache.ValidationError(
+                  'Path Validation Error: Path(s) specified in the action for caching do(es) not exist'
+                )
+              )
+            : Promise.resolve(0)
+        );
+
+        await expect(save('maven')).resolves.toBeUndefined();
+        expect(spyWarning).not.toHaveBeenCalled();
+      });
     });
     describe('for gradle', () => {
       it('uploads cache even if no build.gradle found', async () => {
@@ -507,6 +647,50 @@ describe('dependency cache', () => {
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith(
           expect.stringMatching(/^Cache saved with the key:.*/)
+        );
+      });
+      it('saves the gradle wrapper distribution cache under its own key', async () => {
+        createFile(join(workspace, 'build.gradle'));
+        (core.getState as jest.Mock<any>).mockImplementation((name: any) => {
+          switch (name) {
+            case 'cache-primary-key':
+              return 'setup-java-cache-primary-key';
+            case 'cache-matched-key':
+              return 'setup-java-cache-matched-key';
+            case 'cache-primary-key-gradle-wrapper':
+              return 'setup-java-gradle-wrapper-key';
+            default:
+              return '';
+          }
+        });
+
+        await save('gradle');
+        expect(spyCacheSave).toHaveBeenCalledWith(
+          [join(os.homedir(), '.gradle', 'wrapper')],
+          'setup-java-gradle-wrapper-key'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
+      });
+      it('does not save the gradle wrapper cache on an exact wrapper hit', async () => {
+        createFile(join(workspace, 'build.gradle'));
+        (core.getState as jest.Mock<any>).mockImplementation((name: any) => {
+          switch (name) {
+            case 'cache-primary-key':
+              return 'setup-java-cache-primary-key';
+            case 'cache-matched-key':
+              return 'setup-java-cache-matched-key';
+            case 'cache-primary-key-gradle-wrapper':
+            case 'cache-matched-key-gradle-wrapper':
+              return 'setup-java-gradle-wrapper-key';
+            default:
+              return '';
+          }
+        });
+
+        await save('gradle');
+        expect(spyCacheSave).not.toHaveBeenCalledWith(
+          [join(os.homedir(), '.gradle', 'wrapper')],
+          expect.any(String)
         );
       });
     });
