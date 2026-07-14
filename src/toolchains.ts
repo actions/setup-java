@@ -5,7 +5,6 @@ import * as core from '@actions/core';
 import * as io from '@actions/io';
 import * as constants from './constants';
 
-import {getBooleanInput} from './util';
 import {create as xmlCreate} from 'xmlbuilder2';
 
 interface JdkInfo {
@@ -27,10 +26,6 @@ export async function configureToolchains(
   const settingsDirectory =
     core.getInput(constants.INPUT_SETTINGS_PATH) ||
     path.join(os.homedir(), constants.M2_DIR);
-  const overwriteSettings = getBooleanInput(
-    constants.INPUT_OVERWRITE_SETTINGS,
-    true
-  );
 
   await createToolchainsSettings({
     jdkInfo: {
@@ -39,19 +34,16 @@ export async function configureToolchains(
       id,
       jdkHome
     },
-    settingsDirectory,
-    overwriteSettings
+    settingsDirectory
   });
 }
 
 export async function createToolchainsSettings({
   jdkInfo,
-  settingsDirectory,
-  overwriteSettings
+  settingsDirectory
 }: {
   jdkInfo: JdkInfo;
   settingsDirectory: string;
-  overwriteSettings: boolean;
 }) {
   core.info(
     `Creating ${constants.MVN_TOOLCHAINS_FILE} for JDK version ${jdkInfo.version} from ${jdkInfo.vendor}`
@@ -68,11 +60,7 @@ export async function createToolchainsSettings({
     jdkInfo.id,
     jdkInfo.jdkHome
   );
-  await writeToolchainsFileToDisk(
-    settingsDirectory,
-    updatedToolchains,
-    overwriteSettings
-  );
+  await writeToolchainsFileToDisk(settingsDirectory, updatedToolchains);
 }
 
 // only exported for testing purposes
@@ -172,22 +160,19 @@ async function readExistingToolchainsFile(directory: string) {
   return '';
 }
 
-async function writeToolchainsFileToDisk(
-  directory: string,
-  settings: string,
-  overwriteSettings: boolean
-) {
+async function writeToolchainsFileToDisk(directory: string, settings: string) {
   const location = path.join(directory, constants.MVN_TOOLCHAINS_FILE);
   const settingsExists = fs.existsSync(location);
-  if (settingsExists && overwriteSettings) {
-    core.info(`Overwriting existing file ${location}`);
-  } else if (!settingsExists) {
-    core.info(`Writing to ${location}`);
+  // The toolchains file is produced by a non-destructive merge (existing JDK,
+  // custom, and non-jdk toolchains are preserved – see generateToolchainDefinition),
+  // so it is always safe to write it. Unlike settings.xml, it is therefore not
+  // gated behind the `overwrite-settings` input; that would prevent subsequent
+  // setup-java runs from registering additional JDKs and silently drop the
+  // toolchain entries created by earlier runs.
+  if (settingsExists) {
+    core.info(`Updating existing file ${location}`);
   } else {
-    core.info(
-      `Skipping generation of ${location} because file already exists and overwriting is not enabled`
-    );
-    return;
+    core.info(`Writing to ${location}`);
   }
 
   return fs.writeFileSync(location, settings, {

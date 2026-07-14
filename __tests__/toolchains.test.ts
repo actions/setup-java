@@ -46,8 +46,7 @@ describe('toolchains tests', () => {
 
     await toolchains.createToolchainsSettings({
       jdkInfo,
-      settingsDirectory: altHome,
-      overwriteSettings: true
+      settingsDirectory: altHome
     });
 
     expect(fs.existsSync(m2Dir)).toBe(false);
@@ -95,8 +94,7 @@ describe('toolchains tests', () => {
 
     await toolchains.createToolchainsSettings({
       jdkInfo,
-      settingsDirectory: m2Dir,
-      overwriteSettings: true
+      settingsDirectory: m2Dir
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -177,8 +175,7 @@ describe('toolchains tests', () => {
 
     await toolchains.createToolchainsSettings({
       jdkInfo,
-      settingsDirectory: m2Dir,
-      overwriteSettings: true
+      settingsDirectory: m2Dir
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -263,8 +260,7 @@ describe('toolchains tests', () => {
 
     await toolchains.createToolchainsSettings({
       jdkInfo,
-      settingsDirectory: m2Dir,
-      overwriteSettings: true
+      settingsDirectory: m2Dir
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -341,8 +337,7 @@ describe('toolchains tests', () => {
 
     await toolchains.createToolchainsSettings({
       jdkInfo,
-      settingsDirectory: m2Dir,
-      overwriteSettings: true
+      settingsDirectory: m2Dir
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -412,8 +407,7 @@ describe('toolchains tests', () => {
 
     await toolchains.createToolchainsSettings({
       jdkInfo,
-      settingsDirectory: m2Dir,
-      overwriteSettings: true
+      settingsDirectory: m2Dir
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -505,8 +499,7 @@ describe('toolchains tests', () => {
 
     await toolchains.createToolchainsSettings({
       jdkInfo,
-      settingsDirectory: m2Dir,
-      overwriteSettings: true
+      settingsDirectory: m2Dir
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -565,8 +558,7 @@ describe('toolchains tests', () => {
 
     await toolchains.createToolchainsSettings({
       jdkInfo,
-      settingsDirectory: m2Dir,
-      overwriteSettings: true
+      settingsDirectory: m2Dir
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -624,8 +616,7 @@ describe('toolchains tests', () => {
 
     await toolchains.createToolchainsSettings({
       jdkInfo,
-      settingsDirectory: m2Dir,
-      overwriteSettings: true
+      settingsDirectory: m2Dir
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -708,8 +699,7 @@ describe('toolchains tests', () => {
 
     await toolchains.createToolchainsSettings({
       jdkInfo,
-      settingsDirectory: m2Dir,
-      overwriteSettings: true
+      settingsDirectory: m2Dir
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -788,8 +778,7 @@ describe('toolchains tests', () => {
 
     await toolchains.createToolchainsSettings({
       jdkInfo,
-      settingsDirectory: m2Dir,
-      overwriteSettings: true
+      settingsDirectory: m2Dir
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
@@ -814,7 +803,7 @@ describe('toolchains tests', () => {
     ).toEqual(result);
   }, 100000);
 
-  it('does not overwrite existing toolchains.xml files', async () => {
+  it('extends existing toolchains.xml files instead of overwriting them', async () => {
     const jdkInfo = {
       version: '17',
       vendor: 'Eclipse Temurin',
@@ -843,13 +832,20 @@ describe('toolchains tests', () => {
 
     await toolchains.createToolchainsSettings({
       jdkInfo,
-      settingsDirectory: m2Dir,
-      overwriteSettings: false
+      settingsDirectory: m2Dir
     });
 
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
-    expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(originalFile);
+
+    const updated = fs.readFileSync(toolchainsFile, 'utf-8');
+    // The pre-existing (Sun 1.6) toolchain must be preserved ...
+    expect(updated).toContain('<id>sun_1.6</id>');
+    expect(updated).toContain('<jdkHome>/opt/jdk/sun/1.6</jdkHome>');
+    // ... and the newly installed JDK must be included in the merged result.
+    expect(updated).toContain('<id>temurin_17</id>');
+    expect(updated).toContain('<vendor>Eclipse Temurin</vendor>');
+    expect(updated).toContain(`<jdkHome>${jdkInfo.jdkHome}</jdkHome>`);
   }, 100000);
 
   it('generates valid toolchains.xml with minimal configuration', () => {
@@ -913,5 +909,56 @@ describe('toolchains tests', () => {
         jdkHome
       )
     );
+  }, 100000);
+
+  it('preserves toolchains from previous executions across multiple setup-java runs', async () => {
+    // Regression test for https://github.com/actions/setup-java/issues/1099
+    // Running setup-java several times in the same job (e.g. multiple steps / multiple
+    // java-version entries) must accumulate every JDK in toolchains.xml rather
+    // than replacing previously registered entries.
+    jest.spyOn(core, 'getInput').mockImplementation((name: string) => {
+      if (name === 'settings-path') return m2Dir;
+      return '';
+    });
+
+    const runs = [
+      {
+        version: '8',
+        distributionName: 'temurin',
+        id: 'temurin_8',
+        jdkHome: '/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/8.0.1-12/x64'
+      },
+      {
+        version: '11',
+        distributionName: 'temurin',
+        id: 'temurin_11',
+        jdkHome: '/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/11.0.1-12/x64'
+      },
+      {
+        version: '17',
+        distributionName: 'temurin',
+        id: 'temurin_17',
+        jdkHome: '/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.1-12/x64'
+      }
+    ];
+
+    for (const run of runs) {
+      await toolchains.configureToolchains(
+        run.version,
+        run.distributionName,
+        run.jdkHome,
+        undefined
+      );
+    }
+
+    expect(fs.existsSync(toolchainsFile)).toBe(true);
+    const contents = fs.readFileSync(toolchainsFile, 'utf-8');
+
+    for (const run of runs) {
+      expect(contents).toContain(`<id>${run.id}</id>`);
+      expect(contents).toContain(`<jdkHome>${run.jdkHome}</jdkHome>`);
+    }
+    // Exactly one <toolchain> entry per run – no duplicates, none dropped.
+    expect((contents.match(/<toolchain>/g) || []).length).toBe(runs.length);
   }, 100000);
 });
