@@ -424,7 +424,7 @@ jobs:
       env:
         MAVEN_USERNAME: maven_username123
         MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
-        MAVEN_GPG_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+        MAVEN_GPG_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # ASCII-armored secret key (TSK), e.g. from `gpg --armor --export-secret-keys YOUR_ID`
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 ```
 
@@ -440,10 +440,6 @@ The two `settings.xml` files created from the above example look like the follow
       <id>github</id>
       <username>${env.GITHUB_ACTOR}</username>
       <password>${env.GITHUB_TOKEN}</password>
-    </server>
-    <server>
-      <id>gpg.passphrase</id>
-      <passphrase>${env.GPG_PASSPHRASE}</passphrase>
     </server>
   </servers>
 </settings>
@@ -470,13 +466,15 @@ If you don't want to overwrite the `settings.xml` file, you can set `overwrite-s
 
 ### GPG
 
-If `gpg-private-key` input is provided, the private key will be written to a file in the runner's temp directory, the private key file will be imported into the GPG keychain, and then the file will be promptly removed before proceeding with the rest of the setup process. A cleanup step will remove the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances).
+The example above uses the [Maven GPG Plugin](https://maven.apache.org/plugins/maven-gpg-plugin/)'s Bouncy Castle signer (`-Dgpg.signer=bc`, available since `maven-gpg-plugin` 3.2.0). It is a pure-Java signer that reads the key directly from the `MAVEN_GPG_KEY` environment variable, so it does **not** require the `gpg` executable, importing the key into a GPG keychain, or the `--pinentry-mode loopback` workaround in your `pom.xml`. The key must be an ASCII-armored secret key (transferable secret key format).
 
 **GPG key should be exported by: `gpg --armor --export-secret-keys YOUR_ID`**
 
+Alternatively, you can let setup-java manage the key by providing the `gpg-private-key` and `gpg-passphrase` inputs. In that case the private key is written to a file in the runner's temp directory, imported into the GPG keychain, and the file is promptly removed before proceeding with the rest of the setup process. A cleanup step removes the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances). This path uses the default `gpg` signer and may require the `--pinentry-mode loopback` configuration and a `gpg.passphrase` server entry in `settings.xml`.
+
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
 
-***NOTE***: If the error that states, `gpg: Sorry, no terminal at all requested - can't get input` [is encountered](https://github.com/actions/setup-java/issues/554), please update the version of `maven-gpg-plugin` to 1.6 or higher.
+***NOTE***: If, when using the default `gpg` signer, the error `gpg: Sorry, no terminal at all requested - can't get input` [is encountered](https://github.com/actions/setup-java/issues/554), please update the version of `maven-gpg-plugin` to 1.6 or higher.
 
 ## Apache Maven with a settings path
 
