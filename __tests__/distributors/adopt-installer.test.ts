@@ -1,21 +1,59 @@
-import {HttpClient} from '@actions/http-client';
-import {IAdoptAvailableVersions} from '../../src/distributions/adopt/models';
 import {
-  AdoptDistribution,
-  AdoptImplementation
-} from '../../src/distributions/adopt/installer';
-import {TemurinDistribution} from '../../src/distributions/temurin/installer';
-import {JavaInstallerOptions} from '../../src/distributions/base-models';
-
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
+import {HttpClient} from '@actions/http-client';
 import os from 'os';
 
-import manifestData from '../data/adopt.json';
-import * as core from '@actions/core';
+import manifestData from '../data/adopt.json' with {type: 'json'};
+
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const {AdoptDistribution, AdoptImplementation} =
+  await import('../../src/distributions/adopt/installer.js');
+const {TemurinDistribution} =
+  await import('../../src/distributions/temurin/installer.js');
+
+import type {IAdoptAvailableVersions} from '../../src/distributions/adopt/models.js';
+import type {AdoptImplementation as AdoptImplementationType} from '../../src/distributions/adopt/installer.js';
+import type {JavaInstallerOptions} from '../../src/distributions/base-models.js';
 
 describe('getAvailableVersions', () => {
-  let spyHttpClient: jest.SpyInstance;
-  let spyCoreError: jest.SpyInstance;
-  let spyCoreWarning: jest.SpyInstance;
+  let spyHttpClient: any;
+  let spyCoreError: any;
+  let spyCoreWarning: any;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -26,9 +64,9 @@ describe('getAvailableVersions', () => {
     });
 
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
-    spyCoreWarning = jest.spyOn(core, 'warning');
+    spyCoreWarning = core.warning as jest.Mock;
     spyCoreWarning.mockImplementation(() => {});
   });
 
@@ -123,7 +161,7 @@ describe('getAvailableVersions', () => {
     'build correct url for %s',
     async (
       installerOptions: JavaInstallerOptions,
-      impl: AdoptImplementation,
+      impl: AdoptImplementationType,
       expectedParameters
     ) => {
       const distribution = new AdoptDistribution(installerOptions, impl);
@@ -204,7 +242,7 @@ describe('getAvailableVersions', () => {
     [AdoptImplementation.OpenJ9, 'jre', 'Java_Adopt-OpenJ9_jre']
   ])(
     'find right toolchain folder',
-    (impl: AdoptImplementation, packageType: string, expected: string) => {
+    (impl: AdoptImplementationType, packageType: string, expected: string) => {
       const distribution = new AdoptDistribution(
         {
           version: '11',
@@ -263,11 +301,11 @@ describe('findPackageForDownload', () => {
       url: 'https://example.test/temurin-11.tar.gz'
     };
     const temurinFindPackageForDownload = jest
-      .fn()
+      .fn<any>()
       .mockResolvedValue(temurinRelease);
     const temurinDistribution = {
       findPackageForDownload: temurinFindPackageForDownload
-    } as unknown as TemurinDistribution;
+    } as any;
 
     const distribution = new AdoptDistribution(
       {
@@ -279,7 +317,7 @@ describe('findPackageForDownload', () => {
       AdoptImplementation.Hotspot,
       temurinDistribution
     );
-    const adoptLookupSpy = jest.fn();
+    const adoptLookupSpy = jest.fn<any>();
     distribution['getAvailableVersions'] = adoptLookupSpy;
 
     const resolvedVersion = await distribution['findPackageForDownload']('11');

@@ -1,18 +1,18 @@
-import {JavaBase} from '../base-installer';
+import {JavaBase} from '../base-installer.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 import semver from 'semver';
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
   isVersionSatisfies,
   renameWinArchive
-} from '../../util';
+} from '../../util.js';
 import * as core from '@actions/core';
-import {ArchitectureOptions, LibericaVersion, OsVersions} from './models';
+import {ArchitectureOptions, LibericaVersion, OsVersions} from './models.js';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';

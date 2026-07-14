@@ -5,14 +5,14 @@ import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
 
-import {JavaBase} from '../base-installer';
-import {IJetBrainsRawVersion, IJetBrainsVersion} from './models';
+import {JavaBase} from '../base-installer.js';
+import {IJetBrainsRawVersion, IJetBrainsVersion} from './models.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
-import {extractJdkFile, isVersionSatisfies} from '../../util';
+} from '../base-models.js';
+import {extractJdkFile, isVersionSatisfies} from '../../util.js';
 import {OutgoingHttpHeaders} from 'http';
 import {HttpCodes} from '@actions/http-client';
 

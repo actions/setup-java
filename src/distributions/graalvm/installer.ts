@@ -3,25 +3,26 @@ import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
-import {JavaBase} from '../base-installer';
+import {JavaBase} from '../base-installer.js';
 import {HttpCodes} from '@actions/http-client';
-import {GraalVMEAVersion} from './models';
+import {GraalVMEAVersion} from './models.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 import {
   convertVersionToSemver,
   extractJdkFile,
   getDownloadArchiveExtension,
   getGitHubHttpHeaders,
+  getLatestMajorVersion,
   getNextPageUrlFromLinkHeader,
   isVersionSatisfies,
   MAX_PAGINATION_PAGES,
   renameWinArchive,
   validatePaginationUrl
-} from '../../util';
+} from '../../util.js';
 
 const GRAALVM_DL_BASE = 'https://download.oracle.com/graalvm';
 const GRAALVM_DOWNLOAD_URL = 'https://www.graalvm.org/downloads/';
@@ -119,6 +120,13 @@ export class GraalVMDistribution extends JavaBase {
       return this.findEABuildDownloadUrl(`${range}-ea`);
     }
 
+    // The `latest` alias is normalized to the SemVer wildcard. Oracle GraalVM
+    // builds its download URLs from a concrete major and has no endpoint to list
+    // releases, so resolve the newest available GA major from the Adoptium API.
+    if (this.latest) {
+      range = (await getLatestMajorVersion(this.http)).toString();
+    }
+
     const {platform, extension, major} = this.validateStableBuildRequest(range);
 
     const fileUrl = this.constructFileUrl(
@@ -203,6 +211,9 @@ export class GraalVMDistribution extends JavaBase {
     if (statusCode === HttpCodes.NotFound) {
       // Create the standard error with additional hint about checking the download URL
       const error = this.createVersionNotFoundError(range);
+      if (this.latest) {
+        error.message += `\nThe latest Java major version (${range}) is not yet available for the ${this.distribution} distribution. Please specify a concrete version instead of 'latest'.`;
+      }
       error.message += `\nPlease check if this version is available at ${GRAALVM_DOWNLOAD_URL} . Pick a version from the list.`;
       throw error;
     }
@@ -300,17 +311,20 @@ export class GraalVMDistribution extends JavaBase {
         // Check if it's a 404 error (file not found)
         if (error.message?.includes('404')) {
           throw new Error(
-            `GraalVM EA version '${javaEaVersion}' not found. Please verify the version exists in the EA builds repository.`
+            `GraalVM EA version '${javaEaVersion}' not found. Please verify the version exists in the EA builds repository.`,
+            {cause: error}
           );
         }
         // Re-throw with more context
         throw new Error(
-          `Failed to fetch GraalVM EA version information for '${javaEaVersion}': ${error.message}`
+          `Failed to fetch GraalVM EA version information for '${javaEaVersion}': ${error.message}`,
+          {cause: error}
         );
       }
       // If it's not an Error instance, throw a generic error
       throw new Error(
-        `Failed to fetch GraalVM EA version information for '${javaEaVersion}'`
+        `Failed to fetch GraalVM EA version information for '${javaEaVersion}'`,
+        {cause: error}
       );
     }
   }
@@ -351,7 +365,27 @@ export class GraalVMCommunityDistribution extends GraalVMDistribution {
     }
 
     const arch = this.getSupportedArchitecture();
-    const {platform, extension} = this.validateStableBuildRequest(range);
+
+    // GraalVM Community publishes its releases on GitHub, so the `latest` alias
+    // (normalized to the SemVer wildcard `x`) can float to the newest GA it
+    // actually ships. Unlike Oracle GraalVM (which has no listing endpoint and
+    // must derive the newest major from the Adoptium API), we match against the
+    // real release list here, so `latest` never fails when GraalVM lags behind a
+    // brand-new Java major.
+    let platform: OsVersions;
+    let extension: string;
+    if (this.latest) {
+      if (this.packageType !== 'jdk') {
+        throw new Error(
+          `${this.distribution} provides only the \`jdk\` package type`
+        );
+      }
+      platform = this.getPlatform();
+      extension = getDownloadArchiveExtension();
+    } else {
+      ({platform, extension} = this.validateStableBuildRequest(range));
+    }
+
     // GraalVM Community asset names embed the platform, architecture and
     // archive type, e.g. `graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz`.
     const assetSuffix = `_${platform}-${arch}_bin.${extension}`;

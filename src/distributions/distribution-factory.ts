@@ -1,21 +1,26 @@
-import {JavaBase} from './base-installer';
-import {JavaInstallerOptions} from './base-models';
-import {LocalDistribution} from './local/installer';
-import {ZuluDistribution} from './zulu/installer';
-import {AdoptDistribution, AdoptImplementation} from './adopt/installer';
-import {TemurinDistribution, TemurinImplementation} from './temurin/installer';
-import {LibericaDistributions} from './liberica/installer';
-import {MicrosoftDistributions} from './microsoft/installer';
-import {SemeruDistribution} from './semeru/installer';
-import {CorrettoDistribution} from './corretto/installer';
-import {OracleDistribution} from './oracle/installer';
-import {DragonwellDistribution} from './dragonwell/installer';
-import {SapMachineDistribution} from './sapmachine/installer';
+import {JavaBase} from './base-installer.js';
+import {JavaInstallerOptions} from './base-models.js';
+import {LocalDistribution} from './local/installer.js';
+import {ZuluDistribution} from './zulu/installer.js';
+import {AdoptDistribution, AdoptImplementation} from './adopt/installer.js';
+import {
+  TemurinDistribution,
+  TemurinImplementation
+} from './temurin/installer.js';
+import {LibericaDistributions} from './liberica/installer.js';
+import {LibericaNikDistributions} from './liberica-nik/installer.js';
+import {MicrosoftDistributions} from './microsoft/installer.js';
+import {SemeruDistribution} from './semeru/installer.js';
+import {CorrettoDistribution} from './corretto/installer.js';
+import {OracleDistribution} from './oracle/installer.js';
+import {DragonwellDistribution} from './dragonwell/installer.js';
+import {SapMachineDistribution} from './sapmachine/installer.js';
 import {
   GraalVMCommunityDistribution,
   GraalVMDistribution
-} from './graalvm/installer';
-import {JetBrainsDistribution} from './jetbrains/installer';
+} from './graalvm/installer.js';
+import {JetBrainsDistribution} from './jetbrains/installer.js';
+import {KonaDistribution} from './kona/installer.js';
 
 enum JavaDistribution {
   Adopt = 'adopt',
@@ -24,6 +29,7 @@ enum JavaDistribution {
   Temurin = 'temurin',
   Zulu = 'zulu',
   Liberica = 'liberica',
+  LibericaNik = 'liberica-nik',
   JdkFile = 'jdkfile',
   Microsoft = 'microsoft',
   Semeru = 'semeru',
@@ -33,7 +39,8 @@ enum JavaDistribution {
   SapMachine = 'sapmachine',
   GraalVM = 'graalvm',
   GraalVMCommunity = 'graalvm-community',
-  JetBrains = 'jetbrains'
+  JetBrains = 'jetbrains',
+  Kona = 'kona'
 }
 
 export function getJavaDistribution(
@@ -64,6 +71,8 @@ export function getJavaDistribution(
       return new ZuluDistribution(installerOptions);
     case JavaDistribution.Liberica:
       return new LibericaDistributions(installerOptions);
+    case JavaDistribution.LibericaNik:
+      return new LibericaNikDistributions(installerOptions);
     case JavaDistribution.Microsoft:
       return new MicrosoftDistributions(installerOptions);
     case JavaDistribution.Semeru:
@@ -82,6 +91,8 @@ export function getJavaDistribution(
       return new GraalVMCommunityDistribution(installerOptions);
     case JavaDistribution.JetBrains:
       return new JetBrainsDistribution(installerOptions);
+    case JavaDistribution.Kona:
+      return new KonaDistribution(installerOptions);
     default:
       return null;
   }

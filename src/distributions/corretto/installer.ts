@@ -7,17 +7,17 @@ import {
   getDownloadArchiveExtension,
   convertVersionToSemver,
   renameWinArchive
-} from '../../util';
-import {JavaBase} from '../base-installer';
+} from '../../util.js';
+import {JavaBase} from '../base-installer.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 import {
   ICorrettoAllAvailableVersions,
   ICorrettoAvailableVersions
-} from './models';
+} from './models.js';
 
 export class CorrettoDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -59,10 +59,28 @@ export class CorrettoDistribution extends JavaBase {
     if (!this.stable) {
       throw new Error('Early access versions are not supported');
     }
+    const availableVersions = await this.getAvailableVersions();
+
+    // The `latest` alias is normalized to the SemVer wildcard, but Corretto
+    // matches on an exact major version, so resolve it to the newest available
+    // major from Corretto's own list.
+    if (this.latest) {
+      const majors = availableVersions
+        .map(item => parseInt(item.version, 10))
+        .filter(major => Number.isFinite(major) && major > 0);
+
+      if (majors.length === 0) {
+        throw new Error(
+          'Could not determine the latest available Corretto major version from remote metadata'
+        );
+      }
+
+      version = Math.max(...majors).toString();
+    }
+
     if (version.includes('.')) {
       throw new Error('Only major versions are supported');
     }
-    const availableVersions = await this.getAvailableVersions();
     const matchingVersions = availableVersions
       .filter(item => item.version == version)
       .map(item => {
@@ -127,8 +145,7 @@ export class CorrettoDistribution extends JavaBase {
 
   private getAvailableVersionsForPlatform(
     eligibleVersions:
-      | ICorrettoAllAvailableVersions['os']['arch']['imageType']
-      | undefined
+      ICorrettoAllAvailableVersions['os']['arch']['imageType'] | undefined
   ): ICorrettoAvailableVersions[] {
     const availableVersions: ICorrettoAvailableVersions[] = [];
 

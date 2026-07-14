@@ -4,14 +4,16 @@ import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
+import * as gpg from '../../gpg.js';
 
-import {JavaBase} from '../base-installer';
-import {ITemurinAvailableVersions} from './models';
+import {ADOPTIUM_PUBLIC_KEY} from './adoptium-key.js';
+import {JavaBase} from '../base-installer.js';
+import {ITemurinAvailableVersions} from './models.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from '../base-models';
+} from '../base-models.js';
 import {
   extractJdkFile,
   getNextPageUrlFromLinkHeader,
@@ -20,7 +22,9 @@ import {
   renameWinArchive,
   MAX_PAGINATION_PAGES,
   validatePaginationUrl
-} from '../../util';
+} from '../../util.js';
+
+export {ADOPTIUM_PUBLIC_KEY} from './adoptium-key.js';
 
 export enum TemurinImplementation {
   Hotspot = 'Hotspot'
@@ -50,7 +54,8 @@ export class TemurinDistribution extends JavaBase {
           : item.version_data.semver.replace('-beta+', '+');
         return {
           version: formattedVersion,
-          url: item.binaries[0].package.link
+          url: item.binaries[0].package.link,
+          signatureUrl: item.binaries[0].package.signature_link
         } as JavaDownloadRelease;
       });
 
@@ -80,6 +85,29 @@ export class TemurinDistribution extends JavaBase {
     );
     let javaArchivePath = await tc.downloadTool(javaRelease.url);
 
+    if (this.verifySignature) {
+      if (!javaRelease.signatureUrl) {
+        throw new Error(
+          `Input 'verify-signature' is enabled, but no signature URL was found for Temurin version ${javaRelease.version}.`
+        );
+      }
+      core.info(`Verifying Java package signature...`);
+      try {
+        await gpg.verifyPackageSignature(
+          javaArchivePath,
+          javaRelease.signatureUrl,
+          this.verifySignaturePublicKey ?? ADOPTIUM_PUBLIC_KEY
+        );
+      } catch (error) {
+        throw new Error(
+          `Failed to verify signature for Temurin version ${javaRelease.version} from ${javaRelease.signatureUrl}: ${
+            (error as Error).message
+          }`,
+          {cause: error}
+        );
+      }
+    }
+
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
     if (process.platform === 'win32') {
@@ -103,6 +131,10 @@ export class TemurinDistribution extends JavaBase {
 
   protected get toolcacheFolderName(): string {
     return super.toolcacheFolderName;
+  }
+
+  protected supportsSignatureVerification(): boolean {
+    return true;
   }
 
   private async getAvailableVersions(): Promise<ITemurinAvailableVersions[]> {

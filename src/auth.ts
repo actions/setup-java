@@ -6,9 +6,9 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 import {create as xmlCreate} from 'xmlbuilder2';
-import * as constants from './constants';
-import * as gpg from './gpg';
-import {getBooleanInput} from './util';
+import * as constants from './constants.js';
+import * as gpg from './gpg.js';
+import {getBooleanInput} from './util.js';
 
 export async function configureAuthentication() {
   const id = core.getInput(constants.INPUT_SERVER_ID);
@@ -80,6 +80,7 @@ export function generate(
       '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
       '@xsi:schemaLocation':
         'http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd',
+      interactiveMode: false,
       servers: {
         server: [
           {

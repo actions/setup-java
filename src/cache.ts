@@ -28,7 +28,11 @@ const supportedPackageManager: PackageManager[] = [
       join(os.homedir(), '.m2', 'wrapper', 'dists')
     ],
     // https://github.com/actions/cache/blob/0638051e9af2c23d10bb70fa9beffcad6cff9ce3/examples.md#java---maven
-    pattern: ['**/pom.xml', '**/.mvn/wrapper/maven-wrapper.properties']
+    pattern: [
+      '**/pom.xml',
+      '**/.mvn/wrapper/maven-wrapper.properties',
+      '**/.mvn/extensions.xml'
+    ]
   },
   {
     id: 'gradle',
@@ -114,6 +118,7 @@ export async function restore(id: string, cacheDependencyPath: string) {
   const primaryKey = await computeCacheKey(packageManager, cacheDependencyPath);
   core.debug(`primary key is ${primaryKey}`);
   core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
+  core.setOutput(STATE_CACHE_PRIMARY_KEY, primaryKey);
 
   // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
   const matchedKey = await cache.restoreCache(packageManager.path, primaryKey);

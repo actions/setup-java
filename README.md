@@ -18,6 +18,10 @@ The `setup-java` action provides the following functionality for GitHub Actions 
 
 This action allows you to work with Java and Scala projects.
 
+## What's new in V6
+
+- **Migrated to ESM** to enable support for the latest `@actions/*` package versions. This is an internal implementation change only. No changes are required to your workflow configuration, and the action's behavior is unchanged. Existing workflows continue to work as before.
+
 ## Breaking changes in V5
 
 - Upgraded action from node20 to node24
@@ -29,17 +33,23 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `java-version`: The Java version that is going to be set up. Takes a whole or [semver](#supported-version-syntax) Java version. If not specified, the action will expect `java-version-file` input to be specified.
 
-  - `java-version-file`: The path to a file containing java version. Supported file types are `.java-version` and `.tool-versions`. See more details in [about .java-version-file](docs/advanced-usage.md#Java-version-file).
+  - `java-version-file`: The path to a file containing java version. Supported file types are `.java-version`, `.tool-versions`, and `.sdkmanrc`. See more details in [about .java-version-file](docs/advanced-usage.md#Java-version-file).
 
-  - `distribution`: _(required)_ Java [distribution](#supported-distributions).
+  - `distribution`: Java [distribution](#supported-distributions). Required unless `java-version-file` points to `.sdkmanrc` with a recognized distribution suffix (for example `java=21.0.5-tem`).
 
-  - `java-package`: The packaging variant of the chosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. Default value: `jdk`.
+  - `java-package`: The packaging variant of the chosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. For Azul Zulu, `jdk+crac` and `jre+crac` are also supported. Default value: `jdk`.
 
   - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
 
-  - `jdkFile`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM. Note: `distribution` must be set to 'jdkfile' (case-sensitive; all lowercase) when using this option.
+  - `jdk-file`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM. Note: `distribution` must be set to 'jdkfile' (case-sensitive; all lowercase) when using this option. (The camelCase `jdkFile` input is still accepted as a deprecated alias and may be removed in a future release.)
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
+
+  - `set-default`: Set to `false` to install a JDK without making it the default. When `false`, `JAVA_HOME` and `PATH` are not updated, but `JAVA_HOME_<major>_<arch>` is still set so the JDK remains discoverable. Default value: `true`. See [Installing JDK without setting as default](docs/advanced-usage.md#Installing-JDK-without-setting-as-default) for more details.
+
+  - `verify-signature`: Verifies downloaded Java package signatures when supported by the selected distribution. Currently supported for `temurin` and `microsoft`. If set to `true` for unsupported distributions, the action fails.
+
+  - `verify-signature-public-key`: ASCII-armored GPG public key used to verify the downloaded package signature. Overrides the default bundled key for the selected distribution.
 
   - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
 
@@ -94,7 +104,16 @@ steps:
 The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation. The values below are examples, not an exhaustive list:
 - major versions, such as: `8`, `11`, `16`, `17`, `21`, `25`
 - more specific versions: `8.0.282+8`, `8.0.232`, `11.0`, `11.0.4`, `17.0`
+- multi-field Java versions (JEP 322), such as: `11.0.9.1`, `18.0.1.1`
 - early access (EA) versions: `15-ea`, `15.0.0-ea`
+- the `latest` alias, which floats to the newest available stable (GA) release
+
+> [!NOTE]
+> - `latest` always resolves the newest version from the distribution's remote metadata (it behaves like `check-latest: true`), so it ignores any older version already present in the runner tool cache. This has the same performance trade-off described in [Check latest](#check-latest).
+> - `latest` is only supported through the `java-version` input, not through `java-version-file`, and it resolves stable (GA) releases only — it cannot be combined with `-ea`.
+> - The `jdkfile` distribution does not support `latest`, as it installs from a local file.
+> - For `oracle` and `graalvm` (Oracle GraalVM), `latest` uses the Adoptium API only to determine the newest GA **major version number** — the JDK binary itself is still downloaded from the Oracle / GraalVM servers for that major. Because these distributions have no endpoint to list their own releases, if their servers haven't published the resolved major yet, the action fails and asks you to specify a concrete version. Note the Oracle JDK license caveat below still applies to a floating `latest`.
+> - For `graalvm-community`, `latest` floats to the newest GA release published on GitHub, so it never depends on the Adoptium API and always resolves to the newest major that GraalVM Community actually ships.
 
 #### Supported distributions
 Currently, the following distributions are supported:
@@ -105,6 +124,7 @@ Currently, the following distributions are supported:
 | `adopt` or `adopt-hotspot` | [AdoptOpenJDK Hotspot](https://adoptopenjdk.net/) | [`adopt-hotspot` license](https://adoptopenjdk.net/about.html) |
 | `adopt-openj9` | [AdoptOpenJDK OpenJ9](https://adoptopenjdk.net/) | [`adopt-openj9` license](https://adoptopenjdk.net/about.html) |
 | `liberica` | [Liberica JDK](https://bell-sw.com/) | [`liberica` license](https://bell-sw.com/liberica_eula/) |
+| `liberica-nik` | [Liberica Native Image Kit](https://bell-sw.com/pages/downloads/native-image-kit/) | [`liberica-nik` license](https://bell-sw.com/liberica_nik_eula/) |
 | `microsoft` | [Microsoft Build of OpenJDK](https://www.microsoft.com/openjdk) | [`microsoft` license](https://docs.microsoft.com/java/openjdk/faq)
 | `corretto` | [Amazon Corretto Build of OpenJDK](https://aws.amazon.com/corretto/) | [`corretto` license](https://aws.amazon.com/corretto/faqs/)
 | `semeru` | [IBM Semeru Runtime Open Edition](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) | [`semeru` license](https://openjdk.java.net/legal/gplv2+ce.html) |
@@ -114,12 +134,13 @@ Currently, the following distributions are supported:
 | `graalvm` | [Oracle GraalVM](https://www.graalvm.org/) | [`graalvm` license](https://www.oracle.com/downloads/licenses/graal-free-license.html)
 | `graalvm-community` | [GraalVM Community](https://github.com/graalvm/graalvm-ce-builds/releases) | [`graalvm-community` license](https://github.com/oracle/graal/blob/master/LICENSE)
 | `jetbrains` | [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime/) | [`jetbrains` license](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE)
+| `kona` | [Tencent Kona JDK](https://tencent.github.io/konajdk/) | [`kona` license](https://tencent.github.io/konajdk/LICENSE.txt)
 | `jdkfile` | Custom JDK Installation | |
 
 > [!NOTE]
 > - The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
 > - AdoptOpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` and `adopt-openj9`, to `temurin` and `semeru` respectively, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
-> - For Azul Zulu OpenJDK architectures x64 and arm64 are mapped to x86 / arm with proper hw_bitness.
+> - For Azul Zulu OpenJDK, architecture `arm64` is mapped to `aarch64` when querying the Azul Metadata API.
 > - To comply with the GraalVM Free Terms and Conditions (GFTC) license, it is recommended to use GraalVM JDK 17 version 17.0.12, as this is the only version of GraalVM JDK 17 available under the GFTC license. Additionally, it is encouraged to consider upgrading to GraalVM JDK 21, which offers the latest features and improvements.
 > - GraalVM Community is available as `distribution: 'graalvm-community'` for stable JDK 17 and later releases published on GitHub.
 
@@ -131,14 +152,18 @@ Currently, the following distributions are supported:
 The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
 
 - gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, and `**/versions.properties`
-- maven: `**/pom.xml` and `**/.mvn/wrapper/maven-wrapper.properties`
+- maven: `**/pom.xml`, `**/.mvn/wrapper/maven-wrapper.properties`, and `**/.mvn/extensions.xml`
 - sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.scala`, `**/project/**.sbt`
 
 When the option `cache-dependency-path` is specified, the hash is based on the matching file. This option supports wildcards and a list of file names, and is especially useful for monorepos.
 
 The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
 
+The workflow output `cache-primary-key` exposes the primary cache key computed by the action for the configured build tool. It is useful for composing with [`actions/cache`](https://github.com/actions/cache) or [`actions/cache/restore`](https://github.com/actions/cache/tree/main/restore) in later steps or dependent jobs that need to reuse the exact same key. It is empty when caching is not enabled or when caching is skipped (for example, when the cache service is unavailable).
+
 The cache input is optional, and caching is turned off by default.
+
+**Maven Wrapper:** when `cache: 'maven'` is enabled, the action also caches and restores the Maven Wrapper distribution downloaded to `~/.m2/wrapper/dists` (in addition to the local repository), so wrapper-based (`./mvnw`) builds don't re-download the wrapper on every run. This is keyed on `**/.mvn/wrapper/maven-wrapper.properties` as shown above.
 
 #### Caching gradle dependencies
 ```yaml
@@ -173,6 +198,13 @@ steps:
 - name: Build with Maven
   run: mvn -B package --file pom.xml
 ```
+
+> [!NOTE]
+> Maven resolves plugin dependencies lazily, so a cache created by a "thin" goal
+> (e.g. `mvn compile`) can be missing plugin dependencies that later
+> `test`/`verify`/`package` jobs then re-download on every run. See
+> [Ensuring the Maven cache is complete](docs/advanced-usage.md#ensuring-the-maven-cache-is-complete-plugin-dependencies)
+> for how to seed a complete cache.
 
 #### Caching sbt dependencies
 ```yaml
@@ -270,6 +302,7 @@ In the example above multiple JDKs are installed for the same job. The result af
   - [Adopt](docs/advanced-usage.md#Adopt)
   - [Zulu](docs/advanced-usage.md#Zulu)
   - [Liberica](docs/advanced-usage.md#Liberica)
+  - [Liberica Native Image Kit](docs/advanced-usage.md#Liberica-Native-Image-Kit)
   - [Microsoft](docs/advanced-usage.md#Microsoft)
   - [Amazon Corretto](docs/advanced-usage.md#Amazon-Corretto)
   - [Oracle](docs/advanced-usage.md#Oracle)
@@ -277,6 +310,7 @@ In the example above multiple JDKs are installed for the same job. The result af
   - [SapMachine](docs/advanced-usage.md#SapMachine)
   - [GraalVM](docs/advanced-usage.md#GraalVM)
   - [JetBrains](docs/advanced-usage.md#JetBrains)
+  - [Tencent Kona](docs/advanced-usage.md#Tencent-Kona)
 - [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](docs/advanced-usage.md#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](docs/advanced-usage.md#Installing-Java-from-local-file)

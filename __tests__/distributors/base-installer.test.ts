@@ -1,18 +1,89 @@
-import * as tc from '@actions/tool-cache';
-import * as core from '@actions/core';
-import * as util from '../../src/util';
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
+import type {
+  JavaDownloadRelease,
+  JavaInstallerOptions,
+  JavaInstallerResults
+} from '../../src/distributions/base-models.js';
 
 import path from 'path';
 import * as semver from 'semver';
 
-import {JavaBase} from '../../src/distributions/base-installer';
-import {
-  JavaDownloadRelease,
-  JavaInstallerOptions,
-  JavaInstallerResults
-} from '../../src/distributions/base-models';
-
 import os from 'os';
+
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+jest.unstable_mockModule('@actions/tool-cache', () => ({
+  find: jest.fn(),
+  findAllVersions: jest.fn(),
+  downloadTool: jest.fn(),
+  extractZip: jest.fn(),
+  extractTar: jest.fn(),
+  extract7z: jest.fn(),
+  extractXar: jest.fn(),
+  cacheDir: jest.fn(),
+  cacheFile: jest.fn(),
+  getManifestFromRepo: jest.fn(),
+  findFromManifest: jest.fn(),
+  evaluateVersions: jest.fn(),
+  HTTPError: class HTTPError extends Error {
+    httpStatusCode: number;
+    constructor(statusCode: number) {
+      super(`HTTP Error: ${statusCode}`);
+      this.httpStatusCode = statusCode;
+    }
+  }
+}));
+
+const real_util_module = await import('../../src/util.js');
+jest.unstable_mockModule('../../src/util.js', () => ({
+  ...real_util_module,
+  extractJdkFile: jest.fn(),
+  getDownloadArchiveExtension: jest.fn(),
+  getToolcachePath: jest.fn(),
+  isJobStatusSuccess: jest.fn(),
+  renameWinArchive: jest.fn(),
+  isVersionSatisfies: real_util_module.isVersionSatisfies,
+  getTempDir: real_util_module.getTempDir
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const tc = await import('@actions/tool-cache');
+const util = await import('../../src/util.js');
+const {JavaBase} = await import('../../src/distributions/base-installer.js');
 
 class EmptyJavaBase extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -53,12 +124,12 @@ describe('findInToolcache', () => {
   const javaPath = path.join('Java_Empty_jdk', actualJavaVersion, 'x64');
 
   let mockJavaBase: EmptyJavaBase;
-  let spyGetToolcachePath: jest.SpyInstance;
-  let spyTcFindAllVersions: jest.SpyInstance;
+  let spyGetToolcachePath: any;
+  let spyTcFindAllVersions: any;
 
   beforeEach(() => {
-    spyGetToolcachePath = jest.spyOn(util, 'getToolcachePath');
-    spyTcFindAllVersions = jest.spyOn(tc, 'findAllVersions');
+    spyGetToolcachePath = util.getToolcachePath as jest.Mock;
+    spyTcFindAllVersions = tc.findAllVersions as jest.Mock;
   });
 
   afterEach(() => {
@@ -241,17 +312,17 @@ describe('setupJava', () => {
 
   let mockJavaBase: EmptyJavaBase;
 
-  let spyGetToolcachePath: jest.SpyInstance;
-  let spyTcFindAllVersions: jest.SpyInstance;
-  let spyCoreDebug: jest.SpyInstance;
-  let spyCoreInfo: jest.SpyInstance;
-  let spyCoreExportVariable: jest.SpyInstance;
-  let spyCoreAddPath: jest.SpyInstance;
-  let spyCoreSetOutput: jest.SpyInstance;
-  let spyCoreError: jest.SpyInstance;
+  let spyGetToolcachePath: any;
+  let spyTcFindAllVersions: any;
+  let spyCoreDebug: any;
+  let spyCoreInfo: any;
+  let spyCoreExportVariable: any;
+  let spyCoreAddPath: any;
+  let spyCoreSetOutput: any;
+  let spyCoreError: any;
 
   beforeEach(() => {
-    spyGetToolcachePath = jest.spyOn(util, 'getToolcachePath');
+    spyGetToolcachePath = util.getToolcachePath as jest.Mock;
     spyGetToolcachePath.mockImplementation(
       (toolname: string, javaVersion: string, architecture: string) => {
         const semverVersion = new semver.Range(javaVersion);
@@ -269,27 +340,27 @@ describe('setupJava', () => {
       }
     );
 
-    spyTcFindAllVersions = jest.spyOn(tc, 'findAllVersions');
+    spyTcFindAllVersions = tc.findAllVersions as jest.Mock;
     spyTcFindAllVersions.mockReturnValue([installedJavaVersion]);
 
     // Spy on core methods
-    spyCoreDebug = jest.spyOn(core, 'debug');
+    spyCoreDebug = core.debug as jest.Mock;
     spyCoreDebug.mockImplementation(() => undefined);
 
-    spyCoreInfo = jest.spyOn(core, 'info');
+    spyCoreInfo = core.info as jest.Mock;
     spyCoreInfo.mockImplementation(() => undefined);
 
-    spyCoreAddPath = jest.spyOn(core, 'addPath');
+    spyCoreAddPath = core.addPath as jest.Mock;
     spyCoreAddPath.mockImplementation(() => undefined);
 
-    spyCoreExportVariable = jest.spyOn(core, 'exportVariable');
+    spyCoreExportVariable = core.exportVariable as jest.Mock;
     spyCoreExportVariable.mockImplementation(() => undefined);
 
-    spyCoreSetOutput = jest.spyOn(core, 'setOutput');
+    spyCoreSetOutput = core.setOutput as jest.Mock;
     spyCoreSetOutput.mockImplementation(() => undefined);
 
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => undefined);
 
     jest.spyOn(os, 'arch').mockReturnValue('x86' as ReturnType<typeof os.arch>);
@@ -347,6 +418,29 @@ describe('setupJava', () => {
       'Trying to resolve the latest version from remote'
     );
     expect(spyCoreInfo).not.toHaveBeenCalledWith('Trying to download...');
+  });
+
+  it('should resolve the latest version from remote when java-version is "latest", even if a version is cached', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: 'latest',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: actualJavaVersion,
+      path: javaPathInstalled
+    });
+
+    // `latest` must bypass the tool-cache short-circuit and always resolve remotely
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      'Trying to resolve the latest version from remote'
+    );
+    expect(spyCoreInfo).toHaveBeenCalledWith('Trying to download...');
+    expect(spyCoreInfo).not.toHaveBeenCalledWith(
+      `Resolved Java ${installedJavaVersion} from tool-cache`
+    );
   });
 
   it.each([
@@ -464,6 +558,24 @@ describe('setupJava', () => {
     }
   );
 
+  it('should fail when verify-signature is enabled for unsupported distributions', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false,
+      verifySignature: true
+    });
+
+    await expect(mockJavaBase.setupJava()).rejects.toThrow(
+      "Input 'verify-signature' is not supported for distribution 'Empty'."
+    );
+    expect(spyTcFindAllVersions).not.toHaveBeenCalled();
+    expect(spyCoreAddPath).not.toHaveBeenCalled();
+    expect(spyCoreExportVariable).not.toHaveBeenCalled();
+    expect(spyCoreSetOutput).not.toHaveBeenCalled();
+  });
+
   it.each([
     [
       {
@@ -545,17 +657,128 @@ describe('setupJava', () => {
     expect(spyCoreExportVariable).not.toHaveBeenCalled();
     expect(spyCoreSetOutput).not.toHaveBeenCalled();
   });
+
+  it('should not set JAVA_HOME and PATH when setDefault is false', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false,
+      setDefault: false
+    });
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: installedJavaVersion,
+      path: javaPath
+    });
+    expect(spyCoreExportVariable).not.toHaveBeenCalledWith(
+      'JAVA_HOME',
+      expect.anything()
+    );
+    expect(spyCoreAddPath).not.toHaveBeenCalled();
+    expect(spyCoreExportVariable).toHaveBeenCalledWith(
+      'JAVA_HOME_11_X86',
+      javaPath
+    );
+    expect(spyCoreSetOutput).toHaveBeenCalledWith(
+      'version',
+      installedJavaVersion
+    );
+    expect(spyCoreSetOutput).toHaveBeenCalledWith('path', javaPath);
+    expect(spyCoreSetOutput).toHaveBeenCalledWith('distribution', 'Empty');
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      `Installing Java ${installedJavaVersion} (not setting as default)`
+    );
+  });
+
+  it('should set JAVA_HOME and PATH when setDefault is true', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false,
+      setDefault: true
+    });
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: installedJavaVersion,
+      path: javaPath
+    });
+    expect(spyCoreExportVariable).toHaveBeenCalledWith('JAVA_HOME', javaPath);
+    expect(spyCoreAddPath).toHaveBeenCalledWith(path.join(javaPath, 'bin'));
+    expect(spyCoreExportVariable).toHaveBeenCalledWith(
+      'JAVA_HOME_11_X86',
+      javaPath
+    );
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      `Setting Java ${installedJavaVersion} as the default`
+    );
+  });
+
+  it('should default to setting as default when setDefault is not specified', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: installedJavaVersion,
+      path: javaPath
+    });
+    expect(spyCoreExportVariable).toHaveBeenCalledWith('JAVA_HOME', javaPath);
+    expect(spyCoreAddPath).toHaveBeenCalledWith(path.join(javaPath, 'bin'));
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      `Setting Java ${installedJavaVersion} as the default`
+    );
+  });
+
+  it('should download and not set default when setDefault is false', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false,
+      setDefault: false
+    });
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: '11.0.9',
+      path: path.join('toolcache', 'Java_Empty_jdk', '11.0.9', 'x64')
+    });
+    expect(spyCoreExportVariable).not.toHaveBeenCalledWith(
+      'JAVA_HOME',
+      expect.anything()
+    );
+    expect(spyCoreAddPath).not.toHaveBeenCalled();
+    expect(spyCoreExportVariable).toHaveBeenCalledWith(
+      'JAVA_HOME_11_X64',
+      path.join('toolcache', 'Java_Empty_jdk', '11.0.9', 'x64')
+    );
+    expect(spyCoreSetOutput).toHaveBeenCalledWith('version', '11.0.9');
+    expect(spyCoreSetOutput).toHaveBeenCalledWith(
+      'path',
+      path.join('toolcache', 'Java_Empty_jdk', '11.0.9', 'x64')
+    );
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      'Installing Java 11.0.9 (not setting as default)'
+    );
+  });
 });
 
 describe('normalizeVersion', () => {
   const DummyJavaBase = JavaBase as any;
 
   it.each([
-    ['11', {version: '11', stable: true}],
-    ['11.0', {version: '11.0', stable: true}],
-    ['11.0.10', {version: '11.0.10', stable: true}],
-    ['11-ea', {version: '11', stable: false}],
-    ['11.0.2-ea', {version: '11.0.2', stable: false}]
+    ['11', {version: '11', stable: true, latest: false}],
+    ['11.0', {version: '11.0', stable: true, latest: false}],
+    ['11.0.10', {version: '11.0.10', stable: true, latest: false}],
+    ['11-ea', {version: '11', stable: false, latest: false}],
+    ['11.0.2-ea', {version: '11.0.2', stable: false, latest: false}],
+    ['18.0.1.1', {version: '18.0.1+1', stable: true, latest: false}],
+    ['11.0.9.1', {version: '11.0.9+1', stable: true, latest: false}],
+    ['12.0.2.1.0', {version: '12.0.2+1.0', stable: true, latest: false}],
+    ['18.0.1.1-ea', {version: '18.0.1+1', stable: false, latest: false}],
+    ['latest', {version: 'x', stable: true, latest: true}],
+    ['LATEST', {version: 'x', stable: true, latest: true}],
+    ['  Latest  ', {version: 'x', stable: true, latest: true}]
   ])('normalizeVersion from %s to %s', (input, expected) => {
     expect(DummyJavaBase.prototype.normalizeVersion.call(null, input)).toEqual(
       expected
@@ -570,6 +793,17 @@ describe('normalizeVersion', () => {
       `The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`
     );
   });
+
+  it.each(['latest-ea', 'latest.1', 'LATEST-EA', '  latest-ea  '])(
+    'normalizeVersion should throw a targeted error for latest combined with a qualifier (%s)',
+    version => {
+      expect(
+        DummyJavaBase.prototype.normalizeVersion.bind(null, version)
+      ).toThrow(
+        `The 'latest' alias resolves stable (GA) releases only and cannot be combined with '-ea' or other qualifiers (received '${version}'). Use 'latest' on its own, or specify a concrete version.`
+      );
+    }
+  );
 });
 
 describe('createVersionNotFoundError', () => {

@@ -4,14 +4,14 @@ import * as core from '@actions/core';
 import fs from 'fs';
 import path from 'path';
 
-import {JavaBase} from '../base-installer';
+import {JavaBase} from '../base-installer.js';
 import {
   JavaInstallerOptions,
   JavaDownloadRelease,
   JavaInstallerResults
-} from '../base-models';
-import {extractJdkFile} from '../../util';
-import {MACOS_JAVA_CONTENT_POSTFIX} from '../../constants';
+} from '../base-models.js';
+import {extractJdkFile} from '../../util.js';
+import {MACOS_JAVA_CONTENT_POSTFIX} from '../../constants.js';
 
 export class LocalDistribution extends JavaBase {
   constructor(
@@ -22,6 +22,12 @@ export class LocalDistribution extends JavaBase {
   }
 
   public async setupJava(): Promise<JavaInstallerResults> {
+    if (this.latest) {
+      throw new Error(
+        "The 'latest' version alias is not supported for the 'jdkfile' distribution. Please specify a concrete version."
+      );
+    }
+
     let foundJava = this.findInToolcache();
 
     if (foundJava) {
@@ -69,9 +75,15 @@ export class LocalDistribution extends JavaBase {
       foundJava.path = macOSPostfixPath;
     }
 
-    core.info(`Setting Java ${foundJava.version} as default`);
-
-    this.setJavaDefault(foundJava.version, foundJava.path);
+    if (this.setDefault) {
+      core.info(`Setting Java ${foundJava.version} as the default`);
+      this.setJavaDefault(foundJava.version, foundJava.path);
+    } else {
+      core.info(
+        `Installing Java ${foundJava.version} (not setting as default)`
+      );
+      this.setJavaEnvironment(foundJava.version, foundJava.path);
+    }
     return foundJava;
   }
 

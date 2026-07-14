@@ -1,19 +1,64 @@
-import * as cache from '@actions/cache';
-import * as core from '@actions/core';
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterAll,
+  afterEach
+} from '@jest/globals';
+import {fileURLToPath} from 'url';
 import * as fs from 'fs';
 import * as path from 'path';
-import {
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Mock @actions/cache
+jest.unstable_mockModule('@actions/cache', () => ({
+  isFeatureAvailable: jest.fn(),
+  saveCache: jest.fn(),
+  restoreCache: jest.fn()
+}));
+
+// Mock @actions/core
+jest.unstable_mockModule('@actions/core', () => ({
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  setOutput: jest.fn(),
+  setFailed: jest.fn(),
+  warning: jest.fn(),
+  info: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+const cache = await import('@actions/cache');
+const core = await import('@actions/core');
+
+const {
   convertVersionToSemver,
   getNextPageUrlFromLinkHeader,
   getVersionFromFileContent,
   isVersionSatisfies,
   isCacheFeatureAvailable,
   isGhes,
-  validatePaginationUrl
-} from '../src/util';
-
-jest.mock('@actions/cache');
-jest.mock('@actions/core');
+  validatePaginationUrl,
+  getLatestMajorVersion
+} = await import('../src/util.js');
 
 describe('isVersionSatisfies', () => {
   it.each([
@@ -45,8 +90,10 @@ describe('isVersionSatisfies', () => {
 
 describe('isCacheFeatureAvailable', () => {
   it('isCacheFeatureAvailable disabled on GHES', () => {
-    jest.spyOn(cache, 'isFeatureAvailable').mockImplementation(() => false);
-    const infoMock = jest.spyOn(core, 'warning');
+    (cache.isFeatureAvailable as jest.Mock<any>).mockImplementation(
+      () => false
+    );
+    const infoMock = core.warning as jest.Mock;
     const message =
       'Caching is only supported on GHES version >= 3.5. If you are on a version >= 3.5, please check with your GHES admin if the Actions cache service is enabled or not.';
     try {
@@ -59,8 +106,10 @@ describe('isCacheFeatureAvailable', () => {
   });
 
   it('isCacheFeatureAvailable disabled on dotcom', () => {
-    jest.spyOn(cache, 'isFeatureAvailable').mockImplementation(() => false);
-    const infoMock = jest.spyOn(core, 'warning');
+    (cache.isFeatureAvailable as jest.Mock<any>).mockImplementation(
+      () => false
+    );
+    const infoMock = core.warning as jest.Mock;
     const message =
       'The runner was not able to contact the cache service. Caching will be skipped';
     try {
@@ -73,8 +122,13 @@ describe('isCacheFeatureAvailable', () => {
   });
 
   it('isCacheFeatureAvailable is enabled', () => {
-    jest.spyOn(cache, 'isFeatureAvailable').mockImplementation(() => true);
+    (cache.isFeatureAvailable as jest.Mock<any>).mockImplementation(() => true);
     expect(isCacheFeatureAvailable()).toBe(true);
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+    jest.clearAllMocks();
   });
 });
 
@@ -166,15 +220,60 @@ describe('validatePaginationUrl', () => {
 describe('getVersionFromFileContent', () => {
   describe('.sdkmanrc', () => {
     it.each([
-      ['java=11.0.20.1-tem', '11.0.20'],
-      ['java = 11.0.20.1-tem', '11.0.20'],
-      ['java=11.0.20.1-tem # a comment in sdkmanrc', '11.0.20'],
-      ['java=11.0.20.1-tem\n#java=21.0.20.1-tem\n', '11.0.20'], // choose first match
-      ['java=11.0.20.1-tem\njava=21.0.20.1-tem\n', '11.0.20'], // choose first match
-      ['#java=11.0.20.1-tem\njava=21.0.20.1-tem\n', '21.0.20'] // first one is 'commented' in .sdkmanrc
-    ])('parsing %s should return %s', (content: string, expected: string) => {
-      const actual = getVersionFromFileContent(content, 'openjdk', '.sdkmanrc');
-      expect(actual).toBe(expected);
+      ['java=11.0.20.1-tem', '11.0.20', 'temurin'],
+      ['java = 11.0.20.1-tem', '11.0.20', 'temurin'],
+      ['java=11.0.20.1-tem # a comment in sdkmanrc', '11.0.20', 'temurin'],
+      ['java=11.0.20.1-tem\n#java=21.0.20.1-tem\n', '11.0.20', 'temurin'], // choose first match
+      ['java=11.0.20.1-tem\njava=21.0.20.1-tem\n', '11.0.20', 'temurin'], // choose first match
+      ['#java=11.0.20.1-tem\njava=21.0.20.1-tem\n', '21.0.20', 'temurin'], // first one is 'commented' in .sdkmanrc
+      ['java=21.0.5-zulu', '21.0.5', 'zulu'],
+      ['java=17.0.13-albba', '17.0.13', 'dragonwell'],
+      ['java=17.0.13-amzn', '17', 'corretto'],
+      ['java=21.0.5-graal', '21.0.5', 'graalvm'],
+      ['java=17.0.9-graalce', '17.0.9', 'graalvm'],
+      ['java=11.0.25-librca', '11.0.25', 'liberica'],
+      ['java=11.0.25-ms', '11.0.25', 'microsoft'],
+      ['java=21.0.5-oracle', '21.0.5', 'oracle'],
+      ['java=11.0.25-sapmchn', '11.0.25', 'sapmachine'],
+      ['java=21.0.5-jbr', '21.0.5', 'jetbrains'],
+      ['java=11.0.25-sem', '11.0.25', 'semeru'],
+      ['java=17.0.13-dragonwell', '17.0.13', 'dragonwell'],
+      ['java=21.0.5-kona', '21.0.5', 'kona']
+    ])(
+      'parsing %s should return version %s and distribution %s',
+      (content: string, expectedVersion: string, expectedDist: string) => {
+        const actual = getVersionFromFileContent(
+          content,
+          'openjdk',
+          '.sdkmanrc'
+        );
+        expect(actual?.version).toBe(expectedVersion);
+        expect(actual?.distribution).toBe(expectedDist);
+      }
+    );
+
+    it('should warn and return undefined distribution for unknown identifier', () => {
+      const warnSpy = jest.spyOn(core, 'warning');
+      const actual = getVersionFromFileContent(
+        'java=21.0.5-unknown',
+        'temurin',
+        '.sdkmanrc'
+      );
+      expect(actual?.version).toBe('21.0.5');
+      expect(actual?.distribution).toBeUndefined();
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Unknown SDKMAN distribution identifier')
+      );
+    });
+
+    it('should return version without distribution when no suffix provided', () => {
+      const actual = getVersionFromFileContent(
+        'java=11.0.20',
+        'temurin',
+        '.sdkmanrc'
+      );
+      expect(actual?.version).toBe('11.0.20');
+      expect(actual?.distribution).toBeUndefined();
     });
 
     describe('known versions', () => {
@@ -193,8 +292,74 @@ describe('getVersionFromFileContent', () => {
             'openjdk',
             '.sdkmanrc'
           );
-          expect(actual).toBe(expected);
+          expect(actual?.version).toBe(expected);
         }
+      );
+    });
+  });
+
+  describe('.tool-versions', () => {
+    it.each([
+      ['java temurin-17.0.3+7', '17.0.3+7', 'temurin'],
+      ['java temurin-jre-17.0.3+7', '17.0.3+7', 'temurin'],
+      ['java adoptopenjdk-11.0.16+8', '11.0.16+8', 'temurin'],
+      ['java adoptopenjdk-openj9-11.0.16+8', '11.0.16+8', 'temurin'],
+      ['java zulu-11.56.19', '11.56.19', 'zulu'],
+      ['java corretto-17.0.13.11.1', '17', 'corretto'], // corretto -> major only
+      ['java liberica-11.0.15+10', '11.0.15+10', 'liberica'],
+      ['java microsoft-11.0.13.8.1', '11.0.13', 'microsoft'],
+      ['java semeru-openj9-11.0.25+9', '11.0.25+9', 'semeru'],
+      ['java ibm-openj9-11.0.25+9', '11.0.25+9', 'semeru'],
+      ['java dragonwell-17.0.13.0.13+11', '17.0.13', 'dragonwell'],
+      ['java graalvm-22.3.0+java17', '22.3.0+java17', 'graalvm'],
+      ['java graalvm-community-22.3.0', '22.3.0', 'graalvm-community'],
+      ['java oracle-graalvm-21.0.5', '21.0.5', 'graalvm'],
+      ['java oracle-21.0.5', '21.0.5', 'oracle'],
+      ['java sapmachine-21.0.5', '21.0.5', 'sapmachine'],
+      ['java kona-17.0.13', '17.0.13', 'kona'],
+      ['java jetbrains-21.0.5', '21.0.5', 'jetbrains']
+    ])(
+      'parsing %s should return version %s and distribution %s',
+      (content: string, expectedVersion: string, expectedDist: string) => {
+        const actual = getVersionFromFileContent(
+          content,
+          'openjdk',
+          '.tool-versions'
+        );
+        expect(actual?.version).toBe(expectedVersion);
+        expect(actual?.distribution).toBe(expectedDist);
+      }
+    );
+
+    it.each([
+      ['java 17.0.7', '17.0.7'],
+      ['java 17', '17'],
+      ['java 1.8', '8'],
+      ['java 21-ea', '21-ea']
+    ])(
+      'parsing prefix-less %s should return version %s and no distribution',
+      (content: string, expectedVersion: string) => {
+        const actual = getVersionFromFileContent(
+          content,
+          'temurin',
+          '.tool-versions'
+        );
+        expect(actual?.version).toBe(expectedVersion);
+        expect(actual?.distribution).toBeUndefined();
+      }
+    );
+
+    it('should warn and return undefined distribution for unsupported vendor', () => {
+      const warnSpy = jest.spyOn(core, 'warning');
+      const actual = getVersionFromFileContent(
+        'java openjdk-17.0.7',
+        'temurin',
+        '.tool-versions'
+      );
+      expect(actual?.version).toBe('17.0.7');
+      expect(actual?.distribution).toBeUndefined();
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Unknown asdf distribution identifier')
       );
     });
   });
@@ -204,7 +369,6 @@ describe('isGhes', () => {
   const pristineEnv = process.env;
 
   beforeEach(() => {
-    jest.resetModules();
     process.env = {...pristineEnv};
   });
 
@@ -235,5 +399,35 @@ describe('isGhes', () => {
   it('returns true when the GITHUB_SERVER_URL environment variable is set to some other URL', async () => {
     process.env['GITHUB_SERVER_URL'] = 'https://src.onpremise.fabrikam.com';
     expect(isGhes()).toBeTruthy();
+  });
+});
+
+describe('getLatestMajorVersion', () => {
+  const makeHttp = (getJson: jest.Mock) =>
+    ({getJson}) as unknown as import('@actions/http-client').HttpClient;
+
+  it('returns most_recent_feature_release from the Adoptium API', async () => {
+    const getJson = jest.fn(async () => ({
+      statusCode: 200,
+      result: {most_recent_feature_release: 25},
+      headers: {}
+    }));
+
+    await expect(getLatestMajorVersion(makeHttp(getJson))).resolves.toBe(25);
+    expect(getJson).toHaveBeenCalledWith(
+      'https://api.adoptium.net/v3/info/available_releases'
+    );
+  });
+
+  it('throws when the response does not contain a usable value', async () => {
+    const getJson = jest.fn(async () => ({
+      statusCode: 200,
+      result: {},
+      headers: {}
+    }));
+
+    await expect(getLatestMajorVersion(makeHttp(getJson))).rejects.toThrow(
+      'Could not determine the latest available Java major version'
+    );
   });
 });

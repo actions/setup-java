@@ -4,13 +4,17 @@ import * as fs from 'fs';
 import semver from 'semver';
 import path from 'path';
 import * as httpm from '@actions/http-client';
-import {getToolcachePath, isVersionSatisfies} from '../util';
+import {
+  convertVersionToSemver,
+  getToolcachePath,
+  isVersionSatisfies
+} from '../util.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
-} from './base-models';
-import {MACOS_JAVA_CONTENT_POSTFIX} from '../constants';
+} from './base-models.js';
+import {MACOS_JAVA_CONTENT_POSTFIX} from '../constants.js';
 import os from 'os';
 
 export abstract class JavaBase {
@@ -19,7 +23,11 @@ export abstract class JavaBase {
   protected architecture: string;
   protected packageType: string;
   protected stable: boolean;
+  protected latest: boolean;
   protected checkLatest: boolean;
+  protected setDefault: boolean;
+  protected verifySignature: boolean;
+  protected verifySignaturePublicKey: string | undefined;
 
   constructor(
     protected distribution: string,
@@ -30,12 +38,20 @@ export abstract class JavaBase {
       maxRetries: 3
     });
 
-    ({version: this.version, stable: this.stable} = this.normalizeVersion(
-      installerOptions.version
-    ));
+    ({
+      version: this.version,
+      stable: this.stable,
+      latest: this.latest
+    } = this.normalizeVersion(installerOptions.version));
     this.architecture = installerOptions.architecture || os.arch();
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
+    this.setDefault =
+      installerOptions.setDefault !== undefined
+        ? installerOptions.setDefault
+        : true;
+    this.verifySignature = installerOptions.verifySignature ?? false;
+    this.verifySignaturePublicKey = installerOptions.verifySignaturePublicKey;
   }
 
   protected abstract downloadTool(
@@ -46,8 +62,14 @@ export abstract class JavaBase {
   ): Promise<JavaDownloadRelease>;
 
   public async setupJava(): Promise<JavaInstallerResults> {
+    if (this.verifySignature && !this.supportsSignatureVerification()) {
+      throw new Error(
+        `Input 'verify-signature' is not supported for distribution '${this.distribution}'.`
+      );
+    }
+
     let foundJava = this.findInToolcache();
-    if (foundJava && !this.checkLatest) {
+    if (foundJava && !this.checkLatest && !this.latest) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
       core.info('Trying to resolve the latest version from remote');
@@ -169,14 +191,25 @@ export abstract class JavaBase {
       foundJava.path = macOSPostfixPath;
     }
 
-    core.info(`Setting Java ${foundJava.version} as the default`);
-    this.setJavaDefault(foundJava.version, foundJava.path);
+    if (this.setDefault) {
+      core.info(`Setting Java ${foundJava.version} as the default`);
+      this.setJavaDefault(foundJava.version, foundJava.path);
+    } else {
+      core.info(
+        `Installing Java ${foundJava.version} (not setting as default)`
+      );
+      this.setJavaEnvironment(foundJava.version, foundJava.path);
+    }
 
     return foundJava;
   }
 
   protected get toolcacheFolderName(): string {
     return `Java_${this.distribution}_${this.packageType}`;
+  }
+
+  protected supportsSignatureVerification(): boolean {
+    return false;
   }
 
   protected getToolcacheVersionName(version: string): string {
@@ -237,6 +270,30 @@ export abstract class JavaBase {
 
   protected normalizeVersion(version: string) {
     let stable = true;
+    const latest = false;
+
+    // Support the `latest` alias (case-insensitive), which floats to the newest
+    // available stable/GA release. It is translated to the SemVer wildcard `x`
+    // so the existing "newest satisfying version wins" resolution applies.
+    const normalized = version.trim().toLowerCase();
+    if (normalized === 'latest') {
+      return {
+        version: 'x',
+        stable: true,
+        latest: true
+      };
+    }
+
+    // Reject `latest` combined with any qualifier (e.g. `latest-ea`). Such inputs
+    // would otherwise have their `-ea` suffix stripped and fall through to the
+    // generic SemVer check, which fails with a confusing "'latest' is not valid
+    // SemVer" message even though `latest` is a supported value. Fail early with a
+    // targeted explanation instead.
+    if (normalized.startsWith('latest')) {
+      throw new Error(
+        `The 'latest' alias resolves stable (GA) releases only and cannot be combined with '-ea' or other qualifiers (received '${version}'). Use 'latest' on its own, or specify a concrete version.`
+      );
+    }
 
     if (version.endsWith('-ea')) {
       version = version.replace(/-ea$/, '');
@@ -247,6 +304,15 @@ export abstract class JavaBase {
       stable = false;
     }
 
+    // Java uses a versioning scheme (JEP 322) that can contain more numeric
+    // fields than SemVer allows, e.g. '18.0.1.1' or '11.0.9.1'. Convert such
+    // exact versions to SemVer build notation ('18.0.1+1') so they are
+    // accepted. Ranges and versions that already carry build metadata are
+    // left untouched.
+    if (/^\d+(\.\d+){3,}$/.test(version)) {
+      version = convertVersionToSemver(version);
+    }
+
     if (!semver.validRange(version)) {
       throw new Error(
         `The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`
@@ -255,7 +321,8 @@ export abstract class JavaBase {
 
     return {
       version,
-      stable
+      stable,
+      latest
     };
   }
 
@@ -298,9 +365,13 @@ export abstract class JavaBase {
   }
 
   protected setJavaDefault(version: string, toolPath: string) {
-    const majorVersion = version.split('.')[0];
     core.exportVariable('JAVA_HOME', toolPath);
     core.addPath(path.join(toolPath, 'bin'));
+    this.setJavaEnvironment(version, toolPath);
+  }
+
+  protected setJavaEnvironment(version: string, toolPath: string) {
+    const majorVersion = version.split('.')[0];
     core.setOutput('distribution', this.distribution);
     core.setOutput('path', toolPath);
     core.setOutput('version', version);

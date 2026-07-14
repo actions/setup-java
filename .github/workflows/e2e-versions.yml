@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   setup-java-major-versions:
-    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -36,7 +36,9 @@ jobs:
             'corretto',
             'dragonwell',
             'sapmachine',
-            'jetbrains'
+            'jetbrains',
+            'kona',
+            'liberica-nik'
           ] # internally 'adopt-hotspot' is the same as 'adopt'
         version: ['21', '11', '17']
         exclude:
@@ -52,6 +54,24 @@ jobs:
             os: ubuntu-latest
             version: 25
           - distribution: microsoft
+            os: macos-latest
+            version: 25
+          - distribution: kona
+            os: windows-latest
+            version: 25
+          - distribution: kona
+            os: ubuntu-latest
+            version: 25
+          - distribution: kona
+            os: macos-latest
+            version: 25
+          - distribution: liberica-nik
+            os: windows-latest
+            version: 25
+          - distribution: liberica-nik
+            os: ubuntu-latest
+            version: 25
+          - distribution: liberica-nik
             os: macos-latest
             version: 25
           - distribution: oracle
@@ -96,7 +116,7 @@ jobs:
         shell: bash
 
   setup-java-alpine-linux:
-    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - alpine-linux - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - alpine-linux - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     container:
       image: alpine:3.21
@@ -127,7 +147,7 @@ jobs:
         shell: bash
 
   setup-java-major-minor-versions:
-    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
     needs: setup-java-major-versions
     runs-on: ${{ matrix.os }}
     strategy:
@@ -275,7 +295,7 @@ jobs:
         shell: bash
 
   setup-java-ea-versions-zulu:
-    name: zulu ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    name: zulu ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
@@ -302,7 +322,7 @@ jobs:
         shell: bash
 
   setup-java-ea-versions-temurin:
-    name: temurin ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    name: temurin ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
@@ -328,8 +348,64 @@ jobs:
         run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
+  setup-java-temurin-signature-verification:
+    name: temurin ${{ matrix.version }} signature verification - ${{ matrix.os }}
+    needs: setup-java-major-minor-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        version: ['21', '17']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: setup-java with signature verification
+        uses: ./
+        id: setup-java
+        with:
+          java-version: ${{ matrix.version }}
+          distribution: temurin
+          verify-signature: true
+      - name: Verify Java
+        env:
+          JAVA_VERSION: ${{ matrix.version }}
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
+        shell: bash
+
+  setup-java-microsoft-signature-verification:
+    name: microsoft ${{ matrix.version }} signature verification - ${{ matrix.os }}
+    needs: setup-java-major-minor-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        version: ['21', '17']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: setup-java with signature verification
+        uses: ./
+        id: setup-java
+        with:
+          java-version: ${{ matrix.version }}
+          distribution: microsoft
+          verify-signature: true
+      - name: Verify Java
+        env:
+          JAVA_VERSION: ${{ matrix.version }}
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
+        shell: bash
+
   setup-java-ea-versions-sapmachine:
-    name: sapmachine ${{ matrix.version }} (jdk-x64) - ${{ matrix.os }}
+    name: sapmachine ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
@@ -383,6 +459,10 @@ jobs:
           - distribution: 'liberica'
             java-package: jre+fx
             version: '11'
+            os: ubuntu-latest
+          - distribution: 'liberica-nik'
+            java-package: jdk+fx
+            version: '21'
             os: ubuntu-latest
           - distribution: 'corretto'
             java-package: jre
@@ -611,4 +691,85 @@ jobs:
         env:
           JAVA_PATH: ${{ steps.setup-java.outputs.path }}
         run: bash __tests__/verify-java.sh "17.0.10" "$JAVA_PATH"
+        shell: bash
+
+  setup-java-set-default:
+    name: set-default option - ${{ matrix.os }}
+    needs: setup-java-major-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Setup Java 17 as default
+        uses: ./
+        id: setup-java-17
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup Java 21 without setting as default
+        uses: ./
+        id: setup-java-21
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          set-default: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify JAVA_HOME still points to Java 17
+        env:
+          JAVA_17_PATH: ${{ steps.setup-java-17.outputs.path }}
+        run: |
+          echo "JAVA_HOME=$JAVA_HOME"
+          echo "Java 17 path=$JAVA_17_PATH"
+          if [ "$JAVA_HOME" != "$JAVA_17_PATH" ]; then
+            echo "JAVA_HOME should still point to Java 17"
+            exit 1
+          fi
+        shell: bash
+      - name: Verify java -version reports Java 17
+        run: |
+          JAVA_VERSION=$(java -version 2>&1 | head -1)
+          echo "java -version: $JAVA_VERSION"
+          if ! echo "$JAVA_VERSION" | grep -q "17"; then
+            echo "Default java should still be version 17"
+            exit 1
+          fi
+        shell: bash
+      - name: Verify JAVA_HOME_21 env var is set
+        run: |
+          $envName = "JAVA_HOME_21_${env:RUNNER_ARCH}"
+          $JavaVersionPath = [Environment]::GetEnvironmentVariable($envName)
+          if (-not $JavaVersionPath) {
+            Write-Host "$envName is not set"
+            exit 1
+          }
+          if (-not (Test-Path "$JavaVersionPath")) {
+            Write-Host "$envName path does not exist: $JavaVersionPath"
+            exit 1
+          }
+          Write-Host "$envName=$JavaVersionPath"
+        shell: pwsh
+      - name: Verify Java 21 outputs are set
+        env:
+          JAVA_21_PATH: ${{ steps.setup-java-21.outputs.path }}
+          JAVA_21_VERSION: ${{ steps.setup-java-21.outputs.version }}
+        run: |
+          echo "Java 21 path=$JAVA_21_PATH"
+          echo "Java 21 version=$JAVA_21_VERSION"
+          if [ -z "$JAVA_21_PATH" ]; then
+            echo "Java 21 path output should be set"
+            exit 1
+          fi
+          if [ -z "$JAVA_21_VERSION" ]; then
+            echo "Java 21 version output should be set"
+            exit 1
+          fi
         shell: bash

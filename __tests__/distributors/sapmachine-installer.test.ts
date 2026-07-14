@@ -1,14 +1,59 @@
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+  beforeAll,
+  afterAll
+} from '@jest/globals';
 import {HttpClient} from '@actions/http-client';
-import {SapMachineDistribution} from '../../src/distributions/sapmachine/installer';
-import * as utils from '../../src/util';
-import * as core from '@actions/core';
 
-import manifestData from '../data/sapmachine.json';
+import manifestData from '../data/sapmachine.json' with {type: 'json'};
+
+// Mock @actions/core before importing source modules that depend on it
+jest.unstable_mockModule('@actions/core', () => ({
+  info: jest.fn(),
+  warning: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+  notice: jest.fn(),
+  setFailed: jest.fn(),
+  setOutput: jest.fn(),
+  getInput: jest.fn(),
+  getBooleanInput: jest.fn(),
+  getMultilineInput: jest.fn(),
+  addPath: jest.fn(),
+  exportVariable: jest.fn(),
+  saveState: jest.fn(),
+  getState: jest.fn(),
+  setSecret: jest.fn(),
+  isDebug: jest.fn(() => false),
+  startGroup: jest.fn(),
+  endGroup: jest.fn(),
+  group: jest.fn((_name: string, fn: () => Promise<unknown>) => fn()),
+  toPlatformPath: jest.fn((p: string) => p),
+  toWin32Path: jest.fn((p: string) => p),
+  toPosixPath: jest.fn((p: string) => p)
+}));
+
+const real_util_module = await import('../../src/util.js');
+jest.unstable_mockModule('../../src/util.js', () => ({
+  ...real_util_module,
+  getDownloadArchiveExtension: jest.fn()
+}));
+
+// Dynamic imports after mocking
+const core = await import('@actions/core');
+const {SapMachineDistribution} =
+  await import('../../src/distributions/sapmachine/installer.js');
+const utils = await import('../../src/util.js');
 
 describe('getAvailableVersions', () => {
-  let spyHttpClient: jest.SpyInstance;
-  let spyUtilGetDownloadArchiveExtension: jest.SpyInstance;
-  let spyCoreError: jest.SpyInstance;
+  let spyHttpClient: any;
+  let spyUtilGetDownloadArchiveExtension: any;
+  let spyCoreError: any;
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -18,14 +63,12 @@ describe('getAvailableVersions', () => {
       result: manifestData
     });
 
-    spyUtilGetDownloadArchiveExtension = jest.spyOn(
-      utils,
-      'getDownloadArchiveExtension'
-    );
+    spyUtilGetDownloadArchiveExtension =
+      utils.getDownloadArchiveExtension as jest.Mock<any>;
     spyUtilGetDownloadArchiveExtension.mockReturnValue('tar.gz');
 
     // Mock core.error to suppress error logs
-    spyCoreError = jest.spyOn(core, 'error');
+    spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
   });
 
@@ -36,7 +79,7 @@ describe('getAvailableVersions', () => {
   });
 
   const mockPlatform = (
-    distribution: SapMachineDistribution,
+    distribution: InstanceType<typeof SapMachineDistribution>,
     platform: string
   ) => {
     distribution['getPlatformOption'] = () => platform;

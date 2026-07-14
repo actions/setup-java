@@ -6,7 +6,11 @@ import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
-import {INPUT_JOB_STATUS, DISTRIBUTIONS_ONLY_MAJOR_VERSION} from './constants';
+import * as httpm from '@actions/http-client';
+import {
+  INPUT_JOB_STATUS,
+  DISTRIBUTIONS_ONLY_MAJOR_VERSION
+} from './constants.js';
 import {OutgoingHttpHeaders} from 'http';
 
 export function getTempDir() {
@@ -127,12 +131,18 @@ export function isCacheFeatureAvailable(): boolean {
   return false;
 }
 
+export interface VersionInfo {
+  version: string;
+  distribution?: string;
+}
+
 export function getVersionFromFileContent(
   content: string,
   distributionName: string,
   versionFile: string
-): string | null {
+): VersionInfo | null {
   let javaVersionRegExp: RegExp;
+  let extractedDistribution: string | undefined;
 
   function getFileName(versionFile: string) {
     return path.basename(versionFile);
@@ -140,17 +150,42 @@ export function getVersionFromFileContent(
 
   const versionFileName = getFileName(versionFile);
   if (versionFileName == '.tool-versions') {
+    // Capture an optional asdf-java vendor prefix (e.g. `temurin-`, `corretto-`)
+    // in the `distribution` group so it can be mapped to a setup-java distribution.
     javaVersionRegExp =
-      /^java\s+(?:\S*-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
+      /^java\s+(?:(?<distribution>\S*)-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
   } else if (versionFileName == '.sdkmanrc') {
-    javaVersionRegExp = /^java\s*=\s*(?<version>[^-]+)/m;
+    // Match both version and optional distribution identifier
+    javaVersionRegExp =
+      /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
   } else {
     javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
   }
 
-  const capturedVersion = content.match(javaVersionRegExp)?.groups?.version
-    ? (content.match(javaVersionRegExp)?.groups?.version as string)
+  const match = content.match(javaVersionRegExp);
+  const capturedVersion = match?.groups?.version
+    ? (match.groups.version as string)
     : '';
+
+  // Extract distribution from .sdkmanrc file
+  if (versionFileName == '.sdkmanrc' && match?.groups?.distribution) {
+    const sdkmanDist = match.groups.distribution;
+    extractedDistribution = mapSdkmanDistribution(sdkmanDist);
+    core.debug(
+      `Parsed distribution '${extractedDistribution}' from SDKMAN identifier '${sdkmanDist}'`
+    );
+  }
+
+  // Extract distribution from asdf .tool-versions file
+  if (versionFileName == '.tool-versions' && match?.groups?.distribution) {
+    const asdfDist = match.groups.distribution;
+    extractedDistribution = mapAsdfDistribution(asdfDist);
+    if (extractedDistribution) {
+      core.debug(
+        `Parsed distribution '${extractedDistribution}' from asdf identifier '${asdfDist}'`
+      );
+    }
+  }
 
   core.debug(
     `Parsed version '${capturedVersion}' from file '${versionFileName}'`
@@ -172,12 +207,92 @@ export function getVersionFromFileContent(
     return null;
   }
 
-  if (DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(distributionName)) {
+  // Apply DISTRIBUTIONS_ONLY_MAJOR_VERSION logic whenever the effective distribution
+  // (either explicitly provided or extracted from the version file) is in the list.
+  if (
+    DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(
+      extractedDistribution || distributionName
+    )
+  ) {
     const coerceVersion = semver.coerce(version) ?? version;
     version = semver.major(coerceVersion).toString();
   }
 
-  return version.toString();
+  return {
+    version: version.toString(),
+    distribution: extractedDistribution
+  };
+}
+
+// Map SDKMAN distribution identifiers to setup-java distribution names
+function mapSdkmanDistribution(sdkmanDist: string): string | undefined {
+  const distributionMap: Record<string, string> = {
+    tem: 'temurin',
+    sem: 'semeru',
+    albba: 'dragonwell',
+    zulu: 'zulu',
+    amzn: 'corretto',
+    graal: 'graalvm',
+    graalce: 'graalvm',
+    librca: 'liberica',
+    ms: 'microsoft',
+    oracle: 'oracle',
+    sapmchn: 'sapmachine',
+    jbr: 'jetbrains',
+    dragonwell: 'dragonwell',
+    kona: 'kona'
+  };
+
+  const mapped = distributionMap[sdkmanDist.toLowerCase()];
+  if (!mapped) {
+    core.warning(
+      `Unknown SDKMAN distribution identifier '${sdkmanDist}'. Please specify the distribution explicitly.`
+    );
+  }
+  return mapped;
+}
+
+// Map asdf-java (.tool-versions) vendor identifiers to setup-java distribution names.
+// asdf-java encodes the vendor as a prefix on the version string, e.g.
+// `java temurin-17.0.3+7` or `java semeru-openj9-11.0.25+9`. Packaging variants
+// (`-jre`, `-musl`, `-openj9`, `-crac`, `-javafx`, ...) are collapsed onto the
+// base vendor since setup-java does not distinguish them here.
+function mapAsdfDistribution(asdfDist: string): string | undefined {
+  const normalized = asdfDist.toLowerCase();
+
+  // Multi-segment vendors that map to a distinct setup-java distribution.
+  if (normalized.startsWith('graalvm-community')) {
+    return 'graalvm-community';
+  }
+  if (normalized.startsWith('oracle-graalvm')) {
+    return 'graalvm';
+  }
+
+  const baseVendor = normalized.split('-')[0];
+  const distributionMap: Record<string, string> = {
+    temurin: 'temurin',
+    adoptopenjdk: 'temurin',
+    zulu: 'zulu',
+    corretto: 'corretto',
+    liberica: 'liberica',
+    microsoft: 'microsoft',
+    semeru: 'semeru',
+    ibm: 'semeru',
+    dragonwell: 'dragonwell',
+    graalvm: 'graalvm',
+    oracle: 'oracle',
+    sapmachine: 'sapmachine',
+    kona: 'kona',
+    jetbrains: 'jetbrains'
+  };
+
+  const mapped = distributionMap[baseVendor];
+  if (!mapped) {
+    core.warning(
+      `Unknown asdf distribution identifier '${asdfDist}'. Please specify the distribution explicitly.`
+    );
+  }
+  return mapped;
 }
 
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
@@ -267,4 +382,34 @@ export function renameWinArchive(javaArchivePath: string): string {
   const javaArchivePathRenamed = `${javaArchivePath}.zip`;
   fs.renameSync(javaArchivePath, javaArchivePathRenamed);
   return javaArchivePathRenamed;
+}
+
+interface IAdoptiumAvailableReleases {
+  most_recent_feature_release: number;
+}
+
+// Resolve the newest available stable/GA feature (major) release.
+//
+// Some distributions (e.g. Oracle, GraalVM) construct their download URLs from a
+// concrete major version and don't expose an endpoint to list every available
+// release, so a bare `latest` alias can't be resolved from their own metadata.
+// The Adoptium (Temurin) API is used as a proxy for "what is the newest GA major
+// version out there", which those distributions typically publish at the same time.
+export async function getLatestMajorVersion(
+  http: httpm.HttpClient
+): Promise<number> {
+  const availableReleasesUrl =
+    'https://api.adoptium.net/v3/info/available_releases';
+
+  const response =
+    await http.getJson<IAdoptiumAvailableReleases>(availableReleasesUrl);
+
+  const mostRecent = response.result?.most_recent_feature_release;
+  if (!mostRecent || Number.isNaN(Number(mostRecent))) {
+    throw new Error(
+      `Could not determine the latest available Java major version from ${availableReleasesUrl}`
+    );
+  }
+
+  return Number(mostRecent);
 }

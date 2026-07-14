@@ -4,6 +4,7 @@
   - [Adopt](#Adopt)
   - [Zulu](#Zulu)
   - [Liberica](#Liberica)
+  - [Liberica Native Image Kit](#Liberica-Native-Image-Kit)
   - [Microsoft](#Microsoft)
   - [Amazon Corretto](#Amazon-Corretto)
   - [Oracle](#Oracle)
@@ -12,13 +13,17 @@
   - [GraalVM](#GraalVM)
   - [GraalVM Community](#GraalVM-Community)
   - [JetBrains](#JetBrains)
+  - [Tencent Kona](#Tencent-Kona)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
   - [JavaFX Maven project](#JavaFX-Maven-project)
+- [Ensuring the Maven cache is complete (plugin dependencies)](#ensuring-the-maven-cache-is-complete-plugin-dependencies)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
+- [Installing JDK without setting as default](#Installing-JDK-without-setting-as-default)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
 - [Testing against different Java distributions](#Testing-against-different-Java-distributions)
 - [Testing against different platforms](#Testing-against-different-platforms)
 - [Publishing using Apache Maven](#Publishing-using-Apache-Maven)
+- [Maven transfer progress (download logs)](#Maven-transfer-progress-download-logs)
 - [Publishing using Gradle](#Publishing-using-Gradle)
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](#Modifying-Maven-Toolchains)
@@ -38,7 +43,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'temurin'
-    java-version: '21'
+    java-version: '25'
 - run: java --version
 ```
 
@@ -63,8 +68,8 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'zulu'
-    java-version: '21'
-    java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
+    java-version: '25'
+    java-package: jdk # optional (jdk, jre, jdk+fx, jre+fx, jdk+crac, or jre+crac) - defaults to jdk
 - run: java --version
 ```
 
@@ -76,9 +81,23 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'liberica'
-    java-version: '21'
+    java-version: '25'
     java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
 - run: java --version
+```
+
+### Liberica Native Image Kit
+Liberica Native Image Kit (NIK) is a GraalVM-based distribution. `java-version` selects the underlying JDK version (e.g. `17`, `21`, `25`). Use `java-package: jdk+fx` to get the `full` bundle with JavaFX/Swing support; otherwise the `standard` bundle (with extra languages) is installed. Available on Linux, macOS and Windows for `x64` and `aarch64`.
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'liberica-nik'
+    java-version: '25'
+    java-package: jdk # optional (jdk or jdk+fx) - defaults to jdk
+- run: native-image --version
 ```
 
 ### Microsoft
@@ -89,7 +108,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'microsoft'
-    java-version: '21'
+    java-version: '25'
 - run: java --version
 ```
 
@@ -104,7 +123,7 @@ uses: actions/setup-java@v5
 with:
   token: ${{ secrets.GH_DOTCOM_TOKEN }}
   distribution: 'microsoft'
-  java-version: '21'
+  java-version: '25'
 ```
 
 If the runner is not able to access github.com, any Java versions requested during a workflow run must come from the runner's tool cache. See "[Setting up the tool cache on self-hosted runners without internet access](https://docs.github.com/en/enterprise-server@3.2/admin/github-actions/managing-access-to-actions-from-githubcom/setting-up-the-tool-cache-on-self-hosted-runners-without-internet-access)" for more information.
@@ -118,7 +137,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'corretto'
-    java-version: '21'
+    java-version: '25'
 - run: java --version
 ```
 
@@ -131,7 +150,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'oracle'
-    java-version: '21'
+    java-version: '25'
 - run: java --version
 ```
 
@@ -156,7 +175,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'sapmachine'
-    java-version: '21'
+    java-version: '25'
 - run: java --version
 ```
 
@@ -169,7 +188,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'graalvm'
-    java-version: '21'
+    java-version: '25'
 - run: |
     java --version
     native-image --version
@@ -233,6 +252,18 @@ The available package types are:
 - `jdk+ft` - JBRSDK (FreeType)
 - `jre+ft` - JBR (FreeType)
 
+### Tencent Kona
+**NOTE:** Tencent Kona supports major versions 8, 11, 17, 21 and 25, and provides jdk only.
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'kona'
+    java-version: '21'
+- run: java --version
+```
 
 ## Installing custom Java package type
 ```yaml
@@ -241,7 +272,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: '<distribution>'
-    java-version: '11'
+    java-version: '25'
     java-package: jdk # optional (jdk or jre) - defaults to jdk
 - run: java --version
 ```
@@ -256,7 +287,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'zulu'
-    java-version: '21'
+    java-version: '25'
     java-package: jdk+fx
     cache: maven
 - name: Build with Maven
@@ -270,6 +301,122 @@ To run the JavaFX application in CI:
   run: mvn --no-transfer-progress javafx:run
 ```
 
+## Ensuring the Maven cache is complete (plugin dependencies)
+
+When you enable `cache: maven`, the action caches your local Maven repository
+(`~/.m2/repository`) and downloaded Maven Wrapper distributions
+(`~/.m2/wrapper/dists`). The cache key is a hash of your Maven inputs — every
+`**/pom.xml`, plus `**/.mvn/wrapper/maven-wrapper.properties` and
+`**/.mvn/extensions.xml` — so changing any of those files (for example bumping
+the wrapper version or editing core extensions) produces a new key and
+invalidates the cache. At the end of the job the action saves whatever was
+downloaded during that run. It does **not** re-save the cache when the key
+already matches (a cache *hit*).
+
+Maven resolves **plugin** dependencies lazily: it only downloads the plugins and
+plugin dependencies required by the goals that actually execute. As a result, the
+run that first creates the cache determines what is stored. If that run executed a
+"thin" goal such as `mvn compile`, plugins bound to later phases are never
+resolved. For example, `maven-shade-plugin` (bound to `package`) pulls in
+`plexus-archiver`, `commons-compress`, `io.airlift:aircompressor` and
+`org.tukaani:xz` — none of which a `compile` run downloads. Those artifacts are
+therefore absent from the cache, and because the action does not re-save on a
+hit, every later `test`/`verify`/`package` job re-downloads them on every run.
+
+### Seed the cache with a resolution step
+
+To populate `~/.m2` as comprehensively as possible on the run that creates the
+cache, run a dependency-resolution "seed" command before your build. Choose a
+command based on how thorough you need it to be:
+
+| Seed command | Resolves plugin dependencies? | Notes |
+|--------------|:-----------------------------:|-------|
+| `mvn dependency:resolve` | No | Resolves project dependencies only — misses plugin dependencies (e.g. `aircompressor`). |
+| `mvn dependency:resolve-plugins` | Yes | Resolves plugins **and their dependencies**. |
+| `mvn dependency:go-offline` | Yes | Resolves project and plugin dependencies (a superset). |
+| `mvn dependency:go-offline dependency:resolve-plugins` | Yes (most thorough) | Recommended default. Use `dependency:resolve dependency:resolve-plugins` if `go-offline` is flaky or insufficient for your project. |
+
+Single job — seed, then build (the cache saved at the end of this run contains
+the full set):
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'temurin'
+    java-version: '25'
+    cache: 'maven'
+- name: Seed the Maven cache
+  run: mvn -B dependency:go-offline dependency:resolve-plugins
+- name: Build with Maven
+  run: mvn -B verify --file pom.xml
+```
+
+Separate seed job — useful for a matrix where different legs run different goals
+(`test`, `check`, `verify`, `-Pprofile1`, ...) but all share the same `~/.m2`
+cache. Without a seed, whichever job finishes first creates the cache from its
+own partial `.m2`, and parallel jobs race to save an equally partial cache; the
+seed job instead creates one comprehensive cache that every other job reuses:
+
+```yaml
+jobs:
+  seed-cache:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-java@v5
+      with:
+        distribution: 'temurin'
+        java-version: '25'
+        cache: 'maven'
+    - name: Seed the Maven cache
+      run: mvn -B dependency:go-offline dependency:resolve-plugins
+
+  build:
+    needs: seed-cache
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goal: ['test', 'verify', 'test -Pprofile1']
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-java@v5
+      with:
+        distribution: 'temurin'
+        java-version: '25'
+        cache: 'maven'
+    - name: Build
+      run: mvn -B ${{ matrix.goal }} --file pom.xml
+```
+
+### Caveats
+
+- **The seed only helps on the run that creates the cache.** Once a cache exists
+  for the current `pom.xml` hash, later runs get a hit and any additional
+  downloads are not saved. On an existing repository whose cache is already
+  incomplete, invalidate it once (for example by changing `cache-dependency-path`
+  or deleting the repository's caches) so a complete cache is created from the
+  seed.
+- **Static resolution is not exhaustive.** `go-offline`/`resolve-plugins` resolve
+  the statically declared plugin set for the *active* profiles and modules.
+  Profile-gated plugins, conditionally-active modules, and artifacts a plugin
+  fetches at execution time may still be missed. For the most complete cache,
+  seed with the fullest goal set your CI actually uses (for example
+  `mvn -B verify` with every profile enabled).
+- **Multi-module projects:** run the seed at the reactor root so every module's
+  plugins are resolved.
+
+> [!NOTE]
+> The same "the cache stores only what the creating run downloaded, and is not
+> re-saved on a hit" behavior applies to `cache: gradle`, since Gradle also
+> resolves dependencies and plugin/buildscript classpaths lazily. Gradle has no
+> direct equivalent of `dependency:go-offline`, so for complete and fine-grained
+> dependency caching on Gradle projects we recommend
+> [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle),
+> which provides purpose-built caching (see the
+> [setup-gradle documentation](https://github.com/gradle/actions/blob/main/docs/setup-gradle.md)).
+
 ## Installing custom Java architecture
 
 ```yaml
@@ -278,16 +425,44 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: '<distribution>'
-    java-version: '11'
+    java-version: '25'
     architecture: x86 # optional - default value derived from the runner machine
 - run: java --version
 ```
+
+## Installing JDK without setting as default
+
+When installing multiple JDKs, the last one installed becomes the default (`JAVA_HOME`, `PATH`). Use the `set-default` option to install a JDK without overriding the default. The installed JDK is still discoverable via the `JAVA_HOME_<major>_<arch>` environment variable (e.g. `JAVA_HOME_21_X64`).
+
+```yaml
+steps:
+- uses: actions/checkout@v6
+- uses: actions/setup-java@v5
+  with:
+    distribution: 'temurin'
+    java-version: '17'
+- uses: actions/setup-java@v5
+  id: setup-java-21
+  with:
+    distribution: 'temurin'
+    java-version: '21'
+    set-default: false
+- run: |
+    echo "Default java:"
+    java -version
+    echo "Java 21 home: $JAVA_HOME_21_X64"
+    echo "Java 21 path from output: ${{ steps.setup-java-21.outputs.path }}"
+```
+
+In this example, `JAVA_HOME` and `java` on `PATH` point to Java 17, while Java 21 is available via `JAVA_HOME_21_X64` or the step output `path`.
+
+> **Note:** When a single step installs multiple JDKs via a multiline `java-version`, the `set-default` value applies to all of them. With `set-default: false`, none of those JDKs become the default; each remains discoverable through its `JAVA_HOME_<major>_<arch>` variable. Regardless of `set-default`, installed JDKs are still registered in the Maven toolchains file, so they can be selected via Maven toolchains.
 
 ## Installing Java from local file
 If your use-case requires a custom distribution or a version that is not provided by setup-java, you can download it manually and setup-java will take care of the installation and caching on the VM:
 
 > [!NOTE]
-> This approach also lets you use builds that setup-java does not provide directly, such as **Early Access (EA)** or other unreleased JDK builds (for example, an upcoming feature release or a Loom/Valhalla preview build). Download the desired archive in a prior step and point `jdkFile` at it; setup-java will extract, install, and cache it just like a supported distribution. When targeting multiple architectures, select the correct binary per architecture in your workflow (for example, with a build matrix).
+> This approach also lets you use builds that setup-java does not provide directly, such as **Early Access (EA)** or other unreleased JDK builds (for example, an upcoming feature release or a Loom/Valhalla preview build). Download the desired archive in a prior step and point `jdk-file` at it; setup-java will extract, install, and cache it just like a supported distribution. When targeting multiple architectures, select the correct binary per architecture in your workflow (for example, with a build matrix).
 
 ```yaml
 steps:
@@ -297,7 +472,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'jdkfile'
-    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    jdk-file: ${{ runner.temp }}/java_package.tar.gz
     java-version: '11.0.0'
     architecture: x64
     
@@ -314,7 +489,7 @@ steps:
 - uses: actions/setup-java@v5
   with:
     distribution: 'jdkfile'
-    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    jdk-file: ${{ runner.temp }}/java_package.tar.gz
     java-version: '25.0.0-ea.36'
     architecture: x64
 
@@ -340,7 +515,7 @@ If your use-case requires a custom distribution (in the example, alpine-linux is
       - uses: actions/setup-java@v5
         with:
           distribution: 'jdkfile'
-          jdkFile: ${{ runner.temp }}/java_package.tar.gz
+          jdk-file: ${{ runner.temp }}/java_package.tar.gz
           java-version: {{ steps.fetch_latest_jdk.outputs.java_version }}
           architecture: x64
        - run: java --version
@@ -435,6 +610,7 @@ The two `settings.xml` files created from the above example look like the follow
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <interactiveMode>false</interactiveMode>
   <servers>
     <server>
       <id>github</id>
@@ -450,6 +626,7 @@ The two `settings.xml` files created from the above example look like the follow
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <interactiveMode>false</interactiveMode>
   <servers>
     <server>
       <id>maven</id>
@@ -461,6 +638,8 @@ The two `settings.xml` files created from the above example look like the follow
 ```
 
 ***NOTE***: The `settings.xml` file is created in the Actions `$HOME/.m2` directory. If you have an existing `settings.xml` file at that location, it will be overwritten. See [below](#apache-maven-with-a-settings-path) for using the `settings-path` to change your `settings.xml` file location.
+
+***NOTE***: The generated `settings.xml` sets `<interactiveMode>false</interactiveMode>` so that Maven never blocks a CI run waiting on an interactive prompt. This is applied automatically whenever the action generates `settings.xml`.
 
 If you don't want to overwrite the `settings.xml` file, you can set `overwrite-settings: false`
 
@@ -549,6 +728,74 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
 ```
 
+## Maven transfer progress (download logs)
+
+By default, Maven prints a line for every artifact it downloads, which can add hundreds of noisy lines to CI logs. To keep logs clean, `setup-java` sets the [`MAVEN_ARGS`](https://maven.apache.org/configure.html#maven_args-environment-variable) environment variable to include `-ntp` (`--no-transfer-progress`) so that subsequent Maven invocations in the job suppress this transfer progress output.
+
+This is enabled by default. Any existing `MAVEN_ARGS` value is preserved (the flag is appended, not overwritten), and the flag is not added twice if you already set it yourself.
+
+If you want to keep the download/transfer progress in your logs, set `show-download-progress: true`:
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-java@v5
+      with:
+        distribution: '<distribution>'
+        java-version: '21'
+        show-download-progress: true # keep Maven download/transfer progress in the logs
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+```
+
+***NOTES***:
+- `MAVEN_ARGS` is honored by Maven 3.9.0+ and the Maven Wrapper (`mvnw`). Older Maven versions ignore it, so on those you can pass `--no-transfer-progress` on the command line instead.
+- This setting only affects Maven. It has no effect on Gradle, sbt, or other build tools.
+- `-ntp` only controls transfer/progress output; it does not change whether Maven runs in batch mode. Use `-B`/`--batch-mode` (or `<interactiveMode>false</interactiveMode>` in `settings.xml`) if you also want non-interactive runs.
+
+## Java problem matcher (compiler annotations)
+
+`setup-java` registers a [problem matcher](https://github.com/actions/toolkit/blob/main/docs/problem-matchers.md) for Java after installing the JDK. It scans the log output of subsequent steps and turns `javac` diagnostics into GitHub [annotations](https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message) that appear in the run summary and inline on the affected files. It matches two kinds of lines:
+
+- Compiler errors and warnings, e.g. `App.java:12: error: cannot find symbol` (owner `javac`).
+- Uncaught-exception header lines, e.g. `Exception in thread "main" ...`; because these lines have no file or line captures, they appear as log/run-level annotations rather than inline file annotations (owner `java`).
+
+This is enabled by default and requires no configuration.
+
+### Disabling the problem matcher
+
+There is no action input to turn the matcher off, but you can disable it for the rest of the job with the built-in [`remove-matcher`](https://github.com/actions/toolkit/blob/main/docs/problem-matchers.md#remove-a-problem-matcher) workflow command. Pass the matcher **owner** (not a file name); the Java matcher defines two owners, `javac` and `java`, so remove both to fully suppress it:
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-java@v5
+      with:
+        distribution: '<distribution>'
+        java-version: '21'
+
+    - name: Disable the Java problem matcher
+      run: |
+        echo "::remove-matcher owner=javac::"
+        echo "::remove-matcher owner=java::"
+
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+```
+
+***NOTES***:
+- `remove-matcher` only stops annotations from being created; the underlying compiler output is unchanged, so a failing `javac`/build still fails the step.
+- The command is scoped to the job, so add the step right after `setup-java` (and before your build) in every job where you want the matcher disabled.
+
 ## Publishing using Gradle
 ```yaml
 jobs:
@@ -592,6 +839,8 @@ The `setup-java` action generates a basic [Maven Toolchains declaration](https:/
 ### Installing Multiple JDKs With Toolchains
 Subsequent calls to `setup-java` with distinct distribution and version parameters will continue to extend the toolchains declaration and make all specified Java versions available.
 
+Toolchain entries are always merged non-destructively: existing JDK, custom, and user-managed toolchains are preserved, and only an entry with the exact same `type` and `provides.id` is replaced. This behavior is independent of the `overwrite-settings` input, which only controls regeneration of `settings.xml`. As a result, running `setup-java` several times in the same job (for example in multiple steps or with multiple `java-version` values) accumulates every JDK in `toolchains.xml` instead of dropping previously registered entries.
+
 ```yaml
 steps:
 - uses: actions/setup-java@v5
@@ -616,7 +865,7 @@ The result is a Toolchain with entries for JDKs 8, 11 and 15. You can even combi
 - uses: actions/setup-java@v5
   with:
     distribution: 'jdkfile'
-    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    jdk-file: ${{ runner.temp }}/java_package.tar.gz
     java-version: '1.6'
     architecture: x64
 ```
@@ -633,7 +882,7 @@ Each JDK provider will receive a default `vendor` using the `distribution` input
 - uses: actions/setup-java@v5
   with:
     distribution: 'jdkfile'
-    jdkFile: ${{ runner.temp }}/java_package.tar.gz
+    jdk-file: ${{ runner.temp }}/java_package.tar.gz
     java-version: '1.6'
     architecture: x64
     mvn-toolchain-vendor: 'Oracle'
@@ -688,24 +937,73 @@ steps:
   
   Supported files are `.java-version`, `.tool-versions` and `.sdkmanrc`.
   * In `.java-version` file, only the version should be specified (e.g., 17.0.7). The `.java-version` file recognizes all variants of the version description according to [jenv](https://github.com/jenv/jenv).
-  * In `.tool-versions` file, java version should be preceded by the java keyword (e.g., java 17.0.7). The `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)).
-  * In `.sdkmanrc` file, java version should be preceded by the `java=` prefix (e.g., java=17.0.7-tem) and include the distribution. The `.sdkmanrc` file supports version specifications in accordance with [file format](https://sdkman.io/usage#env-command), see [Sdkman! documentation](https://sdkman.io/jdks) for more information.
+  * In `.tool-versions` file, java version should be preceded by the java keyword (e.g., java 17.0.7). The `.tool-versions` file supports version specifications in accordance with [asdf](https://github.com/asdf-vm/asdf) standards, adhering to Semantic Versioning ([semver](https://semver.org/)). When the entry includes an [asdf-java](https://github.com/halcyon/asdf-java) vendor prefix (e.g. `java temurin-17.0.3+7`), setup-java can infer the `distribution` input automatically. Unrecognized vendor prefixes require setting `distribution` explicitly.
+
+    Supported asdf-java vendor prefix mappings (packaging variants such as `-jre`, `-musl`, `-openj9`, `-crac`, `-javafx` are collapsed onto the base vendor):
+
+    | asdf-java vendor prefix | setup-java distribution |
+    | ----------------------- | ----------------------- |
+    | `temurin` | `temurin` |
+    | `adoptopenjdk` | `temurin` |
+    | `zulu` | `zulu` |
+    | `corretto` | `corretto` |
+    | `liberica` | `liberica` |
+    | `microsoft` | `microsoft` |
+    | `semeru`, `ibm` | `semeru` |
+    | `dragonwell` | `dragonwell` |
+    | `graalvm`, `oracle-graalvm` | `graalvm` |
+    | `graalvm-community` | `graalvm-community` |
+    | `oracle` | `oracle` |
+    | `sapmachine` | `sapmachine` |
+    | `kona` | `kona` |
+    | `jetbrains` | `jetbrains` |
+
+  * In `.sdkmanrc` file, java version should be preceded by the `java=` prefix (e.g., `java=17.0.7-tem`). When a recognized SDKMAN distribution suffix is present, setup-java can infer the `distribution` input automatically. Unrecognized suffixes require setting `distribution` explicitly. The `.sdkmanrc` file supports version specifications in accordance with [file format](https://sdkman.io/usage#env-command), see [Sdkman! documentation](https://sdkman.io/jdks) for more information.
+
+    Supported SDKMAN suffix mappings:
+
+    | SDKMAN suffix | setup-java distribution |
+    | ------------- | ----------------------- |
+    | `tem` | `temurin` |
+    | `sem` | `semeru` |
+    | `albba`, `dragonwell` | `dragonwell` |
+    | `zulu` | `zulu` |
+    | `amzn` | `corretto` |
+    | `graal`, `graalce` | `graalvm` |
+    | `librca` | `liberica` |
+    | `ms` | `microsoft` |
+    | `oracle` | `oracle` |
+    | `sapmchn` | `sapmachine` |
+    | `jbr` | `jetbrains` |
+    | `kona` | `kona` |
 
     
   If both `java-version` and `java-version-file` **inputs** are provided, the `java-version` input will be used.
 
-**Example step using `Sdkman!`**:
+**Example step using `Sdkman!`** (distribution inferred from `.sdkmanrc`):
 ```yml
   - name: Setup java
     uses: actions/setup-java@v5
     with:
       java-version-file: '.sdkmanrc'
-      distribution: 'temurin'
 ```
 
 **Example `.sdkmanrc`**:
 ```
 java=17.0.7-tem
+```
+
+**Example step using `asdf`** (distribution inferred from `.tool-versions`):
+```yml
+  - name: Setup java
+    uses: actions/setup-java@v5
+    with:
+      java-version-file: '.tool-versions'
+```
+
+**Example `.tool-versions`**:
+```
+java temurin-17.0.7+7
 ```
 
 Valid entry options (does not apply to `.sdkmanrc`):
