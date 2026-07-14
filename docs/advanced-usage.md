@@ -470,9 +470,54 @@ The example above uses the [Maven GPG Plugin](https://maven.apache.org/plugins/m
 
 **GPG key should be exported by: `gpg --armor --export-secret-keys YOUR_ID`**
 
-Alternatively, you can let setup-java manage the key by providing the `gpg-private-key` and `gpg-passphrase` inputs. In that case the private key is written to a file in the runner's temp directory, imported into the GPG keychain, and the file is promptly removed before proceeding with the rest of the setup process. A cleanup step removes the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances). This path uses the default `gpg` signer and may require the `--pinentry-mode loopback` configuration and a `gpg.passphrase` server entry in `settings.xml`.
-
 See the help docs on [Publishing a Package](https://help.github.com/en/github/managing-packages-with-github-packages/configuring-apache-maven-for-use-with-github-packages#publishing-a-package) for more information on the `pom.xml` file.
+
+#### Legacy / alternative: let setup-java import the key
+
+If you use `maven-gpg-plugin` older than 3.2.0, or you prefer signing with the `gpg` executable, you can let setup-java import the key instead by providing the `gpg-private-key` and `gpg-passphrase` inputs. The private key is written to a file in the runner's temp directory, imported into the GPG keychain, and the file is promptly removed before proceeding with the rest of the setup process. A cleanup step removes the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances).
+
+```yaml
+    - name: Set up Apache Maven Central
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+        server-id: maven # Value of the distributionManagement/repository/id field of the pom.xml
+        server-username: MAVEN_USERNAME # env variable for username in deploy
+        server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
+        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
+
+    - name: Publish to Apache Maven Central
+      run: mvn deploy
+      env:
+        MAVEN_USERNAME: maven_username123
+        MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
+        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+```
+
+With these inputs, setup-java adds a `gpg.passphrase` server to the generated `settings.xml`:
+
+```xml
+    <server>
+      <id>gpg.passphrase</id>
+      <passphrase>${env.MAVEN_GPG_PASSPHRASE}</passphrase>
+    </server>
+```
+
+When signing with the `gpg` executable, the Maven GPG Plugin configuration in your `pom.xml` should contain the following structure to avoid possible issues like `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`:
+
+```xml
+<configuration>
+  <!-- Prevent gpg from using pinentry programs -->
+  <gpgArguments>
+    <arg>--pinentry-mode</arg>
+    <arg>loopback</arg>
+  </gpgArguments>
+</configuration>
+```
+
+GPG 2.1 requires `--pinentry-mode` to be set to `loopback` in order to pick up the `gpg.passphrase` value defined in Maven `settings.xml`.
 
 ***NOTE***: If, when using the default `gpg` signer, the error `gpg: Sorry, no terminal at all requested - can't get input` [is encountered](https://github.com/actions/setup-java/issues/554), please update the version of `maven-gpg-plugin` to 1.6 or higher.
 
