@@ -283,15 +283,29 @@ jobs:
         run: bash __tests__/verify-java.sh "17" "$JAVA_PATH"
         shell: bash
 
-  setup-java-ea-versions-zulu:
-    name: zulu ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
+  setup-java-ea-versions:
+    name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15-intel, windows-latest, ubuntu-latest]
-        version: ['17-ea', '15.0.0-ea.14']
+        include:
+          - {os: macos-15-intel, version: '17-ea', distribution: zulu}
+          - {os: windows-latest, version: '17-ea', distribution: zulu}
+          - {os: ubuntu-latest, version: '17-ea', distribution: zulu}
+          - {os: macos-15-intel, version: '15.0.0-ea.14', distribution: zulu}
+          - {os: windows-latest, version: '15.0.0-ea.14', distribution: zulu}
+          - {os: ubuntu-latest, version: '15.0.0-ea.14', distribution: zulu}
+          - {os: macos-latest, version: '17-ea', distribution: temurin}
+          - {os: windows-latest, version: '17-ea', distribution: temurin}
+          - {os: ubuntu-latest, version: '17-ea', distribution: temurin}
+          - {os: macos-latest, version: '17-ea', distribution: sapmachine}
+          - {os: windows-latest, version: '17-ea', distribution: sapmachine}
+          - {os: ubuntu-latest, version: '17-ea', distribution: sapmachine}
+          - {os: macos-latest, version: '21-ea', distribution: sapmachine}
+          - {os: windows-latest, version: '21-ea', distribution: sapmachine}
+          - {os: ubuntu-latest, version: '21-ea', distribution: sapmachine}
     steps:
       - *checkout_step
       - name: setup-java
@@ -299,7 +313,7 @@ jobs:
         id: setup-java
         with:
           java-version: ${{ matrix.version }}
-          distribution: zulu
+          distribution: ${{ matrix.distribution }}
       - name: Verify Java
         env:
           JAVA_VERSION: ${{ matrix.version }}
@@ -307,6 +321,7 @@ jobs:
         run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
+<<<<<<< HEAD
   setup-java-ea-versions-temurin:
     name: temurin ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
@@ -333,6 +348,10 @@ jobs:
 
   setup-java-temurin-signature-verification:
     name: temurin ${{ matrix.version }} signature verification - ${{ matrix.os }}
+=======
+  setup-java-signature-verification:
+    name: ${{ matrix.distribution }} ${{ matrix.version }} signature verification - ${{ matrix.os }}
+>>>>>>> origin/main
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
@@ -340,6 +359,7 @@ jobs:
       matrix:
         os: *default_os
         version: ['21', '17']
+        distribution: [temurin, microsoft]
     steps:
       - *checkout_step
       - name: setup-java with signature verification
@@ -347,7 +367,7 @@ jobs:
         id: setup-java
         with:
           java-version: ${{ matrix.version }}
-          distribution: temurin
+          distribution: ${{ matrix.distribution }}
           verify-signature: true
       - name: Verify Java
         env:
@@ -356,6 +376,7 @@ jobs:
         run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
+<<<<<<< HEAD
   setup-java-microsoft-signature-verification:
     name: microsoft ${{ matrix.version }} signature verification - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
@@ -405,6 +426,8 @@ jobs:
         run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
+=======
+>>>>>>> origin/main
   setup-java-custom-package-type:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (${{ matrix.java-package }}-x64) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
