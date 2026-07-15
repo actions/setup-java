@@ -22,6 +22,14 @@ This action allows you to work with Java and Scala projects.
 
 - **Migrated to ESM** to enable support for the latest `@actions/*` package versions. This is an internal implementation change only. No changes are required to your workflow configuration, and the action's behavior is unchanged. Existing workflows continue to work as before.
 
+## Breaking changes in V6
+
+- **GPG passphrase is now passed to the Maven GPG Plugin via an environment variable instead of a `settings.xml` server.** setup-java no longer writes the deprecated `gpg.passphrase` server to `settings.xml`; it relies on the plugin's `gpg.passphraseEnvName` mechanism instead. As part of this:
+  - The default value of the `gpg-passphrase` input changed from `GPG_PASSPHRASE` to `MAVEN_GPG_PASSPHRASE` (the Maven GPG Plugin default). If you relied on the old default, set a `MAVEN_GPG_PASSPHRASE` environment variable in your build step, or pass `gpg-passphrase: GPG_PASSPHRASE` explicitly to keep the previous name.
+  - This requires `maven-gpg-plugin` **3.2.0 or newer**. Older versions do not honor `gpg.passphraseEnvName` and will no longer pick up the passphrase, since the `gpg.passphrase` server is no longer written. Upgrade the plugin to 3.2.0+.
+
+  See [GPG](docs/advanced-usage.md#gpg) for details.
+
 ## Breaking changes in V5
 
 - Upgraded action from node20 to node24
