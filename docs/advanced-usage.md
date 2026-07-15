@@ -660,7 +660,9 @@ See the help docs on [Publishing a Package](https://help.github.com/en/github/ma
 
 #### Legacy / alternative: let setup-java import the key
 
-If you use `maven-gpg-plugin` older than 3.2.0, or you prefer signing with the `gpg` executable, you can let setup-java import the key instead by providing the `gpg-private-key` and `gpg-passphrase` inputs. The private key is written to a file in the runner's temp directory, imported into the GPG keychain, and the file is promptly removed before proceeding with the rest of the setup process. A cleanup step removes the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances).
+If you prefer signing with the `gpg` executable (for example because you are using `maven-gpg-plugin` older than 3.2.0), you can let setup-java import the key instead by providing the `gpg-private-key` and `gpg-passphrase` inputs. The private key is written to a file in the runner's temp directory, imported into the GPG keychain, and the file is promptly removed before proceeding with the rest of the setup process. A cleanup step removes the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances).
+
+setup-java imports the key independently of the plugin version, but the generated passphrase profile described below uses `gpg.passphraseEnvName`, which requires `maven-gpg-plugin` 3.2.0 or newer. Since `gpg-passphrase` defaults to `GPG_PASSPHRASE`, setup-java writes that profile unless you override the input to `MAVEN_GPG_PASSPHRASE`.
 
 ```yaml
     - name: Set up Apache Maven Central
