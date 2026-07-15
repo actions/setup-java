@@ -96,7 +96,8 @@ jobs:
             os: ubuntu-latest
             version: '24-ea'
     steps:
-      - name: Checkout
+      - &checkout_step
+        name: Checkout
         uses: actions/checkout@v7
         with:
           persist-credentials: false
@@ -127,10 +128,7 @@ jobs:
         distribution: ['temurin', 'sapmachine']
         version: ['21', '17']
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: Install bash
         run: apk add --no-cache bash
       - name: setup-java
@@ -153,7 +151,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: &default_os [macos-latest, windows-latest, ubuntu-latest]
         distribution: ['temurin', 'zulu', 'liberica']
         version:
           - '11.0'
@@ -182,10 +180,7 @@ jobs:
             os: ubuntu-latest
             version: '17.0.7'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: setup-java
         uses: ./
         id: setup-java
@@ -207,7 +202,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: *default_os
         distribution:
           [
             'temurin',
@@ -221,10 +216,7 @@ jobs:
           - distribution: dragonwell
             os: macos-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: setup-java
         uses: ./
         id: setup-java
@@ -247,7 +239,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: *default_os
         distribution:
           [
             'temurin',
@@ -261,10 +253,7 @@ jobs:
           - distribution: dragonwell
             os: macos-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: setup-java
         uses: ./
         id: setup-java
@@ -318,10 +307,7 @@ jobs:
           - {os: windows-latest, version: '21-ea', distribution: sapmachine}
           - {os: ubuntu-latest, version: '21-ea', distribution: sapmachine}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: setup-java
         uses: ./
         id: setup-java
@@ -342,14 +328,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: *default_os
         version: ['21', '17']
         distribution: [temurin, microsoft]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: setup-java with signature verification
         uses: ./
         id: setup-java
@@ -443,10 +426,7 @@ jobs:
             os: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: setup-java
         uses: ./
         id: setup-java
@@ -476,10 +456,7 @@ jobs:
         distribution: ['liberica', 'zulu', 'corretto']
         version: ['11']
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: setup-java
         uses: ./
         id: setup-java
@@ -500,14 +477,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: *default_os
         distribution: ['temurin', 'microsoft', 'corretto']
         java-version-file: ['.java-version', '.tool-versions']
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: Create .java-version file
         shell: bash
         run: echo "17" > .java-version
@@ -533,14 +507,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: *default_os
         distribution: ['temurin', 'zulu', 'liberica', 'microsoft', 'corretto']
         java-version-file: ['.java-version', '.tool-versions']
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: Create .java-version file
         shell: bash
         run: echo "11" > .java-version
@@ -565,14 +536,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: *default_os
         distribution: ['adopt', 'adopt-openj9', 'zulu']
         java-version-file: ['.java-version', '.tool-versions']
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: Create .java-version file
         shell: bash
         run: echo "17.0.10" > .java-version
@@ -597,14 +565,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: *default_os
         distribution: ['adopt', 'zulu', 'liberica']
         java-version-file: ['.java-version', '.tool-versions', '.sdkmanrc']
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: Create .java-version file
         shell: bash
         run: echo "openjdk64-17.0.10" > .java-version
@@ -633,12 +598,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: *default_os
     steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          persist-credentials: false
+      - *checkout_step
       - name: Setup Java 17 as default
         uses: ./
         id: setup-java-17
