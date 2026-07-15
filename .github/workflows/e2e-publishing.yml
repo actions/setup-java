@@ -46,13 +46,25 @@ jobs:
           $xmlPath = Join-Path $HOME ".m2" "settings.xml"
           Get-Content $xmlPath | ForEach-Object { Write-Host $_ }
 
-          [xml]$xml = Get-Content $xmlPath
-          $servers = $xml.settings.servers.server
-          if (($servers[0].id -ne 'maven') -or ($servers[0].username -ne '${env.MAVEN_USERNAME}') -or ($servers[0].password -ne '${env.MAVEN_CENTRAL_TOKEN}')) {
-            throw "Generated XML file is incorrect"
-          }
+          $content = [System.IO.File]::ReadAllText($xmlPath)
+          $expected = @(
+            '<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"'
+            '  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"'
+            '  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">'
+            '  <interactiveMode>false</interactiveMode>'
+            '  <servers>'
+            '    <server>'
+            '      <id>maven</id>'
+            '      <username>${env.MAVEN_USERNAME}</username>'
+            '      <password>${env.MAVEN_CENTRAL_TOKEN}</password>'
+            '    </server>'
+            '  </servers>'
+            '</settings>'
+          ) -join "`n"
 
-          if (($servers[1].id -ne 'gpg.passphrase') -or ($servers[1].passphrase -ne '${env.MAVEN_GPG_PASSPHRASE}')) {
+          if ($content -ne $expected) {
+            Write-Host "Expected settings.xml:"
+            $expected -split "`n" | ForEach-Object { Write-Host $_ }
             throw "Generated XML file is incorrect"
           }
 
