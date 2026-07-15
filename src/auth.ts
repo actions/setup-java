@@ -93,12 +93,27 @@ export function generate(
     }
   };
 
-  if (gpgPassphrase) {
-    const gpgServer = {
-      id: 'gpg.passphrase',
-      passphrase: `\${env.${gpgPassphrase}}`
+  // The maven-gpg-plugin reads the passphrase from the environment variable
+  // named by the `gpg.passphraseEnvName` property (default MAVEN_GPG_PASSPHRASE).
+  // Only configure it when the requested env var name differs from that default;
+  // otherwise the plugin already reads the right variable and no extra settings
+  // are needed. Writing `gpg.passphrase` to settings.xml is deprecated and fails
+  // when the plugin's `bestPractices` mode is enabled.
+  if (
+    gpgPassphrase &&
+    gpgPassphrase !== constants.MAVEN_GPG_PASSPHRASE_DEFAULT_ENV
+  ) {
+    xmlObj.settings.profiles = {
+      profile: {
+        id: constants.GPG_PASSPHRASE_PROFILE_ID,
+        properties: {
+          'gpg.passphraseEnvName': gpgPassphrase
+        }
+      }
     };
-    xmlObj.settings.servers.server.push(gpgServer);
+    xmlObj.settings.activeProfiles = {
+      activeProfile: constants.GPG_PASSPHRASE_PROFILE_ID
+    };
   }
 
   return xmlCreate(xmlObj).end({

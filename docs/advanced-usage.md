@@ -660,7 +660,9 @@ See the help docs on [Publishing a Package](https://help.github.com/en/github/ma
 
 #### Legacy / alternative: let setup-java import the key
 
-If you use `maven-gpg-plugin` older than 3.2.0, or you prefer signing with the `gpg` executable, you can let setup-java import the key instead by providing the `gpg-private-key` and `gpg-passphrase` inputs. The private key is written to a file in the runner's temp directory, imported into the GPG keychain, and the file is promptly removed before proceeding with the rest of the setup process. A cleanup step removes the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances).
+If you prefer signing with the `gpg` executable (for example because you are using `maven-gpg-plugin` older than 3.2.0), you can let setup-java import the key instead by providing the `gpg-private-key` and `gpg-passphrase` inputs. The private key is written to a file in the runner's temp directory, imported into the GPG keychain, and the file is promptly removed before proceeding with the rest of the setup process. A cleanup step removes the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances).
+
+setup-java imports the key independently of the plugin version, but the generated passphrase profile described below uses `gpg.passphraseEnvName`, which requires `maven-gpg-plugin` 3.2.0 or newer. Since `gpg-passphrase` defaults to `GPG_PASSPHRASE`, setup-java writes that profile unless you override the input to `MAVEN_GPG_PASSPHRASE`.
 
 ```yaml
     - name: Set up Apache Maven Central
@@ -682,14 +684,28 @@ If you use `maven-gpg-plugin` older than 3.2.0, or you prefer signing with the `
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 ```
 
-With these inputs, setup-java adds a `gpg.passphrase` server to the generated `settings.xml`:
+The `gpg-passphrase` input is the **name of the environment variable** that holds the passphrase (not the passphrase itself). It defaults to `GPG_PASSPHRASE`. The [Maven GPG Plugin](https://maven.apache.org/plugins/maven-gpg-plugin/) reads the passphrase from the environment variable named by its `gpg.passphraseEnvName` property, whose own default is `MAVEN_GPG_PASSPHRASE`.
+
+- If `gpg-passphrase` is `MAVEN_GPG_PASSPHRASE`, the plugin already reads that variable by default, so setup-java writes nothing extra to `settings.xml`.
+- Otherwise (including the default `GPG_PASSPHRASE`), setup-java configures `gpg.passphraseEnvName` through an active profile in the generated `settings.xml` so the plugin reads the passphrase from that variable. For the default `gpg-passphrase: GPG_PASSPHRASE`:
 
 ```xml
-    <server>
-      <id>gpg.passphrase</id>
-      <passphrase>${env.MAVEN_GPG_PASSPHRASE}</passphrase>
-    </server>
+    <profiles>
+      <profile>
+        <id>setup-java-gpg</id>
+        <properties>
+          <gpg.passphraseEnvName>GPG_PASSPHRASE</gpg.passphraseEnvName>
+        </properties>
+      </profile>
+    </profiles>
+    <activeProfiles>
+      <activeProfile>setup-java-gpg</activeProfile>
+    </activeProfiles>
 ```
+
+> **Note:** Earlier versions of setup-java wrote a `gpg.passphrase` server to `settings.xml`. That mechanism is deprecated by the Maven GPG Plugin and fails when its `bestPractices` mode is enabled, so setup-java now relies on `gpg.passphraseEnvName` instead. The `gpg-passphrase` input and its `GPG_PASSPHRASE` default are unchanged, so existing workflows that set the `GPG_PASSPHRASE` environment variable keep working.
+
+> **Compatibility note:** Reading the passphrase from an environment variable (`gpg.passphraseEnvName`) requires `maven-gpg-plugin` 3.2.0 or newer. Older versions do not honor this property and will not pick up the passphrase, because setup-java no longer writes the deprecated `gpg.passphrase` server to `settings.xml`. If you are pinned to `maven-gpg-plugin` older than 3.2.0, upgrade to 3.2.0+.
 
 When signing with the `gpg` executable, the Maven GPG Plugin configuration in your `pom.xml` should contain the following structure to avoid possible issues like `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`:
 
@@ -703,7 +719,7 @@ When signing with the `gpg` executable, the Maven GPG Plugin configuration in yo
 </configuration>
 ```
 
-GPG 2.1 requires `--pinentry-mode` to be set to `loopback` in order to pick up the `gpg.passphrase` value defined in Maven `settings.xml`.
+GPG 2.1 requires `--pinentry-mode` to be set to `loopback` in order to read the passphrase non-interactively.
 
 ***NOTE***: If, when using the default `gpg` signer, the error `gpg: Sorry, no terminal at all requested - can't get input` [is encountered](https://github.com/actions/setup-java/issues/554), please update the version of `maven-gpg-plugin` to 1.6 or higher.
 
