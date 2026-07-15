@@ -24,9 +24,7 @@ This action allows you to work with Java and Scala projects.
 
 ## Breaking changes in V6
 
-- **GPG passphrase is now passed to the Maven GPG Plugin via an environment variable instead of a `settings.xml` server.** setup-java no longer writes the deprecated `gpg.passphrase` server to `settings.xml`; it relies on the plugin's `gpg.passphraseEnvName` mechanism instead. As part of this:
-  - The default value of the `gpg-passphrase` input changed from `GPG_PASSPHRASE` to `MAVEN_GPG_PASSPHRASE` (the Maven GPG Plugin default). If you relied on the old default, set a `MAVEN_GPG_PASSPHRASE` environment variable in your build step, or pass `gpg-passphrase: GPG_PASSPHRASE` explicitly to keep the previous name.
-  - This requires `maven-gpg-plugin` **3.2.0 or newer**. Older versions do not honor `gpg.passphraseEnvName` and will no longer pick up the passphrase, since the `gpg.passphrase` server is no longer written. Upgrade the plugin to 3.2.0+.
+- **The GPG passphrase is now passed to the Maven GPG Plugin through an environment variable (`gpg.passphraseEnvName`) instead of the deprecated `gpg.passphrase` server in `settings.xml`.** The `gpg-passphrase` input and its default (`GPG_PASSPHRASE`) are unchanged, so if you already set that environment variable in your build step your workflow keeps working. However, this now requires `maven-gpg-plugin` **3.2.0 or newer**; older versions do not honor `gpg.passphraseEnvName` and, because the `gpg.passphrase` server is no longer written, will not pick up the passphrase. Upgrade the plugin to 3.2.0+.
 
   See [GPG](docs/advanced-usage.md#gpg) for details.
 
@@ -78,7 +76,7 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `gpg-private-key`: GPG private key to import. Default is empty string.
 
-  - `gpg-passphrase`: Environment variable name for the GPG private key passphrase. Default is MAVEN_GPG_PASSPHRASE.
+  - `gpg-passphrase`: Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
 
   - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
 

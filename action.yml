@@ -68,7 +68,7 @@ inputs:
     required: false
     default: ''
   gpg-passphrase:
-    description: 'Environment variable name for the GPG private key passphrase. Defaults to MAVEN_GPG_PASSPHRASE when gpg-private-key is set; ignored otherwise.'
+    description: 'Environment variable name for the GPG private key passphrase. Defaults to GPG_PASSPHRASE when gpg-private-key is set; ignored otherwise.'
     required: false
   cache:
     description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle" or "sbt".'
