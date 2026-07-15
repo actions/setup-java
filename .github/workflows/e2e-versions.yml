@@ -321,37 +321,8 @@ jobs:
         run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
-<<<<<<< HEAD
-  setup-java-ea-versions-temurin:
-    name: temurin ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
-    needs: setup-java-major-minor-versions
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: *default_os
-        version: ['17-ea']
-    steps:
-      - *checkout_step
-      - name: setup-java
-        uses: ./
-        id: setup-java
-        with:
-          java-version: ${{ matrix.version }}
-          distribution: temurin
-      - name: Verify Java
-        env:
-          JAVA_VERSION: ${{ matrix.version }}
-          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
-        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
-        shell: bash
-
-  setup-java-temurin-signature-verification:
-    name: temurin ${{ matrix.version }} signature verification - ${{ matrix.os }}
-=======
   setup-java-signature-verification:
     name: ${{ matrix.distribution }} ${{ matrix.version }} signature verification - ${{ matrix.os }}
->>>>>>> origin/main
     needs: setup-java-major-minor-versions
     runs-on: ${{ matrix.os }}
     strategy:
@@ -376,58 +347,6 @@ jobs:
         run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
-<<<<<<< HEAD
-  setup-java-microsoft-signature-verification:
-    name: microsoft ${{ matrix.version }} signature verification - ${{ matrix.os }}
-    needs: setup-java-major-minor-versions
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: *default_os
-        version: ['21', '17']
-    steps:
-      - *checkout_step
-      - name: setup-java with signature verification
-        uses: ./
-        id: setup-java
-        with:
-          java-version: ${{ matrix.version }}
-          distribution: microsoft
-          verify-signature: true
-      - name: Verify Java
-        env:
-          JAVA_VERSION: ${{ matrix.version }}
-          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
-        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
-        shell: bash
-
-  setup-java-ea-versions-sapmachine:
-    name: sapmachine ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - ${{ matrix.os }}
-    needs: setup-java-major-minor-versions
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: *default_os
-        version: ['17-ea', '21-ea']
-    steps:
-      - *checkout_step
-      - name: setup-java
-        uses: ./
-        id: setup-java
-        with:
-          java-version: ${{ matrix.version }}
-          distribution: sapmachine
-      - name: Verify Java
-        env:
-          JAVA_VERSION: ${{ matrix.version }}
-          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
-        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
-        shell: bash
-
-=======
->>>>>>> origin/main
   setup-java-custom-package-type:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (${{ matrix.java-package }}-x64) - ${{ matrix.os }}
     needs: setup-java-major-minor-versions
