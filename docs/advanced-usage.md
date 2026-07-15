@@ -682,10 +682,10 @@ If you use `maven-gpg-plugin` older than 3.2.0, or you prefer signing with the `
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 ```
 
-The `gpg-passphrase` input is the **name of the environment variable** that holds the passphrase (not the passphrase itself). The [Maven GPG Plugin](https://maven.apache.org/plugins/maven-gpg-plugin/) reads the passphrase from the environment variable named by its `gpg.passphraseEnvName` property, which defaults to `MAVEN_GPG_PASSPHRASE`.
+The `gpg-passphrase` input is the **name of the environment variable** that holds the passphrase (not the passphrase itself). It defaults to `MAVEN_GPG_PASSPHRASE`, matching the [Maven GPG Plugin](https://maven.apache.org/plugins/maven-gpg-plugin/), which reads the passphrase from the environment variable named by its `gpg.passphraseEnvName` property (default `MAVEN_GPG_PASSPHRASE`).
 
-- If `gpg-passphrase` is `MAVEN_GPG_PASSPHRASE`, the plugin already reads that variable by default, so setup-java writes nothing extra to `settings.xml`.
-- If `gpg-passphrase` is any other name, setup-java configures `gpg.passphraseEnvName` through an active profile in the generated `settings.xml` so the plugin reads the passphrase from that variable:
+- If `gpg-passphrase` is `MAVEN_GPG_PASSPHRASE` (the default), the plugin already reads that variable, so setup-java writes nothing extra to `settings.xml`.
+- If `gpg-passphrase` is any other name, setup-java configures `gpg.passphraseEnvName` through an active profile in the generated `settings.xml` so the plugin reads the passphrase from that variable. For example, with `gpg-passphrase: GPG_PASSPHRASE`:
 
 ```xml
     <profiles>
@@ -702,6 +702,8 @@ The `gpg-passphrase` input is the **name of the environment variable** that hold
 ```
 
 > **Note:** Earlier versions of setup-java wrote a `gpg.passphrase` server to `settings.xml`. That mechanism is deprecated by the Maven GPG Plugin and fails when its `bestPractices` mode is enabled, so setup-java now relies on `gpg.passphraseEnvName` instead.
+
+> **Compatibility note:** Reading the passphrase from an environment variable (`gpg.passphraseEnvName`, default `MAVEN_GPG_PASSPHRASE`) requires `maven-gpg-plugin` 3.2.0 or newer. Older versions do not honor this property and will not pick up the passphrase, because setup-java no longer writes the deprecated `gpg.passphrase` server to `settings.xml`. If you are pinned to `maven-gpg-plugin` older than 3.2.0, upgrade to 3.2.0+ (recommended) or supply the passphrase through a mechanism supported by your plugin version.
 
 When signing with the `gpg` executable, the Maven GPG Plugin configuration in your `pom.xml` should contain the following structure to avoid possible issues like `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`:
 

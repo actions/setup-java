@@ -70,7 +70,7 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `gpg-private-key`: GPG private key to import. Default is empty string.
 
-  - `gpg-passphrase`: Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
+  - `gpg-passphrase`: Environment variable name for the GPG private key passphrase. Default is MAVEN_GPG_PASSPHRASE.
 
   - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
 
