@@ -91,8 +91,8 @@ For more details,  see the full release notes on the [releases page](https://git
 #### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
+- uses: actions/checkout@v7
+- uses: actions/setup-java@v6
   with:
     distribution: 'temurin' # See 'Supported distributions' for available options
     java-version: '25'
@@ -102,8 +102,8 @@ steps:
 #### Azul Zulu OpenJDK
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
+- uses: actions/checkout@v7
+- uses: actions/setup-java@v6
   with:
     distribution: 'zulu' # See 'Supported distributions' for available options
     java-version: '25'
@@ -178,8 +178,8 @@ The cache input is optional, and caching is turned off by default.
 #### Caching gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
+- uses: actions/checkout@v7
+- uses: actions/setup-java@v6
   with:
     distribution: 'temurin'
     java-version: '25'
@@ -200,8 +200,8 @@ For setup details and a comprehensive overview of all available features, visit 
 #### Caching maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
+- uses: actions/checkout@v7
+- uses: actions/setup-java@v6
   with:
     distribution: 'temurin'
     java-version: '25'
@@ -221,8 +221,8 @@ steps:
 #### Caching sbt dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
+- uses: actions/checkout@v7
+- uses: actions/setup-java@v6
   with:
     distribution: 'temurin'
     java-version: '25'
@@ -241,8 +241,8 @@ Usually, cache gets downloaded in multiple segments of fixed sizes. Sometimes, a
 env:
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
+- uses: actions/checkout@v7
+- uses: actions/setup-java@v6
   with:
     distribution: 'temurin'
     java-version: '25'
@@ -261,8 +261,8 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
+- uses: actions/checkout@v7
+- uses: actions/setup-java@v6
   with:
     distribution: 'temurin'
     java-version: '25'
@@ -280,9 +280,9 @@ jobs:
         java: [ '8', '11', '17', '21', '25' ]
     name: Java ${{ matrix.Java }} sample
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
@@ -295,7 +295,7 @@ All configured Java versions are added to the PATH. The last one added to the PA
 
 ```yaml
     steps:
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: '<distribution>'
           java-version: |
@@ -334,15 +334,6 @@ In the example above multiple JDKs are installed for the same job. The result af
 - [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](docs/advanced-usage.md#Modifying-Maven-Toolchains)
 - [Java Version File](docs/advanced-usage.md#Java-version-file)
-
-## V2 vs V1
-
-Examples in this README use `actions/setup-java@v5`, but the main migration note from V1 still applies to all later major versions (`v2`, `v3`, `v4`, and `v5`):
-
-- Starting with V2, the action supports custom distributions. V1 supports only Azul Zulu OpenJDK.
-- Starting with V2, you must specify distribution along with the version. V1 defaults to Azul Zulu OpenJDK, so only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2.
-
-For information about the latest releases, recent updates, and newly supported distributions, please refer to the `setup-java` [Releases](https://github.com/actions/setup-java/releases).
 
 ## Recommended permissions
 
