@@ -144,7 +144,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: bash "$GITHUB_WORKSPACE/__tests__/check-dir.sh" "$HOME/AppData/Local/Coursier/Cache"
       - name: Check files to cache on ubuntu-latest
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-22.04'
         run: bash "$GITHUB_WORKSPACE/__tests__/check-dir.sh" "$HOME/.cache/coursier"
   sbt-restore:
     runs-on: ${{ matrix.os }}
@@ -177,7 +177,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: bash "$GITHUB_WORKSPACE/__tests__/check-dir.sh" "$HOME/AppData/Local/Coursier/Cache"
       - name: Confirm that ~/.cache/coursier directory has been made
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-22.04'
         run: bash "$GITHUB_WORKSPACE/__tests__/check-dir.sh" "$HOME/.cache/coursier"
   gradle1-save:
     runs-on: ${{ matrix.os }}

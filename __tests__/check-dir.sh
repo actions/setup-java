@@ -10,6 +10,11 @@
 # tilde-expansion pitfalls.
 set -eu
 
+if [ "$#" -lt 1 ]; then
+  echo "Usage: check-dir.sh <dir> [present|absent]" >&2
+  exit 2
+fi
+
 dir=$1
 mode=${2:-present}
 
