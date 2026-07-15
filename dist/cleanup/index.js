@@ -95849,6 +95849,12 @@ const INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
 const INPUT_GPG_PASSPHRASE = 'gpg-passphrase';
 const INPUT_DEFAULT_GPG_PRIVATE_KEY = (/* unused pure expression or super */ null && (undefined));
 const INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
+// The default name of the environment variable the maven-gpg-plugin reads the
+// passphrase from (property `gpg.passphraseEnvName`). When the configured
+// passphrase env var name matches this, no extra configuration is required.
+const MAVEN_GPG_PASSPHRASE_DEFAULT_ENV = 'MAVEN_GPG_PASSPHRASE';
+// Id of the settings.xml profile used to set `gpg.passphraseEnvName`.
+const GPG_PASSPHRASE_PROFILE_ID = 'setup-java-gpg';
 const INPUT_CACHE = 'cache';
 const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
 const INPUT_JOB_STATUS = 'job-status';

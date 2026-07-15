@@ -682,14 +682,26 @@ If you use `maven-gpg-plugin` older than 3.2.0, or you prefer signing with the `
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 ```
 
-With these inputs, setup-java adds a `gpg.passphrase` server to the generated `settings.xml`:
+The `gpg-passphrase` input is the **name of the environment variable** that holds the passphrase (not the passphrase itself). The [Maven GPG Plugin](https://maven.apache.org/plugins/maven-gpg-plugin/) reads the passphrase from the environment variable named by its `gpg.passphraseEnvName` property, which defaults to `MAVEN_GPG_PASSPHRASE`.
+
+- If `gpg-passphrase` is `MAVEN_GPG_PASSPHRASE`, the plugin already reads that variable by default, so setup-java writes nothing extra to `settings.xml`.
+- If `gpg-passphrase` is any other name, setup-java configures `gpg.passphraseEnvName` through an active profile in the generated `settings.xml` so the plugin reads the passphrase from that variable:
 
 ```xml
-    <server>
-      <id>gpg.passphrase</id>
-      <passphrase>${env.MAVEN_GPG_PASSPHRASE}</passphrase>
-    </server>
+    <profiles>
+      <profile>
+        <id>setup-java-gpg</id>
+        <properties>
+          <gpg.passphraseEnvName>GPG_PASSPHRASE</gpg.passphraseEnvName>
+        </properties>
+      </profile>
+    </profiles>
+    <activeProfiles>
+      <activeProfile>setup-java-gpg</activeProfile>
+    </activeProfiles>
 ```
+
+> **Note:** Earlier versions of setup-java wrote a `gpg.passphrase` server to `settings.xml`. That mechanism is deprecated by the Maven GPG Plugin and fails when its `bestPractices` mode is enabled, so setup-java now relies on `gpg.passphraseEnvName` instead.
 
 When signing with the `gpg` executable, the Maven GPG Plugin configuration in your `pom.xml` should contain the following structure to avoid possible issues like `Inappropriate ioctl for device` or `gpg: signing failed: No such file or directory`:
 
@@ -703,7 +715,7 @@ When signing with the `gpg` executable, the Maven GPG Plugin configuration in yo
 </configuration>
 ```
 
-GPG 2.1 requires `--pinentry-mode` to be set to `loopback` in order to pick up the `gpg.passphrase` value defined in Maven `settings.xml`.
+GPG 2.1 requires `--pinentry-mode` to be set to `loopback` in order to read the passphrase non-interactively.
 
 ***NOTE***: If, when using the default `gpg` signer, the error `gpg: Sorry, no terminal at all requested - can't get input` [is encountered](https://github.com/actions/setup-java/issues/554), please update the version of `maven-gpg-plugin` to 1.6 or higher.
 

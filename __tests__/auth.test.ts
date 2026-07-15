@@ -228,9 +228,40 @@ describe('auth tests', () => {
       <username>\${env.${username}}</username>
       <password>\${env.&amp;&lt;&gt;"''"&gt;&lt;&amp;}</password>
     </server>
+  </servers>
+  <profiles>
+    <profile>
+      <id>setup-java-gpg</id>
+      <properties>
+        <gpg.passphraseEnvName>${gpgPassphrase}</gpg.passphraseEnvName>
+      </properties>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>setup-java-gpg</activeProfile>
+  </activeProfiles>
+</settings>`;
+
+    expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(
+      expectedSettings
+    );
+  });
+
+  it('does not add a gpg profile when the passphrase env var is the maven-gpg-plugin default', () => {
+    const id = 'packages';
+    const username = 'USER';
+    const password = '&<>"\'\'"><&';
+    const gpgPassphrase = 'MAVEN_GPG_PASSPHRASE';
+
+    const expectedSettings = `<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <interactiveMode>false</interactiveMode>
+  <servers>
     <server>
-      <id>gpg.passphrase</id>
-      <passphrase>\${env.${gpgPassphrase}}</passphrase>
+      <id>${id}</id>
+      <username>\${env.${username}}</username>
+      <password>\${env.&amp;&lt;&gt;"''"&gt;&lt;&amp;}</password>
     </server>
   </servers>
 </settings>`;
