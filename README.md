@@ -57,6 +57,8 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `verify-signature-public-key`: ASCII-armored GPG public key used to verify the downloaded package signature. Overrides the default bundled key for the selected distribution.
 
+  - `token`: The token used to authenticate when fetching version manifests hosted on github.com. The default is sufficient for workflows running on github.com. On GitHub Enterprise Server, provide a github.com personal access token if manifest requests are rate-limited. See [Using Microsoft distribution on GHES](docs/advanced-usage.md#Using-Microsoft-distribution-on-GHES) for more details.
+
   - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
 
   - `cache-dependency-path`: The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.
@@ -81,6 +83,8 @@ For more details,  see the full release notes on the [releases page](https://git
   - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
 
   - `mvn-toolchain-vendor`: Name of Maven Toolchain Vendor if the default name of `${distribution}` is not wanted.
+
+  - `show-download-progress`: Set to `true` to keep Maven artifact download and transfer progress in build logs. By default, the action adds `-ntp` (`--no-transfer-progress`) to `MAVEN_ARGS`. This input has no effect on non-Maven builds. See [Maven transfer progress](docs/advanced-usage.md#Maven-transfer-progress-download-logs) for more details.
 
 ### Basic Configuration
 
@@ -325,6 +329,7 @@ In the example above multiple JDKs are installed for the same job. The result af
 - [Testing against different Java distributions](docs/advanced-usage.md#Testing-against-different-Java-distributions)
 - [Testing against different platforms](docs/advanced-usage.md#Testing-against-different-platforms)
 - [Publishing using Apache Maven](docs/advanced-usage.md#Publishing-using-Apache-Maven)
+- [Maven transfer progress (download logs)](docs/advanced-usage.md#Maven-transfer-progress-download-logs)
 - [Publishing using Gradle](docs/advanced-usage.md#Publishing-using-Gradle)
 - [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](docs/advanced-usage.md#Modifying-Maven-Toolchains)
