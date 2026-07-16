@@ -39,12 +39,12 @@ Inputs `java-version` and `distribution` are mandatory and needs to be provided.
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'temurin'
-    java-version: '25'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '25'
+  - run: java --version
 ```
 
 ### Adopt
@@ -52,38 +52,38 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'adopt-hotspot'
-    java-version: '11'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'adopt-hotspot'
+      java-version: '11'
+  - run: java --version
 ```
 
 ### Zulu
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'zulu'
-    java-version: '25'
-    java-package: jdk # optional (jdk, jre, jdk+fx, jre+fx, jdk+crac, or jre+crac) - defaults to jdk
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'zulu'
+      java-version: '25'
+      java-package: jdk # optional (jdk, jre, jdk+fx, jre+fx, jdk+crac, or jre+crac) - defaults to jdk
+  - run: java --version
 ```
 
 ### Liberica
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'liberica'
-    java-version: '25'
-    java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'liberica'
+      java-version: '25'
+      java-package: jdk # optional (jdk, jre, jdk+fx or jre+fx) - defaults to jdk
+  - run: java --version
 ```
 
 ### Liberica Native Image Kit
@@ -91,25 +91,25 @@ Liberica Native Image Kit (NIK) is a GraalVM-based distribution. `java-version` 
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'liberica-nik'
-    java-version: '25'
-    java-package: jdk # optional (jdk or jdk+fx) - defaults to jdk
-- run: native-image --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'liberica-nik'
+      java-version: '25'
+      java-package: jdk # optional (jdk or jdk+fx) - defaults to jdk
+  - run: native-image --version
 ```
 
 ### Microsoft
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'microsoft'
-    java-version: '25'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'microsoft'
+      java-version: '25'
+  - run: java --version
 ```
 
 ### Using Microsoft distribution on GHES
@@ -119,7 +119,7 @@ steps:
 To get a higher rate limit, you can [generate a personal access token on github.com](https://github.com/settings/tokens/new) and pass it as the `token` input for the action:
 
 ```yaml
-uses: actions/setup-java@v5
+uses: actions/setup-java@v6
 with:
   token: ${{ secrets.GH_DOTCOM_TOKEN }}
   distribution: 'microsoft'
@@ -133,12 +133,12 @@ If the runner is not able to access github.com, any Java versions requested duri
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'corretto'
-    java-version: '25'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'corretto'
+      java-version: '25'
+  - run: java --version
 ```
 
 ### Oracle
@@ -146,12 +146,12 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'oracle'
-    java-version: '25'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'oracle'
+      java-version: '25'
+  - run: java --version
 ```
 
 ### Alibaba Dragonwell
@@ -159,24 +159,24 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'dragonwell'
-    java-version: '8'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'dragonwell'
+      java-version: '8'
+  - run: java --version
 ```
 
 ### SapMachine
 **NOTE:** An OpenJDK release maintained and supported by SAP
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'sapmachine'
-    java-version: '25'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'sapmachine'
+      java-version: '25'
+  - run: java --version
 ```
 
 ### GraalVM
@@ -184,14 +184,14 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'graalvm'
-    java-version: '25'
-- run: |
-    java --version
-    native-image --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'graalvm'
+      java-version: '25'
+  - run: |
+      java --version
+      native-image --version
 ```
 
 ### GraalVM Community
@@ -199,14 +199,14 @@ steps:
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'graalvm-community'
-    java-version: '21'
-- run: |
-    java --version
-    native-image --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'graalvm-community'
+      java-version: '21'
+  - run: |
+      java --version
+      native-image --version
 ```
 
 ### JetBrains
@@ -218,12 +218,12 @@ For example, `11.0.24` is not available but `11.0.16` is.
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'jetbrains'
-    java-version: '11'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'jetbrains'
+      java-version: '11'
+  - run: java --version
 ```
 
 The JetBrains installer uses the GitHub API to fetch the latest version. If you believe your project is going to be running into rate limits, you can provide a
@@ -231,15 +231,15 @@ GitHub token to the action to increase the rate limit. Set the `GITHUB_TOKEN` en
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'jetbrains'
-    java-version: '17'
-    java-package: 'jdk' # optional (jdk, jre, jdk+jcef, jre+jcef, jdk+ft, or jre+ft) - defaults to jdk
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'jetbrains'
+      java-version: '17'
+      java-package: 'jdk' # optional (jdk, jre, jdk+jcef, jre+jcef, jdk+ft, or jre+ft) - defaults to jdk
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  - run: java --version
 ```
 
 You can specify your package type (as shown in the [releases page](https://github.com/JetBrains/JetBrainsRuntime/releases/)) in the `java-package` parameter. 
@@ -257,24 +257,24 @@ The available package types are:
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'kona'
-    java-version: '21'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'kona'
+      java-version: '21'
+  - run: java --version
 ```
 
 ## Installing custom Java package type
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: '<distribution>'
-    java-version: '25'
-    java-package: jdk # optional (jdk or jre) - defaults to jdk
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: '<distribution>'
+      java-version: '25'
+      java-package: jdk # optional (jdk or jre) - defaults to jdk
+  - run: java --version
 ```
 
 ### JavaFX Maven project
@@ -283,15 +283,15 @@ For JavaFX projects that use Maven, use `jdk+fx` (or `jre+fx`) as the `java-pack
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'zulu'
-    java-version: '25'
-    java-package: jdk+fx
-    cache: maven
-- name: Build with Maven
-  run: mvn --no-transfer-progress compile
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'zulu'
+      java-version: '25'
+      java-package: jdk+fx
+      cache: maven
+  - name: Build with Maven
+    run: mvn --no-transfer-progress compile
 ```
 
 To run the JavaFX application in CI:
@@ -348,16 +348,16 @@ the full set):
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'temurin'
-    java-version: '25'
-    cache: 'maven'
-- name: Seed the Maven cache
-  run: mvn dependency:go-offline dependency:resolve-plugins
-- name: Build with Maven
-  run: mvn verify --file pom.xml
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '25'
+      cache: 'maven'
+  - name: Seed the Maven cache
+    run: mvn dependency:go-offline dependency:resolve-plugins
+  - name: Build with Maven
+    run: mvn verify --file pom.xml
 ```
 
 Separate seed job — useful for a matrix where different legs run different goals
@@ -371,14 +371,14 @@ jobs:
   seed-cache:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-java@v5
-      with:
-        distribution: 'temurin'
-        java-version: '25'
-        cache: 'maven'
-    - name: Seed the Maven cache
-      run: mvn dependency:go-offline dependency:resolve-plugins
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'maven'
+      - name: Seed the Maven cache
+        run: mvn dependency:go-offline dependency:resolve-plugins
 
   build:
     needs: seed-cache
@@ -387,14 +387,14 @@ jobs:
       matrix:
         goal: ['test', 'verify', 'test -Pprofile1']
     steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-java@v5
-      with:
-        distribution: 'temurin'
-        java-version: '25'
-        cache: 'maven'
-    - name: Build
-      run: mvn ${{ matrix.goal }} --file pom.xml
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'maven'
+      - name: Build
+        run: mvn ${{ matrix.goal }} --file pom.xml
 ```
 
 ### Caveats
@@ -428,13 +428,13 @@ jobs:
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: '<distribution>'
-    java-version: '25'
-    architecture: x86 # optional - default value derived from the runner machine
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: '<distribution>'
+      java-version: '25'
+      architecture: x86 # optional - default value derived from the runner machine
+  - run: java --version
 ```
 
 ## Installing JDK without setting as default
@@ -443,22 +443,22 @@ When installing multiple JDKs, the last one installed becomes the default (`JAVA
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'temurin'
-    java-version: '17'
-- uses: actions/setup-java@v5
-  id: setup-java-21
-  with:
-    distribution: 'temurin'
-    java-version: '21'
-    set-default: false
-- run: |
-    echo "Default java:"
-    java -version
-    echo "Java 21 home: $JAVA_HOME_21_X64"
-    echo "Java 21 path from output: ${{ steps.setup-java-21.outputs.path }}"
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '17'
+  - uses: actions/setup-java@v6
+    id: setup-java-21
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+      set-default: false
+  - run: |
+      echo "Default java:"
+      java -version
+      echo "Java 21 home: $JAVA_HOME_21_X64"
+      echo "Java 21 path from output: ${{ steps.setup-java-21.outputs.path }}"
 ```
 
 In this example, `JAVA_HOME` and `java` on `PATH` point to Java 17, while Java 21 is available via `JAVA_HOME_21_X64` or the step output `path`.
@@ -473,59 +473,59 @@ If your use-case requires a custom distribution or a version that is not provide
 
 ```yaml
 steps:
-- run: |
-    download_url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz"
-    wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'jdkfile'
-    jdk-file: ${{ runner.temp }}/java_package.tar.gz
-    java-version: '11.0.0'
-    architecture: x64
+  - run: |
+      download_url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz"
+      wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'jdkfile'
+      jdk-file: ${{ runner.temp }}/java_package.tar.gz
+      java-version: '11.0.0'
+      architecture: x64
     
-- run: java --version
+  - run: java --version
 ```
 
 For example, to use an **Early Access** build from [jdk.java.net](https://jdk.java.net/), download the archive for your runner OS/architecture and install it via `distribution: 'jdkfile'` (example below assumes Linux x64):
 
 ```yaml
 steps:
-- run: |
-    download_url="https://download.java.net/java/early_access/jdk25/36/GPL/openjdk-25-ea+36_linux-x64_bin.tar.gz"
-    wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'jdkfile'
-    jdk-file: ${{ runner.temp }}/java_package.tar.gz
-    java-version: '25.0.0-ea.36'
-    architecture: x64
+  - run: |
+      download_url="https://download.java.net/java/early_access/jdk25/36/GPL/openjdk-25-ea+36_linux-x64_bin.tar.gz"
+      wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'jdkfile'
+      jdk-file: ${{ runner.temp }}/java_package.tar.gz
+      java-version: '25.0.0-ea.36'
+      architecture: x64
 
-- run: java --version
+  - run: java --version
 ```
 
 If your use-case requires a custom distribution (in the example, alpine-linux is used) or a version that is not provided by setup-java and you want to always install the latest version during runtime, then you can use the following code to auto-download the latest JDK, determine the semver needed for setup-java, and setup-java will take care of the installation and caching on the VM:
 
 ```yaml
-   steps:
-      - name: fetch latest temurin JDK
-        id: fetch_latest_jdk
-        run: |
-          major_version={{ env.JAVA_VERSION }} # Example 16 or 21 or 22
-          cd $RUNNER_TEMP
-          response=$(curl -s "https://api.github.com/repos/adoptium/temurin${major_version}-binaries/releases")
-          latest_jdk_download_url=$(echo "$response" | jq -r '.[0].assets[] | select(.name | contains("jdk_x64_alpine-linux") and endswith(".tar.gz")) | .browser_download_url')
-          curl -Ls "$latest_jdk_download_url" -o java_package.tar.gz
-          latest_jdk_json_url=$(jdk_download_url "$response" | jq -r '.[0].assets[] | select(.name | contains("jdk_x64_alpine-linux") and endswith(".tar.gz.json")) | .browser_download_url')
-          latest_semver_version=$(curl -sL $latest_jdk_json_url | jq -r 'version.semver')
-          echo "java_version=$latest_semver_version" >> "$GITHUB_OUTPUT"
+steps:
+  - name: fetch latest temurin JDK
+    id: fetch_latest_jdk
+    run: |
+      major_version={{ env.JAVA_VERSION }} # Example 16 or 21 or 22
+      cd $RUNNER_TEMP
+      response=$(curl -s "https://api.github.com/repos/adoptium/temurin${major_version}-binaries/releases")
+      latest_jdk_download_url=$(echo "$response" | jq -r '.[0].assets[] | select(.name | contains("jdk_x64_alpine-linux") and endswith(".tar.gz")) | .browser_download_url')
+      curl -Ls "$latest_jdk_download_url" -o java_package.tar.gz
+      latest_jdk_json_url=$(jdk_download_url "$response" | jq -r '.[0].assets[] | select(.name | contains("jdk_x64_alpine-linux") and endswith(".tar.gz.json")) | .browser_download_url')
+      latest_semver_version=$(curl -sL $latest_jdk_json_url | jq -r 'version.semver')
+      echo "java_version=$latest_semver_version" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-java@v5
-        with:
-          distribution: 'jdkfile'
-          jdk-file: ${{ runner.temp }}/java_package.tar.gz
-          java-version: {{ steps.fetch_latest_jdk.outputs.java_version }}
-          architecture: x64
-       - run: java --version
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'jdkfile'
+      jdk-file: ${{ runner.temp }}/java_package.tar.gz
+      java-version: {{ steps.fetch_latest_jdk.outputs.java_version }}
+      architecture: x64
+  - run: java --version
 ```
 
 ## Testing against different Java distributions
@@ -540,9 +540,9 @@ jobs:
         java: [ '8', '11' ]
     name: Java ${{ matrix.Java }} (${{ matrix.distribution }}) sample
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: ${{ matrix.distribution }}
           java-version: ${{ matrix.java }}
@@ -560,9 +560,9 @@ jobs:
         os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest' ]
     name: Java ${{ matrix.Java }} (${{ matrix.os }}) sample
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: ${{ matrix.java }}
@@ -577,37 +577,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
-    - name: Set up JDK 11
-      uses: actions/setup-java@v5
-      with:
-        distribution: '<distribution>'
-        java-version: '11'
+      - uses: actions/checkout@v7
+      - name: Set up JDK 11
+        uses: actions/setup-java@v6
+        with:
+          distribution: '<distribution>'
+          java-version: '11'
 
-    - name: Build with Maven
-      run: mvn package --file pom.xml
+      - name: Build with Maven
+        run: mvn package --file pom.xml
 
-    - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy
-      env:
-        GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
+      - name: Publish to GitHub Packages Apache Maven
+        run: mvn deploy
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
 
-    - name: Set up Apache Maven Central
-      uses: actions/setup-java@v5
-      with: # running setup-java again overwrites the settings.xml
-        distribution: 'temurin'
-        java-version: '11'
-        server-id: maven # Value of the distributionManagement/repository/id field of the pom.xml
-        server-username: MAVEN_USERNAME # env variable for username in deploy
-        server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
+      - name: Set up Apache Maven Central
+        uses: actions/setup-java@v6
+        with: # running setup-java again overwrites the settings.xml
+          distribution: 'temurin'
+          java-version: '11'
+          server-id: maven # Value of the distributionManagement/repository/id field of the pom.xml
+          server-username: MAVEN_USERNAME # env variable for username in deploy
+          server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
 
-    - name: Publish to Apache Maven Central
-      run: mvn deploy -Dgpg.signer=bc # requires maven-gpg-plugin >= 3.2.0 (bc signer support)
-      env:
-        MAVEN_USERNAME: maven_username123
-        MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
-        MAVEN_GPG_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # ASCII-armored secret key (TSK), e.g. from `gpg --armor --export-secret-keys YOUR_ID`
-        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+      - name: Publish to Apache Maven Central
+        run: mvn deploy -Dgpg.signer=bc # requires maven-gpg-plugin >= 3.2.0 (bc signer support)
+        env:
+          MAVEN_USERNAME: maven_username123
+          MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
+          MAVEN_GPG_KEY: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # ASCII-armored secret key (TSK), e.g. from `gpg --armor --export-secret-keys YOUR_ID`
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 ```
 
 The two `settings.xml` files created from the above example look like the following.
@@ -666,7 +666,7 @@ setup-java imports the key independently of the plugin version, but the generate
 
 ```yaml
     - name: Set up Apache Maven Central
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@v6
       with:
         distribution: 'temurin'
         java-version: '11'
@@ -733,22 +733,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
-    - name: Set up JDK 11 for Shared Runner
-      uses: actions/setup-java@v5
-      with:
-        distribution: '<distribution>'
-        java-version: '11'
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - uses: actions/checkout@v7
+      - name: Set up JDK 11 for Shared Runner
+        uses: actions/setup-java@v6
+        with:
+          distribution: '<distribution>'
+          java-version: '11'
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
 
-    - name: Build with Maven
-      run: mvn package --file pom.xml
+      - name: Build with Maven
+        run: mvn package --file pom.xml
 
-    - name: Publish to GitHub Packages Apache Maven
-      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+      - name: Publish to GitHub Packages Apache Maven
+        run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 ```
 
 ## Maven transfer progress (download logs)
@@ -765,15 +765,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-java@v5
-      with:
-        distribution: '<distribution>'
-        java-version: '21'
-        show-download-progress: true # keep Maven download/transfer progress in the logs
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: '<distribution>'
+          java-version: '21'
+          show-download-progress: true # keep Maven download/transfer progress in the logs
 
-    - name: Build with Maven
-      run: mvn package --file pom.xml
+      - name: Build with Maven
+        run: mvn package --file pom.xml
 ```
 
 ***NOTES***:
@@ -801,15 +801,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-java@v5
-      with:
-        distribution: '<distribution>'
-        java-version: '21'
-        problem-matcher: false
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: '<distribution>'
+          java-version: '21'
+          problem-matcher: false
 
-    - name: Build with Maven
-      run: mvn package --file pom.xml
+      - name: Build with Maven
+        run: mvn package --file pom.xml
 ```
 
 Disabling the matcher only stops annotations from being created. Compiler output remains in the log, and compilation errors still fail the build step.
@@ -822,22 +822,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-    - name: Set up JDK 11
-      uses: actions/setup-java@v5
-      with:
-        distribution: '<distribution>'
-        java-version: '11'
+      - name: Set up JDK 11
+        uses: actions/setup-java@v6
+        with:
+          distribution: '<distribution>'
+          java-version: '11'
 
-    - name: Build with Gradle
-      run: gradle build
+      - name: Build with Gradle
+        run: gradle build
 
-    - name: Publish to GitHub Packages
-      run: gradle publish
-      env:
-        USERNAME: ${{ github.actor }}
-        PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish to GitHub Packages
+        run: gradle publish
+        env:
+          USERNAME: ${{ github.actor }}
+          PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 ***NOTE: The `USERNAME` and `PASSWORD` need to correspond to the credentials environment variables used in the publishing section of your `build.gradle`.***
@@ -861,17 +861,17 @@ Toolchain entries are always merged non-destructively: existing JDK, custom, and
 
 ```yaml
 steps:
-- uses: actions/setup-java@v5
-  with:
-    distribution: '<distribution>'
-    java-version: |
-      8
-      11
+  - uses: actions/setup-java@v6
+    with:
+      distribution: '<distribution>'
+      java-version: |
+        8
+        11
 
-- uses: actions/setup-java@v5
-  with:
-    distribution: '<distribution>'
-    java-version: '15'
+  - uses: actions/setup-java@v6
+    with:
+      distribution: '<distribution>'
+      java-version: '15'
 ```
 
 The result is a Toolchain with entries for JDKs 8, 11 and 15. You can even combine this with custom JDKs of arbitrary versions:
@@ -880,7 +880,7 @@ The result is a Toolchain with entries for JDKs 8, 11 and 15. You can even combi
 - run: |
     download_url="https://example.com/java/jdk/6u45-b06/jdk-6u45-linux-x64.tar.gz"
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v5
+- uses: actions/setup-java@v6
   with:
     distribution: 'jdkfile'
     jdk-file: ${{ runner.temp }}/java_package.tar.gz
@@ -897,7 +897,7 @@ Each JDK provider will receive a default `vendor` using the `distribution` input
 - run: |
     download_url="https://example.com/java/jdk/6u45-b06/jdk-6u45-linux-x64.tar.gz"
     wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-- uses: actions/setup-java@v5
+- uses: actions/setup-java@v6
   with:
     distribution: 'jdkfile'
     jdk-file: ${{ runner.temp }}/java_package.tar.gz
@@ -912,13 +912,13 @@ In case you install multiple versions of Java at once with multi-line `java-vers
 
 ```yaml
 steps:
-- uses: actions/setup-java@v5
-  with:
-    distribution: '<distribution>'
-    java-version: |
-      8
-      11
-    mvn-toolchain-vendor: Eclipse Temurin
+  - uses: actions/setup-java@v6
+    with:
+      distribution: '<distribution>'
+      java-version: |
+        8
+        11
+      mvn-toolchain-vendor: Eclipse Temurin
 ```
 
 ### Modifying The Toolchain ID For JDKs
@@ -926,28 +926,28 @@ Each JDK provider will receive a default `id` based on the combination of `distr
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'temurin'
-    java-version: '11'
-    mvn-toolchain-id: 'some_other_id'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '11'
+      mvn-toolchain-id: 'some_other_id'
+  - run: java --version
 ```
 
 In case you install multiple versions of Java at once you can use the same syntax as used in `java-versions`. Please note that you have to declare an ID for all Java versions that will be installed or the `mvn-toolchain-id` instruction will be skipped wholesale due to mapping ambiguities.
 
 ```yaml
 steps:
-- uses: actions/setup-java@v5
-  with:
-    distribution: '<distribution>'
-    java-version: |
-      8
-      11
-    mvn-toolchain-id: |
-      something_else
-      something_other
+  - uses: actions/setup-java@v6
+    with:
+      distribution: '<distribution>'
+      java-version: |
+        8
+        11
+      mvn-toolchain-id: |
+        something_else
+        something_other
 ```
 
 ## Java version file
@@ -1001,7 +1001,7 @@ steps:
 **Example step using `Sdkman!`** (distribution inferred from `.sdkmanrc`):
 ```yml
   - name: Setup java
-    uses: actions/setup-java@v5
+    uses: actions/setup-java@v6
     with:
       java-version-file: '.sdkmanrc'
 ```
@@ -1014,7 +1014,7 @@ java=17.0.7-tem
 **Example step using `asdf`** (distribution inferred from `.tool-versions`):
 ```yml
   - name: Setup java
-    uses: actions/setup-java@v5
+    uses: actions/setup-java@v6
     with:
       java-version-file: '.tool-versions'
 ```
@@ -1058,7 +1058,7 @@ steps:
   - name: Trust the internal CA
     run: echo "NODE_EXTRA_CA_CERTS=/etc/ssl/certs/internal-ca.pem" >> "$GITHUB_ENV"
 
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: 'temurin'
       java-version: '21'
@@ -1073,7 +1073,7 @@ steps:
       echo "${{ secrets.INTERNAL_CA_PEM }}" > "${RUNNER_TEMP}/internal-ca.pem"
       echo "NODE_EXTRA_CA_CERTS=${RUNNER_TEMP}/internal-ca.pem" >> "$GITHUB_ENV"
 
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: 'temurin'
       java-version: '21'
@@ -1101,7 +1101,7 @@ The JDK keeps its own trust store — a keystore named `cacerts` under `$JAVA_HO
 
 ```yaml
 steps:
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: 'temurin'
       java-version: '21'
