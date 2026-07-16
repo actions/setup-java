@@ -94,6 +94,10 @@ inputs:
     description: 'Whether Maven should print artifact download/transfer progress to the build log. When "false" (default) the action sets "-ntp" (--no-transfer-progress) in MAVEN_ARGS to produce cleaner logs. Set to "true" to keep the progress output. Has no effect on non-Maven builds.'
     required: false
     default: false
+  problem-matcher:
+    description: 'Whether to register the Java problem matcher (compiler errors/warnings and uncaught exceptions). Set to "false" to disable annotations.'
+    required: false
+    default: true
 outputs:
   distribution:
     description: 'Distribution of Java that has been installed'

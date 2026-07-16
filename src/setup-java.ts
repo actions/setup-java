@@ -14,6 +14,7 @@ import {fileURLToPath} from 'url';
 import {getJavaDistribution} from './distributions/distribution-factory.js';
 import {JavaInstallerOptions} from './distributions/base-models.js';
 import {configureMavenArgs} from './maven-args.js';
+import {configureProblemMatcher} from './problem-matcher.js';
 
 async function run() {
   try {
@@ -120,7 +121,7 @@ async function run() {
       '..',
       '.github'
     );
-    core.info(`##[add-matcher]${path.join(matchersPath, 'java.json')}`);
+    configureProblemMatcher(path.join(matchersPath, 'java.json'));
 
     await auth.configureAuthentication();
     configureMavenArgs();

@@ -95924,6 +95924,7 @@ const INPUT_JDK_FILE = 'jdk-file';
 const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
 const INPUT_CHECK_LATEST = 'check-latest';
 const INPUT_SET_DEFAULT = 'set-default';
+const INPUT_PROBLEM_MATCHER = 'problem-matcher';
 const INPUT_VERIFY_SIGNATURE = 'verify-signature';
 const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
 const INPUT_SERVER_ID = 'server-id';
