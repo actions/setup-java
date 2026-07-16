@@ -53,7 +53,7 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `set-default`: Set to `false` to install a JDK without making it the default. When `false`, `JAVA_HOME` and `PATH` are not updated, but `JAVA_HOME_<major>_<arch>` is still set so the JDK remains discoverable. Default value: `true`. See [Installing JDK without setting as default](docs/advanced-usage.md#Installing-JDK-without-setting-as-default) for more details.
 
-  - `problem-matcher`: Set to `false` to disable Java compiler annotations. Default value: `true`. See [Java problem matcher](docs/advanced-usage.md#java-problem-matcher-compiler-annotations) for details and annotation limits.
+  - `problem-matcher`: Set to `false` to disable Java problem matcher annotations (compiler diagnostics and uncaught exceptions). Default value: `true`. See [Java problem matcher](docs/advanced-usage.md#java-problem-matcher-compiler-annotations) for details and annotation limits.
 
   - `verify-signature`: Verifies downloaded Java package signatures when supported by the selected distribution. Currently supported for `temurin` and `microsoft`. If set to `true` for unsupported distributions, the action fails.
 
