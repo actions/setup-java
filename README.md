@@ -93,23 +93,23 @@ For more details,  see the full release notes on the [releases page](https://git
 #### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v7
-- uses: actions/setup-java@v6
-  with:
-    distribution: 'temurin' # See 'Supported distributions' for available options
-    java-version: '25'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin' # See 'Supported distributions' for available options
+      java-version: '25'
+  - run: java --version
 ```
 
 #### Azul Zulu OpenJDK
 ```yaml
 steps:
-- uses: actions/checkout@v7
-- uses: actions/setup-java@v6
-  with:
-    distribution: 'zulu' # See 'Supported distributions' for available options
-    java-version: '25'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'zulu' # See 'Supported distributions' for available options
+      java-version: '25'
+  - run: java --version
 ```
 
 #### Supported version syntax
@@ -180,16 +180,16 @@ The cache input is optional, and caching is turned off by default.
 #### Caching gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v7
-- uses: actions/setup-java@v6
-  with:
-    distribution: 'temurin'
-    java-version: '25'
-    cache: 'gradle'
-    cache-dependency-path: | # optional
-      sub-project/*.gradle*
-      sub-project/**/gradle-wrapper.properties
-- run: ./gradlew build --no-daemon
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '25'
+      cache: 'gradle'
+      cache-dependency-path: | # optional
+        sub-project/*.gradle*
+        sub-project/**/gradle-wrapper.properties
+  - run: ./gradlew build --no-daemon
 ```
 Using the `cache: gradle` provides a simple and effective way to cache Gradle dependencies with minimal configuration.
 
@@ -202,15 +202,15 @@ For setup details and a comprehensive overview of all available features, visit 
 #### Caching maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v7
-- uses: actions/setup-java@v6
-  with:
-    distribution: 'temurin'
-    java-version: '25'
-    cache: 'maven'
-    cache-dependency-path: 'sub-project/pom.xml' # optional
-- name: Build with Maven
-  run: mvn package --file pom.xml
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '25'
+      cache: 'maven'
+      cache-dependency-path: 'sub-project/pom.xml' # optional
+  - name: Build with Maven
+    run: mvn package --file pom.xml
 ```
 
 > [!NOTE]
@@ -223,17 +223,17 @@ steps:
 #### Caching sbt dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v7
-- uses: actions/setup-java@v6
-  with:
-    distribution: 'temurin'
-    java-version: '25'
-    cache: 'sbt'
-    cache-dependency-path: | # optional
-      sub-project/build.sbt
-      sub-project/project/build.properties
-- name: Build with SBT
-  run: sbt package
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '25'
+      cache: 'sbt'
+      cache-dependency-path: | # optional
+        sub-project/build.sbt
+        sub-project/project/build.properties
+  - name: Build with SBT
+    run: sbt package
 ```
 
 #### Cache segment restore timeout
@@ -243,13 +243,13 @@ Usually, cache gets downloaded in multiple segments of fixed sizes. Sometimes, a
 env:
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
 steps:
-- uses: actions/checkout@v7
-- uses: actions/setup-java@v6
-  with:
-    distribution: 'temurin'
-    java-version: '25'
-    cache: 'gradle'
-- run: ./gradlew build --no-daemon
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '25'
+      cache: 'gradle'
+  - run: ./gradlew build --no-daemon
 ```
 
 ### Check latest
@@ -263,13 +263,13 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 
 ```yaml
 steps:
-- uses: actions/checkout@v7
-- uses: actions/setup-java@v6
-  with:
-    distribution: 'temurin'
-    java-version: '25'
-    check-latest: true
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '25'
+      check-latest: true
+  - run: java --version
 ```
 
 ### Testing against different Java versions
