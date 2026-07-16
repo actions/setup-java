@@ -95,7 +95,7 @@ inputs:
     required: false
     default: false
   problem-matcher:
-    description: 'Whether to register the Java problem matcher for compiler errors and warnings. Set to "false" to disable compiler annotations.'
+    description: 'Whether to register the Java problem matcher (compiler errors/warnings and uncaught exceptions). Set to "false" to disable annotations.'
     required: false
     default: true
 outputs:
