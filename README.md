@@ -20,6 +20,9 @@ This action allows you to work with Java and Scala projects.
 
 ## What's new in V6
 
+> [!NOTE]
+> V6 is still in development (`main` branch) and is not yet recommended for production workflows.
+
 - **Migrated to ESM** to enable support for the latest `@actions/*` package versions. This is an internal implementation change.
 
 ## Breaking changes in V6
@@ -39,79 +42,79 @@ For more details,  see the full release notes on the [releases page](https://git
 
 ## Usage
 
-  - `java-version`: The Java version that is going to be set up. Takes a whole or [semver](#supported-version-syntax) Java version. If not specified, the action will expect `java-version-file` input to be specified.
+    - `java-version`: The Java version that is going to be set up. Takes a whole or [semver](#supported-version-syntax) Java version. If not specified, the action will expect `java-version-file` input to be specified.
 
-  - `java-version-file`: The path to a file containing java version. Supported file types are `.java-version`, `.tool-versions`, and `.sdkmanrc`. See more details in [about .java-version-file](docs/advanced-usage.md#Java-version-file).
+    - `java-version-file`: The path to a file containing java version. Supported file types are `.java-version`, `.tool-versions`, and `.sdkmanrc`. See more details in [about .java-version-file](docs/advanced-usage.md#Java-version-file).
 
-  - `distribution`: Java [distribution](#supported-distributions). Required unless `java-version-file` points to `.sdkmanrc` with a recognized distribution suffix (for example `java=21.0.5-tem`).
+    - `distribution`: Java [distribution](#supported-distributions). Required unless `java-version-file` points to `.sdkmanrc` with a recognized distribution suffix (for example `java=21.0.5-tem`).
 
-  - `java-package`: The packaging variant of the chosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. For Azul Zulu, `jdk+crac` and `jre+crac` are also supported. Default value: `jdk`.
+    - `java-package`: The packaging variant of the chosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. For Azul Zulu, `jdk+crac` and `jre+crac` are also supported. Default value: `jdk`.
 
-  - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
+    - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
 
-  - `jdk-file`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM. Note: `distribution` must be set to 'jdkfile' (case-sensitive; all lowercase) when using this option. (The camelCase `jdkFile` input is still accepted as a deprecated alias and may be removed in a future release.)
+    - `jdk-file`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM. Note: `distribution` must be set to 'jdkfile' (case-sensitive; all lowercase) when using this option. (The camelCase `jdkFile` input is still accepted as a deprecated alias and may be removed in a future release.)
 
-  - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
+    - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
-  - `set-default`: Set to `false` to install a JDK without making it the default. When `false`, `JAVA_HOME` and `PATH` are not updated, but `JAVA_HOME_<major>_<arch>` is still set so the JDK remains discoverable. Default value: `true`. See [Installing JDK without setting as default](docs/advanced-usage.md#Installing-JDK-without-setting-as-default) for more details.
+    - `set-default`: Set to `false` to install a JDK without making it the default. When `false`, `JAVA_HOME` and `PATH` are not updated, but `JAVA_HOME_<major>_<arch>` is still set so the JDK remains discoverable. Default value: `true`. See [Installing JDK without setting as default](docs/advanced-usage.md#Installing-JDK-without-setting-as-default) for more details.
 
-  - `problem-matcher`: Set to `false` to disable Java problem matcher annotations (compiler diagnostics and uncaught exceptions). Default value: `true`. See [Java problem matcher](docs/advanced-usage.md#java-problem-matcher-compiler-annotations) for details and annotation limits.
+    - `problem-matcher`: Set to `false` to disable Java problem matcher annotations (compiler diagnostics and uncaught exceptions). Default value: `true`. See [Java problem matcher](docs/advanced-usage.md#java-problem-matcher-compiler-annotations) for details and annotation limits.
 
-  - `verify-signature`: Verifies downloaded Java package signatures when supported by the selected distribution. Currently supported for `temurin` and `microsoft`. If set to `true` for unsupported distributions, the action fails.
+    - `verify-signature`: Verifies downloaded Java package signatures when supported by the selected distribution. Currently supported for `temurin` and `microsoft`. If set to `true` for unsupported distributions, the action fails.
 
-  - `verify-signature-public-key`: ASCII-armored GPG public key used to verify the downloaded package signature. Overrides the default bundled key for the selected distribution.
+    - `verify-signature-public-key`: ASCII-armored GPG public key used to verify the downloaded package signature. Overrides the default bundled key for the selected distribution.
 
-  - `token`: The token used to authenticate when fetching version manifests hosted on GitHub.com. Defaults to `${{ github.token }}` when running on GitHub.com; defaults to an empty string on GitHub Enterprise Server. On GHES, provide a GitHub.com personal access token if manifest requests are rate-limited. See [Using Microsoft distribution on GHES](docs/advanced-usage.md#using-microsoft-distribution-on-ghes) for more details.
+    - `token`: The token used to authenticate when fetching version manifests hosted on GitHub.com. Defaults to `${{ github.token }}` when running on GitHub.com; defaults to an empty string on GitHub Enterprise Server. On GHES, provide a GitHub.com personal access token if manifest requests are rate-limited. See [Using Microsoft distribution on GHES](docs/advanced-usage.md#using-microsoft-distribution-on-ghes) for more details.
 
-  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
+    - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
 
-  - `cache-dependency-path`: The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.
+    - `cache-dependency-path`: The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.
 
   #### Maven options
   The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
 
-  - `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists, set this to `false`.
+    - `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists, set this to `false`.
 
-  - `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
+    - `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
 
-  - `server-username-env-var`: Environment variable name for the username for authentication to the Apache Maven repository. Default is GITHUB_ACTOR.
+    - `server-username-env-var`: Environment variable name for the username for authentication to the Apache Maven repository. Default is GITHUB\_ACTOR.
 
-  - `server-password-env-var`: Environment variable name for password or token for authentication to the Apache Maven repository. Default is GITHUB_TOKEN.
+    - `server-password-env-var`: Environment variable name for password or token for authentication to the Apache Maven repository. Default is GITHUB\_TOKEN.
 
-  - `settings-path`: Maven related setting to point to the directory where the settings.xml file will be written. Default is ~/.m2.
+    - `settings-path`: Maven related setting to point to the directory where the settings.xml file will be written. Default is \~/.m2.
 
-  - `gpg-private-key`: GPG private key to import. Default is empty string.
+    - `gpg-private-key`: GPG private key to import. Default is empty string.
 
-  - `gpg-passphrase-env-var`: Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
+    - `gpg-passphrase-env-var`: Environment variable name for the GPG private key passphrase. Default is GPG\_PASSPHRASE.
 
-  - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
+    - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
 
-  - `mvn-toolchain-vendor`: Name of Maven Toolchain Vendor if the default name of `${distribution}` is not wanted.
+    - `mvn-toolchain-vendor`: Name of Maven Toolchain Vendor if the default name of `${distribution}` is not wanted.
 
-  - `show-download-progress`: Set to `true` to keep Maven artifact download and transfer progress in build logs. Default value: `false`. By default, the action adds `-ntp` (`--no-transfer-progress`) to `MAVEN_ARGS`. This input has no effect on non-Maven builds. See [Maven transfer progress](docs/advanced-usage.md#maven-transfer-progress-download-logs) for more details.
+    - `show-download-progress`: Set to `true` to keep Maven artifact download and transfer progress in build logs. Default value: `false`. By default, the action adds `-ntp` (`--no-transfer-progress`) to `MAVEN_ARGS`. This input has no effect on non-Maven builds. See [Maven transfer progress](docs/advanced-usage.md#maven-transfer-progress-download-logs) for more details.
 
 ### Basic Configuration
 
 #### Eclipse Temurin
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'temurin' # See 'Supported distributions' for available options
-    java-version: '25'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin' # See 'Supported distributions' for available options
+      java-version: '25'
+  - run: java --version
 ```
 
 #### Azul Zulu OpenJDK
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'zulu' # See 'Supported distributions' for available options
-    java-version: '25'
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'zulu' # See 'Supported distributions' for available options
+      java-version: '25'
+  - run: java --version
 ```
 
 #### Supported version syntax
@@ -182,16 +185,16 @@ The cache input is optional, and caching is turned off by default.
 #### Caching gradle dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'temurin'
-    java-version: '25'
-    cache: 'gradle'
-    cache-dependency-path: | # optional
-      sub-project/*.gradle*
-      sub-project/**/gradle-wrapper.properties
-- run: ./gradlew build --no-daemon
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '25'
+      cache: 'gradle'
+      cache-dependency-path: | # optional
+        sub-project/*.gradle*
+        sub-project/**/gradle-wrapper.properties
+  - run: ./gradlew build --no-daemon
 ```
 Using the `cache: gradle` provides a simple and effective way to cache Gradle dependencies with minimal configuration.
 
@@ -204,15 +207,15 @@ For setup details and a comprehensive overview of all available features, visit 
 #### Caching maven dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'temurin'
-    java-version: '25'
-    cache: 'maven'
-    cache-dependency-path: 'sub-project/pom.xml' # optional
-- name: Build with Maven
-  run: mvn package --file pom.xml
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '25'
+      cache: 'maven'
+      cache-dependency-path: 'sub-project/pom.xml' # optional
+  - name: Build with Maven
+    run: mvn package --file pom.xml
 ```
 
 > [!NOTE]
@@ -225,17 +228,17 @@ steps:
 #### Caching sbt dependencies
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'temurin'
-    java-version: '25'
-    cache: 'sbt'
-    cache-dependency-path: | # optional
-      sub-project/build.sbt
-      sub-project/project/build.properties
-- name: Build with SBT
-  run: sbt package
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '25'
+      cache: 'sbt'
+      cache-dependency-path: | # optional
+        sub-project/build.sbt
+        sub-project/project/build.properties
+  - name: Build with SBT
+    run: sbt package
 ```
 
 #### Cache segment restore timeout
@@ -245,13 +248,13 @@ Usually, cache gets downloaded in multiple segments of fixed sizes. Sometimes, a
 env:
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'temurin'
-    java-version: '25'
-    cache: 'gradle'
-- run: ./gradlew build --no-daemon
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '25'
+      cache: 'gradle'
+  - run: ./gradlew build --no-daemon
 ```
 
 ### Check latest
@@ -265,13 +268,13 @@ For Java distributions that are not cached on Hosted images, `check-latest` alwa
 
 ```yaml
 steps:
-- uses: actions/checkout@v6
-- uses: actions/setup-java@v5
-  with:
-    distribution: 'temurin'
-    java-version: '25'
-    check-latest: true
-- run: java --version
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '25'
+      check-latest: true
+  - run: java --version
 ```
 
 ### Testing against different Java versions
@@ -284,9 +287,9 @@ jobs:
         java: [ '8', '11', '17', '21', '25' ]
     name: Java ${{ matrix.Java }} sample
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: '<distribution>'
           java-version: ${{ matrix.java }}
@@ -295,11 +298,11 @@ jobs:
 
 ### Install multiple JDKs
 
-All configured Java versions are added to the PATH. The last one added to the PATH (i.e., the last JDK set up by this action) will be used as the default and available globally. Other Java versions can be accessed through environment variables such as 'JAVA_HOME_{{ MAJOR_VERSION }}_{{ ARCHITECTURE }}'. To use a specific Java version, set the JAVA_HOME environment variable accordingly and prepend its bin directory to the PATH to ensure it takes priority during execution.
+All configured Java versions are added to the PATH. The last one added to the PATH (i.e., the last JDK set up by this action) will be used as the default and available globally. Other Java versions can be accessed through environment variables such as 'JAVA\_HOME\_{{ MAJOR\_VERSION }}\_{{ ARCHITECTURE }}'. To use a specific Java version, set the JAVA\_HOME environment variable accordingly and prepend its bin directory to the PATH to ensure it takes priority during execution.
 
 ```yaml
-    steps:
-      - uses: actions/setup-java@v5
+   steps:
+      - uses: actions/setup-java@v6
         with:
           distribution: '<distribution>'
           java-version: |
@@ -314,19 +317,19 @@ In the example above multiple JDKs are installed for the same job. The result af
 ### Advanced Configuration
 
 - [Selecting a Java distribution](docs/advanced-usage.md#Selecting-a-Java-distribution)
-  - [Eclipse Temurin](docs/advanced-usage.md#Eclipse-Temurin)
-  - [Adopt](docs/advanced-usage.md#Adopt)
-  - [Zulu](docs/advanced-usage.md#Zulu)
-  - [Liberica](docs/advanced-usage.md#Liberica)
-  - [Liberica Native Image Kit](docs/advanced-usage.md#Liberica-Native-Image-Kit)
-  - [Microsoft](docs/advanced-usage.md#Microsoft)
-  - [Amazon Corretto](docs/advanced-usage.md#Amazon-Corretto)
-  - [Oracle](docs/advanced-usage.md#Oracle)
-  - [Alibaba Dragonwell](docs/advanced-usage.md#Alibaba-Dragonwell)
-  - [SapMachine](docs/advanced-usage.md#SapMachine)
-  - [GraalVM](docs/advanced-usage.md#GraalVM)
-  - [JetBrains](docs/advanced-usage.md#JetBrains)
-  - [Tencent Kona](docs/advanced-usage.md#Tencent-Kona)
+    - [Eclipse Temurin](docs/advanced-usage.md#Eclipse-Temurin)
+    - [Adopt](docs/advanced-usage.md#Adopt)
+    - [Zulu](docs/advanced-usage.md#Zulu)
+    - [Liberica](docs/advanced-usage.md#Liberica)
+    - [Liberica Native Image Kit](docs/advanced-usage.md#Liberica-Native-Image-Kit)
+    - [Microsoft](docs/advanced-usage.md#Microsoft)
+    - [Amazon Corretto](docs/advanced-usage.md#Amazon-Corretto)
+    - [Oracle](docs/advanced-usage.md#Oracle)
+    - [Alibaba Dragonwell](docs/advanced-usage.md#Alibaba-Dragonwell)
+    - [SapMachine](docs/advanced-usage.md#SapMachine)
+    - [GraalVM](docs/advanced-usage.md#GraalVM)
+    - [JetBrains](docs/advanced-usage.md#JetBrains)
+    - [Tencent Kona](docs/advanced-usage.md#Tencent-Kona)
 - [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)
 - [Installing custom Java architecture](docs/advanced-usage.md#Installing-custom-Java-architecture)
 - [Installing custom Java distribution from local file](docs/advanced-usage.md#Installing-Java-from-local-file)
@@ -338,15 +341,6 @@ In the example above multiple JDKs are installed for the same job. The result af
 - [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](docs/advanced-usage.md#Modifying-Maven-Toolchains)
 - [Java Version File](docs/advanced-usage.md#Java-version-file)
-
-## V2 vs V1
-
-Examples in this README use `actions/setup-java@v5`, but the main migration note from V1 still applies to all later major versions (`v2`, `v3`, `v4`, and `v5`):
-
-- Starting with V2, the action supports custom distributions. V1 supports only Azul Zulu OpenJDK.
-- Starting with V2, you must specify distribution along with the version. V1 defaults to Azul Zulu OpenJDK, so only version input is required. Follow [the migration guide](docs/switching-to-v2.md) to switch from V1 to V2.
-
-For information about the latest releases, recent updates, and newly supported distributions, please refer to the `setup-java` [Releases](https://github.com/actions/setup-java/releases).
 
 ## Recommended permissions
 
