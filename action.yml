@@ -46,16 +46,20 @@ inputs:
        file. Default is `github`'
     required: false
     default: 'github'
-  server-username:
+  server-username-env-var:
     description: 'Environment variable name for the username for authentication
        to the Apache Maven repository. Default is $GITHUB_ACTOR'
     required: false
-    default: 'GITHUB_ACTOR'
-  server-password:
+  server-username:
+    description: 'Deprecated alias for server-username-env-var'
+    required: false
+  server-password-env-var:
     description: 'Environment variable name for password or token for
        authentication to the Apache Maven repository. Default is $GITHUB_TOKEN'
     required: false
-    default: 'GITHUB_TOKEN'
+  server-password:
+    description: 'Deprecated alias for server-password-env-var'
+    required: false
   settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false
@@ -67,8 +71,11 @@ inputs:
     description: 'GPG private key to import. Default is empty string.'
     required: false
     default: ''
-  gpg-passphrase:
+  gpg-passphrase-env-var:
     description: 'Environment variable name for the GPG private key passphrase. Defaults to GPG_PASSPHRASE when gpg-private-key is set; ignored otherwise.'
+    required: false
+  gpg-passphrase:
+    description: 'Deprecated alias for gpg-passphrase-env-var'
     required: false
   cache:
     description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle" or "sbt".'

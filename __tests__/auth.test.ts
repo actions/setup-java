@@ -270,4 +270,55 @@ describe('auth tests', () => {
       expectedSettings
     );
   });
+
+  it('uses deprecated input aliases and warns', () => {
+    const mockGetInput = core.getInput as jest.MockedFunction<
+      typeof core.getInput
+    >;
+    const mockWarning = core.warning as jest.MockedFunction<
+      typeof core.warning
+    >;
+    mockGetInput.mockImplementation(name =>
+      name === 'server-username' ? 'LEGACY_USERNAME' : ''
+    );
+
+    expect(
+      auth.getInputWithDeprecatedAlias(
+        'server-username-env-var',
+        'server-username',
+        'GITHUB_ACTOR'
+      )
+    ).toBe('LEGACY_USERNAME');
+    expect(mockWarning).toHaveBeenCalledWith(
+      "The 'server-username' input is deprecated and may be removed in a future release. Please use 'server-username-env-var' instead."
+    );
+
+    mockGetInput.mockReset();
+    mockWarning.mockReset();
+  });
+
+  it('prefers the replacement input over its deprecated alias', () => {
+    const mockGetInput = core.getInput as jest.MockedFunction<
+      typeof core.getInput
+    >;
+    mockGetInput.mockImplementation(name => {
+      const inputs: Record<string, string> = {
+        'server-password-env-var': 'NEW_PASSWORD',
+        'server-password': 'LEGACY_PASSWORD'
+      };
+      return inputs[name] || '';
+    });
+
+    expect(
+      auth.getInputWithDeprecatedAlias(
+        'server-password-env-var',
+        'server-password',
+        'GITHUB_TOKEN'
+      )
+    ).toBe('NEW_PASSWORD');
+    expect(core.warning).toHaveBeenCalled();
+
+    mockGetInput.mockReset();
+    (core.warning as jest.Mock).mockReset();
+  });
 });

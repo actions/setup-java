@@ -598,8 +598,8 @@ jobs:
         distribution: 'temurin'
         java-version: '11'
         server-id: maven # Value of the distributionManagement/repository/id field of the pom.xml
-        server-username: MAVEN_USERNAME # env variable for username in deploy
-        server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
+        server-username-env-var: MAVEN_USERNAME # env variable for username in deploy
+        server-password-env-var: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
 
     - name: Publish to Apache Maven Central
       run: mvn deploy -Dgpg.signer=bc # requires maven-gpg-plugin >= 3.2.0 (bc signer support)
@@ -660,9 +660,9 @@ See the help docs on [Publishing a Package](https://help.github.com/en/github/ma
 
 #### Legacy / alternative: let setup-java import the key
 
-If you prefer signing with the `gpg` executable (for example because you are using `maven-gpg-plugin` older than 3.2.0), you can let setup-java import the key instead by providing the `gpg-private-key` and `gpg-passphrase` inputs. The private key is written to a file in the runner's temp directory, imported into the GPG keychain, and the file is promptly removed before proceeding with the rest of the setup process. A cleanup step removes the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances).
+If you prefer signing with the `gpg` executable (for example because you are using `maven-gpg-plugin` older than 3.2.0), you can let setup-java import the key instead by providing the `gpg-private-key` and `gpg-passphrase-env-var` inputs. The private key is written to a file in the runner's temp directory, imported into the GPG keychain, and the file is promptly removed before proceeding with the rest of the setup process. A cleanup step removes the imported private key from the GPG keychain after the job completes regardless of the job status. This ensures that the private key is no longer accessible on self-hosted runners and cannot "leak" between jobs (hosted runners are always clean instances).
 
-setup-java imports the key independently of the plugin version, but the generated passphrase profile described below uses `gpg.passphraseEnvName`, which requires `maven-gpg-plugin` 3.2.0 or newer. Since `gpg-passphrase` defaults to `GPG_PASSPHRASE`, setup-java writes that profile unless you override the input to `MAVEN_GPG_PASSPHRASE`.
+setup-java imports the key independently of the plugin version, but the generated passphrase profile described below uses `gpg.passphraseEnvName`, which requires `maven-gpg-plugin` 3.2.0 or newer. Since `gpg-passphrase-env-var` defaults to `GPG_PASSPHRASE`, setup-java writes that profile unless you override the input to `MAVEN_GPG_PASSPHRASE`.
 
 ```yaml
     - name: Set up Apache Maven Central
@@ -671,10 +671,10 @@ setup-java imports the key independently of the plugin version, but the generate
         distribution: 'temurin'
         java-version: '11'
         server-id: maven # Value of the distributionManagement/repository/id field of the pom.xml
-        server-username: MAVEN_USERNAME # env variable for username in deploy
-        server-password: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
+        server-username-env-var: MAVEN_USERNAME # env variable for username in deploy
+        server-password-env-var: MAVEN_CENTRAL_TOKEN # env variable for token in deploy
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }} # Value of the GPG private key to import
-        gpg-passphrase: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
+        gpg-passphrase-env-var: MAVEN_GPG_PASSPHRASE # env variable for GPG private key passphrase
 
     - name: Publish to Apache Maven Central
       run: mvn deploy
@@ -684,10 +684,10 @@ setup-java imports the key independently of the plugin version, but the generate
         MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
 ```
 
-The `gpg-passphrase` input is the **name of the environment variable** that holds the passphrase (not the passphrase itself). It defaults to `GPG_PASSPHRASE`. The [Maven GPG Plugin](https://maven.apache.org/plugins/maven-gpg-plugin/) reads the passphrase from the environment variable named by its `gpg.passphraseEnvName` property, whose own default is `MAVEN_GPG_PASSPHRASE`.
+The `gpg-passphrase-env-var` input is the **name of the environment variable** that holds the passphrase (not the passphrase itself). It defaults to `GPG_PASSPHRASE`. The [Maven GPG Plugin](https://maven.apache.org/plugins/maven-gpg-plugin/) reads the passphrase from the environment variable named by its `gpg.passphraseEnvName` property, whose own default is `MAVEN_GPG_PASSPHRASE`.
 
-- If `gpg-passphrase` is `MAVEN_GPG_PASSPHRASE`, the plugin already reads that variable by default, so setup-java writes nothing extra to `settings.xml`.
-- Otherwise (including the default `GPG_PASSPHRASE`), setup-java configures `gpg.passphraseEnvName` through an active profile in the generated `settings.xml` so the plugin reads the passphrase from that variable. For the default `gpg-passphrase: GPG_PASSPHRASE`:
+- If `gpg-passphrase-env-var` is `MAVEN_GPG_PASSPHRASE`, the plugin already reads that variable by default, so setup-java writes nothing extra to `settings.xml`.
+- Otherwise (including the default `GPG_PASSPHRASE`), setup-java configures `gpg.passphraseEnvName` through an active profile in the generated `settings.xml` so the plugin reads the passphrase from that variable. For the default `gpg-passphrase-env-var: GPG_PASSPHRASE`:
 
 ```xml
     <profiles>
@@ -703,7 +703,7 @@ The `gpg-passphrase` input is the **name of the environment variable** that hold
     </activeProfiles>
 ```
 
-> **Note:** Earlier versions of setup-java wrote a `gpg.passphrase` server to `settings.xml`. That mechanism is deprecated by the Maven GPG Plugin and fails when its `bestPractices` mode is enabled, so setup-java now relies on `gpg.passphraseEnvName` instead. The `gpg-passphrase` input and its `GPG_PASSPHRASE` default are unchanged, so existing workflows that set the `GPG_PASSPHRASE` environment variable keep working.
+> **Note:** Earlier versions of setup-java wrote a `gpg.passphrase` server to `settings.xml`. That mechanism is deprecated by the Maven GPG Plugin and fails when its `bestPractices` mode is enabled, so setup-java now relies on `gpg.passphraseEnvName` instead. Set the environment variable name with `gpg-passphrase-env-var`, which defaults to `GPG_PASSPHRASE`.
 
 > **Compatibility note:** Reading the passphrase from an environment variable (`gpg.passphraseEnvName`) requires `maven-gpg-plugin` 3.2.0 or newer. Older versions do not honor this property and will not pick up the passphrase, because setup-java no longer writes the deprecated `gpg.passphrase` server to `settings.xml`. If you are pinned to `maven-gpg-plugin` older than 3.2.0, upgrade to 3.2.0+.
 

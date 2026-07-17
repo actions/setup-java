@@ -20,11 +20,13 @@ This action allows you to work with Java and Scala projects.
 
 ## What's new in V6
 
-- **Migrated to ESM** to enable support for the latest `@actions/*` package versions. This is an internal implementation change only. No changes are required to your workflow configuration, and the action's behavior is unchanged. Existing workflows continue to work as before.
+- **Migrated to ESM** to enable support for the latest `@actions/*` package versions. This is an internal implementation change.
 
 ## Breaking changes in V6
 
-- **The GPG passphrase is now passed to the Maven GPG Plugin through an environment variable (`gpg.passphraseEnvName`) instead of the deprecated `gpg.passphrase` server in `settings.xml`.** The `gpg-passphrase` input and its default (`GPG_PASSPHRASE`) are unchanged, so if you already set that environment variable in your build step your workflow keeps working. However, this now requires `maven-gpg-plugin` **3.2.0 or newer**; older versions do not honor `gpg.passphraseEnvName` and, because the `gpg.passphrase` server is no longer written, will not pick up the passphrase. Upgrade the plugin to 3.2.0+.
+- **Renamed inputs that accept environment-variable names** to make it clear that their values are not credentials. Replace `server-username`, `server-password`, and `gpg-passphrase` with `server-username-env-var`, `server-password-env-var`, and `gpg-passphrase-env-var`, respectively. The old names remain as deprecated aliases and emit a warning when used.
+
+- **The GPG passphrase is now passed to the Maven GPG Plugin through an environment variable (`gpg.passphraseEnvName`) instead of the deprecated `gpg.passphrase` server in `settings.xml`.** Set the environment variable name with `gpg-passphrase-env-var`, which defaults to `GPG_PASSPHRASE`. This requires `maven-gpg-plugin` **3.2.0 or newer**; older versions do not honor `gpg.passphraseEnvName` and, because the `gpg.passphrase` server is no longer written, will not pick up the passphrase. Upgrade the plugin to 3.2.0+.
 
   See [GPG](docs/advanced-usage.md#gpg) for details.
 
@@ -72,15 +74,15 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
 
-  - `server-username`: Environment variable name for the username for authentication to the Apache Maven repository. Default is GITHUB_ACTOR.
+  - `server-username-env-var`: Environment variable name for the username for authentication to the Apache Maven repository. Default is GITHUB_ACTOR.
 
-  - `server-password`: Environment variable name for password or token for authentication to the Apache Maven repository. Default is GITHUB_TOKEN.
+  - `server-password-env-var`: Environment variable name for password or token for authentication to the Apache Maven repository. Default is GITHUB_TOKEN.
 
   - `settings-path`: Maven related setting to point to the directory where the settings.xml file will be written. Default is ~/.m2.
 
   - `gpg-private-key`: GPG private key to import. Default is empty string.
 
-  - `gpg-passphrase`: Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
+  - `gpg-passphrase-env-var`: Environment variable name for the GPG private key passphrase. Default is GPG_PASSPHRASE.
 
   - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
 
