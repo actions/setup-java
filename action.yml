@@ -72,7 +72,7 @@ inputs:
     required: false
     default: ''
   gpg-passphrase-env-var:
-    description: 'Environment variable name for the GPG private key passphrase. Defaults to GPG_PASSPHRASE when gpg-private-key is set; ignored otherwise.'
+    description: 'Environment variable name for the GPG private key passphrase. Defaults to GPG_PASSPHRASE when gpg-private-key is set.'
     required: false
   gpg-passphrase:
     description: 'Deprecated alias for gpg-passphrase-env-var'
