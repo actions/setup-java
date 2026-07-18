@@ -38,9 +38,9 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
           server-id: maven
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_CENTRAL_TOKEN
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          server-username-env-var: MAVEN_USERNAME
+          server-password-env-var: MAVEN_CENTRAL_TOKEN
+          gpg-passphrase-env-var: MAVEN_GPG_PASSPHRASE
       - name: Validate settings.xml
         run: |
           $xmlPath = Join-Path $HOME ".m2" "settings.xml"
@@ -93,9 +93,9 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
           server-id: maven
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_CENTRAL_TOKEN
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          server-username-env-var: MAVEN_USERNAME
+          server-password-env-var: MAVEN_CENTRAL_TOKEN
+          gpg-passphrase-env-var: MAVEN_GPG_PASSPHRASE
       - name: Validate settings.xml is overwritten
         run: |
           $xmlPath = Join-Path $HOME ".m2" "settings.xml"
@@ -131,10 +131,10 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
           server-id: maven
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_CENTRAL_TOKEN
+          server-username-env-var: MAVEN_USERNAME
+          server-password-env-var: MAVEN_CENTRAL_TOKEN
           overwrite-settings: false
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          gpg-passphrase-env-var: MAVEN_GPG_PASSPHRASE
       - name: Validate that settings.xml is not overwritten
         run: |
           $xmlPath = Join-Path $HOME ".m2" "settings.xml"
@@ -164,9 +164,9 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
           server-id: maven
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_CENTRAL_TOKEN
-          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+          server-username-env-var: MAVEN_USERNAME
+          server-password-env-var: MAVEN_CENTRAL_TOKEN
+          gpg-passphrase-env-var: MAVEN_GPG_PASSPHRASE
           settings-path: ${{ runner.temp }}
       - name: Validate settings.xml location
         run: |
