@@ -75,5 +75,8 @@
   "bugs": {
     "url": "https://github.com/actions/setup-java/issues"
   },
-  "homepage": "https://github.com/actions/setup-java#readme"
+  "homepage": "https://github.com/actions/setup-java#readme",
+  "overrides": {
+    "brace-expansion": "5.0.8"
+  }
 }
