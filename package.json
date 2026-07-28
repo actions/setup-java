@@ -70,10 +70,17 @@
     "lint-staged": "^17.2.0",
     "prettier": "^3.9.5",
     "ts-jest": "^29.4.11",
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.3"
   },
   "bugs": {
     "url": "https://github.com/actions/setup-java/issues"
   },
-  "homepage": "https://github.com/actions/setup-java#readme"
+  "homepage": "https://github.com/actions/setup-java#readme",
+  "overrides": {
+    "@actions/cache": {
+      "@actions/glob": "0.7.0"
+    },
+    "glob": "^11.1.0",
+    "test-exclude": "^7.0.2"
+  }
 }
