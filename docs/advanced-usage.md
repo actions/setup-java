@@ -154,6 +154,21 @@ steps:
   - run: java --version
 ```
 
+### Oracle OpenJDK
+Oracle OpenJDK builds are created and hosted by Oracle under GPLv2+CE. To install the latest early-access build for a feature release, append `-ea` to the Java version:
+
+```yaml
+steps:
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'oracle-openjdk'
+      java-version: '27-ea'
+  - run: java --version
+```
+
+Using `27` without the `-ea` suffix selects a stable (GA) release. Oracle archives OpenJDK builds after a limited number of releases and no longer provides security updates for them. To continue receiving security patches, move to Oracle JDK or choose a different vendor.
+
 ### Alibaba Dragonwell
 **NOTE:** Alibaba Dragonwell only provides jdk.
 
@@ -469,7 +484,7 @@ In this example, `JAVA_HOME` and `java` on `PATH` point to Java 17, while Java 2
 If your use-case requires a custom distribution or a version that is not provided by setup-java, you can download it manually and setup-java will take care of the installation and caching on the VM:
 
 > [!NOTE]
-> This approach also lets you use builds that setup-java does not provide directly, such as **Early Access (EA)** or other unreleased JDK builds (for example, an upcoming feature release or a Loom/Valhalla preview build). Download the desired archive in a prior step and point `jdk-file` at it; setup-java will extract, install, and cache it just like a supported distribution. When targeting multiple architectures, select the correct binary per architecture in your workflow (for example, with a build matrix).
+> This approach also lets you use builds that setup-java does not provide directly, such as unreleased Loom/Valhalla preview builds or early-access builds not exposed by a supported distribution. Download the desired archive in a prior step and point `jdk-file` at it; setup-java will extract, install, and cache it just like a supported distribution. When targeting multiple architectures, select the correct binary per architecture in your workflow (for example, with a build matrix).
 
 ```yaml
 steps:
@@ -483,23 +498,6 @@ steps:
       java-version: '11.0.0'
       architecture: x64
     
-  - run: java --version
-```
-
-For example, to use an **Early Access** build from [jdk.java.net](https://jdk.java.net/), download the archive for your runner OS/architecture and install it via `distribution: 'jdkfile'` (example below assumes Linux x64):
-
-```yaml
-steps:
-  - run: |
-      download_url="https://download.java.net/java/early_access/jdk25/36/GPL/openjdk-25-ea+36_linux-x64_bin.tar.gz"
-      wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
-  - uses: actions/setup-java@v6
-    with:
-      distribution: 'jdkfile'
-      jdk-file: ${{ runner.temp }}/java_package.tar.gz
-      java-version: '25.0.0-ea.36'
-      architecture: x64
-
   - run: java --version
 ```
 

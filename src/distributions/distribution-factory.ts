@@ -21,6 +21,7 @@ import {
 } from './graalvm/installer.js';
 import {JetBrainsDistribution} from './jetbrains/installer.js';
 import {KonaDistribution} from './kona/installer.js';
+import {OpenJdkDistribution} from './openjdk/installer.js';
 
 enum JavaDistribution {
   Adopt = 'adopt',
@@ -40,7 +41,8 @@ enum JavaDistribution {
   GraalVM = 'graalvm',
   GraalVMCommunity = 'graalvm-community',
   JetBrains = 'jetbrains',
-  Kona = 'kona'
+  Kona = 'kona',
+  OracleOpenJdk = 'oracle-openjdk'
 }
 
 export function getJavaDistribution(
@@ -93,6 +95,8 @@ export function getJavaDistribution(
       return new JetBrainsDistribution(installerOptions);
     case JavaDistribution.Kona:
       return new KonaDistribution(installerOptions);
+    case JavaDistribution.OracleOpenJdk:
+      return new OpenJdkDistribution(installerOptions);
     default:
       return null;
   }
