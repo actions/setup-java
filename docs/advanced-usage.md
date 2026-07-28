@@ -15,6 +15,7 @@
   - [JetBrains](#JetBrains)
   - [Tencent Kona](#Tencent-Kona)
 - [Installing custom Java package type](#Installing-custom-Java-package-type)
+  - [Package compatibility](#Package-compatibility)
   - [JavaFX Maven project](#JavaFX-Maven-project)
 - [Ensuring the Maven cache is complete (plugin dependencies)](#ensuring-the-maven-cache-is-complete-plugin-dependencies)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
@@ -282,14 +283,59 @@ steps:
 ```
 
 ## Installing custom Java package type
+
+The `java-package` input selects the vendor artifact to install. It defaults to
+`jdk`. Package availability is a combination of distribution, Java version,
+operating system, and architecture; a package listed below can still be absent
+for a particular platform or patch release. Unless a fixed version range is
+called out, `setup-java` queries the distribution's catalog and installs the
+newest artifact matching `java-version`.
+
+The package types have these meanings:
+
+- `jdk` and `jre` select a development kit or runtime image, respectively.
+- `+fx` selects a vendor bundle that includes JavaFX.
+- `+crac` selects an Azul Zulu build with CRaC support.
+- `+jmods` installs the Temurin JDK and adds its separately published JMOD
+  archive when the JDK does not already contain a `jmods` directory.
+- `+jcef` and `+ft` select JetBrains Runtime bundles with JCEF or FreeType.
+
+### Package compatibility
+
+| Distribution | Supported `java-package` values | Version support and important details |
+| --- | --- | --- |
+| `temurin` | `jdk`, `jre`, `jdk+jmods` | `jdk` and `jre` follow the Adoptium catalog. `jdk+jmods` is available for Java 24 and later and resolves both artifacts at the exact same Java version. |
+| `adopt`, `adopt-hotspot` | `jdk`, `jre` | HotSpot requests check Temurin first, then fall back to the archived AdoptOpenJDK catalog (Java 8 through 16). Migrate to `temurin` for supported releases. |
+| `adopt-openj9` | `jdk`, `jre` | Uses the archived AdoptOpenJDK OpenJ9 catalog, which ended at Java 16. Migrate to `semeru`. Some historical JRE/platform combinations were not published. |
+| `zulu` | `jdk`, `jre`, `jdk+fx`, `jre+fx`, `jdk+crac`, `jre+crac` | Standard JDK builds go back to Java 6; JRE and JavaFX bundles start at Java 8. The vendor catalog has gaps among older non-LTS releases. CRaC bundles start at Java 17 and have more limited OS and architecture availability. |
+| `liberica` | `jdk`, `jre`, `jdk+fx`, `jre+fx` | Standard JDK builds go back to Java 8 in the supported action catalog; JRE and JavaFX "full" bundles also start at Java 8. Exact versions follow BellSoft's catalog for the requested platform. |
+| `liberica-nik` | `jdk`, `jdk+fx` | `java-version` selects the embedded JDK version, not the NIK/GraalVM release number. BellSoft currently publishes matching standard and JavaFX "full" bundles for JDK 11 and later, with gaps between feature releases. Other values are not meaningful: they resolve to the standard bundle. |
+| `microsoft` | `jdk` | Stable builds only. The bundled manifest contains Java 11, 16, 17, 21, and 25 releases; platform availability varies by release. |
+| `semeru` | `jdk`, `jre` | Stable OpenJ9 builds only. IBM publishes both image types for the supported release lines (currently 8, 11, 17, 21, and 25), subject to platform availability. |
+| `corretto` | `jdk`, `jre` | Accepts major versions only. JDK availability follows Amazon's platform catalog. For the operating systems directly selected by `setup-java`, JRE downloads are limited to Java 8 on Windows; Linux and macOS use `jdk`. |
+| `oracle` | `jdk` | Stable Oracle JDK 17 and later only. |
+| `oracle-openjdk` | `jdk` | Installs the GA or early-access JDK builds currently listed or archived on `jdk.java.net`; use a `-ea` version such as `27-ea` for early access. |
+| `dragonwell` | `jdk` | Stable builds only. The current vendor catalog provides Java 8, 11, 17, 21, and 25. |
+| `sapmachine` | `jdk`, `jre` | Follows the SapMachine catalog. Both editions are represented from Java 10 onward, but individual versions and platforms can differ. |
+| `graalvm` | `jdk` | Stable Oracle GraalVM for JDK 17 and later only. |
+| `graalvm-community` | `jdk` | Stable GraalVM Community releases for JDK 17 and later only. |
+| `jetbrains` | `jdk`, `jre`, `jdk+jcef`, `jre+jcef`, `jdk+ft`, `jre+ft` | JetBrains publishes selected LTS-based releases rather than every OpenJDK patch. JDK/JRE and JCEF bundles start with the Java 11 release family; FreeType bundles start with Java 17. Exact package, LTS family, patch, OS, and architecture availability is determined from release assets. |
+| `kona` | `jdk` | Stable Java 8, 11, 17, 21, and 25 releases only. |
+| `jdkfile` | `jdk` (recommended) | The package contents and version are supplied by `jdk-file`; `setup-java` does not validate them. `java-package` only separates the local archive's tool-cache entry, so use `jdk` unless separate cache namespaces are required. |
+
+Values outside this table are unsupported even when a distribution forwards the
+value to its vendor API instead of rejecting it immediately. In that case, the
+action normally fails with a version-not-found error because no matching
+artifact exists.
+
 ```yaml
 steps:
   - uses: actions/checkout@v7
   - uses: actions/setup-java@v6
     with:
-      distribution: '<distribution>'
-      java-version: '25'
-      java-package: jdk # optional (jdk or jre) - defaults to jdk
+      distribution: 'semeru'
+      java-version: '21'
+      java-package: jre
   - run: java --version
 ```
 
