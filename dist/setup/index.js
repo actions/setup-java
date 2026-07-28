@@ -131874,7 +131874,96 @@ class KonaDistribution extends JavaBase {
     }
 }
 
+;// CONCATENATED MODULE: ./src/distributions/openjdk/installer.ts
+
+
+
+
+
+
+
+const OPENJDK_BASE_URL = 'https://jdk.java.net';
+class OpenJdkDistribution extends JavaBase {
+    constructor(installerOptions) {
+        super('OpenJDK', installerOptions);
+    }
+    async findPackageForDownload(range) {
+        if (this.packageType !== 'jdk') {
+            throw new Error('OpenJDK provides only the `jdk` package type');
+        }
+        const arch = this.distributionArchitecture();
+        if (!['x64', 'aarch64'].includes(arch)) {
+            throw new Error(`Unsupported architecture: ${this.architecture}`);
+        }
+        const platform = this.getPlatform();
+        const releases = await this.getAvailableVersions(platform, arch);
+        const matchingReleases = releases
+            .filter(release => isVersionSatisfies(range, release.version))
+            .sort((left, right) => -semver_default().compareBuild(left.version, right.version));
+        if (!matchingReleases.length) {
+            throw this.createVersionNotFoundError(range, releases.map(release => release.version), `Platform: ${platform}`);
+        }
+        return matchingReleases[0];
+    }
+    async downloadTool(javaRelease) {
+        info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
+        let javaArchivePath = await downloadTool(javaRelease.url);
+        info(`Extracting Java archive...`);
+        const extension = getDownloadArchiveExtension();
+        if (process.platform === 'win32') {
+            javaArchivePath = renameWinArchive(javaArchivePath);
+        }
+        const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
+        const archiveName = external_fs_default().readdirSync(extractedJavaPath)[0];
+        const archivePath = external_path_default().join(extractedJavaPath, archiveName);
+        const javaPath = await cacheDir(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaRelease.version), this.architecture);
+        return { version: javaRelease.version, path: javaPath };
+    }
+    async getAvailableVersions(platform, arch) {
+        const homePage = await this.fetchPage(`${OPENJDK_BASE_URL}/`);
+        const releasePageUrls = Array.from(homePage.matchAll(/href="\/(\d+)\/">JDK\s+\d+/g), match => `${OPENJDK_BASE_URL}/${match[1]}/`);
+        const pages = await Promise.all(releasePageUrls.map(url => this.fetchPage(url)));
+        if (this.stable) {
+            pages.push(await this.fetchPage(`${OPENJDK_BASE_URL}/archive/`));
+        }
+        const releases = pages.flatMap(page => this.parseReleases(page, platform, arch));
+        return releases.filter(release => release.url.includes('/early_access/') !== this.stable);
+    }
+    async fetchPage(url) {
+        const response = await this.http.get(url);
+        return response.readBody();
+    }
+    parseReleases(html, platform, arch) {
+        const extension = platform === 'windows' ? 'zip' : 'tar.gz';
+        const pattern = new RegExp(`href="(https://download\\.java\\.net/[^"]+/openjdk-([^"_]+)_${platform}-${arch}_bin\\.${extension.replaceAll('.', '\\.')})"`, 'g');
+        return Array.from(html.matchAll(pattern), match => ({
+            version: this.toSemver(match[2]),
+            url: match[1]
+        }));
+    }
+    toSemver(version) {
+        const [javaVersion, build] = version.replace('-ea', '').split('+');
+        const normalizedVersion = javaVersion.includes('.')
+            ? javaVersion
+            : `${javaVersion}.0.0`;
+        return build ? `${normalizedVersion}+${build}` : normalizedVersion;
+    }
+    getPlatform(platform = process.platform) {
+        switch (platform) {
+            case 'darwin':
+                return 'macos';
+            case 'linux':
+                return 'linux';
+            case 'win32':
+                return 'windows';
+            default:
+                throw new Error(`Platform '${platform}' is not supported. Supported platforms: 'linux', 'macos', 'windows'`);
+        }
+    }
+}
+
 ;// CONCATENATED MODULE: ./src/distributions/distribution-factory.ts
+
 
 
 
@@ -131910,6 +131999,7 @@ var JavaDistribution;
     JavaDistribution["GraalVMCommunity"] = "graalvm-community";
     JavaDistribution["JetBrains"] = "jetbrains";
     JavaDistribution["Kona"] = "kona";
+    JavaDistribution["OpenJdk"] = "openjdk";
 })(JavaDistribution || (JavaDistribution = {}));
 function getJavaDistribution(distributionName, installerOptions, jdkFile) {
     switch (distributionName) {
@@ -131948,6 +132038,8 @@ function getJavaDistribution(distributionName, installerOptions, jdkFile) {
             return new JetBrainsDistribution(installerOptions);
         case JavaDistribution.Kona:
             return new KonaDistribution(installerOptions);
+        case JavaDistribution.OpenJdk:
+            return new OpenJdkDistribution(installerOptions);
         default:
             return null;
     }
