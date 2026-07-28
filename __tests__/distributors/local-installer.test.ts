@@ -208,6 +208,29 @@ describe('setupJava', () => {
     );
   });
 
+  it('java is unpacked from jdkfile when force-download is enabled', async () => {
+    const inputs = {
+      version: actualJavaVersion,
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false,
+      forceDownload: true
+    };
+
+    mockJavaBase = new LocalDistribution(inputs, expectedJdkFile);
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: actualJavaVersion,
+      path: javaPath
+    });
+
+    expect(spyGetToolcachePath).not.toHaveBeenCalled();
+    expect(spyUtilsExtractJdkFile).toHaveBeenCalledWith(expectedJdkFile);
+    expect(spyTcCacheDir).toHaveBeenCalled();
+    expect(spyCoreInfo).not.toHaveBeenCalledWith(
+      `Resolved Java ${actualJavaVersion} from tool-cache`
+    );
+  });
+
   it("java is resolved from toolcache, jdkfile doesn't exist", async () => {
     const inputs = {
       version: actualJavaVersion,

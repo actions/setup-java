@@ -3,6 +3,7 @@ export interface JavaInstallerOptions {
   architecture: string;
   packageType: string;
   checkLatest: boolean;
+  forceDownload?: boolean;
   setDefault?: boolean;
   verifySignature?: boolean;
   verifySignaturePublicKey?: string;

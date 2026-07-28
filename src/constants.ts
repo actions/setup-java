@@ -7,6 +7,7 @@ export const INPUT_DISTRIBUTION = 'distribution';
 export const INPUT_JDK_FILE = 'jdk-file';
 export const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
 export const INPUT_CHECK_LATEST = 'check-latest';
+export const INPUT_FORCE_DOWNLOAD = 'force-download';
 export const INPUT_SET_DEFAULT = 'set-default';
 export const INPUT_PROBLEM_MATCHER = 'problem-matcher';
 export const INPUT_VERIFY_SIGNATURE = 'verify-signature';

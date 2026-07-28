@@ -28,7 +28,7 @@ export class LocalDistribution extends JavaBase {
       );
     }
 
-    let foundJava = this.findInToolcache();
+    let foundJava = this.forceDownload ? null : this.findInToolcache();
 
     if (foundJava) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);

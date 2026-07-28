@@ -29,6 +29,10 @@ async function run() {
       constants.INPUT_CACHE_DEPENDENCY_PATH
     );
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
+    const forceDownload = getBooleanInput(
+      constants.INPUT_FORCE_DOWNLOAD,
+      false
+    );
     const setDefault = getBooleanInput(constants.INPUT_SET_DEFAULT, true);
     const verifySignature = getBooleanInput(
       constants.INPUT_VERIFY_SIGNATURE,
@@ -83,6 +87,7 @@ async function run() {
         architecture,
         packageType,
         checkLatest,
+        forceDownload,
         setDefault,
         verifySignature,
         verifySignaturePublicKey,
@@ -102,6 +107,7 @@ async function run() {
         architecture,
         packageType,
         checkLatest,
+        forceDownload,
         setDefault,
         verifySignature,
         verifySignaturePublicKey,
@@ -159,6 +165,7 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
+    forceDownload,
     setDefault,
     verifySignature,
     verifySignaturePublicKey,
@@ -169,6 +176,7 @@ async function installVersion(
     architecture,
     packageType,
     checkLatest,
+    forceDownload,
     setDefault,
     verifySignature,
     verifySignaturePublicKey,
@@ -212,6 +220,7 @@ interface installerInputsOptions {
   architecture: string;
   packageType: string;
   checkLatest: boolean;
+  forceDownload: boolean;
   setDefault: boolean;
   verifySignature: boolean;
   verifySignaturePublicKey: string | undefined;
