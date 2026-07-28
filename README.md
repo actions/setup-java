@@ -56,6 +56,8 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
 
+  - `force-download`: Set to `true` to always download Java and replace any matching version in the tool cache. This can help make builds reproducible when a runner image has modified a pre-installed JDK, such as its `cacerts` file. Default value: `false`.
+
   - `set-default`: Set to `false` to install a JDK without making it the default. When `false`, `JAVA_HOME` and `PATH` are not updated, but `JAVA_HOME_<major>_<arch>` is still set so the JDK remains discoverable. Default value: `true`. See [Installing JDK without setting as default](docs/advanced-usage.md#Installing-JDK-without-setting-as-default) for more details.
 
   - `problem-matcher`: Set to `false` to disable Java problem matcher annotations (compiler diagnostics and uncaught exceptions). Default value: `true`. See [Java problem matcher](docs/advanced-usage.md#java-problem-matcher-compiler-annotations) for details and annotation limits.

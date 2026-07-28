@@ -443,6 +443,35 @@ describe('setupJava', () => {
     );
   });
 
+  it('should download java when force-download is enabled, even if the version is cached', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: actualJavaVersion,
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false,
+      forceDownload: true
+    });
+    const findInToolcache = jest.fn(() => ({
+      version: actualJavaVersion,
+      path: javaPathInstalled
+    }));
+    mockJavaBase['findInToolcache'] = findInToolcache;
+
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: actualJavaVersion,
+      path: javaPathInstalled
+    });
+
+    expect(findInToolcache).not.toHaveBeenCalled();
+    expect(spyCoreInfo).toHaveBeenCalledWith('Trying to download...');
+    expect(spyCoreInfo).toHaveBeenCalledWith(
+      `Java ${actualJavaVersion} was downloaded`
+    );
+    expect(spyCoreInfo).not.toHaveBeenCalledWith(
+      `Resolved Java ${actualJavaVersion} from tool-cache`
+    );
+  });
+
   it.each([
     [
       {

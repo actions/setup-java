@@ -97311,6 +97311,7 @@ const INPUT_DISTRIBUTION = 'distribution';
 const INPUT_JDK_FILE = 'jdk-file';
 const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
 const INPUT_CHECK_LATEST = 'check-latest';
+const INPUT_FORCE_DOWNLOAD = 'force-download';
 const INPUT_SET_DEFAULT = 'set-default';
 const INPUT_PROBLEM_MATCHER = 'problem-matcher';
 const INPUT_VERIFY_SIGNATURE = 'verify-signature';
