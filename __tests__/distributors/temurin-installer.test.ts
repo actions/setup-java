@@ -169,6 +169,28 @@ describe('getAvailableVersions', () => {
     }
   );
 
+  it('requests the JMOD image type', async () => {
+    const distribution = new TemurinDistribution(
+      {
+        version: '25',
+        architecture: 'x64',
+        packageType: 'jdk',
+        jmod: true,
+        checkLatest: false
+      },
+      TemurinImplementation.Hotspot
+    );
+    distribution['getPlatformOption'] = () => 'linux';
+
+    await distribution['getAvailableVersions']('jmods');
+
+    expect(spyHttpClient).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'os=linux&architecture=x64&image_type=jmods&release_type=ga'
+      )
+    );
+  });
+
   it('load available versions', async () => {
     const nextPageUrl =
       'https://api.adoptium.net/v3/assets/version/%5B1.0,100.0%5D?page=1&page_size=20';
@@ -228,13 +250,20 @@ describe('getAvailableVersions', () => {
   });
 
   it.each([
-    [TemurinImplementation.Hotspot, 'jdk', 'Java_Temurin-Hotspot_jdk'],
-    [TemurinImplementation.Hotspot, 'jre', 'Java_Temurin-Hotspot_jre']
+    [TemurinImplementation.Hotspot, 'jdk', false, 'Java_Temurin-Hotspot_jdk'],
+    [TemurinImplementation.Hotspot, 'jre', false, 'Java_Temurin-Hotspot_jre'],
+    [
+      TemurinImplementation.Hotspot,
+      'jdk',
+      true,
+      'Java_Temurin-Hotspot_jdk_jmods'
+    ]
   ])(
     'find right toolchain folder',
     (
       impl: TemurinImplementationType,
       packageType: string,
+      jmod: boolean,
       expected: string
     ) => {
       const distribution = new TemurinDistribution(
@@ -242,6 +271,7 @@ describe('getAvailableVersions', () => {
           version: '8',
           architecture: 'x64',
           packageType: packageType,
+          jmod,
           checkLatest: false
         },
         impl
@@ -251,6 +281,24 @@ describe('getAvailableVersions', () => {
       expect(distribution.toolcacheFolderName).toBe(expected);
     }
   );
+
+  it('rejects JMODs with a non-JDK package', () => {
+    expect(
+      () =>
+        new TemurinDistribution(
+          {
+            version: '25',
+            architecture: 'x64',
+            packageType: 'jre',
+            jmod: true,
+            checkLatest: false
+          },
+          TemurinImplementation.Hotspot
+        )
+    ).toThrow(
+      "Input 'jmod' is only supported with Temurin java-package 'jdk'."
+    );
+  });
 
   it.each([
     ['amd64', 'x64'],
@@ -386,6 +434,7 @@ describe('downloadTool', () => {
   let spyCacheDir: any;
   let spyReadDirSync: any;
   let spyRenameWinArchive: any;
+  let spyCopySync: any;
 
   beforeEach(() => {
     spyDownloadTool = tc.downloadTool as jest.Mock;
@@ -400,6 +449,8 @@ describe('downloadTool', () => {
     spyReadDirSync.mockReturnValue(['jdk-17'] as any);
     spyRenameWinArchive = util.renameWinArchive as jest.Mock;
     spyRenameWinArchive.mockReturnValue('/tmp/jdk.tar.gz.zip');
+    spyCopySync = jest.spyOn(fs, 'cpSync');
+    spyCopySync.mockImplementation(() => undefined);
   });
 
   afterEach(() => {
@@ -430,6 +481,59 @@ describe('downloadTool', () => {
       '/tmp/jdk.tar.gz',
       'https://example.com/jdk.tar.gz.sig',
       ADOPTIUM_PUBLIC_KEY
+    );
+  });
+
+  it('downloads and adds matching JMODs to the JDK', async () => {
+    spyDownloadTool
+      .mockResolvedValueOnce('/tmp/jdk.tar.gz')
+      .mockResolvedValueOnce('/tmp/jmods.tar.gz');
+    spyExtractJdkFile
+      .mockResolvedValueOnce('/tmp/extracted')
+      .mockResolvedValueOnce('/tmp/extracted-jmods');
+    spyReadDirSync
+      .mockReturnValueOnce(['jdk-25'] as any)
+      .mockReturnValueOnce(['jdk-25-jmods'] as any);
+    jest.spyOn(fs, 'existsSync').mockReturnValue(false);
+
+    const distribution = new TemurinDistribution(
+      {
+        version: '25',
+        architecture: 'x64',
+        packageType: 'jdk',
+        jmod: true,
+        checkLatest: false
+      },
+      TemurinImplementation.Hotspot
+    );
+    distribution['resolvePackage'] = jest.fn().mockResolvedValue({
+      version: '25.0.3+9',
+      url: 'https://example.com/jmods.tar.gz'
+    });
+
+    await distribution['downloadTool']({
+      version: '25.0.3+9',
+      url: 'https://example.com/jdk.tar.gz'
+    });
+
+    expect(distribution['resolvePackage']).toHaveBeenCalledWith(
+      '25.0.3+9',
+      'jmods'
+    );
+    expect(spyDownloadTool).toHaveBeenNthCalledWith(
+      2,
+      'https://example.com/jmods.tar.gz'
+    );
+    expect(spyCopySync).toHaveBeenCalledWith(
+      '/tmp/extracted-jmods/jdk-25-jmods',
+      '/tmp/extracted/jdk-25/jmods',
+      {recursive: true}
+    );
+    expect(spyCacheDir).toHaveBeenCalledWith(
+      '/tmp/extracted/jdk-25',
+      'Java_Temurin-Hotspot_jdk_jmods',
+      '25.0.3-9',
+      'x64'
     );
   });
 

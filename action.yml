@@ -16,6 +16,10 @@ inputs:
     description: 'The package type (jdk, jre, jdk+fx, jre+fx, jdk+crac, jre+crac)'
     required: false
     default: 'jdk'
+  jmod:
+    description: 'Set this option to true to include JMOD files with Temurin JDK 24 and later'
+    required: false
+    default: false
   architecture:
     description: "The architecture of the package (defaults to the action runner's architecture)"
     required: false

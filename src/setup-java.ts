@@ -23,6 +23,7 @@ async function run() {
     const versionFile = core.getInput(constants.INPUT_JAVA_VERSION_FILE);
     const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
     const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
+    const jmod = getBooleanInput(constants.INPUT_JMOD, false);
     const jdkFile = getJdkFileInput();
     const cache = core.getInput(constants.INPUT_CACHE);
     const cacheDependencyPath = core.getInput(
@@ -86,6 +87,7 @@ async function run() {
       const installerInputsOptions: installerInputsOptions = {
         architecture,
         packageType,
+        jmod,
         checkLatest,
         forceDownload,
         setDefault,
@@ -106,6 +108,7 @@ async function run() {
       const installerInputsOptions: installerInputsOptions = {
         architecture,
         packageType,
+        jmod,
         checkLatest,
         forceDownload,
         setDefault,
@@ -164,6 +167,7 @@ async function installVersion(
     jdkFile,
     architecture,
     packageType,
+    jmod,
     checkLatest,
     forceDownload,
     setDefault,
@@ -175,6 +179,7 @@ async function installVersion(
   const installerOptions: JavaInstallerOptions = {
     architecture,
     packageType,
+    jmod,
     checkLatest,
     forceDownload,
     setDefault,
@@ -219,6 +224,7 @@ async function installVersion(
 interface installerInputsOptions {
   architecture: string;
   packageType: string;
+  jmod: boolean;
   checkLatest: boolean;
   forceDownload: boolean;
   setDefault: boolean;

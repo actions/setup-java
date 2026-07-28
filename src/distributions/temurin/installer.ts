@@ -9,6 +9,7 @@ import * as gpg from '../../gpg.js';
 import {ADOPTIUM_PUBLIC_KEY} from './adoptium-key.js';
 import {JavaBase} from '../base-installer.js';
 import {ITemurinAvailableVersions} from './models.js';
+import {MACOS_JAVA_CONTENT_POSTFIX} from '../../constants.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
@@ -31,11 +32,19 @@ export enum TemurinImplementation {
 }
 
 export class TemurinDistribution extends JavaBase {
+  private readonly jmod: boolean;
+
   constructor(
     installerOptions: JavaInstallerOptions,
     private readonly jvmImpl: TemurinImplementation
   ) {
     super(`Temurin-${jvmImpl}`, installerOptions);
+    this.jmod = installerOptions.jmod ?? false;
+    if (this.jmod && this.packageType !== 'jdk') {
+      throw new Error(
+        `Input 'jmod' is only supported with Temurin java-package 'jdk'.`
+      );
+    }
   }
 
   /**
@@ -44,7 +53,14 @@ export class TemurinDistribution extends JavaBase {
   public async findPackageForDownload(
     version: string
   ): Promise<JavaDownloadRelease> {
-    const availableVersionsRaw = await this.getAvailableVersions();
+    return this.resolvePackage(version, this.packageType);
+  }
+
+  private async resolvePackage(
+    version: string,
+    imageType: string
+  ): Promise<JavaDownloadRelease> {
+    const availableVersionsRaw = await this.getAvailableVersions(imageType);
     const availableVersionsWithBinaries = availableVersionsRaw
       .filter(item => item.binaries.length > 0)
       .map(item => {
@@ -83,30 +99,7 @@ export class TemurinDistribution extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    let javaArchivePath = await tc.downloadTool(javaRelease.url);
-
-    if (this.verifySignature) {
-      if (!javaRelease.signatureUrl) {
-        throw new Error(
-          `Input 'verify-signature' is enabled, but no signature URL was found for Temurin version ${javaRelease.version}.`
-        );
-      }
-      core.info(`Verifying Java package signature...`);
-      try {
-        await gpg.verifyPackageSignature(
-          javaArchivePath,
-          javaRelease.signatureUrl,
-          this.verifySignaturePublicKey ?? ADOPTIUM_PUBLIC_KEY
-        );
-      } catch (error) {
-        throw new Error(
-          `Failed to verify signature for Temurin version ${javaRelease.version} from ${javaRelease.signatureUrl}: ${
-            (error as Error).message
-          }`,
-          {cause: error}
-        );
-      }
-    }
+    let javaArchivePath = await this.downloadPackage(javaRelease);
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
@@ -117,6 +110,13 @@ export class TemurinDistribution extends JavaBase {
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
+    const javaHome =
+      process.platform === 'darwin'
+        ? path.join(archivePath, MACOS_JAVA_CONTENT_POSTFIX)
+        : archivePath;
+    if (this.jmod && !fs.existsSync(path.join(javaHome, 'jmods'))) {
+      await this.installJmods(javaRelease.version, javaHome);
+    }
     const version = this.getToolcacheVersionName(javaRelease.version);
 
     const javaPath = await tc.cacheDir(
@@ -130,17 +130,67 @@ export class TemurinDistribution extends JavaBase {
   }
 
   protected get toolcacheFolderName(): string {
-    return super.toolcacheFolderName;
+    return `${super.toolcacheFolderName}${this.jmod ? '_jmods' : ''}`;
   }
 
   protected supportsSignatureVerification(): boolean {
     return true;
   }
 
-  private async getAvailableVersions(): Promise<ITemurinAvailableVersions[]> {
+  private async downloadPackage(release: JavaDownloadRelease): Promise<string> {
+    const archivePath = await tc.downloadTool(release.url);
+
+    if (this.verifySignature) {
+      if (!release.signatureUrl) {
+        throw new Error(
+          `Input 'verify-signature' is enabled, but no signature URL was found for Temurin version ${release.version}.`
+        );
+      }
+      core.info(`Verifying Java package signature...`);
+      try {
+        await gpg.verifyPackageSignature(
+          archivePath,
+          release.signatureUrl,
+          this.verifySignaturePublicKey ?? ADOPTIUM_PUBLIC_KEY
+        );
+      } catch (error) {
+        throw new Error(
+          `Failed to verify signature for Temurin version ${release.version} from ${release.signatureUrl}: ${
+            (error as Error).message
+          }`,
+          {cause: error}
+        );
+      }
+    }
+
+    return archivePath;
+  }
+
+  private async installJmods(version: string, javaHome: string): Promise<void> {
+    const jmodsRelease = await this.resolvePackage(version, 'jmods');
+    core.info(
+      `Downloading JMODs ${jmodsRelease.version} (${this.distribution}) from ${jmodsRelease.url} ...`
+    );
+    let jmodsArchivePath = await this.downloadPackage(jmodsRelease);
+    if (process.platform === 'win32') {
+      jmodsArchivePath = renameWinArchive(jmodsArchivePath);
+    }
+    const extractedJmodsPath = await extractJdkFile(
+      jmodsArchivePath,
+      getDownloadArchiveExtension()
+    );
+    const jmodsDirectory = path.join(
+      extractedJmodsPath,
+      fs.readdirSync(extractedJmodsPath)[0]
+    );
+    fs.cpSync(jmodsDirectory, path.join(javaHome, 'jmods'), {recursive: true});
+  }
+
+  private async getAvailableVersions(
+    imageType = this.packageType
+  ): Promise<ITemurinAvailableVersions[]> {
     const platform = this.getPlatformOption();
     const arch = this.distributionArchitecture();
-    const imageType = this.packageType;
     const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
     const releaseType = this.stable ? 'ga' : 'ea';
 

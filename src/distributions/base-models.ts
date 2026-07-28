@@ -2,6 +2,7 @@ export interface JavaInstallerOptions {
   version: string;
   architecture: string;
   packageType: string;
+  jmod?: boolean;
   checkLatest: boolean;
   forceDownload?: boolean;
   setDefault?: boolean;
