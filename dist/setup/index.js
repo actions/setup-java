@@ -72088,6 +72088,7 @@ const INPUT_DISTRIBUTION = 'distribution';
 const INPUT_JDK_FILE = 'jdk-file';
 const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
 const INPUT_CHECK_LATEST = 'check-latest';
+const INPUT_FORCE_DOWNLOAD = 'force-download';
 const INPUT_SET_DEFAULT = 'set-default';
 const INPUT_PROBLEM_MATCHER = 'problem-matcher';
 const INPUT_VERIFY_SIGNATURE = 'verify-signature';
@@ -129290,6 +129291,7 @@ class JavaBase {
     stable;
     latest;
     checkLatest;
+    forceDownload;
     setDefault;
     verifySignature;
     verifySignaturePublicKey;
@@ -129307,6 +129309,7 @@ class JavaBase {
         this.architecture = installerOptions.architecture || external_os_default().arch();
         this.packageType = installerOptions.packageType;
         this.checkLatest = installerOptions.checkLatest;
+        this.forceDownload = installerOptions.forceDownload ?? false;
         this.setDefault =
             installerOptions.setDefault !== undefined
                 ? installerOptions.setDefault
@@ -129318,7 +129321,7 @@ class JavaBase {
         if (this.verifySignature && !this.supportsSignatureVerification()) {
             throw new Error(`Input 'verify-signature' is not supported for distribution '${this.distribution}'.`);
         }
-        let foundJava = this.findInToolcache();
+        let foundJava = this.forceDownload ? null : this.findInToolcache();
         if (foundJava && !this.checkLatest && !this.latest) {
             info(`Resolved Java ${foundJava.version} from tool-cache`);
         }
@@ -129342,7 +129345,8 @@ class JavaBase {
                     }
                     const javaRelease = await this.findPackageForDownload(this.version);
                     info(`Resolved latest version as ${javaRelease.version}`);
-                    if (foundJava?.version === javaRelease.version) {
+                    if (!this.forceDownload &&
+                        foundJava?.version === javaRelease.version) {
                         info(`Resolved Java ${foundJava.version} from tool-cache`);
                     }
                     else {
@@ -129617,7 +129621,7 @@ class LocalDistribution extends JavaBase {
         if (this.latest) {
             throw new Error("The 'latest' version alias is not supported for the 'jdkfile' distribution. Please specify a concrete version.");
         }
-        let foundJava = this.findInToolcache();
+        let foundJava = this.forceDownload ? null : this.findInToolcache();
         if (foundJava) {
             info(`Resolved Java ${foundJava.version} from tool-cache`);
         }
@@ -132037,6 +132041,7 @@ async function run() {
         const cache = getInput(INPUT_CACHE);
         const cacheDependencyPath = getInput(INPUT_CACHE_DEPENDENCY_PATH);
         const checkLatest = util_getBooleanInput(INPUT_CHECK_LATEST, false);
+        const forceDownload = util_getBooleanInput(INPUT_FORCE_DOWNLOAD, false);
         const setDefault = util_getBooleanInput(INPUT_SET_DEFAULT, true);
         const verifySignature = util_getBooleanInput(INPUT_VERIFY_SIGNATURE, false);
         const verifySignaturePublicKey = getInput(INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
@@ -132068,6 +132073,7 @@ async function run() {
                 architecture,
                 packageType,
                 checkLatest,
+                forceDownload,
                 setDefault,
                 verifySignature,
                 verifySignaturePublicKey,
@@ -132086,6 +132092,7 @@ async function run() {
                 architecture,
                 packageType,
                 checkLatest,
+                forceDownload,
                 setDefault,
                 verifySignature,
                 verifySignaturePublicKey,
@@ -132120,11 +132127,12 @@ function getJdkFileInput() {
     return jdkFile || deprecatedJdkFile;
 }
 async function installVersion(version, options, toolchainId = 0) {
-    const { distributionName, jdkFile, architecture, packageType, checkLatest, setDefault, verifySignature, verifySignaturePublicKey, toolchainIds } = options;
+    const { distributionName, jdkFile, architecture, packageType, checkLatest, forceDownload, setDefault, verifySignature, verifySignaturePublicKey, toolchainIds } = options;
     const installerOptions = {
         architecture,
         packageType,
         checkLatest,
+        forceDownload,
         setDefault,
         verifySignature,
         verifySignaturePublicKey,
