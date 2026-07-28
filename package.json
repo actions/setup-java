@@ -75,6 +75,6 @@
   },
   "homepage": "https://github.com/actions/setup-java#readme",
   "overrides": {
-    "minimatch": "^10.2.6"
+    "minimatch": "10.2.6"
   }
 }
