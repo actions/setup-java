@@ -3,7 +3,6 @@ export const INPUT_JAVA_VERSION = 'java-version';
 export const INPUT_JAVA_VERSION_FILE = 'java-version-file';
 export const INPUT_ARCHITECTURE = 'architecture';
 export const INPUT_JAVA_PACKAGE = 'java-package';
-export const INPUT_JMOD = 'jmod';
 export const INPUT_DISTRIBUTION = 'distribution';
 export const INPUT_JDK_FILE = 'jdk-file';
 export const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';

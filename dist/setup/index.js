@@ -72084,7 +72084,6 @@ const INPUT_JAVA_VERSION = 'java-version';
 const INPUT_JAVA_VERSION_FILE = 'java-version-file';
 const INPUT_ARCHITECTURE = 'architecture';
 const INPUT_JAVA_PACKAGE = 'java-package';
-const INPUT_JMOD = 'jmod';
 const INPUT_DISTRIBUTION = 'distribution';
 const INPUT_JDK_FILE = 'jdk-file';
 const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
@@ -129881,20 +129880,17 @@ var TemurinImplementation;
 })(TemurinImplementation || (TemurinImplementation = {}));
 class TemurinDistribution extends JavaBase {
     jvmImpl;
-    jmod;
+    includeJmods;
     constructor(installerOptions, jvmImpl) {
         super(`Temurin-${jvmImpl}`, installerOptions);
         this.jvmImpl = jvmImpl;
-        this.jmod = installerOptions.jmod ?? false;
-        if (this.jmod && this.packageType !== 'jdk') {
-            throw new Error(`Input 'jmod' is only supported with Temurin java-package 'jdk'.`);
-        }
+        this.includeJmods = this.packageType === 'jdk+jmods';
     }
     /**
      * @internal For cross-distribution reuse only. Not intended as a public API.
      */
     async findPackageForDownload(version) {
-        return this.resolvePackage(version, this.packageType);
+        return this.resolvePackage(version, this.includeJmods ? 'jdk' : this.packageType);
     }
     async resolvePackage(version, imageType) {
         const availableVersionsRaw = await this.getAvailableVersions(imageType);
@@ -129937,15 +129933,12 @@ class TemurinDistribution extends JavaBase {
         const javaHome = process.platform === 'darwin'
             ? external_path_default().join(archivePath, MACOS_JAVA_CONTENT_POSTFIX)
             : archivePath;
-        if (this.jmod && !external_fs_default().existsSync(external_path_default().join(javaHome, 'jmods'))) {
+        if (this.includeJmods && !external_fs_default().existsSync(external_path_default().join(javaHome, 'jmods'))) {
             await this.installJmods(javaRelease.version, javaHome);
         }
         const version = this.getToolcacheVersionName(javaRelease.version);
         const javaPath = await cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
         return { version: javaRelease.version, path: javaPath };
-    }
-    get toolcacheFolderName() {
-        return `${super.toolcacheFolderName}${this.jmod ? '_jmods' : ''}`;
     }
     supportsSignatureVerification() {
         return true;
@@ -129977,7 +129970,7 @@ class TemurinDistribution extends JavaBase {
         const jmodsDirectory = external_path_default().join(extractedJmodsPath, external_fs_default().readdirSync(extractedJmodsPath)[0]);
         external_fs_default().cpSync(jmodsDirectory, external_path_default().join(javaHome, 'jmods'), { recursive: true });
     }
-    async getAvailableVersions(imageType = this.packageType) {
+    async getAvailableVersions(imageType = this.includeJmods ? 'jdk' : this.packageType) {
         const platform = this.getPlatformOption();
         const arch = this.distributionArchitecture();
         const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
@@ -132055,6 +132048,10 @@ var JavaDistribution;
     JavaDistribution["OracleOpenJdk"] = "oracle-openjdk";
 })(JavaDistribution || (JavaDistribution = {}));
 function getJavaDistribution(distributionName, installerOptions, jdkFile) {
+    if (installerOptions.packageType === 'jdk+jmods' &&
+        distributionName !== JavaDistribution.Temurin) {
+        throw new Error("java-package 'jdk+jmods' is only supported for distribution 'temurin'.");
+    }
     switch (distributionName) {
         case JavaDistribution.JdkFile:
             return new LocalDistribution(installerOptions, jdkFile);
@@ -132178,7 +132175,6 @@ async function run() {
         const versionFile = getInput(INPUT_JAVA_VERSION_FILE);
         const architecture = getInput(INPUT_ARCHITECTURE);
         const packageType = getInput(INPUT_JAVA_PACKAGE);
-        const jmod = util_getBooleanInput(INPUT_JMOD, false);
         const jdkFile = getJdkFileInput();
         const cache = getInput(INPUT_CACHE);
         const cacheDependencyPath = getInput(INPUT_CACHE_DEPENDENCY_PATH);
@@ -132214,7 +132210,6 @@ async function run() {
             const installerInputsOptions = {
                 architecture,
                 packageType,
-                jmod,
                 checkLatest,
                 forceDownload,
                 setDefault,
@@ -132234,7 +132229,6 @@ async function run() {
             const installerInputsOptions = {
                 architecture,
                 packageType,
-                jmod,
                 checkLatest,
                 forceDownload,
                 setDefault,
@@ -132271,11 +132265,10 @@ function getJdkFileInput() {
     return jdkFile || deprecatedJdkFile;
 }
 async function installVersion(version, options, toolchainId = 0) {
-    const { distributionName, jdkFile, architecture, packageType, jmod, checkLatest, forceDownload, setDefault, verifySignature, verifySignaturePublicKey, toolchainIds } = options;
+    const { distributionName, jdkFile, architecture, packageType, checkLatest, forceDownload, setDefault, verifySignature, verifySignaturePublicKey, toolchainIds } = options;
     const installerOptions = {
         architecture,
         packageType,
-        jmod,
         checkLatest,
         forceDownload,
         setDefault,

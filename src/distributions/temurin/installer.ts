@@ -32,19 +32,14 @@ export enum TemurinImplementation {
 }
 
 export class TemurinDistribution extends JavaBase {
-  private readonly jmod: boolean;
+  private readonly includeJmods: boolean;
 
   constructor(
     installerOptions: JavaInstallerOptions,
     private readonly jvmImpl: TemurinImplementation
   ) {
     super(`Temurin-${jvmImpl}`, installerOptions);
-    this.jmod = installerOptions.jmod ?? false;
-    if (this.jmod && this.packageType !== 'jdk') {
-      throw new Error(
-        `Input 'jmod' is only supported with Temurin java-package 'jdk'.`
-      );
-    }
+    this.includeJmods = this.packageType === 'jdk+jmods';
   }
 
   /**
@@ -53,7 +48,10 @@ export class TemurinDistribution extends JavaBase {
   public async findPackageForDownload(
     version: string
   ): Promise<JavaDownloadRelease> {
-    return this.resolvePackage(version, this.packageType);
+    return this.resolvePackage(
+      version,
+      this.includeJmods ? 'jdk' : this.packageType
+    );
   }
 
   private async resolvePackage(
@@ -114,7 +112,7 @@ export class TemurinDistribution extends JavaBase {
       process.platform === 'darwin'
         ? path.join(archivePath, MACOS_JAVA_CONTENT_POSTFIX)
         : archivePath;
-    if (this.jmod && !fs.existsSync(path.join(javaHome, 'jmods'))) {
+    if (this.includeJmods && !fs.existsSync(path.join(javaHome, 'jmods'))) {
       await this.installJmods(javaRelease.version, javaHome);
     }
     const version = this.getToolcacheVersionName(javaRelease.version);
@@ -127,10 +125,6 @@ export class TemurinDistribution extends JavaBase {
     );
 
     return {version: javaRelease.version, path: javaPath};
-  }
-
-  protected get toolcacheFolderName(): string {
-    return `${super.toolcacheFolderName}${this.jmod ? '_jmods' : ''}`;
   }
 
   protected supportsSignatureVerification(): boolean {
@@ -187,7 +181,7 @@ export class TemurinDistribution extends JavaBase {
   }
 
   private async getAvailableVersions(
-    imageType = this.packageType
+    imageType = this.includeJmods ? 'jdk' : this.packageType
   ): Promise<ITemurinAvailableVersions[]> {
     const platform = this.getPlatformOption();
     const arch = this.distributionArchitecture();

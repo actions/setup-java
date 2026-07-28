@@ -44,7 +44,7 @@ steps:
     with:
       distribution: 'temurin'
       java-version: '25'
-      jmod: true # optional, includes JMOD files with JDK 24 and later
+      java-package: 'jdk+jmods' # optional, includes JMOD files with JDK 24 and later
   - run: java --version
 ```
 

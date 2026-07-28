@@ -121,6 +121,16 @@ describe('getAvailableVersions', () => {
     ],
     [
       {
+        version: '25',
+        architecture: 'x64',
+        packageType: 'jdk+jmods',
+        checkLatest: false
+      },
+      TemurinImplementation.Hotspot,
+      'os=mac&architecture=x64&image_type=jdk&release_type=ga&jvm_impl=hotspot&page_size=20&page=0'
+    ],
+    [
+      {
         version: '16',
         architecture: 'x86',
         packageType: 'jdk',
@@ -174,8 +184,7 @@ describe('getAvailableVersions', () => {
       {
         version: '25',
         architecture: 'x64',
-        packageType: 'jdk',
-        jmod: true,
+        packageType: 'jdk+jmods',
         checkLatest: false
       },
       TemurinImplementation.Hotspot
@@ -250,20 +259,18 @@ describe('getAvailableVersions', () => {
   });
 
   it.each([
-    [TemurinImplementation.Hotspot, 'jdk', false, 'Java_Temurin-Hotspot_jdk'],
-    [TemurinImplementation.Hotspot, 'jre', false, 'Java_Temurin-Hotspot_jre'],
+    [TemurinImplementation.Hotspot, 'jdk', 'Java_Temurin-Hotspot_jdk'],
+    [TemurinImplementation.Hotspot, 'jre', 'Java_Temurin-Hotspot_jre'],
     [
       TemurinImplementation.Hotspot,
-      'jdk',
-      true,
-      'Java_Temurin-Hotspot_jdk_jmods'
+      'jdk+jmods',
+      'Java_Temurin-Hotspot_jdk+jmods'
     ]
   ])(
     'find right toolchain folder',
     (
       impl: TemurinImplementationType,
       packageType: string,
-      jmod: boolean,
       expected: string
     ) => {
       const distribution = new TemurinDistribution(
@@ -271,7 +278,6 @@ describe('getAvailableVersions', () => {
           version: '8',
           architecture: 'x64',
           packageType: packageType,
-          jmod,
           checkLatest: false
         },
         impl
@@ -281,24 +287,6 @@ describe('getAvailableVersions', () => {
       expect(distribution.toolcacheFolderName).toBe(expected);
     }
   );
-
-  it('rejects JMODs with a non-JDK package', () => {
-    expect(
-      () =>
-        new TemurinDistribution(
-          {
-            version: '25',
-            architecture: 'x64',
-            packageType: 'jre',
-            jmod: true,
-            checkLatest: false
-          },
-          TemurinImplementation.Hotspot
-        )
-    ).toThrow(
-      "Input 'jmod' is only supported with Temurin java-package 'jdk'."
-    );
-  });
 
   it.each([
     ['amd64', 'x64'],
@@ -500,8 +488,7 @@ describe('downloadTool', () => {
       {
         version: '25',
         architecture: 'x64',
-        packageType: 'jdk',
-        jmod: true,
+        packageType: 'jdk+jmods',
         checkLatest: false
       },
       TemurinImplementation.Hotspot
@@ -526,12 +513,14 @@ describe('downloadTool', () => {
     );
     expect(spyCopySync).toHaveBeenCalledWith(
       '/tmp/extracted-jmods/jdk-25-jmods',
-      '/tmp/extracted/jdk-25/jmods',
+      process.platform === 'darwin'
+        ? '/tmp/extracted/jdk-25/Contents/Home/jmods'
+        : '/tmp/extracted/jdk-25/jmods',
       {recursive: true}
     );
     expect(spyCacheDir).toHaveBeenCalledWith(
       '/tmp/extracted/jdk-25',
-      'Java_Temurin-Hotspot_jdk_jmods',
+      'Java_Temurin-Hotspot_jdk+jmods',
       '25.0.3-9',
       'x64'
     );
