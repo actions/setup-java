@@ -42,7 +42,7 @@ enum JavaDistribution {
   GraalVMCommunity = 'graalvm-community',
   JetBrains = 'jetbrains',
   Kona = 'kona',
-  OpenJdk = 'openjdk'
+  OracleOpenJdk = 'oracle-openjdk'
 }
 
 export function getJavaDistribution(
@@ -95,7 +95,7 @@ export function getJavaDistribution(
       return new JetBrainsDistribution(installerOptions);
     case JavaDistribution.Kona:
       return new KonaDistribution(installerOptions);
-    case JavaDistribution.OpenJdk:
+    case JavaDistribution.OracleOpenJdk:
       return new OpenJdkDistribution(installerOptions);
     default:
       return null;

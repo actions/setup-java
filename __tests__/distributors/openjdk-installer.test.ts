@@ -148,13 +148,13 @@ describe('OpenJdkDistribution', () => {
     await expect(
       createDistribution()['findPackageForDownload']('24')
     ).rejects.toThrow(
-      "No matching version found for SemVer '24'.\nDistribution: OpenJDK"
+      "No matching version found for SemVer '24'.\nDistribution: Oracle OpenJDK"
     );
   });
 
   it.each([
-    ['jre', 'OpenJDK provides only the `jdk` package type'],
-    ['jdk+fx', 'OpenJDK provides only the `jdk` package type']
+    ['jre', 'Oracle OpenJDK provides only the `jdk` package type'],
+    ['jdk+fx', 'Oracle OpenJDK provides only the `jdk` package type']
   ])('rejects the %s package type', async (packageType, message) => {
     await expect(
       createDistribution('26', 'x64', packageType)['findPackageForDownload'](
@@ -199,7 +199,7 @@ describe('OpenJdkDistribution', () => {
   });
 
   it('is registered in the distribution factory', () => {
-    const distribution = getJavaDistribution('openjdk', {
+    const distribution = getJavaDistribution('oracle-openjdk', {
       version: '26',
       architecture: 'x64',
       packageType: 'jdk',

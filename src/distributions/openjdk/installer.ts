@@ -21,14 +21,14 @@ const OPENJDK_BASE_URL = 'https://jdk.java.net';
 
 export class OpenJdkDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
-    super('OpenJDK', installerOptions);
+    super('Oracle OpenJDK', installerOptions);
   }
 
   protected async findPackageForDownload(
     range: string
   ): Promise<JavaDownloadRelease> {
     if (this.packageType !== 'jdk') {
-      throw new Error('OpenJDK provides only the `jdk` package type');
+      throw new Error('Oracle OpenJDK provides only the `jdk` package type');
     }
 
     const arch = this.distributionArchitecture();

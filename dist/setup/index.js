@@ -131893,11 +131893,11 @@ class KonaDistribution extends JavaBase {
 const OPENJDK_BASE_URL = 'https://jdk.java.net';
 class OpenJdkDistribution extends JavaBase {
     constructor(installerOptions) {
-        super('OpenJDK', installerOptions);
+        super('Oracle OpenJDK', installerOptions);
     }
     async findPackageForDownload(range) {
         if (this.packageType !== 'jdk') {
-            throw new Error('OpenJDK provides only the `jdk` package type');
+            throw new Error('Oracle OpenJDK provides only the `jdk` package type');
         }
         const arch = this.distributionArchitecture();
         if (!['x64', 'aarch64'].includes(arch)) {
@@ -132022,7 +132022,7 @@ var JavaDistribution;
     JavaDistribution["GraalVMCommunity"] = "graalvm-community";
     JavaDistribution["JetBrains"] = "jetbrains";
     JavaDistribution["Kona"] = "kona";
-    JavaDistribution["OpenJdk"] = "openjdk";
+    JavaDistribution["OracleOpenJdk"] = "oracle-openjdk";
 })(JavaDistribution || (JavaDistribution = {}));
 function getJavaDistribution(distributionName, installerOptions, jdkFile) {
     switch (distributionName) {
@@ -132061,7 +132061,7 @@ function getJavaDistribution(distributionName, installerOptions, jdkFile) {
             return new JetBrainsDistribution(installerOptions);
         case JavaDistribution.Kona:
             return new KonaDistribution(installerOptions);
-        case JavaDistribution.OpenJdk:
+        case JavaDistribution.OracleOpenJdk:
             return new OpenJdkDistribution(installerOptions);
         default:
             return null;
