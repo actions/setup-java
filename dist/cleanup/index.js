@@ -97988,8 +97988,16 @@ async function saveAdditionalCache(packageManager, additionalCache) {
         info(`Cache hit occurred on the ${additionalCache.name} primary key ${primaryKey}, not saving cache.`);
         return;
     }
+    const globber = await create(additionalCache.path.join('\n'), {
+        implicitDescendants: false
+    });
+    const cachePaths = await globber.glob();
+    if (cachePaths.length === 0) {
+        core_debug(`${additionalCache.name} cache paths do not exist, not saving cache.`);
+        return;
+    }
     try {
-        const cacheId = await cache_saveCache(additionalCache.path, primaryKey);
+        const cacheId = await cache_saveCache(cachePaths, primaryKey);
         if (cacheId === -1) {
             core_debug(`${additionalCache.name} cache was not saved for the key: ${primaryKey}`);
             return;
