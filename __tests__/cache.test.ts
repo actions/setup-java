@@ -377,6 +377,10 @@ describe('dependency cache', () => {
       ReturnType<typeof cache.saveCache>,
       Parameters<typeof cache.saveCache>
     >;
+    let spyGlobCreate: jest.SpyInstance<
+      ReturnType<typeof glob.create>,
+      Parameters<typeof glob.create>
+    >;
 
     beforeEach(() => {
       spyCacheSave = jest
@@ -384,6 +388,9 @@ describe('dependency cache', () => {
         .mockImplementation((paths: string[], key: string) =>
           Promise.resolve(0)
         );
+      spyGlobCreate = jest
+        .spyOn(glob, 'create')
+        .mockResolvedValue(createGlobber(['wrapper-path']));
       spyWarning.mockImplementation(() => null);
     });
 
@@ -469,17 +476,24 @@ describe('dependency cache', () => {
       });
       it('does not fail the post step when the wrapper distribution path is missing', async () => {
         createFile(join(workspace, 'pom.xml'));
+        createDirectory(join(workspace, '.mvn'));
+        createDirectory(join(workspace, '.mvn', 'wrapper'));
+        createFile(
+          join(workspace, '.mvn', 'wrapper', 'maven-wrapper.properties')
+        );
         createStateForWrapperRestore('maven-wrapper', false);
-        spyCacheSave.mockImplementation((paths: string[], key: string) => {
-          if (paths.includes(join(os.homedir(), '.m2', 'wrapper', 'dists'))) {
-            return Promise.reject(
-              new cache.ValidationError('Path Validation Error')
-            );
-          }
-          return Promise.resolve(0);
-        });
+        spyGlobCreate.mockResolvedValue(createGlobber([]));
 
-        await expect(save('maven')).resolves.not.toThrow();
+        await expect(save('maven')).resolves.toBeUndefined();
+        expect(spyCacheSave).not.toHaveBeenCalledWith(
+          [join(os.homedir(), '.m2', 'wrapper', 'dists')],
+          expect.any(String)
+        );
+        expect(spyCacheSave).toHaveBeenCalledWith(
+          [join(os.homedir(), '.m2', 'repository')],
+          'setup-java-cache-primary-key'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
       });
     });
     describe('for gradle', () => {
@@ -552,6 +566,23 @@ describe('dependency cache', () => {
           [join(os.homedir(), '.gradle', 'wrapper')],
           expect.any(String)
         );
+      });
+      it('does not fail the post step when the wrapper distribution path is missing', async () => {
+        createFile(join(workspace, 'build.gradle'));
+        createFile(join(workspace, 'gradle-wrapper.properties'));
+        createStateForWrapperRestore('gradle-wrapper', false);
+        spyGlobCreate.mockResolvedValue(createGlobber([]));
+
+        await expect(save('gradle')).resolves.toBeUndefined();
+        expect(spyCacheSave).not.toHaveBeenCalledWith(
+          [join(os.homedir(), '.gradle', 'wrapper')],
+          expect.any(String)
+        );
+        expect(spyCacheSave).toHaveBeenCalledWith(
+          [join(os.homedir(), '.gradle', 'caches')],
+          'setup-java-cache-primary-key'
+        );
+        expect(spyWarning).not.toHaveBeenCalled();
       });
     });
     describe('for sbt', () => {
@@ -661,6 +692,20 @@ function createFile(path: string) {
 function createDirectory(path: string) {
   core.info(`created a directory at ${path}`);
   fs.mkdirSync(path);
+}
+
+function createGlobber(
+  paths: string[]
+): Awaited<ReturnType<typeof glob.create>> {
+  return {
+    getSearchPaths: () => [],
+    glob: () => Promise.resolve(paths),
+    globGenerator: async function* () {
+      for (const path of paths) {
+        yield path;
+      }
+    }
+  };
 }
 
 function projectRoot(workspace: string): string {
