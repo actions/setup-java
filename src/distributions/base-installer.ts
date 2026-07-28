@@ -25,6 +25,7 @@ export abstract class JavaBase {
   protected stable: boolean;
   protected latest: boolean;
   protected checkLatest: boolean;
+  protected forceDownload: boolean;
   protected setDefault: boolean;
   protected verifySignature: boolean;
   protected verifySignaturePublicKey: string | undefined;
@@ -46,6 +47,7 @@ export abstract class JavaBase {
     this.architecture = installerOptions.architecture || os.arch();
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
+    this.forceDownload = installerOptions.forceDownload ?? false;
     this.setDefault =
       installerOptions.setDefault !== undefined
         ? installerOptions.setDefault
@@ -68,7 +70,7 @@ export abstract class JavaBase {
       );
     }
 
-    let foundJava = this.findInToolcache();
+    let foundJava = this.forceDownload ? null : this.findInToolcache();
     if (foundJava && !this.checkLatest && !this.latest) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
@@ -91,7 +93,10 @@ export abstract class JavaBase {
           }
           const javaRelease = await this.findPackageForDownload(this.version);
           core.info(`Resolved latest version as ${javaRelease.version}`);
-          if (foundJava?.version === javaRelease.version) {
+          if (
+            !this.forceDownload &&
+            foundJava?.version === javaRelease.version
+          ) {
             core.info(`Resolved Java ${foundJava.version} from tool-cache`);
           } else {
             core.info('Trying to download...');
