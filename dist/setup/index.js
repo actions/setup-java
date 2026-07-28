@@ -131328,6 +131328,10 @@ class GraalVMDistribution extends JavaBase {
             throw error;
         }
     }
+    setJavaDefault(version, toolPath) {
+        super.setJavaDefault(version, toolPath);
+        exportVariable('GRAALVM_HOME', toolPath);
+    }
     async findPackageForDownload(range) {
         this.validateVersionRange(range);
         const arch = this.getSupportedArchitecture();
