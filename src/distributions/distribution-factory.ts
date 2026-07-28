@@ -50,6 +50,15 @@ export function getJavaDistribution(
   installerOptions: JavaInstallerOptions,
   jdkFile?: string
 ): JavaBase | null {
+  if (
+    installerOptions.packageType === 'jdk+jmods' &&
+    distributionName !== JavaDistribution.Temurin
+  ) {
+    throw new Error(
+      "java-package 'jdk+jmods' is only supported for distribution 'temurin'."
+    );
+  }
+
   switch (distributionName) {
     case JavaDistribution.JdkFile:
       return new LocalDistribution(installerOptions, jdkFile);

@@ -129873,21 +129873,27 @@ wI4qF/KKq9BfyfucAs0ykA==
 
 
 
+
 var TemurinImplementation;
 (function (TemurinImplementation) {
     TemurinImplementation["Hotspot"] = "Hotspot";
 })(TemurinImplementation || (TemurinImplementation = {}));
 class TemurinDistribution extends JavaBase {
     jvmImpl;
+    includeJmods;
     constructor(installerOptions, jvmImpl) {
         super(`Temurin-${jvmImpl}`, installerOptions);
         this.jvmImpl = jvmImpl;
+        this.includeJmods = this.packageType === 'jdk+jmods';
     }
     /**
      * @internal For cross-distribution reuse only. Not intended as a public API.
      */
     async findPackageForDownload(version) {
-        const availableVersionsRaw = await this.getAvailableVersions();
+        return this.resolvePackage(version, this.includeJmods ? 'jdk' : this.packageType);
+    }
+    async resolvePackage(version, imageType) {
+        const availableVersionsRaw = await this.getAvailableVersions(imageType);
         const availableVersionsWithBinaries = availableVersionsRaw
             .filter(item => item.binaries.length > 0)
             .map(item => {
@@ -129915,19 +129921,7 @@ class TemurinDistribution extends JavaBase {
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
-        if (this.verifySignature) {
-            if (!javaRelease.signatureUrl) {
-                throw new Error(`Input 'verify-signature' is enabled, but no signature URL was found for Temurin version ${javaRelease.version}.`);
-            }
-            info(`Verifying Java package signature...`);
-            try {
-                await verifyPackageSignature(javaArchivePath, javaRelease.signatureUrl, this.verifySignaturePublicKey ?? ADOPTIUM_PUBLIC_KEY);
-            }
-            catch (error) {
-                throw new Error(`Failed to verify signature for Temurin version ${javaRelease.version} from ${javaRelease.signatureUrl}: ${error.message}`, { cause: error });
-            }
-        }
+        let javaArchivePath = await this.downloadPackage(javaRelease);
         info(`Extracting Java archive...`);
         const extension = getDownloadArchiveExtension();
         if (process.platform === 'win32') {
@@ -129936,20 +129930,49 @@ class TemurinDistribution extends JavaBase {
         const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
         const archiveName = external_fs_default().readdirSync(extractedJavaPath)[0];
         const archivePath = external_path_default().join(extractedJavaPath, archiveName);
+        const javaHome = process.platform === 'darwin'
+            ? external_path_default().join(archivePath, MACOS_JAVA_CONTENT_POSTFIX)
+            : archivePath;
+        if (this.includeJmods && !external_fs_default().existsSync(external_path_default().join(javaHome, 'jmods'))) {
+            await this.installJmods(javaRelease.version, javaHome);
+        }
         const version = this.getToolcacheVersionName(javaRelease.version);
         const javaPath = await cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
         return { version: javaRelease.version, path: javaPath };
     }
-    get toolcacheFolderName() {
-        return super.toolcacheFolderName;
-    }
     supportsSignatureVerification() {
         return true;
     }
-    async getAvailableVersions() {
+    async downloadPackage(release) {
+        const archivePath = await downloadTool(release.url);
+        if (this.verifySignature) {
+            if (!release.signatureUrl) {
+                throw new Error(`Input 'verify-signature' is enabled, but no signature URL was found for Temurin version ${release.version}.`);
+            }
+            info(`Verifying Java package signature...`);
+            try {
+                await verifyPackageSignature(archivePath, release.signatureUrl, this.verifySignaturePublicKey ?? ADOPTIUM_PUBLIC_KEY);
+            }
+            catch (error) {
+                throw new Error(`Failed to verify signature for Temurin version ${release.version} from ${release.signatureUrl}: ${error.message}`, { cause: error });
+            }
+        }
+        return archivePath;
+    }
+    async installJmods(version, javaHome) {
+        const jmodsRelease = await this.resolvePackage(version, 'jmods');
+        info(`Downloading JMODs ${jmodsRelease.version} (${this.distribution}) from ${jmodsRelease.url} ...`);
+        let jmodsArchivePath = await this.downloadPackage(jmodsRelease);
+        if (process.platform === 'win32') {
+            jmodsArchivePath = renameWinArchive(jmodsArchivePath);
+        }
+        const extractedJmodsPath = await extractJdkFile(jmodsArchivePath, getDownloadArchiveExtension());
+        const jmodsDirectory = external_path_default().join(extractedJmodsPath, external_fs_default().readdirSync(extractedJmodsPath)[0]);
+        external_fs_default().cpSync(jmodsDirectory, external_path_default().join(javaHome, 'jmods'), { recursive: true });
+    }
+    async getAvailableVersions(imageType = this.includeJmods ? 'jdk' : this.packageType) {
         const platform = this.getPlatformOption();
         const arch = this.distributionArchitecture();
-        const imageType = this.packageType;
         const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
         const releaseType = this.stable ? 'ga' : 'ea';
         if (isDebug()) {
@@ -132025,6 +132048,10 @@ var JavaDistribution;
     JavaDistribution["OracleOpenJdk"] = "oracle-openjdk";
 })(JavaDistribution || (JavaDistribution = {}));
 function getJavaDistribution(distributionName, installerOptions, jdkFile) {
+    if (installerOptions.packageType === 'jdk+jmods' &&
+        distributionName !== JavaDistribution.Temurin) {
+        throw new Error("java-package 'jdk+jmods' is only supported for distribution 'temurin'.");
+    }
     switch (distributionName) {
         case JavaDistribution.JdkFile:
             return new LocalDistribution(installerOptions, jdkFile);
