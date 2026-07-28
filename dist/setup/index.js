@@ -131939,7 +131939,7 @@ class OpenJdkDistribution extends JavaBase {
         const pattern = new RegExp(`href="(https://download\\.java\\.net/[^"]+/openjdk-([^"_]+)_${platformPattern}-${arch}_bin\\.${extensionPattern})"`, 'g');
         return Array.from(html.matchAll(pattern), match => {
             const url = match[1];
-            const build = url.match(/\/(\d+)\/GPL\/openjdk-/)?.[1];
+            const build = url.match(/\/(\d+)\/(?:GPL\/)?openjdk-/)?.[1];
             return {
                 version: this.toSemver(match[2], build),
                 url

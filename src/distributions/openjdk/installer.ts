@@ -126,7 +126,7 @@ export class OpenJdkDistribution extends JavaBase {
 
     return Array.from(html.matchAll(pattern), match => {
       const url = match[1];
-      const build = url.match(/\/(\d+)\/GPL\/openjdk-/)?.[1];
+      const build = url.match(/\/(\d+)\/(?:GPL\/)?openjdk-/)?.[1];
       return {
         version: this.toSemver(match[2], build),
         url

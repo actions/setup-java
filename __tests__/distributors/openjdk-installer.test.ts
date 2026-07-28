@@ -176,12 +176,13 @@ describe('OpenJdkDistribution', () => {
       'x64'
     );
     const windowsRelease = distribution['parseReleases'](
-      '<a href="https://download.java.net/java/GA/jdk10/hash/13/GPL/openjdk-10_windows-x64_bin.tar.gz">tar.gz</a>',
+      '<a href="https://download.java.net/java/GA/jdk10/hash/13/openjdk-10.0.2_windows-x64_bin.tar.gz">tar.gz</a>',
       'windows',
       'x64'
     );
 
     expect(macRelease[0].version).toBe('16.0.0+7');
+    expect(windowsRelease[0].version).toBe('10.0.2+13');
     expect(windowsRelease[0].url.endsWith('.tar.gz')).toBe(true);
   });
 
