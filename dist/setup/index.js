@@ -129238,7 +129238,7 @@ async function saveAdditionalCache(packageManager, additionalCache) {
         return;
     }
     try {
-        const cacheId = await cache.saveCache(additionalCache.path, primaryKey);
+        const cacheId = await cache.saveCache(cachePaths, primaryKey);
         if (cacheId === -1) {
             core.debug(`${additionalCache.name} cache was not saved for the key: ${primaryKey}`);
             return;
