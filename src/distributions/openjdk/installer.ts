@@ -126,12 +126,31 @@ export class OpenJdkDistribution extends JavaBase {
 
     return Array.from(html.matchAll(pattern), match => {
       const url = match[1];
-      const build = url.match(/\/(\d+)\/(?:GPL\/)?openjdk-/)?.[1];
+      const build =
+        url.match(/\/(\d+)\/(?:GPL\/)?openjdk-/)?.[1] ??
+        this.findBuildInArchiveHeading(html, match.index, match[2]);
       return {
         version: this.toSemver(match[2], build),
         url
       };
     });
+  }
+
+  private findBuildInArchiveHeading(
+    html: string,
+    assetIndex: number,
+    version: string
+  ): string | undefined {
+    const headings = Array.from(
+      html.slice(0, assetIndex).matchAll(/\(build\s+([^)]+)\)/g)
+    );
+    const headingVersion = headings.at(-1)?.[1];
+    if (!headingVersion) {
+      return undefined;
+    }
+
+    const [javaVersion, build] = headingVersion.split('+');
+    return javaVersion === version ? build : undefined;
   }
 
   private toSemver(version: string, urlBuild?: string): string {

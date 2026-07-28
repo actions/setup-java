@@ -131939,12 +131939,22 @@ class OpenJdkDistribution extends JavaBase {
         const pattern = new RegExp(`href="(https://download\\.java\\.net/[^"]+/openjdk-([^"_]+)_${platformPattern}-${arch}_bin\\.${extensionPattern})"`, 'g');
         return Array.from(html.matchAll(pattern), match => {
             const url = match[1];
-            const build = url.match(/\/(\d+)\/(?:GPL\/)?openjdk-/)?.[1];
+            const build = url.match(/\/(\d+)\/(?:GPL\/)?openjdk-/)?.[1] ??
+                this.findBuildInArchiveHeading(html, match.index, match[2]);
             return {
                 version: this.toSemver(match[2], build),
                 url
             };
         });
+    }
+    findBuildInArchiveHeading(html, assetIndex, version) {
+        const headings = Array.from(html.slice(0, assetIndex).matchAll(/\(build\s+([^)]+)\)/g));
+        const headingVersion = headings.at(-1)?.[1];
+        if (!headingVersion) {
+            return undefined;
+        }
+        const [javaVersion, build] = headingVersion.split('+');
+        return javaVersion === version ? build : undefined;
     }
     toSemver(version, urlBuild) {
         const [javaVersion, filenameBuild] = version.replace('-ea', '').split('+');

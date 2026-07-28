@@ -47,6 +47,8 @@ const archivePage = `
   <a href="https://download.java.net/java/GA/jdk26.0.1/hash/8/GPL/openjdk-26.0.1_linux-x64_bin.tar.gz">tar.gz</a>
   <a href="https://download.java.net/java/GA/jdk25/hash/36/GPL/openjdk-25_linux-x64_bin.tar.gz">tar.gz</a>
   <a href="https://download.java.net/java/GA/jdk18.0.1.1/hash/2/GPL/openjdk-18.0.1.1_linux-x64_bin.tar.gz">tar.gz</a>
+  <th>9.0.4 (build 9.0.4+11)</th>
+  <a href="https://download.java.net/java/GA/jdk9/9.0.4/binaries/openjdk-9.0.4_linux-x64_bin.tar.gz">tar.gz</a>
 `;
 
 function createDistribution(
@@ -109,6 +111,16 @@ describe('OpenJdkDistribution', () => {
       );
 
     expect(result.version).toBe('26.0.2+10');
+  });
+
+  it('resolves an exact build from a legacy archive heading', async () => {
+    const result =
+      await createDistribution('9.0.4+11')['findPackageForDownload'](
+        '9.0.4+11'
+      );
+
+    expect(result.version).toBe('9.0.4+11');
+    expect(result.url).toContain('/binaries/openjdk-9.0.4_linux-x64_bin');
   });
 
   it('resolves a four-field Java version', async () => {
