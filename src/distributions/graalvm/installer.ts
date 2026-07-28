@@ -110,6 +110,11 @@ export class GraalVMDistribution extends JavaBase {
     }
   }
 
+  protected setJavaDefault(version: string, toolPath: string): void {
+    super.setJavaDefault(version, toolPath);
+    core.exportVariable('GRAALVM_HOME', toolPath);
+  }
+
   protected async findPackageForDownload(
     range: string
   ): Promise<JavaDownloadRelease> {
