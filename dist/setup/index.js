@@ -72084,6 +72084,7 @@ const INPUT_JAVA_VERSION = 'java-version';
 const INPUT_JAVA_VERSION_FILE = 'java-version-file';
 const INPUT_ARCHITECTURE = 'architecture';
 const INPUT_JAVA_PACKAGE = 'java-package';
+const INPUT_JMOD = 'jmod';
 const INPUT_DISTRIBUTION = 'distribution';
 const INPUT_JDK_FILE = 'jdk-file';
 const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
@@ -129873,21 +129874,30 @@ wI4qF/KKq9BfyfucAs0ykA==
 
 
 
+
 var TemurinImplementation;
 (function (TemurinImplementation) {
     TemurinImplementation["Hotspot"] = "Hotspot";
 })(TemurinImplementation || (TemurinImplementation = {}));
 class TemurinDistribution extends JavaBase {
     jvmImpl;
+    jmod;
     constructor(installerOptions, jvmImpl) {
         super(`Temurin-${jvmImpl}`, installerOptions);
         this.jvmImpl = jvmImpl;
+        this.jmod = installerOptions.jmod ?? false;
+        if (this.jmod && this.packageType !== 'jdk') {
+            throw new Error(`Input 'jmod' is only supported with Temurin java-package 'jdk'.`);
+        }
     }
     /**
      * @internal For cross-distribution reuse only. Not intended as a public API.
      */
     async findPackageForDownload(version) {
-        const availableVersionsRaw = await this.getAvailableVersions();
+        return this.resolvePackage(version, this.packageType);
+    }
+    async resolvePackage(version, imageType) {
+        const availableVersionsRaw = await this.getAvailableVersions(imageType);
         const availableVersionsWithBinaries = availableVersionsRaw
             .filter(item => item.binaries.length > 0)
             .map(item => {
@@ -129915,19 +129925,7 @@ class TemurinDistribution extends JavaBase {
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
-        if (this.verifySignature) {
-            if (!javaRelease.signatureUrl) {
-                throw new Error(`Input 'verify-signature' is enabled, but no signature URL was found for Temurin version ${javaRelease.version}.`);
-            }
-            info(`Verifying Java package signature...`);
-            try {
-                await verifyPackageSignature(javaArchivePath, javaRelease.signatureUrl, this.verifySignaturePublicKey ?? ADOPTIUM_PUBLIC_KEY);
-            }
-            catch (error) {
-                throw new Error(`Failed to verify signature for Temurin version ${javaRelease.version} from ${javaRelease.signatureUrl}: ${error.message}`, { cause: error });
-            }
-        }
+        let javaArchivePath = await this.downloadPackage(javaRelease);
         info(`Extracting Java archive...`);
         const extension = getDownloadArchiveExtension();
         if (process.platform === 'win32') {
@@ -129936,20 +129934,52 @@ class TemurinDistribution extends JavaBase {
         const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
         const archiveName = external_fs_default().readdirSync(extractedJavaPath)[0];
         const archivePath = external_path_default().join(extractedJavaPath, archiveName);
+        const javaHome = process.platform === 'darwin'
+            ? external_path_default().join(archivePath, MACOS_JAVA_CONTENT_POSTFIX)
+            : archivePath;
+        if (this.jmod && !external_fs_default().existsSync(external_path_default().join(javaHome, 'jmods'))) {
+            await this.installJmods(javaRelease.version, javaHome);
+        }
         const version = this.getToolcacheVersionName(javaRelease.version);
         const javaPath = await cacheDir(archivePath, this.toolcacheFolderName, version, this.architecture);
         return { version: javaRelease.version, path: javaPath };
     }
     get toolcacheFolderName() {
-        return super.toolcacheFolderName;
+        return `${super.toolcacheFolderName}${this.jmod ? '_jmods' : ''}`;
     }
     supportsSignatureVerification() {
         return true;
     }
-    async getAvailableVersions() {
+    async downloadPackage(release) {
+        const archivePath = await downloadTool(release.url);
+        if (this.verifySignature) {
+            if (!release.signatureUrl) {
+                throw new Error(`Input 'verify-signature' is enabled, but no signature URL was found for Temurin version ${release.version}.`);
+            }
+            info(`Verifying Java package signature...`);
+            try {
+                await verifyPackageSignature(archivePath, release.signatureUrl, this.verifySignaturePublicKey ?? ADOPTIUM_PUBLIC_KEY);
+            }
+            catch (error) {
+                throw new Error(`Failed to verify signature for Temurin version ${release.version} from ${release.signatureUrl}: ${error.message}`, { cause: error });
+            }
+        }
+        return archivePath;
+    }
+    async installJmods(version, javaHome) {
+        const jmodsRelease = await this.resolvePackage(version, 'jmods');
+        info(`Downloading JMODs ${jmodsRelease.version} (${this.distribution}) from ${jmodsRelease.url} ...`);
+        let jmodsArchivePath = await this.downloadPackage(jmodsRelease);
+        if (process.platform === 'win32') {
+            jmodsArchivePath = renameWinArchive(jmodsArchivePath);
+        }
+        const extractedJmodsPath = await extractJdkFile(jmodsArchivePath, getDownloadArchiveExtension());
+        const jmodsDirectory = external_path_default().join(extractedJmodsPath, external_fs_default().readdirSync(extractedJmodsPath)[0]);
+        external_fs_default().cpSync(jmodsDirectory, external_path_default().join(javaHome, 'jmods'), { recursive: true });
+    }
+    async getAvailableVersions(imageType = this.packageType) {
         const platform = this.getPlatformOption();
         const arch = this.distributionArchitecture();
-        const imageType = this.packageType;
         const versionRange = encodeURI('[1.0,100.0]'); // retrieve all available versions
         const releaseType = this.stable ? 'ga' : 'ea';
         if (isDebug()) {
@@ -132148,6 +132178,7 @@ async function run() {
         const versionFile = getInput(INPUT_JAVA_VERSION_FILE);
         const architecture = getInput(INPUT_ARCHITECTURE);
         const packageType = getInput(INPUT_JAVA_PACKAGE);
+        const jmod = util_getBooleanInput(INPUT_JMOD, false);
         const jdkFile = getJdkFileInput();
         const cache = getInput(INPUT_CACHE);
         const cacheDependencyPath = getInput(INPUT_CACHE_DEPENDENCY_PATH);
@@ -132183,6 +132214,7 @@ async function run() {
             const installerInputsOptions = {
                 architecture,
                 packageType,
+                jmod,
                 checkLatest,
                 forceDownload,
                 setDefault,
@@ -132202,6 +132234,7 @@ async function run() {
             const installerInputsOptions = {
                 architecture,
                 packageType,
+                jmod,
                 checkLatest,
                 forceDownload,
                 setDefault,
@@ -132238,10 +132271,11 @@ function getJdkFileInput() {
     return jdkFile || deprecatedJdkFile;
 }
 async function installVersion(version, options, toolchainId = 0) {
-    const { distributionName, jdkFile, architecture, packageType, checkLatest, forceDownload, setDefault, verifySignature, verifySignaturePublicKey, toolchainIds } = options;
+    const { distributionName, jdkFile, architecture, packageType, jmod, checkLatest, forceDownload, setDefault, verifySignature, verifySignaturePublicKey, toolchainIds } = options;
     const installerOptions = {
         architecture,
         packageType,
+        jmod,
         checkLatest,
         forceDownload,
         setDefault,

@@ -97307,6 +97307,7 @@ const INPUT_JAVA_VERSION = 'java-version';
 const INPUT_JAVA_VERSION_FILE = 'java-version-file';
 const INPUT_ARCHITECTURE = 'architecture';
 const INPUT_JAVA_PACKAGE = 'java-package';
+const INPUT_JMOD = 'jmod';
 const INPUT_DISTRIBUTION = 'distribution';
 const INPUT_JDK_FILE = 'jdk-file';
 const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
