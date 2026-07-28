@@ -166,6 +166,29 @@ describe('GraalVMDistribution', () => {
     });
   });
 
+  describe('setJavaDefault', () => {
+    it('should set GRAALVM_HOME for Oracle GraalVM', () => {
+      (distribution as any).setJavaDefault('17.0.5', '/cached/java/path');
+
+      expect(core.exportVariable).toHaveBeenCalledWith(
+        'GRAALVM_HOME',
+        '/cached/java/path'
+      );
+    });
+
+    it('should set GRAALVM_HOME for GraalVM Community', () => {
+      (communityDistribution as any).setJavaDefault(
+        '17.0.5',
+        '/cached/java/path'
+      );
+
+      expect(core.exportVariable).toHaveBeenCalledWith(
+        'GRAALVM_HOME',
+        '/cached/java/path'
+      );
+    });
+  });
+
   describe('downloadTool', () => {
     const javaRelease = {
       version: '17.0.5',
