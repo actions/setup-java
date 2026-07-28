@@ -11,8 +11,8 @@ import {
   JavaInstallerResults
 } from '../base-models.js';
 import {
+  convertVersionToSemver,
   extractJdkFile,
-  getDownloadArchiveExtension,
   isVersionSatisfies,
   renameWinArchive
 } from '../../util.js';
@@ -62,8 +62,8 @@ export class OpenJdkDistribution extends JavaBase {
     let javaArchivePath = await tc.downloadTool(javaRelease.url);
 
     core.info(`Extracting Java archive...`);
-    const extension = getDownloadArchiveExtension();
-    if (process.platform === 'win32') {
+    const extension = javaRelease.url.endsWith('.zip') ? 'zip' : 'tar.gz';
+    if (extension === 'zip') {
       javaArchivePath = renameWinArchive(javaArchivePath);
     }
     const extractedJavaPath = await extractJdkFile(javaArchivePath, extension);
@@ -116,23 +116,32 @@ export class OpenJdkDistribution extends JavaBase {
     platform: string,
     arch: string
   ): JavaDownloadRelease[] {
-    const extension = platform === 'windows' ? 'zip' : 'tar.gz';
+    const platformPattern = platform === 'macos' ? '(?:macos|osx)' : platform;
+    const extensionPattern =
+      platform === 'windows' ? '(?:zip|tar\\.gz)' : 'tar\\.gz';
     const pattern = new RegExp(
-      `href="(https://download\\.java\\.net/[^"]+/openjdk-([^"_]+)_${platform}-${arch}_bin\\.${extension.replaceAll('.', '\\.')})"`,
+      `href="(https://download\\.java\\.net/[^"]+/openjdk-([^"_]+)_${platformPattern}-${arch}_bin\\.${extensionPattern})"`,
       'g'
     );
 
-    return Array.from(html.matchAll(pattern), match => ({
-      version: this.toSemver(match[2]),
-      url: match[1]
-    }));
+    return Array.from(html.matchAll(pattern), match => {
+      const url = match[1];
+      const build = url.match(/\/(\d+)\/GPL\/openjdk-/)?.[1];
+      return {
+        version: this.toSemver(match[2], build),
+        url
+      };
+    });
   }
 
-  private toSemver(version: string): string {
-    const [javaVersion, build] = version.replace('-ea', '').split('+');
-    const normalizedVersion = javaVersion.includes('.')
-      ? javaVersion
-      : `${javaVersion}.0.0`;
+  private toSemver(version: string, urlBuild?: string): string {
+    const [javaVersion, filenameBuild] = version.replace('-ea', '').split('+');
+    const versionParts = javaVersion.split('.');
+    const normalizedVersion = convertVersionToSemver(
+      versionParts.length === 1 ? `${javaVersion}.0.0` : javaVersion
+    );
+    const build =
+      filenameBuild ?? (versionParts.length <= 3 ? urlBuild : undefined);
     return build ? `${normalizedVersion}+${build}` : normalizedVersion;
   }
 

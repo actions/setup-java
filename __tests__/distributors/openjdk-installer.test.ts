@@ -46,6 +46,7 @@ const earlyAccessPage = `
 const archivePage = `
   <a href="https://download.java.net/java/GA/jdk26.0.1/hash/8/GPL/openjdk-26.0.1_linux-x64_bin.tar.gz">tar.gz</a>
   <a href="https://download.java.net/java/GA/jdk25/hash/36/GPL/openjdk-25_linux-x64_bin.tar.gz">tar.gz</a>
+  <a href="https://download.java.net/java/GA/jdk18.0.1.1/hash/2/GPL/openjdk-18.0.1.1_linux-x64_bin.tar.gz">tar.gz</a>
 `;
 
 function createDistribution(
@@ -88,7 +89,7 @@ describe('OpenJdkDistribution', () => {
     const result = await createDistribution()['findPackageForDownload']('26');
 
     expect(result).toEqual({
-      version: '26.0.2',
+      version: '26.0.2+10',
       url: 'https://download.java.net/java/GA/jdk26.0.2/hash/10/GPL/openjdk-26.0.2_linux-x64_bin.tar.gz'
     });
   });
@@ -97,8 +98,27 @@ describe('OpenJdkDistribution', () => {
     const result =
       await createDistribution('26.0.1')['findPackageForDownload']('26.0.1');
 
-    expect(result.version).toBe('26.0.1');
+    expect(result.version).toBe('26.0.1+8');
     expect(result.url).toContain('/openjdk-26.0.1_linux-x64_bin.tar.gz');
+  });
+
+  it('resolves an exact GA build', async () => {
+    const result =
+      await createDistribution('26.0.2+10')['findPackageForDownload'](
+        '26.0.2+10'
+      );
+
+    expect(result.version).toBe('26.0.2+10');
+  });
+
+  it('resolves a four-field Java version', async () => {
+    const result =
+      await createDistribution('18.0.1.1')['findPackageForDownload'](
+        '18.0.1+1'
+      );
+
+    expect(result.version).toBe('18.0.1+1');
+    expect(result.url).toContain('/openjdk-18.0.1.1_linux-x64_bin.tar.gz');
   });
 
   it('resolves an early-access release without requesting the archive', async () => {
@@ -146,6 +166,23 @@ describe('OpenJdkDistribution', () => {
     expect(() => distribution['getPlatform']('freebsd')).toThrow(
       "Platform 'freebsd' is not supported"
     );
+  });
+
+  it('parses legacy platform names and archive formats', () => {
+    const distribution = createDistribution();
+    const macRelease = distribution['parseReleases'](
+      '<a href="https://download.java.net/java/GA/jdk16/hash/7/GPL/openjdk-16_osx-x64_bin.tar.gz">tar.gz</a>',
+      'macos',
+      'x64'
+    );
+    const windowsRelease = distribution['parseReleases'](
+      '<a href="https://download.java.net/java/GA/jdk10/hash/13/GPL/openjdk-10_windows-x64_bin.tar.gz">tar.gz</a>',
+      'windows',
+      'x64'
+    );
+
+    expect(macRelease[0].version).toBe('16.0.0+7');
+    expect(windowsRelease[0].url.endsWith('.tar.gz')).toBe(true);
   });
 
   it('is registered in the distribution factory', () => {
