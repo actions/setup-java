@@ -54,14 +54,19 @@ const archivePage = `
 function createDistribution(
   version = '26',
   architecture = 'x64',
-  packageType = 'jdk'
+  packageType = 'jdk',
+  useFixturePlatform = true
 ) {
-  return new OpenJdkDistribution({
+  const distribution = new OpenJdkDistribution({
     version,
     architecture,
     packageType,
     checkLatest: false
   });
+  if (useFixturePlatform) {
+    distribution['getPlatform'] = jest.fn(() => 'linux');
+  }
+  return distribution;
 }
 
 describe('OpenJdkDistribution', () => {
@@ -170,7 +175,7 @@ describe('OpenJdkDistribution', () => {
   });
 
   it('maps supported platforms', () => {
-    const distribution = createDistribution();
+    const distribution = createDistribution('26', 'x64', 'jdk', false);
 
     expect(distribution['getPlatform']('linux')).toBe('linux');
     expect(distribution['getPlatform']('darwin')).toBe('macos');
