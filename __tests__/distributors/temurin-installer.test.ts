@@ -13,6 +13,7 @@ import type {TemurinImplementation as TemurinImplementationType} from '../../src
 import {HttpClient} from '@actions/http-client';
 import fs from 'fs';
 import os from 'os';
+import path from 'path';
 
 import manifestData from '../data/temurin.json' with {type: 'json'};
 
@@ -512,14 +513,14 @@ describe('downloadTool', () => {
       'https://example.com/jmods.tar.gz'
     );
     expect(spyCopySync).toHaveBeenCalledWith(
-      '/tmp/extracted-jmods/jdk-25-jmods',
+      path.join('/tmp/extracted-jmods', 'jdk-25-jmods'),
       process.platform === 'darwin'
-        ? '/tmp/extracted/jdk-25/Contents/Home/jmods'
-        : '/tmp/extracted/jdk-25/jmods',
+        ? path.join('/tmp/extracted', 'jdk-25', 'Contents', 'Home', 'jmods')
+        : path.join('/tmp/extracted', 'jdk-25', 'jmods'),
       {recursive: true}
     );
     expect(spyCacheDir).toHaveBeenCalledWith(
-      '/tmp/extracted/jdk-25',
+      path.join('/tmp/extracted', 'jdk-25'),
       'Java_Temurin-Hotspot_jdk+jmods',
       '25.0.3-9',
       'x64'
