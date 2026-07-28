@@ -548,7 +548,7 @@ describe('dependency cache', () => {
 
         await save('maven');
         expect(spyCacheSave).toHaveBeenCalledWith(
-          [join(os.homedir(), '.m2', 'wrapper', 'dists')],
+          ['wrapper-path'],
           'setup-java-maven-wrapper-key'
         );
         expect(spyWarning).not.toHaveBeenCalled();
@@ -678,7 +678,7 @@ describe('dependency cache', () => {
 
         await save('gradle');
         expect(spyCacheSave).toHaveBeenCalledWith(
-          [join(os.homedir(), '.gradle', 'wrapper')],
+          ['wrapper-path'],
           'setup-java-gradle-wrapper-key'
         );
         expect(spyWarning).not.toHaveBeenCalled();
