@@ -1,14 +1,9 @@
 import fs from 'fs';
 import * as core from '@actions/core';
 import * as auth from './auth.js';
-import {
-  getBooleanInput,
-  isCacheFeatureAvailable,
-  getVersionFromFileContent
-} from './util.js';
+import {getBooleanInput, getVersionFromFileContent} from './util.js';
 import * as toolchains from './toolchains.js';
 import * as constants from './constants.js';
-import {restore} from './cache.js';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 import {getJavaDistribution} from './distributions/distribution-factory.js';
@@ -17,34 +12,32 @@ import {configureMavenArgs} from './maven-args.js';
 import {configureProblemMatcher} from './problem-matcher.js';
 
 export async function run() {
-  try {
-    const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
-    let distributionName = core.getInput(constants.INPUT_DISTRIBUTION);
-    const versionFile = core.getInput(constants.INPUT_JAVA_VERSION_FILE);
-    const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
-    const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
-    const jdkFile = getJdkFileInput();
-    const cache = core.getInput(constants.INPUT_CACHE);
-    const cacheDependencyPath = core.getInput(
-      constants.INPUT_CACHE_DEPENDENCY_PATH
-    );
-    const cachePath = core.getMultilineInput(constants.INPUT_CACHE_PATH);
-    const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
-    const forceDownload = getBooleanInput(
-      constants.INPUT_FORCE_DOWNLOAD,
-      false
-    );
-    const setDefault = getBooleanInput(constants.INPUT_SET_DEFAULT, true);
-    const verifySignature = getBooleanInput(
-      constants.INPUT_VERIFY_SIGNATURE,
-      false
-    );
-    const verifySignaturePublicKey =
-      core.getInput(constants.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
-    const toolchainIds = core.getMultilineInput(
-      constants.INPUT_MVN_TOOLCHAIN_ID
-    );
+  const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
+  let distributionName = core.getInput(constants.INPUT_DISTRIBUTION);
+  const versionFile = core.getInput(constants.INPUT_JAVA_VERSION_FILE);
+  const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
+  const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
+  const jdkFile = getJdkFileInput();
+  const cache = core.getInput(constants.INPUT_CACHE);
+  const cacheDependencyPath = core.getInput(
+    constants.INPUT_CACHE_DEPENDENCY_PATH
+  );
+  const cachePath = core.getMultilineInput(constants.INPUT_CACHE_PATH);
+  const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
+  const forceDownload = getBooleanInput(constants.INPUT_FORCE_DOWNLOAD, false);
+  const setDefault = getBooleanInput(constants.INPUT_SET_DEFAULT, true);
+  const verifySignature = getBooleanInput(
+    constants.INPUT_VERIFY_SIGNATURE,
+    false
+  );
+  const verifySignaturePublicKey =
+    core.getInput(constants.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
+  const toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
 
+  let actionError: Error | undefined;
+  let cacheRestore: Promise<void> | undefined;
+
+  try {
     core.startGroup('Installed distributions');
 
     if (!versions.length && !versionFile) {
@@ -97,6 +90,9 @@ export async function run() {
         toolchainIds
       };
 
+      cacheRestore = cache
+        ? startCacheRestore(cache, cacheDependencyPath, cachePath)
+        : undefined;
       await installVersion(versionInfo.version, installerInputsOptions);
     } else {
       // When using java-version input, distribution is still required
@@ -117,6 +113,9 @@ export async function run() {
         toolchainIds
       };
 
+      cacheRestore = cache
+        ? startCacheRestore(cache, cacheDependencyPath, cachePath)
+        : undefined;
       for (const [index, version] of versions.entries()) {
         await installVersion(version, installerInputsOptions, index);
       }
@@ -132,11 +131,22 @@ export async function run() {
 
     await auth.configureAuthentication();
     configureMavenArgs();
-    if (cache && isCacheFeatureAvailable()) {
-      await restore(cache, cacheDependencyPath, cachePath);
-    }
   } catch (error) {
-    core.setFailed((error as Error).message);
+    actionError = error as Error;
+  }
+
+  if (cacheRestore) {
+    try {
+      await cacheRestore;
+    } catch (error) {
+      if (!actionError) {
+        actionError = error as Error;
+      }
+    }
+  }
+
+  if (actionError) {
+    core.setFailed(actionError.message);
   }
 }
 
@@ -189,7 +199,7 @@ async function installVersion(
     version
   };
 
-  const distribution = getJavaDistribution(
+  const distribution = await getJavaDistribution(
     distributionName,
     installerOptions,
     jdkFile
@@ -233,4 +243,18 @@ interface installerInputsOptions {
   distributionName: string;
   jdkFile: string;
   toolchainIds: Array<string>;
+}
+
+async function startCacheRestore(
+  cache: string,
+  cacheDependencyPath: string,
+  cachePath: string[]
+): Promise<void> {
+  const {isCacheFeatureAvailable} = await import('./cache-feature.js');
+  if (!isCacheFeatureAvailable()) {
+    return;
+  }
+
+  const {restore} = await import('./cache.js');
+  await restore(cache, cacheDependencyPath, cachePath);
 }

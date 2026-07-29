@@ -29,8 +29,8 @@ const installerOptions = (packageType: string, version = '25') => ({
 describe('getJavaDistribution', () => {
   it.each(supportedDistributionsOnCurrentPlatform)(
     'uses the shared retrying HTTP client for %s',
-    distributionName => {
-      const distribution = getJavaDistribution(distributionName, {
+    async distributionName => {
+      const distribution = await getJavaDistribution(distributionName, {
         version: '25',
         architecture: 'x64',
         packageType: 'jdk',
@@ -51,43 +51,46 @@ describe('getJavaDistribution', () => {
           ? packageTypes.map(packageType => [distributionName, packageType])
           : []
     )
-  )('accepts %s with java-package %s', (distributionName, packageType) => {
-    expect(
-      getJavaDistribution(
-        distributionName,
-        installerOptions(packageType as string)
-      )
-    ).not.toBeNull();
-  });
+  )(
+    'accepts %s with java-package %s',
+    async (distributionName, packageType) => {
+      expect(
+        await getJavaDistribution(
+          distributionName,
+          installerOptions(packageType as string)
+        )
+      ).not.toBeNull();
+    }
+  );
 
   it.each(Object.entries(JAVA_PACKAGE_CAPABILITIES))(
     'rejects unsupported java-package values for %s',
-    (distributionName, packageTypes) => {
-      expect(() =>
+    async (distributionName, packageTypes) => {
+      await expect(
         getJavaDistribution(distributionName, installerOptions('jdk+typo'))
-      ).toThrow(
+      ).rejects.toThrow(
         `Java package 'jdk+typo' is not supported for distribution '${distributionName}'. Supported package types: ${packageTypes.join(', ')}.`
       );
     }
   );
 
-  it("rejects java-package 'jdk+jmods' for non-Temurin distributions", () => {
-    expect(() =>
+  it("rejects java-package 'jdk+jmods' for non-Temurin distributions", async () => {
+    await expect(
       getJavaDistribution('zulu', installerOptions('jdk+jmods'))
-    ).toThrow(
+    ).rejects.toThrow(
       "Java package 'jdk+jmods' is not supported for distribution 'zulu'. Supported package types: jdk, jre, jdk+fx, jre+fx, jdk+crac, jre+crac."
     );
   });
 
   it.each(['8', '23.x', '23.0.1.1', '<24'])(
     "rejects Temurin java-package 'jdk+jmods' for version %s",
-    version => {
-      expect(() =>
+    async version => {
+      await expect(
         getJavaDistribution(
           JavaDistribution.Temurin,
           installerOptions('jdk+jmods', version)
         )
-      ).toThrow(
+      ).rejects.toThrow(
         `Java package 'jdk+jmods' is not supported for distribution 'temurin'. Supported package types: jdk, jre, jdk+jmods. Package 'jdk+jmods' requires Java 24 or later; requested version '${version}'.`
       );
     }
@@ -95,9 +98,9 @@ describe('getJavaDistribution', () => {
 
   it.each(['24', '24.0.1.1', '25-ea', '>=21', 'latest'])(
     "accepts Temurin java-package 'jdk+jmods' for version %s",
-    version => {
+    async version => {
       expect(
-        getJavaDistribution(
+        await getJavaDistribution(
           JavaDistribution.Temurin,
           installerOptions('jdk+jmods', version)
         )
@@ -105,9 +108,9 @@ describe('getJavaDistribution', () => {
     }
   );
 
-  it('preserves unsupported distribution handling', () => {
+  it('preserves unsupported distribution handling', async () => {
     expect(
-      getJavaDistribution(
+      await getJavaDistribution(
         'not-a-distribution',
         installerOptions('not-a-package')
       )
@@ -118,8 +121,8 @@ describe('getJavaDistribution', () => {
     ['amd64', 'x64'],
     ['ia32', 'x86'],
     ['arm64', 'aarch64']
-  ])('passes normalized architecture %s as %s', (input, expected) => {
-    const normalized = getJavaDistribution(JavaDistribution.JdkFile, {
+  ])('passes normalized architecture %s as %s', async (input, expected) => {
+    const normalized = await getJavaDistribution(JavaDistribution.JdkFile, {
       ...installerOptions('jdk'),
       architecture: input
     });
@@ -127,8 +130,8 @@ describe('getJavaDistribution', () => {
     expect(normalized!['architecture']).toBe(expected);
   });
 
-  it('uses the runner architecture when the input is empty', () => {
-    const distribution = getJavaDistribution(JavaDistribution.Temurin, {
+  it('uses the runner architecture when the input is empty', async () => {
+    const distribution = await getJavaDistribution(JavaDistribution.Temurin, {
       ...installerOptions('jdk'),
       architecture: ''
     });
@@ -137,12 +140,12 @@ describe('getJavaDistribution', () => {
     expect(distribution!['architecture']).toBe(expected);
   });
 
-  it('rejects an unsupported combination before creating an HTTP client', () => {
-    expect(() =>
+  it('rejects an unsupported combination before creating an HTTP client', async () => {
+    await expect(
       getJavaDistribution(JavaDistribution.Oracle, {
         ...installerOptions('jdk'),
         architecture: 'x86'
       })
-    ).toThrow(/does not support operating system/);
+    ).rejects.toThrow(/does not support operating system/);
   });
 });

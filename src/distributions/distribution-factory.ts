@@ -1,36 +1,14 @@
 import {JavaBase} from './base-installer.js';
 import {JavaInstallerOptions} from './base-models.js';
-import {LocalDistribution} from './local/installer.js';
-import {ZuluDistribution} from './zulu/installer.js';
-import {AdoptDistribution, AdoptImplementation} from './adopt/installer.js';
-import {
-  TemurinDistribution,
-  TemurinImplementation
-} from './temurin/installer.js';
-import {LibericaDistributions} from './liberica/installer.js';
-import {LibericaNikDistributions} from './liberica-nik/installer.js';
-import {MicrosoftDistributions} from './microsoft/installer.js';
-import {SemeruDistribution} from './semeru/installer.js';
-import {CorrettoDistribution} from './corretto/installer.js';
-import {OracleDistribution} from './oracle/installer.js';
-import {DragonwellDistribution} from './dragonwell/installer.js';
-import {SapMachineDistribution} from './sapmachine/installer.js';
-import {
-  GraalVMCommunityDistribution,
-  GraalVMDistribution
-} from './graalvm/installer.js';
-import {JetBrainsDistribution} from './jetbrains/installer.js';
-import {KonaDistribution} from './kona/installer.js';
-import {OpenJdkDistribution} from './openjdk/installer.js';
 import {JavaDistribution, validateJavaPackage} from './package-types.js';
 import os from 'os';
 import {validateJavaPlatform} from './platform-types.js';
 
-export function getJavaDistribution(
+export async function getJavaDistribution(
   distributionName: string,
   installerOptions: JavaInstallerOptions,
   jdkFile?: string
-): JavaBase | null {
+): Promise<JavaBase | null> {
   validateJavaPackage(
     distributionName,
     installerOptions.packageType,
@@ -48,52 +26,95 @@ export function getJavaDistribution(
   };
 
   switch (distributionName) {
-    case JavaDistribution.JdkFile:
+    case JavaDistribution.JdkFile: {
+      const {LocalDistribution} = await import('./local/installer.js');
       return new LocalDistribution(normalizedInstallerOptions, jdkFile);
+    }
     case JavaDistribution.Adopt:
-    case JavaDistribution.AdoptHotspot:
+    case JavaDistribution.AdoptHotspot: {
+      const {AdoptDistribution, AdoptImplementation} =
+        await import('./adopt/installer.js');
       return new AdoptDistribution(
         normalizedInstallerOptions,
         AdoptImplementation.Hotspot
       );
-    case JavaDistribution.AdoptOpenJ9:
+    }
+    case JavaDistribution.AdoptOpenJ9: {
+      const {AdoptDistribution, AdoptImplementation} =
+        await import('./adopt/installer.js');
       return new AdoptDistribution(
         normalizedInstallerOptions,
         AdoptImplementation.OpenJ9
       );
-    case JavaDistribution.Temurin:
+    }
+    case JavaDistribution.Temurin: {
+      const {TemurinDistribution, TemurinImplementation} =
+        await import('./temurin/installer.js');
       return new TemurinDistribution(
         normalizedInstallerOptions,
         TemurinImplementation.Hotspot
       );
-    case JavaDistribution.Zulu:
+    }
+    case JavaDistribution.Zulu: {
+      const {ZuluDistribution} = await import('./zulu/installer.js');
       return new ZuluDistribution(normalizedInstallerOptions);
-    case JavaDistribution.Liberica:
+    }
+    case JavaDistribution.Liberica: {
+      const {LibericaDistributions} = await import('./liberica/installer.js');
       return new LibericaDistributions(normalizedInstallerOptions);
-    case JavaDistribution.LibericaNik:
+    }
+    case JavaDistribution.LibericaNik: {
+      const {LibericaNikDistributions} =
+        await import('./liberica-nik/installer.js');
       return new LibericaNikDistributions(normalizedInstallerOptions);
-    case JavaDistribution.Microsoft:
+    }
+    case JavaDistribution.Microsoft: {
+      const {MicrosoftDistributions} = await import('./microsoft/installer.js');
       return new MicrosoftDistributions(normalizedInstallerOptions);
-    case JavaDistribution.Semeru:
+    }
+    case JavaDistribution.Semeru: {
+      const {SemeruDistribution} = await import('./semeru/installer.js');
       return new SemeruDistribution(normalizedInstallerOptions);
-    case JavaDistribution.Corretto:
+    }
+    case JavaDistribution.Corretto: {
+      const {CorrettoDistribution} = await import('./corretto/installer.js');
       return new CorrettoDistribution(normalizedInstallerOptions);
-    case JavaDistribution.Oracle:
+    }
+    case JavaDistribution.Oracle: {
+      const {OracleDistribution} = await import('./oracle/installer.js');
       return new OracleDistribution(normalizedInstallerOptions);
-    case JavaDistribution.Dragonwell:
+    }
+    case JavaDistribution.Dragonwell: {
+      const {DragonwellDistribution} =
+        await import('./dragonwell/installer.js');
       return new DragonwellDistribution(normalizedInstallerOptions);
-    case JavaDistribution.SapMachine:
+    }
+    case JavaDistribution.SapMachine: {
+      const {SapMachineDistribution} =
+        await import('./sapmachine/installer.js');
       return new SapMachineDistribution(normalizedInstallerOptions);
-    case JavaDistribution.GraalVM:
+    }
+    case JavaDistribution.GraalVM: {
+      const {GraalVMDistribution} = await import('./graalvm/installer.js');
       return new GraalVMDistribution(normalizedInstallerOptions);
-    case JavaDistribution.GraalVMCommunity:
+    }
+    case JavaDistribution.GraalVMCommunity: {
+      const {GraalVMCommunityDistribution} =
+        await import('./graalvm/installer.js');
       return new GraalVMCommunityDistribution(normalizedInstallerOptions);
-    case JavaDistribution.JetBrains:
+    }
+    case JavaDistribution.JetBrains: {
+      const {JetBrainsDistribution} = await import('./jetbrains/installer.js');
       return new JetBrainsDistribution(normalizedInstallerOptions);
-    case JavaDistribution.Kona:
+    }
+    case JavaDistribution.Kona: {
+      const {KonaDistribution} = await import('./kona/installer.js');
       return new KonaDistribution(normalizedInstallerOptions);
-    case JavaDistribution.OracleOpenJdk:
+    }
+    case JavaDistribution.OracleOpenJdk: {
+      const {OpenJdkDistribution} = await import('./openjdk/installer.js');
       return new OpenJdkDistribution(normalizedInstallerOptions);
+    }
     default:
       return null;
   }

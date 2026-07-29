@@ -41881,6 +41881,455 @@ function _unique(values) {
     return Array.from(new Set(values));
 }
 //# sourceMappingURL=tool-cache.js.map
+;// CONCATENATED MODULE: ./src/constants.ts
+const MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
+const INPUT_JAVA_VERSION = 'java-version';
+const INPUT_JAVA_VERSION_FILE = 'java-version-file';
+const INPUT_ARCHITECTURE = 'architecture';
+const INPUT_JAVA_PACKAGE = 'java-package';
+const INPUT_DISTRIBUTION = 'distribution';
+const INPUT_JDK_FILE = 'jdk-file';
+const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
+const INPUT_CHECK_LATEST = 'check-latest';
+const INPUT_FORCE_DOWNLOAD = 'force-download';
+const INPUT_SET_DEFAULT = 'set-default';
+const INPUT_PROBLEM_MATCHER = 'problem-matcher';
+const INPUT_VERIFY_SIGNATURE = 'verify-signature';
+const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
+const INPUT_SERVER_ID = 'server-id';
+const INPUT_SERVER_USERNAME_ENV_VAR = 'server-username-env-var';
+const INPUT_SERVER_PASSWORD_ENV_VAR = 'server-password-env-var';
+const INPUT_SERVER_USERNAME_DEPRECATED = 'server-username';
+const INPUT_SERVER_PASSWORD_DEPRECATED = 'server-password';
+const INPUT_SETTINGS_PATH = 'settings-path';
+const INPUT_OVERWRITE_SETTINGS = 'overwrite-settings';
+const INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
+const INPUT_GPG_PASSPHRASE_ENV_VAR = 'gpg-passphrase-env-var';
+const INPUT_GPG_PASSPHRASE_DEPRECATED = 'gpg-passphrase';
+const INPUT_DEFAULT_SERVER_USERNAME = 'GITHUB_ACTOR';
+const INPUT_DEFAULT_SERVER_PASSWORD = 'GITHUB_TOKEN';
+const INPUT_DEFAULT_GPG_PRIVATE_KEY = (/* unused pure expression or super */ null && (undefined));
+const INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
+// The default name of the environment variable the maven-gpg-plugin reads the
+// passphrase from (property `gpg.passphraseEnvName`). When the configured
+// passphrase env var name matches this, no extra configuration is required.
+const MAVEN_GPG_PASSPHRASE_DEFAULT_ENV = 'MAVEN_GPG_PASSPHRASE';
+// Id of the settings.xml profile used to set `gpg.passphraseEnvName`.
+const GPG_PASSPHRASE_PROFILE_ID = 'setup-java-gpg';
+const INPUT_CACHE = 'cache';
+const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
+const INPUT_CACHE_PATH = 'cache-path';
+const INPUT_CACHE_READ_ONLY = 'cache-read-only';
+const INPUT_JOB_STATUS = 'job-status';
+const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
+const M2_DIR = '.m2';
+const MVN_SETTINGS_FILE = 'settings.xml';
+const MVN_TOOLCHAINS_FILE = 'toolchains.xml';
+const INPUT_MVN_TOOLCHAIN_ID = 'mvn-toolchain-id';
+const INPUT_MVN_TOOLCHAIN_VENDOR = 'mvn-toolchain-vendor';
+const INPUT_SHOW_DOWNLOAD_PROGRESS = 'show-download-progress';
+const MAVEN_ARGS_ENV = 'MAVEN_ARGS';
+const MAVEN_NO_TRANSFER_PROGRESS_FLAG = '-ntp';
+const MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = '--no-transfer-progress';
+const constants_DISTRIBUTIONS_ONLY_MAJOR_VERSION = (/* unused pure expression or super */ null && (['corretto']));
+
+;// CONCATENATED MODULE: ./src/util.ts
+
+
+
+
+
+
+
+function getTempDir() {
+    const tempDirectory = process.env['RUNNER_TEMP'] || external_os_default().tmpdir();
+    return tempDirectory;
+}
+function util_getBooleanInput(inputName, defaultValue = false) {
+    const inputValue = getInput(inputName);
+    const normalizedValue = inputValue.trim().toLowerCase();
+    if (!normalizedValue) {
+        return defaultValue;
+    }
+    if (normalizedValue === 'true') {
+        return true;
+    }
+    if (normalizedValue === 'false') {
+        return false;
+    }
+    throw new Error(`Invalid value '${inputValue}' for boolean input '${inputName}'. Expected 'true' or 'false'.`);
+}
+function getVersionFromToolcachePath(toolPath) {
+    if (toolPath) {
+        return path.basename(path.dirname(toolPath));
+    }
+    return toolPath;
+}
+async function extractJdkFile(toolPath, extension) {
+    if (!extension) {
+        extension = toolPath.endsWith('.tar.gz')
+            ? 'tar.gz'
+            : path.extname(toolPath);
+        if (extension.startsWith('.')) {
+            extension = extension.substring(1);
+        }
+    }
+    switch (extension) {
+        case 'tar.gz':
+        case 'tar':
+            return await tc.extractTar(toolPath);
+        case 'zip':
+            return await tc.extractZip(toolPath);
+        default:
+            return await tc.extract7z(toolPath);
+    }
+}
+function getDownloadArchiveExtension() {
+    return process.platform === 'win32' ? 'zip' : 'tar.gz';
+}
+function isVersionSatisfies(range, version) {
+    // Some distributions (e.g. JetBrains Runtime) publish 4-segment versions
+    // like '17.0.8.1+1080.1' that semver rejects. If the candidate version
+    // isn't valid semver, it can't match — bail out rather than letting
+    // compareBuild / satisfies throw.
+    if (!semver.valid(version)) {
+        return false;
+    }
+    if (semver.valid(range)) {
+        // if full version with build digit is provided as a range (such as '1.2.3+4')
+        // we should check for exact equal via compareBuild
+        // since semver.satisfies doesn't handle 4th digit
+        const semRange = semver.parse(range);
+        if (semRange && semRange.build?.length > 0) {
+            return semver.compareBuild(range, version) === 0;
+        }
+    }
+    return semver.satisfies(version, range);
+}
+function getToolcachePath(toolName, version, architecture) {
+    const toolcacheRoot = process.env['RUNNER_TOOL_CACHE'] ?? '';
+    const fullPath = path.join(toolcacheRoot, toolName, version, architecture);
+    if (fs.existsSync(fullPath)) {
+        return fullPath;
+    }
+    return null;
+}
+function isJobStatusSuccess() {
+    const jobStatus = getInput(INPUT_JOB_STATUS);
+    return jobStatus === 'success';
+}
+function isGhes() {
+    const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
+    const hostname = ghUrl.hostname.trimEnd().toUpperCase();
+    const isGitHubHost = hostname === 'GITHUB.COM';
+    const isGitHubEnterpriseCloudHost = hostname.endsWith('.GHE.COM');
+    const isLocalHost = hostname.endsWith('.LOCALHOST');
+    return !isGitHubHost && !isGitHubEnterpriseCloudHost && !isLocalHost;
+}
+function getVersionFromFileContent(content, distributionName, versionFile) {
+    let javaVersionRegExp;
+    let extractedDistribution;
+    function getFileName(versionFile) {
+        return path.basename(versionFile);
+    }
+    const versionFileName = getFileName(versionFile);
+    if (versionFileName == '.tool-versions') {
+        // Capture an optional asdf-java vendor prefix (e.g. `temurin-`, `corretto-`)
+        // in the `distribution` group so it can be mapped to a setup-java distribution.
+        javaVersionRegExp =
+            /^java\s+(?:(?<distribution>\S*)-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
+    }
+    else if (versionFileName == '.sdkmanrc') {
+        // Match both version and optional distribution identifier
+        javaVersionRegExp =
+            /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
+    }
+    else {
+        javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+    }
+    const match = content.match(javaVersionRegExp);
+    const capturedVersion = match?.groups?.version
+        ? match.groups.version
+        : '';
+    // Extract distribution from .sdkmanrc file
+    if (versionFileName == '.sdkmanrc' && match?.groups?.distribution) {
+        const sdkmanDist = match.groups.distribution;
+        extractedDistribution = mapSdkmanDistribution(sdkmanDist);
+        core.debug(`Parsed distribution '${extractedDistribution}' from SDKMAN identifier '${sdkmanDist}'`);
+    }
+    // Extract distribution from asdf .tool-versions file
+    if (versionFileName == '.tool-versions' && match?.groups?.distribution) {
+        const asdfDist = match.groups.distribution;
+        extractedDistribution = mapAsdfDistribution(asdfDist);
+        if (extractedDistribution) {
+            core.debug(`Parsed distribution '${extractedDistribution}' from asdf identifier '${asdfDist}'`);
+        }
+    }
+    core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
+    if (!capturedVersion) {
+        return null;
+    }
+    const tentativeVersion = avoidOldNotation(capturedVersion);
+    const rawVersion = tentativeVersion.split('-')[0];
+    let version = semver.validRange(rawVersion)
+        ? tentativeVersion
+        : semver.coerce(tentativeVersion);
+    core.debug(`Range version from file is '${version}'`);
+    if (!version) {
+        return null;
+    }
+    // Apply DISTRIBUTIONS_ONLY_MAJOR_VERSION logic whenever the effective distribution
+    // (either explicitly provided or extracted from the version file) is in the list.
+    if (DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(extractedDistribution || distributionName)) {
+        const coerceVersion = semver.coerce(version) ?? version;
+        version = semver.major(coerceVersion).toString();
+    }
+    return {
+        version: version.toString(),
+        distribution: extractedDistribution
+    };
+}
+// Map SDKMAN distribution identifiers to setup-java distribution names
+function mapSdkmanDistribution(sdkmanDist) {
+    const distributionMap = {
+        tem: 'temurin',
+        sem: 'semeru',
+        albba: 'dragonwell',
+        zulu: 'zulu',
+        amzn: 'corretto',
+        graal: 'graalvm',
+        graalce: 'graalvm',
+        librca: 'liberica',
+        ms: 'microsoft',
+        oracle: 'oracle',
+        sapmchn: 'sapmachine',
+        jbr: 'jetbrains',
+        dragonwell: 'dragonwell',
+        kona: 'kona'
+    };
+    const mapped = distributionMap[sdkmanDist.toLowerCase()];
+    if (!mapped) {
+        core.warning(`Unknown SDKMAN distribution identifier '${sdkmanDist}'. Please specify the distribution explicitly.`);
+    }
+    return mapped;
+}
+// Map asdf-java (.tool-versions) vendor identifiers to setup-java distribution names.
+// asdf-java encodes the vendor as a prefix on the version string, e.g.
+// `java temurin-17.0.3+7` or `java semeru-openj9-11.0.25+9`. Packaging variants
+// (`-jre`, `-musl`, `-openj9`, `-crac`, `-javafx`, ...) are collapsed onto the
+// base vendor since setup-java does not distinguish them here.
+function mapAsdfDistribution(asdfDist) {
+    const normalized = asdfDist.toLowerCase();
+    // Multi-segment vendors that map to a distinct setup-java distribution.
+    if (normalized.startsWith('graalvm-community')) {
+        return 'graalvm-community';
+    }
+    if (normalized.startsWith('oracle-graalvm')) {
+        return 'graalvm';
+    }
+    const baseVendor = normalized.split('-')[0];
+    const distributionMap = {
+        temurin: 'temurin',
+        adoptopenjdk: 'temurin',
+        zulu: 'zulu',
+        corretto: 'corretto',
+        liberica: 'liberica',
+        microsoft: 'microsoft',
+        semeru: 'semeru',
+        ibm: 'semeru',
+        dragonwell: 'dragonwell',
+        graalvm: 'graalvm',
+        oracle: 'oracle',
+        sapmachine: 'sapmachine',
+        kona: 'kona',
+        jetbrains: 'jetbrains'
+    };
+    const mapped = distributionMap[baseVendor];
+    if (!mapped) {
+        core.warning(`Unknown asdf distribution identifier '${asdfDist}'. Please specify the distribution explicitly.`);
+    }
+    return mapped;
+}
+// By convention, action expects version 8 in the format `8.*` instead of `1.8`
+function avoidOldNotation(content) {
+    return content.startsWith('1.') ? content.substring(2) : content;
+}
+function convertVersionToSemver(version) {
+    // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1)
+    const versionArray = Array.isArray(version) ? version : version.split('.');
+    const mainVersion = versionArray.slice(0, 3).join('.');
+    if (versionArray.length > 3) {
+        return `${mainVersion}+${versionArray.slice(3).join('.')}`;
+    }
+    return mainVersion;
+}
+function getGitHubHttpHeaders() {
+    const resolvedToken = core.getInput('token') || process.env.GITHUB_TOKEN;
+    const auth = !resolvedToken ? undefined : `token ${resolvedToken}`;
+    const headers = {
+        accept: 'application/vnd.github.VERSION.raw'
+    };
+    if (auth) {
+        headers.authorization = auth;
+    }
+    return headers;
+}
+const MAX_PAGINATION_PAGES = 1000;
+function getNextPageUrlFromLinkHeader(headers) {
+    if (!headers) {
+        return null;
+    }
+    const linkHeader = headers.link ?? headers.Link;
+    if (!linkHeader) {
+        return null;
+    }
+    const normalizedLinkHeader = Array.isArray(linkHeader)
+        ? linkHeader.join(',')
+        : linkHeader;
+    // Split into individual link-values and find the one with rel="next"
+    // RFC 8288 allows rel to appear anywhere among the parameters
+    const linkValues = normalizedLinkHeader.split(/,(?=\s*<)/);
+    for (const linkValue of linkValues) {
+        const urlMatch = linkValue.match(/<([^>]+)>/);
+        if (!urlMatch)
+            continue;
+        const params = linkValue.slice(urlMatch[0].length);
+        // Use word boundary to match "next" as a standalone relation type
+        // RFC 8288 allows space-separated relation types like rel="next prev"
+        if (/;\s*rel="?[^"]*\bnext\b/i.test(params)) {
+            return urlMatch[1];
+        }
+    }
+    return null;
+}
+function validatePaginationUrl(url, allowedOrigin) {
+    try {
+        const parsed = new URL(url);
+        const allowed = new URL(allowedOrigin);
+        return parsed.origin === allowed.origin;
+    }
+    catch {
+        return false;
+    }
+}
+// Rename archive to add extension because after downloading
+// archive does not contain extension type and it leads to some issues
+// on Windows runners without PowerShell Core.
+//
+// For default PowerShell Windows it should contain extension type to unpack it.
+function renameWinArchive(javaArchivePath) {
+    const javaArchivePathRenamed = `${javaArchivePath}.zip`;
+    fs.renameSync(javaArchivePath, javaArchivePathRenamed);
+    return javaArchivePathRenamed;
+}
+// Resolve the newest available stable/GA feature (major) release.
+//
+// Some distributions (e.g. Oracle, GraalVM) construct their download URLs from a
+// concrete major version and don't expose an endpoint to list every available
+// release, so a bare `latest` alias can't be resolved from their own metadata.
+// The Adoptium (Temurin) API is used as a proxy for "what is the newest GA major
+// version out there", which those distributions typically publish at the same time.
+async function getLatestMajorVersion(http) {
+    const availableReleasesUrl = 'https://api.adoptium.net/v3/info/available_releases';
+    const response = await http.getJson(availableReleasesUrl);
+    const mostRecent = response.result?.most_recent_feature_release;
+    if (!mostRecent || Number.isNaN(Number(mostRecent))) {
+        throw new Error(`Could not determine the latest available Java major version from ${availableReleasesUrl}`);
+    }
+    return Number(mostRecent);
+}
+
+;// CONCATENATED MODULE: ./src/gpg.ts
+
+
+
+
+
+
+const PRIVATE_KEY_FILE = external_path_namespaceObject.join(getTempDir(), 'private-key.asc');
+const PRIVATE_KEY_FINGERPRINT_REGEX = /\w{40}/;
+// Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
+// The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
+// internally. Passing Windows paths with backslashes can cause fatal GPG errors
+// (exit code 2), so all paths passed to GPG must be in POSIX format on Windows.
+function toGpgPath(p) {
+    if (process.platform !== 'win32')
+        return p;
+    return p
+        .replace(/\\/g, '/')
+        .replace(/^([A-Za-z]):\//, (_, drive) => `/${drive.toLowerCase()}/`);
+}
+async function importKey(privateKey) {
+    fs.writeFileSync(PRIVATE_KEY_FILE, privateKey, {
+        encoding: 'utf-8',
+        flag: 'w'
+    });
+    let output = '';
+    const options = {
+        silent: true,
+        listeners: {
+            stdout: (data) => {
+                output += data.toString();
+            }
+        }
+    };
+    await exec.exec('gpg', [
+        '--batch',
+        '--import-options',
+        'import-show',
+        '--import',
+        PRIVATE_KEY_FILE
+    ], options);
+    await io.rmRF(PRIVATE_KEY_FILE);
+    const match = output.match(PRIVATE_KEY_FINGERPRINT_REGEX);
+    return match && match[0];
+}
+async function deleteKey(keyFingerprint) {
+    await exec_exec('gpg', ['--batch', '--yes', '--delete-secret-and-public-key', keyFingerprint], {
+        silent: true
+    });
+}
+async function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
+    const signaturePath = await tc.downloadTool(signatureUrl);
+    let gpgHome;
+    try {
+        gpgHome = fs.mkdtempSync(path.join(util.getTempDir(), 'verify-signature-gpg-home-'));
+    }
+    catch (error) {
+        try {
+            await io.rmRF(signaturePath);
+        }
+        catch {
+            // ignore cleanup failures
+        }
+        throw new Error(`Failed to create temporary GPG home directory for signature verification: ${error.message}`, { cause: error });
+    }
+    try {
+        const publicKeyFile = path.join(gpgHome, 'public-key.asc');
+        fs.writeFileSync(publicKeyFile, publicKeyContent, { encoding: 'utf-8' });
+        const options = { silent: true };
+        await exec.exec('gpg', [
+            '--homedir',
+            toGpgPath(gpgHome),
+            '--batch',
+            '--import',
+            toGpgPath(publicKeyFile)
+        ], options);
+        await exec.exec('gpg', [
+            '--homedir',
+            toGpgPath(gpgHome),
+            '--batch',
+            '--verify',
+            toGpgPath(signaturePath),
+            toGpgPath(archivePath)
+        ], options);
+    }
+    finally {
+        await io.rmRF(signaturePath);
+        await io.rmRF(gpgHome);
+    }
+}
+
 ;// CONCATENATED MODULE: ./node_modules/@actions/glob/lib/internal-glob-options-helper.js
 
 /**
@@ -95325,7 +95774,7 @@ function options_getDownloadOptions(copy) {
 }
 //# sourceMappingURL=options.js.map
 ;// CONCATENATED MODULE: ./node_modules/@actions/cache/lib/internal/config.js
-function isGhes() {
+function config_isGhes() {
     const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
     const hostname = ghUrl.hostname.trimEnd().toUpperCase();
     const isGitHubHost = hostname === 'GITHUB.COM';
@@ -95336,7 +95785,7 @@ function isGhes() {
 function config_getCacheServiceVersion() {
     // Cache service v2 is not supported on GHES. We will default to
     // cache service v1 even if the feature flag was enabled by user.
-    if (isGhes())
+    if (config_isGhes())
         return 'v1';
     return process.env['ACTIONS_CACHE_SERVICE_V2'] ? 'v2' : 'v1';
 }
@@ -97113,7 +97562,7 @@ function saveCacheV1(paths_1, key_1, options_1) {
             const archiveFileSize = getArchiveFileSizeInBytes(archivePath);
             core_debug(`File Size: ${archiveFileSize}`);
             // For GHES, this check will take place in ReserveCache API with enterprise file size limit
-            if (archiveFileSize > fileSizeLimit && !isGhes()) {
+            if (archiveFileSize > fileSizeLimit && !config_isGhes()) {
                 throw new Error(`Cache size of ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B) is over the 10GB limit, not saving cache.`);
             }
             core_debug('Reserving Cache');
@@ -97301,467 +97750,6 @@ function saveCacheV2(paths_1, key_1, options_1) {
     });
 }
 //# sourceMappingURL=cache.js.map
-;// CONCATENATED MODULE: ./src/constants.ts
-const MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
-const INPUT_JAVA_VERSION = 'java-version';
-const INPUT_JAVA_VERSION_FILE = 'java-version-file';
-const INPUT_ARCHITECTURE = 'architecture';
-const INPUT_JAVA_PACKAGE = 'java-package';
-const INPUT_DISTRIBUTION = 'distribution';
-const INPUT_JDK_FILE = 'jdk-file';
-const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
-const INPUT_CHECK_LATEST = 'check-latest';
-const INPUT_FORCE_DOWNLOAD = 'force-download';
-const INPUT_SET_DEFAULT = 'set-default';
-const INPUT_PROBLEM_MATCHER = 'problem-matcher';
-const INPUT_VERIFY_SIGNATURE = 'verify-signature';
-const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
-const INPUT_SERVER_ID = 'server-id';
-const INPUT_SERVER_USERNAME_ENV_VAR = 'server-username-env-var';
-const INPUT_SERVER_PASSWORD_ENV_VAR = 'server-password-env-var';
-const INPUT_SERVER_USERNAME_DEPRECATED = 'server-username';
-const INPUT_SERVER_PASSWORD_DEPRECATED = 'server-password';
-const INPUT_SETTINGS_PATH = 'settings-path';
-const INPUT_OVERWRITE_SETTINGS = 'overwrite-settings';
-const INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
-const INPUT_GPG_PASSPHRASE_ENV_VAR = 'gpg-passphrase-env-var';
-const INPUT_GPG_PASSPHRASE_DEPRECATED = 'gpg-passphrase';
-const INPUT_DEFAULT_SERVER_USERNAME = 'GITHUB_ACTOR';
-const INPUT_DEFAULT_SERVER_PASSWORD = 'GITHUB_TOKEN';
-const INPUT_DEFAULT_GPG_PRIVATE_KEY = (/* unused pure expression or super */ null && (undefined));
-const INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
-// The default name of the environment variable the maven-gpg-plugin reads the
-// passphrase from (property `gpg.passphraseEnvName`). When the configured
-// passphrase env var name matches this, no extra configuration is required.
-const MAVEN_GPG_PASSPHRASE_DEFAULT_ENV = 'MAVEN_GPG_PASSPHRASE';
-// Id of the settings.xml profile used to set `gpg.passphraseEnvName`.
-const GPG_PASSPHRASE_PROFILE_ID = 'setup-java-gpg';
-const INPUT_CACHE = 'cache';
-const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
-const INPUT_CACHE_PATH = 'cache-path';
-const INPUT_CACHE_READ_ONLY = 'cache-read-only';
-const INPUT_JOB_STATUS = 'job-status';
-const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
-const M2_DIR = '.m2';
-const MVN_SETTINGS_FILE = 'settings.xml';
-const MVN_TOOLCHAINS_FILE = 'toolchains.xml';
-const INPUT_MVN_TOOLCHAIN_ID = 'mvn-toolchain-id';
-const INPUT_MVN_TOOLCHAIN_VENDOR = 'mvn-toolchain-vendor';
-const INPUT_SHOW_DOWNLOAD_PROGRESS = 'show-download-progress';
-const MAVEN_ARGS_ENV = 'MAVEN_ARGS';
-const MAVEN_NO_TRANSFER_PROGRESS_FLAG = '-ntp';
-const MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = '--no-transfer-progress';
-const constants_DISTRIBUTIONS_ONLY_MAJOR_VERSION = (/* unused pure expression or super */ null && (['corretto']));
-
-;// CONCATENATED MODULE: ./src/util.ts
-
-
-
-
-
-
-
-
-function getTempDir() {
-    const tempDirectory = process.env['RUNNER_TEMP'] || external_os_default().tmpdir();
-    return tempDirectory;
-}
-function util_getBooleanInput(inputName, defaultValue = false) {
-    const inputValue = getInput(inputName);
-    const normalizedValue = inputValue.trim().toLowerCase();
-    if (!normalizedValue) {
-        return defaultValue;
-    }
-    if (normalizedValue === 'true') {
-        return true;
-    }
-    if (normalizedValue === 'false') {
-        return false;
-    }
-    throw new Error(`Invalid value '${inputValue}' for boolean input '${inputName}'. Expected 'true' or 'false'.`);
-}
-function getVersionFromToolcachePath(toolPath) {
-    if (toolPath) {
-        return path.basename(path.dirname(toolPath));
-    }
-    return toolPath;
-}
-async function extractJdkFile(toolPath, extension) {
-    if (!extension) {
-        extension = toolPath.endsWith('.tar.gz')
-            ? 'tar.gz'
-            : path.extname(toolPath);
-        if (extension.startsWith('.')) {
-            extension = extension.substring(1);
-        }
-    }
-    switch (extension) {
-        case 'tar.gz':
-        case 'tar':
-            return await tc.extractTar(toolPath);
-        case 'zip':
-            return await tc.extractZip(toolPath);
-        default:
-            return await tc.extract7z(toolPath);
-    }
-}
-function getDownloadArchiveExtension() {
-    return process.platform === 'win32' ? 'zip' : 'tar.gz';
-}
-function isVersionSatisfies(range, version) {
-    // Some distributions (e.g. JetBrains Runtime) publish 4-segment versions
-    // like '17.0.8.1+1080.1' that semver rejects. If the candidate version
-    // isn't valid semver, it can't match — bail out rather than letting
-    // compareBuild / satisfies throw.
-    if (!semver.valid(version)) {
-        return false;
-    }
-    if (semver.valid(range)) {
-        // if full version with build digit is provided as a range (such as '1.2.3+4')
-        // we should check for exact equal via compareBuild
-        // since semver.satisfies doesn't handle 4th digit
-        const semRange = semver.parse(range);
-        if (semRange && semRange.build?.length > 0) {
-            return semver.compareBuild(range, version) === 0;
-        }
-    }
-    return semver.satisfies(version, range);
-}
-function getToolcachePath(toolName, version, architecture) {
-    const toolcacheRoot = process.env['RUNNER_TOOL_CACHE'] ?? '';
-    const fullPath = path.join(toolcacheRoot, toolName, version, architecture);
-    if (fs.existsSync(fullPath)) {
-        return fullPath;
-    }
-    return null;
-}
-function isJobStatusSuccess() {
-    const jobStatus = getInput(INPUT_JOB_STATUS);
-    return jobStatus === 'success';
-}
-function util_isGhes() {
-    const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
-    const hostname = ghUrl.hostname.trimEnd().toUpperCase();
-    const isGitHubHost = hostname === 'GITHUB.COM';
-    const isGitHubEnterpriseCloudHost = hostname.endsWith('.GHE.COM');
-    const isLocalHost = hostname.endsWith('.LOCALHOST');
-    return !isGitHubHost && !isGitHubEnterpriseCloudHost && !isLocalHost;
-}
-function isCacheFeatureAvailable() {
-    if (cache.isFeatureAvailable()) {
-        return true;
-    }
-    if (util_isGhes()) {
-        core.warning('Caching is only supported on GHES version >= 3.5. If you are on a version >= 3.5, please check with your GHES admin if the Actions cache service is enabled or not.');
-        return false;
-    }
-    core.warning('The runner was not able to contact the cache service. Caching will be skipped');
-    return false;
-}
-function getVersionFromFileContent(content, distributionName, versionFile) {
-    let javaVersionRegExp;
-    let extractedDistribution;
-    function getFileName(versionFile) {
-        return path.basename(versionFile);
-    }
-    const versionFileName = getFileName(versionFile);
-    if (versionFileName == '.tool-versions') {
-        // Capture an optional asdf-java vendor prefix (e.g. `temurin-`, `corretto-`)
-        // in the `distribution` group so it can be mapped to a setup-java distribution.
-        javaVersionRegExp =
-            /^java\s+(?:(?<distribution>\S*)-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
-    }
-    else if (versionFileName == '.sdkmanrc') {
-        // Match both version and optional distribution identifier
-        javaVersionRegExp =
-            /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
-    }
-    else {
-        javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
-    }
-    const match = content.match(javaVersionRegExp);
-    const capturedVersion = match?.groups?.version
-        ? match.groups.version
-        : '';
-    // Extract distribution from .sdkmanrc file
-    if (versionFileName == '.sdkmanrc' && match?.groups?.distribution) {
-        const sdkmanDist = match.groups.distribution;
-        extractedDistribution = mapSdkmanDistribution(sdkmanDist);
-        core.debug(`Parsed distribution '${extractedDistribution}' from SDKMAN identifier '${sdkmanDist}'`);
-    }
-    // Extract distribution from asdf .tool-versions file
-    if (versionFileName == '.tool-versions' && match?.groups?.distribution) {
-        const asdfDist = match.groups.distribution;
-        extractedDistribution = mapAsdfDistribution(asdfDist);
-        if (extractedDistribution) {
-            core.debug(`Parsed distribution '${extractedDistribution}' from asdf identifier '${asdfDist}'`);
-        }
-    }
-    core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
-    if (!capturedVersion) {
-        return null;
-    }
-    const tentativeVersion = avoidOldNotation(capturedVersion);
-    const rawVersion = tentativeVersion.split('-')[0];
-    let version = semver.validRange(rawVersion)
-        ? tentativeVersion
-        : semver.coerce(tentativeVersion);
-    core.debug(`Range version from file is '${version}'`);
-    if (!version) {
-        return null;
-    }
-    // Apply DISTRIBUTIONS_ONLY_MAJOR_VERSION logic whenever the effective distribution
-    // (either explicitly provided or extracted from the version file) is in the list.
-    if (DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(extractedDistribution || distributionName)) {
-        const coerceVersion = semver.coerce(version) ?? version;
-        version = semver.major(coerceVersion).toString();
-    }
-    return {
-        version: version.toString(),
-        distribution: extractedDistribution
-    };
-}
-// Map SDKMAN distribution identifiers to setup-java distribution names
-function mapSdkmanDistribution(sdkmanDist) {
-    const distributionMap = {
-        tem: 'temurin',
-        sem: 'semeru',
-        albba: 'dragonwell',
-        zulu: 'zulu',
-        amzn: 'corretto',
-        graal: 'graalvm',
-        graalce: 'graalvm',
-        librca: 'liberica',
-        ms: 'microsoft',
-        oracle: 'oracle',
-        sapmchn: 'sapmachine',
-        jbr: 'jetbrains',
-        dragonwell: 'dragonwell',
-        kona: 'kona'
-    };
-    const mapped = distributionMap[sdkmanDist.toLowerCase()];
-    if (!mapped) {
-        core.warning(`Unknown SDKMAN distribution identifier '${sdkmanDist}'. Please specify the distribution explicitly.`);
-    }
-    return mapped;
-}
-// Map asdf-java (.tool-versions) vendor identifiers to setup-java distribution names.
-// asdf-java encodes the vendor as a prefix on the version string, e.g.
-// `java temurin-17.0.3+7` or `java semeru-openj9-11.0.25+9`. Packaging variants
-// (`-jre`, `-musl`, `-openj9`, `-crac`, `-javafx`, ...) are collapsed onto the
-// base vendor since setup-java does not distinguish them here.
-function mapAsdfDistribution(asdfDist) {
-    const normalized = asdfDist.toLowerCase();
-    // Multi-segment vendors that map to a distinct setup-java distribution.
-    if (normalized.startsWith('graalvm-community')) {
-        return 'graalvm-community';
-    }
-    if (normalized.startsWith('oracle-graalvm')) {
-        return 'graalvm';
-    }
-    const baseVendor = normalized.split('-')[0];
-    const distributionMap = {
-        temurin: 'temurin',
-        adoptopenjdk: 'temurin',
-        zulu: 'zulu',
-        corretto: 'corretto',
-        liberica: 'liberica',
-        microsoft: 'microsoft',
-        semeru: 'semeru',
-        ibm: 'semeru',
-        dragonwell: 'dragonwell',
-        graalvm: 'graalvm',
-        oracle: 'oracle',
-        sapmachine: 'sapmachine',
-        kona: 'kona',
-        jetbrains: 'jetbrains'
-    };
-    const mapped = distributionMap[baseVendor];
-    if (!mapped) {
-        core.warning(`Unknown asdf distribution identifier '${asdfDist}'. Please specify the distribution explicitly.`);
-    }
-    return mapped;
-}
-// By convention, action expects version 8 in the format `8.*` instead of `1.8`
-function avoidOldNotation(content) {
-    return content.startsWith('1.') ? content.substring(2) : content;
-}
-function convertVersionToSemver(version) {
-    // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1)
-    const versionArray = Array.isArray(version) ? version : version.split('.');
-    const mainVersion = versionArray.slice(0, 3).join('.');
-    if (versionArray.length > 3) {
-        return `${mainVersion}+${versionArray.slice(3).join('.')}`;
-    }
-    return mainVersion;
-}
-function getGitHubHttpHeaders() {
-    const resolvedToken = core.getInput('token') || process.env.GITHUB_TOKEN;
-    const auth = !resolvedToken ? undefined : `token ${resolvedToken}`;
-    const headers = {
-        accept: 'application/vnd.github.VERSION.raw'
-    };
-    if (auth) {
-        headers.authorization = auth;
-    }
-    return headers;
-}
-const MAX_PAGINATION_PAGES = 1000;
-function getNextPageUrlFromLinkHeader(headers) {
-    if (!headers) {
-        return null;
-    }
-    const linkHeader = headers.link ?? headers.Link;
-    if (!linkHeader) {
-        return null;
-    }
-    const normalizedLinkHeader = Array.isArray(linkHeader)
-        ? linkHeader.join(',')
-        : linkHeader;
-    // Split into individual link-values and find the one with rel="next"
-    // RFC 8288 allows rel to appear anywhere among the parameters
-    const linkValues = normalizedLinkHeader.split(/,(?=\s*<)/);
-    for (const linkValue of linkValues) {
-        const urlMatch = linkValue.match(/<([^>]+)>/);
-        if (!urlMatch)
-            continue;
-        const params = linkValue.slice(urlMatch[0].length);
-        // Use word boundary to match "next" as a standalone relation type
-        // RFC 8288 allows space-separated relation types like rel="next prev"
-        if (/;\s*rel="?[^"]*\bnext\b/i.test(params)) {
-            return urlMatch[1];
-        }
-    }
-    return null;
-}
-function validatePaginationUrl(url, allowedOrigin) {
-    try {
-        const parsed = new URL(url);
-        const allowed = new URL(allowedOrigin);
-        return parsed.origin === allowed.origin;
-    }
-    catch {
-        return false;
-    }
-}
-// Rename archive to add extension because after downloading
-// archive does not contain extension type and it leads to some issues
-// on Windows runners without PowerShell Core.
-//
-// For default PowerShell Windows it should contain extension type to unpack it.
-function renameWinArchive(javaArchivePath) {
-    const javaArchivePathRenamed = `${javaArchivePath}.zip`;
-    fs.renameSync(javaArchivePath, javaArchivePathRenamed);
-    return javaArchivePathRenamed;
-}
-// Resolve the newest available stable/GA feature (major) release.
-//
-// Some distributions (e.g. Oracle, GraalVM) construct their download URLs from a
-// concrete major version and don't expose an endpoint to list every available
-// release, so a bare `latest` alias can't be resolved from their own metadata.
-// The Adoptium (Temurin) API is used as a proxy for "what is the newest GA major
-// version out there", which those distributions typically publish at the same time.
-async function getLatestMajorVersion(http) {
-    const availableReleasesUrl = 'https://api.adoptium.net/v3/info/available_releases';
-    const response = await http.getJson(availableReleasesUrl);
-    const mostRecent = response.result?.most_recent_feature_release;
-    if (!mostRecent || Number.isNaN(Number(mostRecent))) {
-        throw new Error(`Could not determine the latest available Java major version from ${availableReleasesUrl}`);
-    }
-    return Number(mostRecent);
-}
-
-;// CONCATENATED MODULE: ./src/gpg.ts
-
-
-
-
-
-
-const PRIVATE_KEY_FILE = external_path_namespaceObject.join(getTempDir(), 'private-key.asc');
-const PRIVATE_KEY_FINGERPRINT_REGEX = /\w{40}/;
-// Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
-// The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
-// internally. Passing Windows paths with backslashes can cause fatal GPG errors
-// (exit code 2), so all paths passed to GPG must be in POSIX format on Windows.
-function toGpgPath(p) {
-    if (process.platform !== 'win32')
-        return p;
-    return p
-        .replace(/\\/g, '/')
-        .replace(/^([A-Za-z]):\//, (_, drive) => `/${drive.toLowerCase()}/`);
-}
-async function importKey(privateKey) {
-    fs.writeFileSync(PRIVATE_KEY_FILE, privateKey, {
-        encoding: 'utf-8',
-        flag: 'w'
-    });
-    let output = '';
-    const options = {
-        silent: true,
-        listeners: {
-            stdout: (data) => {
-                output += data.toString();
-            }
-        }
-    };
-    await exec.exec('gpg', [
-        '--batch',
-        '--import-options',
-        'import-show',
-        '--import',
-        PRIVATE_KEY_FILE
-    ], options);
-    await io.rmRF(PRIVATE_KEY_FILE);
-    const match = output.match(PRIVATE_KEY_FINGERPRINT_REGEX);
-    return match && match[0];
-}
-async function deleteKey(keyFingerprint) {
-    await exec_exec('gpg', ['--batch', '--yes', '--delete-secret-and-public-key', keyFingerprint], {
-        silent: true
-    });
-}
-async function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
-    const signaturePath = await tc.downloadTool(signatureUrl);
-    let gpgHome;
-    try {
-        gpgHome = fs.mkdtempSync(path.join(util.getTempDir(), 'verify-signature-gpg-home-'));
-    }
-    catch (error) {
-        try {
-            await io.rmRF(signaturePath);
-        }
-        catch {
-            // ignore cleanup failures
-        }
-        throw new Error(`Failed to create temporary GPG home directory for signature verification: ${error.message}`, { cause: error });
-    }
-    try {
-        const publicKeyFile = path.join(gpgHome, 'public-key.asc');
-        fs.writeFileSync(publicKeyFile, publicKeyContent, { encoding: 'utf-8' });
-        const options = { silent: true };
-        await exec.exec('gpg', [
-            '--homedir',
-            toGpgPath(gpgHome),
-            '--batch',
-            '--import',
-            toGpgPath(publicKeyFile)
-        ], options);
-        await exec.exec('gpg', [
-            '--homedir',
-            toGpgPath(gpgHome),
-            '--batch',
-            '--verify',
-            toGpgPath(signaturePath),
-            toGpgPath(archivePath)
-        ], options);
-    }
-    finally {
-        await io.rmRF(signaturePath);
-        await io.rmRF(gpgHome);
-    }
-}
-
 ;// CONCATENATED MODULE: ./src/cache.ts
 /**
  * @fileoverview this file provides methods handling dependency cache

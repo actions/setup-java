@@ -1403,8 +1403,11 @@ describe('distribution factory', () => {
     checkLatest: false
   };
 
-  it('should map graalvm-community to the community installer', () => {
-    const community = getJavaDistribution('graalvm-community', defaultOptions);
+  it('should map graalvm-community to the community installer', async () => {
+    const community = await getJavaDistribution(
+      'graalvm-community',
+      defaultOptions
+    );
 
     expect(community).toBeInstanceOf(GraalVMCommunityDistribution);
   });

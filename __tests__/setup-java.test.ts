@@ -33,7 +33,6 @@ jest.unstable_mockModule('fs', () => ({
 
 jest.unstable_mockModule('../src/util.js', () => ({
   getBooleanInput: jest.fn(),
-  isCacheFeatureAvailable: jest.fn(),
   getVersionFromFileContent: jest.fn()
 }));
 
@@ -44,6 +43,10 @@ jest.unstable_mockModule('../src/toolchains.js', () => ({
 
 jest.unstable_mockModule('../src/cache.js', () => ({
   restore: jest.fn()
+}));
+
+jest.unstable_mockModule('../src/cache-feature.js', () => ({
+  isCacheFeatureAvailable: jest.fn()
 }));
 
 jest.unstable_mockModule(
@@ -70,6 +73,7 @@ const fs = (await import('fs')).default;
 const util = await import('../src/util.js');
 const toolchains = await import('../src/toolchains.js');
 const cache = await import('../src/cache.js');
+const cacheFeature = await import('../src/cache-feature.js');
 const factory = await import('../src/distributions/distribution-factory.js');
 const auth = await import('../src/auth.js');
 const mavenArgs = await import('../src/maven-args.js');
@@ -104,7 +108,7 @@ describe('setup action orchestration', () => {
         return booleanInputs.get(name as string) ?? defaultValue;
       }
     );
-    (util.isCacheFeatureAvailable as jest.Mock).mockReturnValue(true);
+    (cacheFeature.isCacheFeatureAvailable as jest.Mock).mockReturnValue(true);
     (toolchains.configureToolchains as jest.Mock).mockResolvedValue(undefined);
     (auth.configureAuthentication as jest.Mock).mockResolvedValue(undefined);
     (cache.restore as jest.Mock).mockResolvedValue(undefined);
@@ -296,7 +300,7 @@ describe('setup action orchestration', () => {
     );
   });
 
-  it('configures post-install collaborators in order and restores the cache last', async () => {
+  it('starts cache restoration before post-install steps and awaits it before finishing', async () => {
     inputs.set('distribution', 'temurin');
     inputs.set('cache', 'maven');
     inputs.set('cache-dependency-path', '**/pom.xml');
@@ -305,48 +309,77 @@ describe('setup action orchestration', () => {
       '/custom/maven/repository',
       '!/custom/maven/repository/excluded'
     ]);
-    const setupJava = jest.fn(async () => ({
-      version: '21.0.4+7',
-      path: '/opt/java/21'
-    }));
+    const cacheRestore = deferred<void>();
+    let resolveSetupJava: (() => void) | undefined;
+    const setupJava = jest.fn(
+      () =>
+        new Promise<{version: string; path: string}>(resolve => {
+          resolveSetupJava = () =>
+            resolve({
+              version: '21.0.4+7',
+              path: '/opt/java/21'
+            });
+        })
+    );
+    (cache.restore as jest.Mock).mockReturnValue(cacheRestore.promise);
     (factory.getJavaDistribution as jest.Mock).mockReturnValue({setupJava});
 
-    await run();
+    const runPromise = run();
+    try {
+      await tick();
 
-    expect(problemMatcher.configureProblemMatcher).toHaveBeenCalledWith(
-      expect.stringMatching(/\.github[/\\]java\.json$/)
-    );
-    expect(cache.restore).toHaveBeenCalledWith('maven', '**/pom.xml', [
-      '/custom/maven/repository',
-      '!/custom/maven/repository/excluded'
-    ]);
-    expect(
-      (toolchains.configureToolchains as jest.Mock).mock.invocationCallOrder[0]
-    ).toBeLessThan(
-      (problemMatcher.configureProblemMatcher as jest.Mock).mock
-        .invocationCallOrder[0]
-    );
-    expect(
-      (problemMatcher.configureProblemMatcher as jest.Mock).mock
-        .invocationCallOrder[0]
-    ).toBeLessThan(
-      (auth.configureAuthentication as jest.Mock).mock.invocationCallOrder[0]
-    );
-    expect(
-      (auth.configureAuthentication as jest.Mock).mock.invocationCallOrder[0]
-    ).toBeLessThan(
-      (mavenArgs.configureMavenArgs as jest.Mock).mock.invocationCallOrder[0]
-    );
-    expect(
-      (mavenArgs.configureMavenArgs as jest.Mock).mock.invocationCallOrder[0]
-    ).toBeLessThan((cache.restore as jest.Mock).mock.invocationCallOrder[0]);
+      expect(cacheFeature.isCacheFeatureAvailable).toHaveBeenCalled();
+      expect(cache.restore).toHaveBeenCalledWith('maven', '**/pom.xml', [
+        '/custom/maven/repository',
+        '!/custom/maven/repository/excluded'
+      ]);
+      expect(toolchains.configureToolchains).not.toHaveBeenCalled();
+
+      resolveSetupJava?.();
+      await tick();
+      expect(problemMatcher.configureProblemMatcher).toHaveBeenCalledWith(
+        expect.stringMatching(/\.github[/\\]java\.json$/)
+      );
+
+      expect(
+        (toolchains.configureToolchains as jest.Mock).mock
+          .invocationCallOrder[0]
+      ).toBeLessThan(
+        (problemMatcher.configureProblemMatcher as jest.Mock).mock
+          .invocationCallOrder[0]
+      );
+      expect(
+        (problemMatcher.configureProblemMatcher as jest.Mock).mock
+          .invocationCallOrder[0]
+      ).toBeLessThan(
+        (auth.configureAuthentication as jest.Mock).mock.invocationCallOrder[0]
+      );
+      expect(
+        (auth.configureAuthentication as jest.Mock).mock.invocationCallOrder[0]
+      ).toBeLessThan(
+        (mavenArgs.configureMavenArgs as jest.Mock).mock.invocationCallOrder[0]
+      );
+
+      let completed = false;
+      runPromise.then(() => {
+        completed = true;
+      });
+      await tick();
+      expect(completed).toBe(false);
+    } finally {
+      resolveSetupJava?.();
+      cacheRestore.resolve();
+      await runPromise;
+    }
+
+    expect(core.setFailed).not.toHaveBeenCalled();
   });
 
   it('skips cache restoration when the cache feature is unavailable', async () => {
     inputs.set('distribution', 'temurin');
     inputs.set('cache', 'maven');
     multilineInputs.set('java-version', ['21']);
-    (util.isCacheFeatureAvailable as jest.Mock).mockReturnValue(false);
+    (cacheFeature.isCacheFeatureAvailable as jest.Mock).mockReturnValue(false);
     (factory.getJavaDistribution as jest.Mock).mockReturnValue({
       setupJava: jest.fn(async () => ({
         version: '21.0.4+7',
@@ -356,6 +389,22 @@ describe('setup action orchestration', () => {
 
     await run();
 
+    expect(cache.restore).not.toHaveBeenCalled();
+  });
+
+  it('does not initialize cache modules when cache input is absent', async () => {
+    inputs.set('distribution', 'temurin');
+    multilineInputs.set('java-version', ['21']);
+    (factory.getJavaDistribution as jest.Mock).mockReturnValue({
+      setupJava: jest.fn(async () => ({
+        version: '21.0.4+7',
+        path: '/opt/java/21'
+      }))
+    });
+
+    await run();
+
+    expect(cacheFeature.isCacheFeatureAvailable).not.toHaveBeenCalled();
     expect(cache.restore).not.toHaveBeenCalled();
   });
 
@@ -411,6 +460,38 @@ describe('setup action orchestration', () => {
     expect(problemMatcher.configureProblemMatcher).toHaveBeenCalled();
     expect(core.setFailed).toHaveBeenCalledWith('authentication failed');
     expect(mavenArgs.configureMavenArgs).not.toHaveBeenCalled();
-    expect(cache.restore).not.toHaveBeenCalled();
+    expect(cache.restore).toHaveBeenCalled();
+  });
+
+  it('keeps Java setup errors deterministic when cache restore also fails', async () => {
+    inputs.set('distribution', 'temurin');
+    inputs.set('cache', 'maven');
+    multilineInputs.set('java-version', ['21']);
+    (factory.getJavaDistribution as jest.Mock).mockReturnValue({
+      setupJava: jest.fn(async () => {
+        throw new Error('download failed');
+      })
+    });
+    (cache.restore as jest.Mock).mockRejectedValue(
+      new Error('cache restore failed')
+    );
+
+    await run();
+
+    expect(core.setFailed).toHaveBeenCalledWith('download failed');
   });
 });
+
+function deferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return {promise, resolve, reject};
+}
+
+async function tick() {
+  await new Promise(resolve => setTimeout(resolve, 0));
+}
