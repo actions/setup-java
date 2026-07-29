@@ -45,6 +45,18 @@ jobs:
             distribution: temurin
             version: '25'
             java-package: jdk
+          - os: macos-latest
+            distribution: microsoft
+            version: '25'
+            java-package: jdk
+          - os: windows-latest
+            distribution: microsoft
+            version: '25'
+            java-package: jdk
+          - os: ubuntu-latest
+            distribution: microsoft
+            version: '25'
+            java-package: jdk
           - os: ubuntu-latest
             distribution: zulu
             version: '17'
