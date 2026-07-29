@@ -129154,10 +129154,23 @@ async function computeAdditionalCacheKey(additionalCache) {
  */
 async function restore(id, cacheDependencyPath) {
     const packageManager = findPackageManager(id);
-    const primaryKey = await computeCacheKey(packageManager, cacheDependencyPath);
+    const [primaryKey, preparedAdditionalCaches] = await Promise.all([
+        computeCacheKey(packageManager, cacheDependencyPath),
+        prepareAdditionalCaches(packageManager.additionalCaches ?? [])
+    ]);
     core_debug(`primary key is ${primaryKey}`);
     saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
     setOutput(STATE_CACHE_PRIMARY_KEY, primaryKey);
+    for (const preparedCache of preparedAdditionalCaches) {
+        core_debug(`${preparedCache.cache.name} primary key is ${preparedCache.primaryKey}`);
+        saveState(additionalCachePrimaryKeyState(preparedCache.cache.name), preparedCache.primaryKey);
+    }
+    await Promise.all([
+        restorePrimaryCache(packageManager, primaryKey),
+        ...preparedAdditionalCaches.map(preparedCache => restoreAdditionalCache(preparedCache))
+    ]);
+}
+async function restorePrimaryCache(packageManager, primaryKey) {
     // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
     const matchedKey = await restoreCache(packageManager.path, primaryKey);
     if (matchedKey) {
@@ -129169,28 +129182,34 @@ async function restore(id, cacheDependencyPath) {
         setOutput('cache-hit', false);
         info(`${packageManager.id} cache is not found`);
     }
-    for (const additionalCache of packageManager.additionalCaches ?? []) {
-        await restoreAdditionalCache(additionalCache);
-    }
 }
 /**
- * Restore an additional cache (e.g. a build-tool wrapper distribution) that is
- * keyed independently of the main dependency cache so that it survives changes
- * to volatile dependency files. Skips silently when the project does not use
- * the corresponding feature.
+ * Compute keys for additional caches (e.g. build-tool wrapper distributions).
+ * Additional caches without a matching configuration file are omitted.
  */
-async function restoreAdditionalCache(additionalCache) {
-    const primaryKey = await computeAdditionalCacheKey(additionalCache);
-    if (!primaryKey) {
-        core_debug(`No file matched [${additionalCache.pattern}] for the ${additionalCache.name} cache, skipping.`);
-        return;
-    }
-    core_debug(`${additionalCache.name} primary key is ${primaryKey}`);
-    saveState(additionalCachePrimaryKeyState(additionalCache.name), primaryKey);
+async function prepareAdditionalCaches(additionalCaches) {
+    const preparedCaches = await Promise.all(additionalCaches.map(async (additionalCache) => {
+        const primaryKey = await computeAdditionalCacheKey(additionalCache);
+        if (!primaryKey) {
+            core_debug(`No file matched [${additionalCache.pattern}] for the ${additionalCache.name} cache, skipping.`);
+            return undefined;
+        }
+        return { cache: additionalCache, primaryKey };
+    }));
+    return preparedCaches.filter((preparedCache) => preparedCache !== undefined);
+}
+/**
+ * Restore an additional cache keyed independently of the main dependency cache.
+ */
+async function restoreAdditionalCache(preparedCache) {
+    const { cache: additionalCache, primaryKey } = preparedCache;
     const matchedKey = await restoreCache(additionalCache.path, primaryKey);
     if (matchedKey) {
         saveState(additionalCacheMatchedKeyState(additionalCache.name), matchedKey);
         info(`${additionalCache.name} cache restored from key: ${matchedKey}`);
+    }
+    else {
+        info(`${additionalCache.name} cache is not found`);
     }
 }
 /**
@@ -129203,7 +129222,13 @@ async function save(id) {
     // Inputs are re-evaluated before the post action, so we want the original key used for restore
     const primaryKey = core.getState(STATE_CACHE_PRIMARY_KEY);
     for (const additionalCache of packageManager.additionalCaches ?? []) {
-        await saveAdditionalCache(packageManager, additionalCache);
+        try {
+            await saveAdditionalCache(packageManager, additionalCache);
+        }
+        catch (error) {
+            const err = error;
+            core.warning(`Failed to save ${additionalCache.name} cache: ${err.message}. Continuing with primary cache save.`);
+        }
     }
     if (!primaryKey) {
         core.warning('Error retrieving key from state.');
@@ -129285,7 +129310,7 @@ async function saveAdditionalCache(packageManager, additionalCache) {
         }
         else {
             if (isProbablyGradleDaemonProblem(packageManager, err)) {
-                core.warning('Failed to save Gradle cache on Windows. If tar.exe reported "Permission denied", try to run Gradle with `--no-daemon` option. Refer to https://github.com/actions/cache/issues/454 for details.');
+                core.warning(`Failed to save ${additionalCache.name} cache on Windows. If tar.exe reported "Permission denied", try to run Gradle with \`--no-daemon\` option. Refer to https://github.com/actions/cache/issues/454 for details.`);
             }
             throw error;
         }
