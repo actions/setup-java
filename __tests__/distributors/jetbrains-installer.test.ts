@@ -9,7 +9,9 @@ import {
   afterAll
 } from '@jest/globals';
 import https from 'https';
-import {HttpClient} from '@actions/http-client';
+import {HttpClient, HttpClientResponse} from '@actions/http-client';
+import type {IncomingMessage} from 'http';
+import {Readable} from 'stream';
 
 import manifestData from '../data/jetbrains.json' with {type: 'json'};
 import os from 'os';
@@ -44,6 +46,18 @@ jest.unstable_mockModule('@actions/core', () => ({
 const core = await import('@actions/core');
 const {JetBrainsDistribution} =
   await import('../../src/distributions/jetbrains/installer.js');
+const {RetryingHttpClient} = await import('../../src/retrying-http-client.js');
+
+function response(
+  statusCode: number,
+  body = '',
+  headers: IncomingMessage['headers'] = {}
+): HttpClientResponse {
+  const message = Readable.from([Buffer.from(body)]) as IncomingMessage;
+  message.statusCode = statusCode;
+  message.headers = headers;
+  return new HttpClientResponse(message);
+}
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: any;
@@ -95,6 +109,42 @@ describe('getAvailableVersions', () => {
       os.platform() === 'win32' ? manifestData.length : manifestData.length + 2;
     expect(availableVersions.length).toBe(length);
   }, 10_000);
+
+  it('retries a GitHub rate limit using Retry-After', async () => {
+    spyHttpClient.mockRestore();
+    const sleep = jest.fn(async () => undefined);
+    const requestRaw = jest
+      .spyOn(HttpClient.prototype, 'requestRaw')
+      .mockResolvedValueOnce(response(429, '', {'retry-after': '2'}))
+      .mockResolvedValueOnce(response(200, '[]'))
+      .mockResolvedValueOnce(response(200))
+      .mockResolvedValueOnce(response(200));
+    const distribution = new JetBrainsDistribution({
+      version: '17',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    distribution['http'] = new RetryingHttpClient('test', {
+      sleep,
+      random: () => 0
+    });
+
+    const availableVersions = await distribution['getAvailableVersions']();
+
+    expect(availableVersions).toHaveLength(2);
+    expect(requestRaw).toHaveBeenCalledTimes(4);
+    expect(requestRaw.mock.calls[0][0].options.path).toBe(
+      requestRaw.mock.calls[1][0].options.path
+    );
+    expect(requestRaw.mock.calls[0][0].options.path).toContain(
+      '/repos/JetBrains/JetBrainsRuntime/releases'
+    );
+    expect(sleep).toHaveBeenCalledWith(2000);
+    expect(core.info).toHaveBeenCalledWith(
+      'Request attempt 1 of 4 failed (HTTP 429); retrying in 2000 ms'
+    );
+  });
 });
 
 describe('findPackageForDownload', () => {
