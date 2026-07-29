@@ -129626,14 +129626,14 @@ const STANDARD_LINUX = ['x64', 'x86', 'aarch64', 'ppc64le', 's390x'];
 const JAVA_PLATFORM_CAPABILITIES = {
     [JavaDistribution.Adopt]: {
         platforms: {
-            linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<=17' }],
+            linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<18' }],
             macos: X64_ARM64,
             windows: ['x64', 'x86', 'aarch64']
         }
     },
     [JavaDistribution.AdoptHotspot]: {
         platforms: {
-            linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<=17' }],
+            linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<18' }],
             macos: X64_ARM64,
             windows: ['x64', 'x86', 'aarch64']
         }
@@ -129647,7 +129647,7 @@ const JAVA_PLATFORM_CAPABILITIES = {
     },
     [JavaDistribution.Temurin]: {
         platforms: {
-            linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<=17' }],
+            linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<18' }],
             macos: X64_ARM64,
             windows: ['x64', 'x86', 'aarch64']
         }
@@ -129695,12 +129695,12 @@ const JAVA_PLATFORM_CAPABILITIES = {
         platforms: {
             linux: [
                 'x64',
-                { architecture: 'x86', versionRange: '<=11' },
+                { architecture: 'x86', versionRange: '<12' },
                 { architecture: 'armv7', versionRange: '11' },
                 'aarch64'
             ],
             macos: X64_ARM64,
-            windows: ['x64', { architecture: 'x86', versionRange: '<=11' }]
+            windows: ['x64', { architecture: 'x86', versionRange: '<12' }]
         }
     },
     [JavaDistribution.Oracle]: {
@@ -129797,7 +129797,7 @@ function validateJavaPlatform(distributionName, platform, architecture, version)
         return normalizedArchitecture;
     }
     const capability = JAVA_PLATFORM_CAPABILITIES[distributionName];
-    if ('unrestricted' in capability) {
+    if ('unrestricted' in capability && capability.unrestricted === true) {
         return normalizedArchitecture;
     }
     const normalizedPlatform = normalizePlatform(platform);
