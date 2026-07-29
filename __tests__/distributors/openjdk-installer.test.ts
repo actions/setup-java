@@ -233,8 +233,8 @@ describe('OpenJdkDistribution', () => {
     expect(windowsRelease[0].url.endsWith('.tar.gz')).toBe(true);
   });
 
-  it('is registered in the distribution factory', () => {
-    const distribution = getJavaDistribution('oracle-openjdk', {
+  it('is registered in the distribution factory', async () => {
+    const distribution = await getJavaDistribution('oracle-openjdk', {
       version: '26',
       architecture: 'x64',
       packageType: 'jdk',

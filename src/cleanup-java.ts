@@ -2,7 +2,6 @@ import * as core from '@actions/core';
 import * as gpg from './gpg.js';
 import * as constants from './constants.js';
 import {getBooleanInput, isJobStatusSuccess} from './util.js';
-import {save} from './cache.js';
 import {fileURLToPath} from 'url';
 
 async function removePrivateKeyFromKeychain() {
@@ -37,6 +36,7 @@ async function saveCache() {
     return;
   }
 
+  const {save} = await import('./cache.js');
   await save(cache);
 }
 

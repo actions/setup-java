@@ -9,7 +9,7 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "build": "ncc build -o dist/setup src/setup-java.ts && ncc build -o dist/cleanup src/cleanup-java.ts",
+    "build": "node scripts/patch-is-unsafe.mjs && ncc build -o dist/setup src/setup-java.ts && ncc build -o dist/cleanup src/cleanup-java.ts",
     "format": "prettier --no-error-on-unmatched-pattern --write \"**/*.{ts,yml,yaml}\"",
     "format-check": "prettier --no-error-on-unmatched-pattern --check \"**/*.{ts,yml,yaml}\"",
     "lint": "eslint \"**/*.ts\"",
@@ -18,7 +18,7 @@
     "fix": "npm run format && npm run lint:fix && npm run build",
     "prepare": "husky install",
     "prerelease": "npm run-script build",
-    "release": "git add -f dist/setup/index.js dist/cleanup/index.js",
+    "release": "git add -f dist/setup/*.js dist/setup/package.json dist/cleanup/index.js",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage"
   },
   "lint-staged": {
