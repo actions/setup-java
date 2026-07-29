@@ -74,6 +74,25 @@ describe('verifyChecksum', () => {
     );
   });
 
+  it.each([undefined, null, 123])(
+    'reports a malformed digest when the value is %p',
+    async value => {
+      const checksum = {
+        algorithm: 'sha256',
+        value
+      } as unknown as ChecksumMetadata;
+
+      await expect(
+        verifyChecksum('/missing/archive', checksum, {
+          distribution: 'Test',
+          version: '17'
+        })
+      ).rejects.toThrow(
+        'Malformed sha256 checksum metadata: expected a 64-character hexadecimal digest.'
+      );
+    }
+  );
+
   it('rejects unsupported algorithms without leaking source query parameters', async () => {
     const checksum = {
       algorithm: 'md5',

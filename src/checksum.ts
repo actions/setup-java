@@ -24,7 +24,10 @@ function sanitizedSource(source: string | undefined): string {
 
 function normalizeExpectedDigest(checksum: ChecksumMetadata): string {
   const algorithm = checksum.algorithm;
-  const digest = checksum.value.trim().toLowerCase();
+  const digest =
+    typeof checksum.value === 'string'
+      ? checksum.value.trim().toLowerCase()
+      : '';
   const expectedLength =
     algorithm === 'sha256' ? 64 : algorithm === 'sha512' ? 128 : 0;
 

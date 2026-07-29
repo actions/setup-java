@@ -129431,7 +129431,9 @@ function sanitizedSource(source) {
 }
 function normalizeExpectedDigest(checksum) {
     const algorithm = checksum.algorithm;
-    const digest = checksum.value.trim().toLowerCase();
+    const digest = typeof checksum.value === 'string'
+        ? checksum.value.trim().toLowerCase()
+        : '';
     const expectedLength = algorithm === 'sha256' ? 64 : algorithm === 'sha512' ? 128 : 0;
     if (expectedLength === 0) {
         throw new Error(`Unsupported checksum algorithm '${String(algorithm)}'${sanitizedSource(checksum.source)}. Supported algorithms are sha256 and sha512.`);
@@ -129515,11 +129517,17 @@ class JavaBase {
             return archivePath;
         }
         catch (error) {
+            let cleanupError;
+            let cleanupFailed = false;
             try {
                 await external_fs_namespaceObject.promises.rm(archivePath, { force: true });
             }
-            catch (cleanupError) {
-                throw new Error(`${error.message} Failed to remove the downloaded archive after verification failure: ${cleanupError.message}`, { cause: cleanupError });
+            catch (caughtCleanupError) {
+                cleanupError = caughtCleanupError;
+                cleanupFailed = true;
+            }
+            if (cleanupFailed) {
+                throw new Error(`${error.message} Failed to remove the downloaded archive after verification failure: ${cleanupError.message}`, { cause: error });
             }
             throw error;
         }
