@@ -129501,16 +129501,17 @@ class JavaBase {
     }
     async downloadAndVerify(javaRelease) {
         const archivePath = await downloadTool(javaRelease.url);
-        if (!javaRelease.checksum) {
+        const checksum = javaRelease.checksum;
+        if (!checksum || !checksum.value?.trim()) {
             core_debug(`No authoritative checksum is available for ${this.distribution} version ${javaRelease.version}; skipping checksum verification.`);
             return archivePath;
         }
         try {
-            await verifyChecksum(archivePath, javaRelease.checksum, {
+            await verifyChecksum(archivePath, checksum, {
                 distribution: this.distribution,
                 version: javaRelease.version
             });
-            core_debug(`Verified ${javaRelease.checksum.algorithm} checksum for ${this.distribution} version ${javaRelease.version}.`);
+            core_debug(`Verified ${checksum.algorithm} checksum for ${this.distribution} version ${javaRelease.version}.`);
             return archivePath;
         }
         catch (error) {

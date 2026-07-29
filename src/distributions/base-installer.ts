@@ -66,7 +66,8 @@ export abstract class JavaBase {
     javaRelease: JavaDownloadRelease
   ): Promise<string> {
     const archivePath = await tc.downloadTool(javaRelease.url);
-    if (!javaRelease.checksum) {
+    const checksum = javaRelease.checksum;
+    if (!checksum || !checksum.value?.trim()) {
       core.debug(
         `No authoritative checksum is available for ${this.distribution} version ${javaRelease.version}; skipping checksum verification.`
       );
@@ -74,12 +75,12 @@ export abstract class JavaBase {
     }
 
     try {
-      await verifyChecksum(archivePath, javaRelease.checksum, {
+      await verifyChecksum(archivePath, checksum, {
         distribution: this.distribution,
         version: javaRelease.version
       });
       core.debug(
-        `Verified ${javaRelease.checksum.algorithm} checksum for ${this.distribution} version ${javaRelease.version}.`
+        `Verified ${checksum.algorithm} checksum for ${this.distribution} version ${javaRelease.version}.`
       );
       return archivePath;
     } catch (error) {

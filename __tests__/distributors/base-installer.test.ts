@@ -893,6 +893,28 @@ describe('downloadAndVerify', () => {
       'No authoritative checksum is available for Empty version 21.0.8; skipping checksum verification.'
     );
   });
+
+  it.each([undefined, '', '   '])(
+    'skips verification when the vendor digest is %p',
+    async value => {
+      const distribution = new EmptyJavaBase(options);
+
+      await expect(
+        distribution.downloadRelease({
+          version: '21.0.8',
+          url: 'https://vendor.example/jdk.tar.gz',
+          checksum: {
+            algorithm: 'sha256',
+            value
+          } as JavaDownloadRelease['checksum']
+        })
+      ).resolves.toBe(archivePath);
+
+      expect(core.debug).toHaveBeenCalledWith(
+        'No authoritative checksum is available for Empty version 21.0.8; skipping checksum verification.'
+      );
+    }
+  );
 });
 
 describe('normalizeVersion', () => {
