@@ -45,7 +45,7 @@ jobs:
           mkdir -p "$HOME/.gradle/wrapper/dists/setup-java-e2e"
           echo "gradle wrapper cache" > "$HOME/.gradle/wrapper/dists/setup-java-e2e/payload"
           bash __tests__/check-dir.sh "$HOME/.gradle/caches"
-          bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists/setup-java-e2e"
+          bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists"
   gradle-restore:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -69,7 +69,7 @@ jobs:
       - name: Confirm that ~/.gradle/caches directory has been made
         run: bash __tests__/check-dir.sh "$HOME/.gradle/caches"
       - name: Confirm that the Gradle Wrapper cache has been restored
-        run: bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists/setup-java-e2e"
+        run: bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists"
   maven-save:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -94,7 +94,7 @@ jobs:
           mkdir -p "$HOME/.m2/wrapper/dists/setup-java-e2e"
           echo "maven wrapper cache" > "$HOME/.m2/wrapper/dists/setup-java-e2e/payload"
           bash __tests__/check-dir.sh "$HOME/.m2/repository"
-          bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists/setup-java-e2e"
+          bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists"
   maven-restore:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -118,7 +118,7 @@ jobs:
       - name: Confirm that ~/.m2/repository directory has been made
         run: bash __tests__/check-dir.sh "$HOME/.m2/repository"
       - name: Confirm that the Maven Wrapper cache has been restored
-        run: bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists/setup-java-e2e"
+        run: bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists"
   sbt-save:
     runs-on: ${{ matrix.os }}
     defaults:
@@ -219,7 +219,7 @@ jobs:
           mkdir -p "$HOME/.gradle/wrapper/dists/setup-java-e2e-gradle1"
           echo "gradle wrapper cache gradle1" > "$HOME/.gradle/wrapper/dists/setup-java-e2e-gradle1/payload"
           bash __tests__/check-dir.sh "$HOME/.gradle/caches"
-          bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists/setup-java-e2e-gradle1"
+          bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists"
   gradle1-restore:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -243,7 +243,7 @@ jobs:
       - name: Confirm that ~/.gradle/caches directory has been made
         run: bash __tests__/check-dir.sh "$HOME/.gradle/caches"
       - name: Confirm that the Gradle Wrapper cache has been restored
-        run: bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists/setup-java-e2e-gradle1"
+        run: bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists"
   gradle2-restore:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -291,7 +291,7 @@ jobs:
           mkdir -p "$HOME/.m2/wrapper/dists/setup-java-e2e-maven1"
           echo "maven wrapper cache maven1" > "$HOME/.m2/wrapper/dists/setup-java-e2e-maven1/payload"
           bash __tests__/check-dir.sh "$HOME/.m2/repository"
-          bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists/setup-java-e2e-maven1"
+          bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists"
   maven1-restore:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -315,7 +315,7 @@ jobs:
       - name: Confirm that ~/.m2/repository directory has been made
         run: bash __tests__/check-dir.sh "$HOME/.m2/repository"
       - name: Confirm that the Maven Wrapper cache has been restored
-        run: bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists/setup-java-e2e-maven1"
+        run: bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists"
   maven2-restore:
     runs-on: ${{ matrix.os }}
     strategy:
