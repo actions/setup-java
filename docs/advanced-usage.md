@@ -890,9 +890,9 @@ See the help docs on [Publishing a Package with Gradle](https://help.github.com/
 ## Hosted Tool Cache
 GitHub Hosted Runners have a tool cache that comes with some Java versions pre-installed. This tool cache helps speed up runs and tool setup by not requiring any new downloads. There is an environment variable called `RUNNER_TOOL_CACHE` on each runner that describes the location of this tools cache and this is where you can find the pre-installed versions of Java. `setup-java` works by taking a specific version of Java in this tool cache and adding it to PATH if the version, architecture and distribution match.
 
-Currently, LTS versions of Eclipse Adoptium's Temurin JDKs (`temurin`) are cached on GitHub-hosted runners. To avoid downloading a JDK, use the `temurin` distribution with the default `check-latest: false` when a cached version meets your needs.
+Currently, LTS versions of Eclipse Temurin (`temurin`) are cached on GitHub-hosted runners. Using a cached version avoids downloading a JDK.
 
-The tools cache gets updated on a weekly basis. For information regarding locally cached versions of Java on GitHub-hosted runners, check out the [GitHub Actions runner images repository](https://github.com/actions/runner-images).
+The tools cache gets updated on a weekly basis. See the installed Java versions for [Ubuntu](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#java), [Windows](https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md#java), and [macOS](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md#java).
 
 ## Modifying Maven Toolchains
 The `setup-java` action generates a basic [Maven Toolchains declaration](https://maven.apache.org/guides/mini/guide-using-toolchains.html) for specified Java versions by either creating a minimal toolchains file or extending an existing declaration with the additional JDKs.
