@@ -1007,3 +1007,67 @@ describe('toolchains tests', () => {
     expect((contents.match(/<toolchain>/g) || []).length).toBe(runs.length);
   }, 100000);
 });
+
+describe('validateToolchainIds', () => {
+  it.each([
+    {
+      name: 'uses generated IDs when no custom IDs are supplied',
+      versions: ['17', '21'],
+      versionFile: '',
+      toolchainIds: []
+    },
+    {
+      name: 'accepts one custom ID for a single Java version',
+      versions: ['21'],
+      versionFile: '',
+      toolchainIds: ['custom-21']
+    },
+    {
+      name: 'accepts one custom ID per Java version',
+      versions: ['17', '21'],
+      versionFile: '',
+      toolchainIds: ['custom-17', 'custom-21']
+    },
+    {
+      name: 'accepts one custom ID with java-version-file',
+      versions: [],
+      versionFile: '.java-version',
+      toolchainIds: ['custom-file-version']
+    }
+  ])('$name', ({versions, versionFile, toolchainIds}) => {
+    expect(() =>
+      toolchains.validateToolchainIds(versions, versionFile, toolchainIds)
+    ).not.toThrow();
+  });
+
+  it.each([
+    {
+      name: 'rejects fewer IDs than Java versions',
+      versions: ['17', '21'],
+      versionFile: '',
+      toolchainIds: ['custom-17'],
+      expectedMessage:
+        'The number of Maven toolchain IDs (1) must match the number of Java versions (2)'
+    },
+    {
+      name: 'rejects extra IDs for a single Java version',
+      versions: ['21'],
+      versionFile: '',
+      toolchainIds: ['custom-21', 'custom-extra'],
+      expectedMessage:
+        'The number of Maven toolchain IDs (2) must match the number of Java versions (1)'
+    },
+    {
+      name: 'rejects extra IDs with java-version-file',
+      versions: [],
+      versionFile: '.java-version',
+      toolchainIds: ['custom-file-version', 'custom-extra'],
+      expectedMessage:
+        'The number of Maven toolchain IDs (2) must match the number of Java versions (1)'
+    }
+  ])('$name', ({versions, versionFile, toolchainIds, expectedMessage}) => {
+    expect(() =>
+      toolchains.validateToolchainIds(versions, versionFile, toolchainIds)
+    ).toThrow(expectedMessage);
+  });
+});

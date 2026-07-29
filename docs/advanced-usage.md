@@ -980,7 +980,7 @@ steps:
   - run: java --version
 ```
 
-In case you install multiple versions of Java at once you can use the same syntax as used in `java-versions`. Please note that you have to declare an ID for all Java versions that will be installed or the `mvn-toolchain-id` instruction will be skipped wholesale due to mapping ambiguities.
+In case you install multiple versions of Java at once you can use the same syntax as used in `java-versions`. You must declare exactly one ID for every Java version that will be installed. The action fails before installing a JDK when the number of `mvn-toolchain-id` entries does not match the number of `java-version` entries.
 
 ```yaml
 steps:

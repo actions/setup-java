@@ -40,17 +40,17 @@ async function run() {
     );
     const verifySignaturePublicKey =
       core.getInput(constants.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
-    let toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
+    const toolchainIds = core.getMultilineInput(
+      constants.INPUT_MVN_TOOLCHAIN_ID
+    );
 
     core.startGroup('Installed distributions');
-
-    if (versions.length !== toolchainIds.length) {
-      toolchainIds = [];
-    }
 
     if (!versions.length && !versionFile) {
       throw new Error('java-version or java-version-file input expected');
     }
+
+    toolchains.validateToolchainIds(versions, versionFile, toolchainIds);
 
     if (!versions.length) {
       core.debug(

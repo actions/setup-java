@@ -89,7 +89,7 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `gpg-passphrase-env-var`: Environment variable name for the GPG private key passphrase. Default is GPG\_PASSPHRASE.
 
-  - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted.
+  - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted. When supplied, the number of IDs must match the number of Java versions.
 
   - `mvn-toolchain-vendor`: Name of Maven Toolchain Vendor if the default name of `${distribution}` is not wanted.
 

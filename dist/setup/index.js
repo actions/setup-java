@@ -128876,6 +128876,15 @@ async function write(directory, settings, overwriteSettings) {
 
 
 
+function validateToolchainIds(versions, versionFile, toolchainIds) {
+    if (!toolchainIds.length) {
+        return;
+    }
+    const versionCount = versions.length || (versionFile ? 1 : 0);
+    if (versionCount !== toolchainIds.length) {
+        throw new Error(`The number of Maven toolchain IDs (${toolchainIds.length}) must match the number of Java versions (${versionCount})`);
+    }
+}
 async function configureToolchains(version, distributionName, jdkHome, toolchainId) {
     const vendor = getInput(INPUT_MVN_TOOLCHAIN_VENDOR) || distributionName;
     const id = toolchainId || `${vendor}_${version}`;
@@ -132202,14 +132211,12 @@ async function run() {
         const setDefault = util_getBooleanInput(INPUT_SET_DEFAULT, true);
         const verifySignature = util_getBooleanInput(INPUT_VERIFY_SIGNATURE, false);
         const verifySignaturePublicKey = getInput(INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
-        let toolchainIds = getMultilineInput(INPUT_MVN_TOOLCHAIN_ID);
+        const toolchainIds = getMultilineInput(INPUT_MVN_TOOLCHAIN_ID);
         startGroup('Installed distributions');
-        if (versions.length !== toolchainIds.length) {
-            toolchainIds = [];
-        }
         if (!versions.length && !versionFile) {
             throw new Error('java-version or java-version-file input expected');
         }
+        validateToolchainIds(versions, versionFile, toolchainIds);
         if (!versions.length) {
             core_debug('java-version input is empty, looking for java-version-file input');
             const content = external_fs_default().readFileSync(versionFile).toString().trim();
