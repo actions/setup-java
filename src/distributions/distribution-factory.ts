@@ -22,42 +22,18 @@ import {
 import {JetBrainsDistribution} from './jetbrains/installer.js';
 import {KonaDistribution} from './kona/installer.js';
 import {OpenJdkDistribution} from './openjdk/installer.js';
-
-enum JavaDistribution {
-  Adopt = 'adopt',
-  AdoptHotspot = 'adopt-hotspot',
-  AdoptOpenJ9 = 'adopt-openj9',
-  Temurin = 'temurin',
-  Zulu = 'zulu',
-  Liberica = 'liberica',
-  LibericaNik = 'liberica-nik',
-  JdkFile = 'jdkfile',
-  Microsoft = 'microsoft',
-  Semeru = 'semeru',
-  Corretto = 'corretto',
-  Oracle = 'oracle',
-  Dragonwell = 'dragonwell',
-  SapMachine = 'sapmachine',
-  GraalVM = 'graalvm',
-  GraalVMCommunity = 'graalvm-community',
-  JetBrains = 'jetbrains',
-  Kona = 'kona',
-  OracleOpenJdk = 'oracle-openjdk'
-}
+import {JavaDistribution, validateJavaPackage} from './package-types.js';
 
 export function getJavaDistribution(
   distributionName: string,
   installerOptions: JavaInstallerOptions,
   jdkFile?: string
 ): JavaBase | null {
-  if (
-    installerOptions.packageType === 'jdk+jmods' &&
-    distributionName !== JavaDistribution.Temurin
-  ) {
-    throw new Error(
-      "java-package 'jdk+jmods' is only supported for distribution 'temurin'."
-    );
-  }
+  validateJavaPackage(
+    distributionName,
+    installerOptions.packageType,
+    installerOptions.version
+  );
 
   switch (distributionName) {
     case JavaDistribution.JdkFile:

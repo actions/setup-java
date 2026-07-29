@@ -321,12 +321,10 @@ The package types have these meanings:
 | `graalvm-community` | `jdk` | Stable GraalVM Community releases for JDK 17 and later only. |
 | `jetbrains` | `jdk`, `jre`, `jdk+jcef`, `jre+jcef`, `jdk+ft`, `jre+ft` | JetBrains publishes selected LTS-based releases rather than every OpenJDK patch. JDK/JRE and JCEF bundles start with the Java 11 release family; FreeType bundles start with Java 17. Exact package, LTS family, patch, OS, and architecture availability is determined from release assets. |
 | `kona` | `jdk` | Stable Java 8, 11, 17, 21, and 25 releases only. |
-| `jdkfile` | `jdk` (recommended) | The package contents and version are supplied by `jdk-file`; `setup-java` does not validate them. `java-package` only separates the local archive's tool-cache entry, so use `jdk` unless separate cache namespaces are required. |
+| `jdkfile` | `jdk` | The package contents and version are supplied by `jdk-file`; `setup-java` validates the package type but does not inspect the archive contents. |
 
-Values outside this table are unsupported even when a distribution forwards the
-value to its vendor API instead of rejecting it immediately. In that case, the
-action normally fails with a version-not-found error because no matching
-artifact exists.
+Values outside this table are unsupported. The action rejects them before
+checking the tool cache or requesting a vendor catalog.
 
 ```yaml
 steps:
