@@ -62,7 +62,7 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `problem-matcher`: Set to `false` to disable Java problem matcher annotations (compiler diagnostics and uncaught exceptions). Default value: `true`. See [Java problem matcher](docs/advanced-usage.md#java-problem-matcher-compiler-annotations) for details and annotation limits.
 
-  - `verify-signature`: Verifies downloaded Java package signatures when supported by the selected distribution. Currently supported for `temurin` and `microsoft`. Signature verification provides an authenticity check in addition to automatic checksum verification. If set to `true` for unsupported distributions, the action fails.
+  - `verify-signature`: Verifies downloaded Java package signatures when supported by the selected distribution. Currently supported for `temurin` and `microsoft`. If set to `true` for unsupported distributions, the action fails.
 
   - `verify-signature-public-key`: ASCII-armored GPG public key used to verify the downloaded package signature. Overrides the default bundled key for the selected distribution.
 
@@ -101,7 +101,7 @@ When a selected distribution publishes an authoritative checksum in its release 
 
 Distributions or individual releases without an authoritative checksum continue to install normally, with the omission reported only in debug logs. Archives resolved directly from the runner tool cache are not downloaded again and therefore are not reverified.
 
-Checksums detect corrupted or unexpectedly modified downloads, while GPG signatures additionally authenticate the publisher. For supported distributions, enable `verify-signature` when that stronger authenticity guarantee is required; signature verification complements rather than replaces the automatic checksum check.
+Checksums detect corrupted or unexpectedly modified downloads before they are persisted in the runner tool cache.
 
 ### Basic Configuration
 

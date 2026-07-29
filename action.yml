@@ -39,7 +39,7 @@ inputs:
     required: false
     default: true
   verify-signature:
-    description: 'Verify downloaded Java package signatures, in addition to automatic checksum verification, when supported by the selected distribution'
+    description: 'Verify downloaded Java package signatures when supported by the selected distribution'
     required: false
     default: false
   verify-signature-public-key:
