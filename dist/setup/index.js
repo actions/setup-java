@@ -129300,7 +129300,114 @@ function isProbablyGradleDaemonProblem(packageManager, error) {
     return message.startsWith('Tar failed with error: ');
 }
 
+;// CONCATENATED MODULE: ./src/retrying-http-client.ts
+
+
+const RETRYABLE_HTTP_STATUS_CODES = new Set([429, 502, 503, 504, 522]);
+const RETRYABLE_NETWORK_ERROR_CODES = new Set([
+    'ETIMEDOUT',
+    'ECONNRESET',
+    'ENOTFOUND',
+    'ECONNREFUSED'
+]);
+const RETRYABLE_HTTP_VERBS = new Set(['OPTIONS', 'GET', 'DELETE', 'HEAD']);
+class RetryingHttpClient extends lib_HttpClient {
+    maxAttempts;
+    baseDelayMs;
+    maxDelayMs;
+    sleep;
+    random;
+    now;
+    constructor(userAgent, retryOptions = {}) {
+        super(userAgent, undefined, { allowRetries: false });
+        this.maxAttempts = retryOptions.maxAttempts ?? 4;
+        this.baseDelayMs = retryOptions.baseDelayMs ?? 1000;
+        this.maxDelayMs = retryOptions.maxDelayMs ?? 10000;
+        this.sleep =
+            retryOptions.sleep ??
+                (delayMs => new Promise(resolve => setTimeout(resolve, delayMs)));
+        this.random = retryOptions.random ?? Math.random;
+        this.now = retryOptions.now ?? Date.now;
+        if (this.maxAttempts < 1) {
+            throw new Error('maxAttempts must be at least 1');
+        }
+        if (this.baseDelayMs < 0 || this.maxDelayMs < this.baseDelayMs) {
+            throw new Error('baseDelayMs must be non-negative and no greater than maxDelayMs');
+        }
+    }
+    async request(verb, requestUrl, data, headers) {
+        if (!RETRYABLE_HTTP_VERBS.has(verb)) {
+            return super.request(verb, requestUrl, data, headers);
+        }
+        for (let attempt = 1; attempt <= this.maxAttempts; attempt++) {
+            try {
+                const response = await super.request(verb, requestUrl, data, headers);
+                const statusCode = response.message.statusCode;
+                if (!statusCode ||
+                    !RETRYABLE_HTTP_STATUS_CODES.has(statusCode) ||
+                    attempt === this.maxAttempts) {
+                    return response;
+                }
+                const delayMs = this.getDelayMs(attempt, response.message.headers['retry-after']);
+                await response.readBody();
+                this.logRetry(attempt, delayMs, `HTTP ${statusCode}`);
+                await this.sleep(delayMs);
+            }
+            catch (error) {
+                if (!isRetryableNetworkError(error) || attempt === this.maxAttempts) {
+                    throw error;
+                }
+                const delayMs = this.getDelayMs(attempt);
+                this.logRetry(attempt, delayMs, retrying_http_client_getErrorMessage(error));
+                await this.sleep(delayMs);
+            }
+        }
+        throw new Error('HTTP retry attempts exhausted unexpectedly');
+    }
+    getDelayMs(failedAttempt, retryAfter) {
+        const exponentialDelay = Math.min(this.maxDelayMs, this.baseDelayMs * 2 ** (failedAttempt - 1));
+        const jitteredDelay = Math.floor(exponentialDelay / 2 + this.random() * (exponentialDelay / 2));
+        const retryAfterDelay = retrying_http_client_parseRetryAfter(retryAfter, this.now());
+        return Math.min(this.maxDelayMs, Math.max(jitteredDelay, retryAfterDelay ?? 0));
+    }
+    logRetry(failedAttempt, delayMs, reason) {
+        info(`Request attempt ${failedAttempt} of ${this.maxAttempts} failed (${reason}); retrying in ${delayMs} ms`);
+    }
+}
+function retrying_http_client_parseRetryAfter(value, nowMs) {
+    const retryAfter = Array.isArray(value) ? value[0] : value;
+    if (!retryAfter) {
+        return undefined;
+    }
+    if (/^\d+$/.test(retryAfter.trim())) {
+        return Number(retryAfter) * 1000;
+    }
+    const retryAt = Date.parse(retryAfter);
+    if (Number.isNaN(retryAt) || retryAt <= nowMs) {
+        return undefined;
+    }
+    return retryAt - nowMs;
+}
+function isRetryableNetworkError(error) {
+    if (!isErrorRecord(error)) {
+        return false;
+    }
+    if (typeof error.code === 'string' &&
+        RETRYABLE_NETWORK_ERROR_CODES.has(error.code)) {
+        return true;
+    }
+    return (Array.isArray(error.errors) &&
+        error.errors.some(nestedError => isRetryableNetworkError(nestedError)));
+}
+function isErrorRecord(error) {
+    return typeof error === 'object' && error !== null;
+}
+function retrying_http_client_getErrorMessage(error) {
+    return error instanceof Error ? error.message : 'network error';
+}
+
 ;// CONCATENATED MODULE: ./src/distributions/base-installer.ts
+
 
 
 
@@ -129325,10 +129432,7 @@ class JavaBase {
     verifySignaturePublicKey;
     constructor(distribution, installerOptions) {
         this.distribution = distribution;
-        this.http = new lib_HttpClient('actions/setup-java', undefined, {
-            allowRetries: true,
-            maxRetries: 3
-        });
+        this.http = new RetryingHttpClient('actions/setup-java');
         ({
             version: this.version,
             stable: this.stable,
@@ -129355,106 +129459,21 @@ class JavaBase {
         }
         else {
             info('Trying to resolve the latest version from remote');
-            const MAX_RETRIES = 4;
-            const RETRY_DELAY_MS = 2000;
-            const retryableCodes = [
-                'ETIMEDOUT',
-                'ECONNRESET',
-                'ENOTFOUND',
-                'ECONNREFUSED'
-            ];
-            let retries = MAX_RETRIES;
-            while (retries > 0) {
-                try {
-                    // Clear console timers before each attempt to prevent conflicts
-                    if (retries < MAX_RETRIES && isDebug()) {
-                        const consoleAny = console;
-                        consoleAny._times?.clear?.();
-                    }
-                    const javaRelease = await this.findPackageForDownload(this.version);
-                    info(`Resolved latest version as ${javaRelease.version}`);
-                    if (!this.forceDownload &&
-                        foundJava?.version === javaRelease.version) {
-                        info(`Resolved Java ${foundJava.version} from tool-cache`);
-                    }
-                    else {
-                        info('Trying to download...');
-                        foundJava = await this.downloadTool(javaRelease);
-                        info(`Java ${foundJava.version} was downloaded`);
-                    }
-                    break;
+            try {
+                const javaRelease = await this.findPackageForDownload(this.version);
+                info(`Resolved latest version as ${javaRelease.version}`);
+                if (!this.forceDownload && foundJava?.version === javaRelease.version) {
+                    info(`Resolved Java ${foundJava.version} from tool-cache`);
                 }
-                catch (error) {
-                    retries--;
-                    // Check if error is retryable (including aggregate errors)
-                    const isRetryable = (error instanceof HTTPError &&
-                        error.httpStatusCode &&
-                        [429, 502, 503, 504, 522].includes(error.httpStatusCode)) ||
-                        retryableCodes.includes(error?.code) ||
-                        (error?.errors &&
-                            Array.isArray(error.errors) &&
-                            error.errors.some((err) => retryableCodes.includes(err?.code)));
-                    if (retries > 0 && isRetryable) {
-                        core_debug(`Attempt failed due to network or timeout issues, initiating retry... (${retries} attempts left)`);
-                        await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
-                        continue;
-                    }
-                    if (error instanceof HTTPError) {
-                        if (error.httpStatusCode === 403) {
-                            core_error('HTTP 403: Permission denied or access restricted.');
-                        }
-                        else if (error.httpStatusCode === 429) {
-                            warning('HTTP 429: Rate limit exceeded. Please retry later.');
-                        }
-                        else {
-                            core_error(`HTTP ${error.httpStatusCode}: ${error.message}`);
-                        }
-                    }
-                    else if (error && error.errors && Array.isArray(error.errors)) {
-                        core_error(`Java setup failed due to network or configuration error(s)`);
-                        if (error instanceof Error && error.stack) {
-                            core_debug(error.stack);
-                        }
-                        for (const err of error.errors) {
-                            const endpoint = err?.address || err?.hostname || '';
-                            const port = err?.port ? `:${err.port}` : '';
-                            const message = err?.message || 'Aggregate error';
-                            const endpointInfo = !message.includes(endpoint)
-                                ? ` ${endpoint}${port}`
-                                : '';
-                            const localInfo = err.localAddress && err.localPort
-                                ? ` - Local (${err.localAddress}:${err.localPort})`
-                                : '';
-                            const logMessage = `${message}${endpointInfo}${localInfo}`;
-                            core_error(logMessage);
-                            core_debug(`${err.stack || err.message}`);
-                            Object.entries(err).forEach(([key, value]) => {
-                                core_debug(`"${key}": ${JSON.stringify(value)}`);
-                            });
-                        }
-                    }
-                    else {
-                        const message = error instanceof Error ? error.message : JSON.stringify(error);
-                        core_error(`Java setup process failed due to: ${message}`);
-                        if (typeof error?.code === 'string') {
-                            core_debug(error.stack);
-                        }
-                        const errorDetails = {
-                            name: error.name,
-                            message: error.message,
-                            ...Object.getOwnPropertyNames(error)
-                                .filter(prop => !['name', 'message', 'stack'].includes(prop))
-                                .reduce((acc, prop) => {
-                                acc[prop] = error[prop];
-                                return acc;
-                            }, {})
-                        };
-                        Object.entries(errorDetails).forEach(([key, value]) => {
-                            core_debug(`"${key}": ${JSON.stringify(value)}`);
-                        });
-                    }
-                    throw error;
+                else {
+                    info('Trying to download...');
+                    foundJava = await this.downloadTool(javaRelease);
+                    info(`Java ${foundJava.version} was downloaded`);
                 }
+            }
+            catch (error) {
+                this.logSetupError(error);
+                throw error;
             }
         }
         if (!foundJava) {
@@ -129474,6 +129493,67 @@ class JavaBase {
             this.setJavaEnvironment(foundJava.version, foundJava.path);
         }
         return foundJava;
+    }
+    logSetupError(error) {
+        const httpStatusCode = error instanceof HTTPError
+            ? error.httpStatusCode
+            : error instanceof lib_HttpClientError
+                ? error.statusCode
+                : undefined;
+        if (httpStatusCode) {
+            if (httpStatusCode === 403) {
+                core_error('HTTP 403: Permission denied or access restricted.');
+            }
+            else if (httpStatusCode === 429) {
+                warning('HTTP 429: Rate limit exceeded. Please retry later.');
+            }
+            else {
+                core_error(`HTTP ${httpStatusCode}: ${error.message}`);
+            }
+        }
+        else if (error && error.errors && Array.isArray(error.errors)) {
+            core_error(`Java setup failed due to network or configuration error(s)`);
+            if (error instanceof Error && error.stack) {
+                core_debug(error.stack);
+            }
+            for (const err of error.errors) {
+                const endpoint = err?.address || err?.hostname || '';
+                const port = err?.port ? `:${err.port}` : '';
+                const message = err?.message || 'Aggregate error';
+                const endpointInfo = !message.includes(endpoint)
+                    ? ` ${endpoint}${port}`
+                    : '';
+                const localInfo = err.localAddress && err.localPort
+                    ? ` - Local (${err.localAddress}:${err.localPort})`
+                    : '';
+                const logMessage = `${message}${endpointInfo}${localInfo}`;
+                core_error(logMessage);
+                core_debug(`${err.stack || err.message}`);
+                Object.entries(err).forEach(([key, value]) => {
+                    core_debug(`"${key}": ${JSON.stringify(value)}`);
+                });
+            }
+        }
+        else {
+            const message = error instanceof Error ? error.message : JSON.stringify(error);
+            core_error(`Java setup process failed due to: ${message}`);
+            if (typeof error?.code === 'string') {
+                core_debug(error.stack);
+            }
+            const errorDetails = {
+                name: error.name,
+                message: error.message,
+                ...Object.getOwnPropertyNames(error)
+                    .filter(prop => !['name', 'message', 'stack'].includes(prop))
+                    .reduce((acc, prop) => {
+                    acc[prop] = error[prop];
+                    return acc;
+                }, {})
+            };
+            Object.entries(errorDetails).forEach(([key, value]) => {
+                core_debug(`"${key}": ${JSON.stringify(value)}`);
+            });
+        }
     }
     get toolcacheFolderName() {
         return `Java_${this.distribution}_${this.packageType}`;
