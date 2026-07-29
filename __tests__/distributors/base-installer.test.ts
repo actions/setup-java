@@ -879,6 +879,29 @@ describe('downloadAndVerify', () => {
     expect(fs.existsSync(archivePath)).toBe(false);
   });
 
+  it('preserves the verification error when removing the download fails', async () => {
+    const distribution = new EmptyJavaBase(options);
+    const cleanupError = new Error('cleanup failed');
+    jest.spyOn(fs.promises, 'rm').mockRejectedValueOnce(cleanupError);
+
+    const result = distribution.downloadRelease({
+      version: '21.0.8',
+      url: 'https://vendor.example/jdk.tar.gz',
+      checksum: {algorithm: 'sha256', value: 'a'.repeat(64)}
+    });
+
+    await expect(result).rejects.toMatchObject({
+      message: expect.stringContaining(
+        'Failed to remove the downloaded archive after verification failure: cleanup failed'
+      ),
+      cause: expect.objectContaining({
+        message: expect.stringContaining(
+          'Checksum verification failed for Empty version 21.0.8'
+        )
+      })
+    });
+  });
+
   it('logs when authoritative checksum metadata is unavailable', async () => {
     const distribution = new EmptyJavaBase(options);
 

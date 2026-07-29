@@ -84,12 +84,18 @@ export abstract class JavaBase {
       );
       return archivePath;
     } catch (error) {
+      let cleanupError: unknown;
+      let cleanupFailed = false;
       try {
         await fs.promises.rm(archivePath, {force: true});
-      } catch (cleanupError) {
+      } catch (caughtCleanupError) {
+        cleanupError = caughtCleanupError;
+        cleanupFailed = true;
+      }
+      if (cleanupFailed) {
         throw new Error(
           `${(error as Error).message} Failed to remove the downloaded archive after verification failure: ${(cleanupError as Error).message}`,
-          {cause: cleanupError}
+          {cause: error}
         );
       }
       throw error;
