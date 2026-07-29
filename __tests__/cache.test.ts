@@ -237,6 +237,83 @@ describe('dependency cache', () => {
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
           '**/.mvn/wrapper/maven-wrapper.properties'
         );
+        expect(spyInfo).toHaveBeenCalledWith(
+          'maven-wrapper cache is not found'
+        );
+      });
+      it('starts maven dependency and wrapper restores before either completes', async () => {
+        createDirectory(join(workspace, '.mvn'));
+        createDirectory(join(workspace, '.mvn', 'wrapper'));
+        createFile(
+          join(workspace, '.mvn', 'wrapper', 'maven-wrapper.properties')
+        );
+        const dependencyRestore = deferred<string | undefined>();
+        const wrapperRestore = deferred<string | undefined>();
+        const bothRestoresStarted = deferred<void>();
+        let restoreCount = 0;
+        spyCacheRestore.mockImplementation((paths: string[]) => {
+          restoreCount++;
+          if (restoreCount === 2) {
+            bothRestoresStarted.resolve();
+          }
+          return paths.includes(join(os.homedir(), '.m2', 'repository'))
+            ? dependencyRestore.promise
+            : wrapperRestore.promise;
+        });
+
+        const restorePromise = restore('maven', '');
+        await bothRestoresStarted.promise;
+
+        expect(spyCacheRestore).toHaveBeenCalledTimes(2);
+        expect(spySaveState).toHaveBeenCalledWith(
+          'cache-primary-key',
+          expect.any(String)
+        );
+        expect(spySaveState).toHaveBeenCalledWith(
+          'cache-primary-key-maven-wrapper',
+          expect.any(String)
+        );
+
+        wrapperRestore.resolve('maven-wrapper-hit');
+        dependencyRestore.resolve('maven-dependency-hit');
+        await restorePromise;
+
+        expect(spySaveState).toHaveBeenCalledWith(
+          'cache-matched-key-maven-wrapper',
+          'maven-wrapper-hit'
+        );
+        expect(spySaveState).toHaveBeenCalledWith(
+          'cache-matched-key',
+          'maven-dependency-hit'
+        );
+        expect(spySetOutput).toHaveBeenCalledWith('cache-hit', false);
+      });
+      it('propagates a wrapper restore failure after starting both restores', async () => {
+        createDirectory(join(workspace, '.mvn'));
+        createDirectory(join(workspace, '.mvn', 'wrapper'));
+        createFile(
+          join(workspace, '.mvn', 'wrapper', 'maven-wrapper.properties')
+        );
+        const dependencyRestore = deferred<string | undefined>();
+        const wrapperRestore = deferred<string | undefined>();
+        const bothRestoresStarted = deferred<void>();
+        let restoreCount = 0;
+        spyCacheRestore.mockImplementation((paths: string[]) => {
+          restoreCount++;
+          if (restoreCount === 2) {
+            bothRestoresStarted.resolve();
+          }
+          return paths.includes(join(os.homedir(), '.m2', 'repository'))
+            ? dependencyRestore.promise
+            : wrapperRestore.promise;
+        });
+
+        const restorePromise = restore('maven', '');
+        await bothRestoresStarted.promise;
+        wrapperRestore.reject(new Error('wrapper restore failed'));
+        dependencyRestore.resolve(undefined);
+
+        await expect(restorePromise).rejects.toThrow('wrapper restore failed');
       });
       it('skips the maven wrapper cache when no wrapper properties exist', async () => {
         createFile(join(workspace, 'pom.xml'));
@@ -332,6 +409,50 @@ describe('dependency cache', () => {
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
           '**/gradle-wrapper.properties'
         );
+      });
+      it('starts gradle dependency and wrapper restores before either completes', async () => {
+        createFile(join(workspace, 'build.gradle'));
+        createFile(join(workspace, 'gradle-wrapper.properties'));
+        const dependencyRestore = deferred<string | undefined>();
+        const wrapperRestore = deferred<string | undefined>();
+        const bothRestoresStarted = deferred<void>();
+        let restoreCount = 0;
+        spyCacheRestore.mockImplementation((paths: string[]) => {
+          restoreCount++;
+          if (restoreCount === 2) {
+            bothRestoresStarted.resolve();
+          }
+          return paths.includes(join(os.homedir(), '.gradle', 'caches'))
+            ? dependencyRestore.promise
+            : wrapperRestore.promise;
+        });
+
+        const restorePromise = restore('gradle', '');
+        await bothRestoresStarted.promise;
+
+        expect(spyCacheRestore).toHaveBeenCalledTimes(2);
+        expect(spySaveState).toHaveBeenCalledWith(
+          'cache-primary-key',
+          expect.any(String)
+        );
+        expect(spySaveState).toHaveBeenCalledWith(
+          'cache-primary-key-gradle-wrapper',
+          expect.any(String)
+        );
+
+        dependencyRestore.resolve('gradle-dependency-hit');
+        wrapperRestore.resolve('gradle-wrapper-hit');
+        await restorePromise;
+
+        expect(spySaveState).toHaveBeenCalledWith(
+          'cache-matched-key',
+          'gradle-dependency-hit'
+        );
+        expect(spySaveState).toHaveBeenCalledWith(
+          'cache-matched-key-gradle-wrapper',
+          'gradle-wrapper-hit'
+        );
+        expect(spySetOutput).toHaveBeenCalledWith('cache-hit', false);
       });
       it('skips the gradle wrapper cache when no wrapper properties exist', async () => {
         createFile(join(workspace, 'build.gradle'));
@@ -609,6 +730,36 @@ describe('dependency cache', () => {
         );
         expect(spyWarning).not.toHaveBeenCalled();
       });
+      it('continues with primary cache save when additional cache save fails unexpectedly', async () => {
+        createFile(join(workspace, 'pom.xml'));
+        (core.getState as jest.Mock<any>).mockImplementation((name: any) => {
+          switch (name) {
+            case 'cache-primary-key':
+              return 'setup-java-cache-primary-key';
+            case 'cache-matched-key':
+              return 'setup-java-cache-matched-key';
+            case 'cache-primary-key-maven-wrapper':
+              return 'setup-java-maven-wrapper-key';
+            default:
+              return '';
+          }
+        });
+        spyCacheSave.mockImplementation((paths: string[], key: string) => {
+          if (paths[0] === 'wrapper-path') {
+            return Promise.reject(new Error('wrapper save exploded'));
+          }
+          return Promise.resolve(0);
+        });
+
+        await expect(save('maven')).resolves.toBeUndefined();
+        expect(spyWarning).toHaveBeenCalledWith(
+          'Failed to save maven-wrapper cache: wrapper save exploded. Continuing with primary cache save.'
+        );
+        expect(spyCacheSave).toHaveBeenCalledWith(
+          [join(os.homedir(), '.m2', 'repository')],
+          'setup-java-cache-primary-key'
+        );
+      });
     });
     describe('for gradle', () => {
       it('uploads cache even if no build.gradle found', async () => {
@@ -815,6 +966,16 @@ function createStateForSuccessfulRestore() {
 function createFile(path: string) {
   core.info(`created a file at ${path}`);
   fs.writeFileSync(path, '');
+}
+
+function deferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve;
+    reject = promiseReject;
+  });
+  return {promise, resolve, reject};
 }
 
 function createDirectory(path: string) {
