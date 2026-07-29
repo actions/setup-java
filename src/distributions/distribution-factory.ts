@@ -23,6 +23,8 @@ import {JetBrainsDistribution} from './jetbrains/installer.js';
 import {KonaDistribution} from './kona/installer.js';
 import {OpenJdkDistribution} from './openjdk/installer.js';
 import {JavaDistribution, validateJavaPackage} from './package-types.js';
+import os from 'os';
+import {validateJavaPlatform} from './platform-types.js';
 
 export function getJavaDistribution(
   distributionName: string,
@@ -34,54 +36,64 @@ export function getJavaDistribution(
     installerOptions.packageType,
     installerOptions.version
   );
+  const architecture = validateJavaPlatform(
+    distributionName,
+    process.platform,
+    installerOptions.architecture || os.arch(),
+    installerOptions.version
+  );
+  const normalizedInstallerOptions = {
+    ...installerOptions,
+    architecture
+  };
 
   switch (distributionName) {
     case JavaDistribution.JdkFile:
-      return new LocalDistribution(installerOptions, jdkFile);
+      return new LocalDistribution(normalizedInstallerOptions, jdkFile);
     case JavaDistribution.Adopt:
     case JavaDistribution.AdoptHotspot:
       return new AdoptDistribution(
-        installerOptions,
+        normalizedInstallerOptions,
         AdoptImplementation.Hotspot
       );
     case JavaDistribution.AdoptOpenJ9:
       return new AdoptDistribution(
-        installerOptions,
+        normalizedInstallerOptions,
         AdoptImplementation.OpenJ9
       );
     case JavaDistribution.Temurin:
       return new TemurinDistribution(
-        installerOptions,
+        normalizedInstallerOptions,
         TemurinImplementation.Hotspot
       );
     case JavaDistribution.Zulu:
-      return new ZuluDistribution(installerOptions);
+      return new ZuluDistribution(normalizedInstallerOptions);
     case JavaDistribution.Liberica:
-      return new LibericaDistributions(installerOptions);
+      return new LibericaDistributions(normalizedInstallerOptions);
     case JavaDistribution.LibericaNik:
-      return new LibericaNikDistributions(installerOptions);
+      return new LibericaNikDistributions(normalizedInstallerOptions);
     case JavaDistribution.Microsoft:
-      return new MicrosoftDistributions(installerOptions);
+      return new MicrosoftDistributions(normalizedInstallerOptions);
     case JavaDistribution.Semeru:
-      return new SemeruDistribution(installerOptions);
+      return new SemeruDistribution(normalizedInstallerOptions);
     case JavaDistribution.Corretto:
-      return new CorrettoDistribution(installerOptions);
+      return new CorrettoDistribution(normalizedInstallerOptions);
     case JavaDistribution.Oracle:
-      return new OracleDistribution(installerOptions);
+      return new OracleDistribution(normalizedInstallerOptions);
     case JavaDistribution.Dragonwell:
-      return new DragonwellDistribution(installerOptions);
+      return new DragonwellDistribution(normalizedInstallerOptions);
     case JavaDistribution.SapMachine:
-      return new SapMachineDistribution(installerOptions);
+      return new SapMachineDistribution(normalizedInstallerOptions);
     case JavaDistribution.GraalVM:
-      return new GraalVMDistribution(installerOptions);
+      return new GraalVMDistribution(normalizedInstallerOptions);
     case JavaDistribution.GraalVMCommunity:
-      return new GraalVMCommunityDistribution(installerOptions);
+      return new GraalVMCommunityDistribution(normalizedInstallerOptions);
     case JavaDistribution.JetBrains:
-      return new JetBrainsDistribution(installerOptions);
+      return new JetBrainsDistribution(normalizedInstallerOptions);
     case JavaDistribution.Kona:
-      return new KonaDistribution(installerOptions);
+      return new KonaDistribution(normalizedInstallerOptions);
     case JavaDistribution.OracleOpenJdk:
-      return new OpenJdkDistribution(installerOptions);
+      return new OpenJdkDistribution(normalizedInstallerOptions);
     default:
       return null;
   }

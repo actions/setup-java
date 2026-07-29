@@ -221,6 +221,8 @@ export class ZuluDistribution extends JavaBase {
         // would let a 32-bit request resolve to a 64-bit JDK. Use "i686" to
         // target only genuine 32-bit builds, matching the legacy API behavior.
         return 'i686';
+      case 'armv7':
+        return 'arm';
       case 'aarch64':
       case 'arm64':
         return 'aarch64';

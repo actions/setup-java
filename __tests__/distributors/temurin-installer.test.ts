@@ -291,6 +291,7 @@ describe('getAvailableVersions', () => {
 
   it.each([
     ['amd64', 'x64'],
+    ['arm', 'arm'],
     ['arm64', 'aarch64']
   ])(
     'defaults to os.arch(): %s mapped to distro arch: %s',

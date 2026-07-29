@@ -484,6 +484,38 @@ jobs:
 > which provides purpose-built caching (see the
 > [setup-gradle documentation](https://github.com/gradle/actions/blob/main/docs/setup-gradle.md)).
 
+## Platform and architecture compatibility
+
+The `architecture` input is normalized before setup-java checks the tool cache
+or contacts a vendor. `amd64`, `ia32`, `arm`, and `arm64` are accepted aliases
+for `x64`, `x86`, `armv7`, and `aarch64`. The table lists the combinations
+setup-java validates up front; an individual Java patch release can still be
+absent from a vendor catalog.
+
+| Distribution | Linux | macOS | Windows | Other / version restrictions |
+| --- | --- | --- | --- | --- |
+| `temurin` | `x64`, `x86`, `armv7`, `aarch64`, `ppc64le`, `s390x` | `x64`, `aarch64` | `x64`, `x86`, `aarch64` | Linux `armv7` is available through Java 17. |
+| `adopt`, `adopt-hotspot` | `x64`, `x86`, `armv7`, `aarch64`, `ppc64le`, `s390x` | `x64`, `aarch64` | `x64`, `x86`, `aarch64` | HotSpot requests try Temurin before the archived catalog; Linux `armv7` is available through Java 17. |
+| `adopt-openj9` | `x64`, `x86`, `aarch64`, `ppc64le`, `s390x` | `x64` | `x64`, `x86` | Uses the archived AdoptOpenJDK OpenJ9 catalog. |
+| `zulu` | `x64`, `x86`, `armv7`, `aarch64` | `x64`, `aarch64` | `x64`, `x86`, `aarch64` | |
+| `liberica` | `x64`, `x86`, `armv7`, `aarch64`, `ppc64le` | `x64`, `aarch64` | `x64`, `x86`, `aarch64` | Solaris: `x64`. |
+| `liberica-nik` | `x64`, `aarch64` | `x64`, `aarch64` | `x64`, `aarch64` | |
+| `microsoft` | `x64`, `aarch64` | `x64`, `aarch64` | `x64`, `aarch64` | |
+| `semeru` | `x64`, `x86`, `ppc64le`, `ppc64`, `s390x`, `aarch64` | `x64`, `aarch64` | `x64`, `aarch64` | |
+| `corretto` | `x64`, `x86`, `armv7`, `aarch64` | `x64`, `aarch64` | `x64`, `x86` | `x86` is limited to Java 11 or earlier; Linux `armv7` is available for Java 11. |
+| `oracle` | `x64`, `aarch64` | `x64`, `aarch64` | `x64` | |
+| `oracle-openjdk` | `x64`, `aarch64` | `x64`, `aarch64` | `x64` | |
+| `dragonwell` | `x64`, `aarch64` | — | `x64` | |
+| `sapmachine` | `x64`, `aarch64`, `ppc64le` | `x64`, `aarch64` | `x64`, `aarch64` | |
+| `graalvm`, `graalvm-community` | `x64`, `aarch64` | `x64`, `aarch64` | `x64` | |
+| `jetbrains` | `x64`, `aarch64` | `x64`, `aarch64` | `x64`, `aarch64` | |
+| `kona` | `x64`, `aarch64` | `x64`, `aarch64` | `x64` | |
+| `jdkfile` | Any | Any | Any | Local archives are not restricted because setup-java does not inspect their contents. |
+
+Unsupported combinations fail with a platform-capability error before a cache
+lookup or vendor request. A supported combination can still produce a
+version-not-found error when the requested release was not published.
+
 ## Installing custom Java architecture
 
 ```yaml
