@@ -57,8 +57,72 @@ const {
   isCacheFeatureAvailable,
   isGhes,
   validatePaginationUrl,
-  getLatestMajorVersion
+  getLatestMajorVersion,
+  getBooleanInput
 } = await import('../src/util.js');
+
+describe('getBooleanInput', () => {
+  let inputs: Record<string, string>;
+
+  beforeEach(() => {
+    inputs = {};
+    (core.getInput as jest.Mock).mockImplementation(
+      (name: string) => inputs[name] ?? ''
+    );
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it.each([
+    ['true', true],
+    ['TRUE', true],
+    ['TrUe', true],
+    [' true ', true],
+    ['false', false],
+    ['FALSE', false],
+    ['FaLsE', false],
+    [' false ', false]
+  ])('parses %j as %s', (value: string, expected: boolean) => {
+    inputs['boolean-input'] = value;
+
+    expect(getBooleanInput('boolean-input')).toBe(expected);
+  });
+
+  it.each([
+    [undefined, false],
+    [false, false],
+    [true, true]
+  ])(
+    'uses the configured default %s when the input is omitted',
+    (defaultValue: boolean | undefined, expected: boolean) => {
+      expect(getBooleanInput('boolean-input', defaultValue)).toBe(expected);
+    }
+  );
+
+  it('uses the configured default for a whitespace-only input', () => {
+    inputs['boolean-input'] = '   ';
+
+    expect(getBooleanInput('boolean-input', true)).toBe(true);
+  });
+
+  it.each([
+    'check-latest',
+    'force-download',
+    'set-default',
+    'verify-signature',
+    'overwrite-settings',
+    'show-download-progress',
+    'problem-matcher'
+  ])('rejects an invalid value for %s', inputName => {
+    inputs[inputName] = 'ture';
+
+    expect(() => getBooleanInput(inputName)).toThrow(
+      `Invalid value 'ture' for boolean input '${inputName}'. Expected 'true' or 'false'.`
+    );
+  });
+});
 
 describe('isVersionSatisfies', () => {
   it.each([
