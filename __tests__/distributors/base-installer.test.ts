@@ -605,6 +605,31 @@ describe('setupJava', () => {
     expect(spyCoreSetOutput).not.toHaveBeenCalled();
   });
 
+  it('should not repeat version resolution when downloadTool fails', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false,
+      forceDownload: true
+    });
+    const findPackageForDownload = jest.fn(async () => ({
+      version: '11.0.9',
+      url: 'https://example.com/jdk.tar.gz'
+    }));
+    const downloadError = new Error('download failed');
+    const downloadTool = jest.fn(async () => {
+      throw downloadError;
+    });
+    mockJavaBase['findPackageForDownload'] = findPackageForDownload;
+    mockJavaBase['downloadTool'] = downloadTool;
+
+    await expect(mockJavaBase.setupJava()).rejects.toBe(downloadError);
+
+    expect(findPackageForDownload).toHaveBeenCalledTimes(1);
+    expect(downloadTool).toHaveBeenCalledTimes(1);
+  });
+
   it.each([
     [
       {
