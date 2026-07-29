@@ -50898,6 +50898,14 @@ function saveAdditionalCache(packageManager, additionalCache) {
             core.info(`Cache hit occurred on the ${additionalCache.name} primary key ${primaryKey}, not saving cache.`);
             return;
         }
+        const globber = yield glob.create(additionalCache.path.join('\n'), {
+            implicitDescendants: false
+        });
+        const cachePaths = yield globber.glob();
+        if (cachePaths.length === 0) {
+            core.debug(`${additionalCache.name} cache paths do not exist, not saving cache.`);
+            return;
+        }
         try {
             const cacheId = yield cache.saveCache(additionalCache.path, primaryKey);
             if (cacheId === -1) {
