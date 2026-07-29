@@ -19,6 +19,9 @@ import {
   renameWinArchive
 } from '../../util.js';
 
+const KONA_RELEASES_URL =
+  'https://tencent.github.io/konajdk/releases/kona-v1.json';
+
 export class KonaDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('Kona', installerOptions);
@@ -30,7 +33,7 @@ export class KonaDistribution extends JavaBase {
     core.info(
       `Downloading Kona JDK ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    const javaArchivePath = await tc.downloadTool(javaRelease.url);
+    const javaArchivePath = await this.downloadAndVerify(javaRelease);
 
     core.info(`Extracting Java archive...`);
 
@@ -74,7 +77,14 @@ export class KonaDistribution extends JavaBase {
       .map(item => {
         return {
           version: item.version,
-          url: item.downloadUrl
+          url: item.downloadUrl,
+          checksum: item.checksum
+            ? {
+                algorithm: 'sha256',
+                value: item.checksum,
+                source: KONA_RELEASES_URL
+              }
+            : undefined
         } as JavaDownloadRelease;
       })
       .sort((a, b) => -semver.compareBuild(a.version, b.version));
@@ -115,16 +125,13 @@ export class KonaDistribution extends JavaBase {
   }
 
   private async fetchReleaseInfo(): Promise<IKonaReleaseInfo | null> {
-    const releasesInfoUrl =
-      'https://tencent.github.io/konajdk/releases/kona-v1.json';
-
     try {
-      core.debug(`Fetching Kona release info from URL: ${releasesInfoUrl}`);
-      return (await this.http.getJson<IKonaReleaseInfo>(releasesInfoUrl))
+      core.debug(`Fetching Kona release info from URL: ${KONA_RELEASES_URL}`);
+      return (await this.http.getJson<IKonaReleaseInfo>(KONA_RELEASES_URL))
         .result;
     } catch (err) {
       core.debug(
-        `Fetching Kona release info from the URL: ${releasesInfoUrl} failed with the error: ${
+        `Fetching Kona release info from the URL: ${KONA_RELEASES_URL} failed with the error: ${
           (err as Error).message
         }`
       );

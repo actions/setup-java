@@ -59,7 +59,7 @@ export class OpenJdkDistribution extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    let javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await this.downloadAndVerify(javaRelease);
 
     core.info(`Extracting Java archive...`);
     const extension = javaRelease.url.endsWith('.zip') ? 'zip' : 'tar.gz';

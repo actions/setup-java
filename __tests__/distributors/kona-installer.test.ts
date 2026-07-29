@@ -216,6 +216,15 @@ describe('Check findPackageForDownload', () => {
         await distribution['findPackageForDownload'](version);
       expect(availableRelease).not.toBeNull();
       expect(availableRelease.url).toBe(expectedUrl);
+      if (availableRelease.checksum) {
+        expect(availableRelease.checksum).toEqual({
+          algorithm: 'sha256',
+          value: expect.stringMatching(/^[a-f0-9]{64}$/),
+          source: 'https://tencent.github.io/konajdk/releases/kona-v1.json'
+        });
+      } else {
+        expect(version).toBe('8.0.20');
+      }
     }
   );
 });

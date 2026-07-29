@@ -16,6 +16,8 @@ import type {
 
 import path from 'path';
 import * as semver from 'semver';
+import fs from 'fs';
+import {createHash} from 'crypto';
 
 import os from 'os';
 
@@ -116,6 +118,10 @@ class EmptyJavaBase extends JavaBase {
       version: availableVersion,
       url: `some/random_url/java/${availableVersion}`
     };
+  }
+
+  public downloadRelease(javaRelease: JavaDownloadRelease): Promise<string> {
+    return this.downloadAndVerify(javaRelease);
   }
 }
 
@@ -813,6 +819,78 @@ describe('setupJava', () => {
     );
     expect(spyCoreInfo).toHaveBeenCalledWith(
       'Installing Java 11.0.9 (not setting as default)'
+    );
+  });
+});
+
+describe('downloadAndVerify', () => {
+  const options: JavaInstallerOptions = {
+    version: '21',
+    architecture: 'x64',
+    packageType: 'jdk',
+    checkLatest: false
+  };
+  let temporaryDirectory: string;
+  let archivePath: string;
+
+  beforeEach(async () => {
+    temporaryDirectory = await fs.promises.mkdtemp(
+      path.join(os.tmpdir(), 'setup-java-base-')
+    );
+    archivePath = path.join(temporaryDirectory, 'archive');
+    await fs.promises.writeFile(archivePath, 'downloaded archive');
+    (tc.downloadTool as jest.Mock<any>).mockResolvedValue(archivePath);
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(temporaryDirectory, {recursive: true, force: true});
+    jest.resetAllMocks();
+  });
+
+  it('returns a download after successful verification', async () => {
+    const distribution = new EmptyJavaBase(options);
+    const result = await distribution.downloadRelease({
+      version: '21.0.8',
+      url: 'https://vendor.example/jdk.tar.gz',
+      checksum: {
+        algorithm: 'sha256',
+        value: createHash('sha256').update('downloaded archive').digest('hex')
+      }
+    });
+
+    expect(result).toBe(archivePath);
+    expect(fs.existsSync(archivePath)).toBe(true);
+    expect(core.debug).toHaveBeenCalledWith(
+      'Verified sha256 checksum for Empty version 21.0.8.'
+    );
+  });
+
+  it('removes the download after verification failure', async () => {
+    const distribution = new EmptyJavaBase(options);
+
+    await expect(
+      distribution.downloadRelease({
+        version: '21.0.8',
+        url: 'https://vendor.example/jdk.tar.gz?token=secret',
+        checksum: {algorithm: 'sha256', value: 'a'.repeat(64)}
+      })
+    ).rejects.toThrow('Checksum verification failed for Empty version 21.0.8');
+
+    expect(fs.existsSync(archivePath)).toBe(false);
+  });
+
+  it('logs when authoritative checksum metadata is unavailable', async () => {
+    const distribution = new EmptyJavaBase(options);
+
+    await expect(
+      distribution.downloadRelease({
+        version: '21.0.8',
+        url: 'https://vendor.example/jdk.tar.gz'
+      })
+    ).resolves.toBe(archivePath);
+
+    expect(core.debug).toHaveBeenCalledWith(
+      'No authoritative checksum is available for Empty version 21.0.8; skipping checksum verification.'
     );
   });
 });

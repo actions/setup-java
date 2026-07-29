@@ -31,7 +31,7 @@ export class MicrosoftDistributions extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    let javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await this.downloadAndVerify(javaRelease);
 
     if (this.verifySignature) {
       if (!javaRelease.signatureUrl) {

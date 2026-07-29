@@ -44,7 +44,11 @@ export class SapMachineDistribution extends JavaBase {
       .map(item => {
         return {
           version: item.version,
-          url: item.downloadLink
+          url: item.downloadLink,
+          checksum: {
+            algorithm: 'sha256',
+            value: item.checksum
+          }
         } as JavaDownloadRelease;
       });
 
@@ -104,7 +108,7 @@ export class SapMachineDistribution extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    let javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await this.downloadAndVerify(javaRelease);
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();

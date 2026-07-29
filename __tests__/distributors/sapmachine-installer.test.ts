@@ -282,6 +282,10 @@ describe('getAvailableVersions', () => {
           await distribution['findPackageForDownload'](normalizedVersion);
         expect(availableVersion).not.toBeNull();
         expect(availableVersion.url).toBe(expectedLink);
+        expect(availableVersion.checksum).toEqual({
+          algorithm: 'sha256',
+          value: expect.stringMatching(/^[a-f0-9]{64}$/)
+        });
       }
     );
 

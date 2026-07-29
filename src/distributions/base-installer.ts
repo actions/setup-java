@@ -17,6 +17,7 @@ import {
 import {MACOS_JAVA_CONTENT_POSTFIX} from '../constants.js';
 import {RetryingHttpClient} from '../retrying-http-client.js';
 import os from 'os';
+import {verifyChecksum} from '../checksum.js';
 
 export abstract class JavaBase {
   protected http: httpm.HttpClient;
@@ -60,6 +61,39 @@ export abstract class JavaBase {
   protected abstract findPackageForDownload(
     range: string
   ): Promise<JavaDownloadRelease>;
+
+  protected async downloadAndVerify(
+    javaRelease: JavaDownloadRelease
+  ): Promise<string> {
+    const archivePath = await tc.downloadTool(javaRelease.url);
+    if (!javaRelease.checksum) {
+      core.debug(
+        `No authoritative checksum is available for ${this.distribution} version ${javaRelease.version}; skipping checksum verification.`
+      );
+      return archivePath;
+    }
+
+    try {
+      await verifyChecksum(archivePath, javaRelease.checksum, {
+        distribution: this.distribution,
+        version: javaRelease.version
+      });
+      core.debug(
+        `Verified ${javaRelease.checksum.algorithm} checksum for ${this.distribution} version ${javaRelease.version}.`
+      );
+      return archivePath;
+    } catch (error) {
+      try {
+        await fs.promises.rm(archivePath, {force: true});
+      } catch (cleanupError) {
+        throw new Error(
+          `${(error as Error).message} Failed to remove the downloaded archive after verification failure: ${(cleanupError as Error).message}`,
+          {cause: cleanupError}
+        );
+      }
+      throw error;
+    }
+  }
 
   public async setupJava(): Promise<JavaInstallerResults> {
     if (this.verifySignature && !this.supportsSignatureVerification()) {

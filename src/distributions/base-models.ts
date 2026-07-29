@@ -14,8 +14,17 @@ export interface JavaInstallerResults {
   path: string;
 }
 
+export type ChecksumAlgorithm = 'sha256' | 'sha512';
+
+export interface ChecksumMetadata {
+  algorithm: ChecksumAlgorithm;
+  value: string;
+  source?: string;
+}
+
 export interface JavaDownloadRelease {
   version: string;
   url: string;
   signatureUrl?: string;
+  checksum?: ChecksumMetadata;
 }
