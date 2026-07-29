@@ -60140,7 +60140,7 @@ const XML_PATTERNS = [
   {
     id: 'xml-comment-close',
     description: '--> closes an enclosing XML comment',
-    pattern: /-->/,
+    pattern: /--!?>/,
   },
   {
     id: 'xml-pi-close',
