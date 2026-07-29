@@ -105,7 +105,9 @@ jobs:
           cache-dependency-path: benchmark/${{ matrix.tool == 'maven' && 'pom.xml' || 'build.gradle' }}
           cache-read-only: true
       - name: Record baseline iteration 1
-        run: bash __tests__/benchmark-cache-restore.sh record "${{ matrix.tool }}" "${{ matrix.os }}" "${{ matrix.profile }}" baseline 1 "${{ steps.baseline-1.outputs.cache-hit }}"
+        env:
+          CACHE_HIT: ${{ steps.baseline-1.outputs.cache-hit }}
+        run: bash __tests__/benchmark-cache-restore.sh record "${{ matrix.tool }}" "${{ matrix.os }}" "${{ matrix.profile }}" baseline 1 "$CACHE_HIT"
 
       - name: Reset caches for candidate iteration 1
         run: bash __tests__/benchmark-cache-restore.sh reset "${{ matrix.tool }}"
@@ -121,7 +123,9 @@ jobs:
           cache-dependency-path: benchmark/${{ matrix.tool == 'maven' && 'pom.xml' || 'build.gradle' }}
           cache-read-only: true
       - name: Record candidate iteration 1
-        run: bash __tests__/benchmark-cache-restore.sh record "${{ matrix.tool }}" "${{ matrix.os }}" "${{ matrix.profile }}" candidate 1 "${{ steps.candidate-1.outputs.cache-hit }}"
+        env:
+          CACHE_HIT: ${{ steps.candidate-1.outputs.cache-hit }}
+        run: bash __tests__/benchmark-cache-restore.sh record "${{ matrix.tool }}" "${{ matrix.os }}" "${{ matrix.profile }}" candidate 1 "$CACHE_HIT"
 
       - name: Reset caches for candidate iteration 2
         run: bash __tests__/benchmark-cache-restore.sh reset "${{ matrix.tool }}"
@@ -137,7 +141,9 @@ jobs:
           cache-dependency-path: benchmark/${{ matrix.tool == 'maven' && 'pom.xml' || 'build.gradle' }}
           cache-read-only: true
       - name: Record candidate iteration 2
-        run: bash __tests__/benchmark-cache-restore.sh record "${{ matrix.tool }}" "${{ matrix.os }}" "${{ matrix.profile }}" candidate 2 "${{ steps.candidate-2.outputs.cache-hit }}"
+        env:
+          CACHE_HIT: ${{ steps.candidate-2.outputs.cache-hit }}
+        run: bash __tests__/benchmark-cache-restore.sh record "${{ matrix.tool }}" "${{ matrix.os }}" "${{ matrix.profile }}" candidate 2 "$CACHE_HIT"
 
       - name: Reset caches for baseline iteration 2
         run: bash __tests__/benchmark-cache-restore.sh reset "${{ matrix.tool }}"
@@ -153,7 +159,9 @@ jobs:
           cache-dependency-path: benchmark/${{ matrix.tool == 'maven' && 'pom.xml' || 'build.gradle' }}
           cache-read-only: true
       - name: Record baseline iteration 2
-        run: bash __tests__/benchmark-cache-restore.sh record "${{ matrix.tool }}" "${{ matrix.os }}" "${{ matrix.profile }}" baseline 2 "${{ steps.baseline-2.outputs.cache-hit }}"
+        env:
+          CACHE_HIT: ${{ steps.baseline-2.outputs.cache-hit }}
+        run: bash __tests__/benchmark-cache-restore.sh record "${{ matrix.tool }}" "${{ matrix.os }}" "${{ matrix.profile }}" baseline 2 "$CACHE_HIT"
 
       - name: Reset caches for baseline iteration 3
         run: bash __tests__/benchmark-cache-restore.sh reset "${{ matrix.tool }}"
@@ -169,7 +177,9 @@ jobs:
           cache-dependency-path: benchmark/${{ matrix.tool == 'maven' && 'pom.xml' || 'build.gradle' }}
           cache-read-only: true
       - name: Record baseline iteration 3
-        run: bash __tests__/benchmark-cache-restore.sh record "${{ matrix.tool }}" "${{ matrix.os }}" "${{ matrix.profile }}" baseline 3 "${{ steps.baseline-3.outputs.cache-hit }}"
+        env:
+          CACHE_HIT: ${{ steps.baseline-3.outputs.cache-hit }}
+        run: bash __tests__/benchmark-cache-restore.sh record "${{ matrix.tool }}" "${{ matrix.os }}" "${{ matrix.profile }}" baseline 3 "$CACHE_HIT"
 
       - name: Reset caches for candidate iteration 3
         run: bash __tests__/benchmark-cache-restore.sh reset "${{ matrix.tool }}"
@@ -185,7 +195,9 @@ jobs:
           cache-dependency-path: benchmark/${{ matrix.tool == 'maven' && 'pom.xml' || 'build.gradle' }}
           cache-read-only: true
       - name: Record candidate iteration 3
-        run: bash __tests__/benchmark-cache-restore.sh record "${{ matrix.tool }}" "${{ matrix.os }}" "${{ matrix.profile }}" candidate 3 "${{ steps.candidate-3.outputs.cache-hit }}"
+        env:
+          CACHE_HIT: ${{ steps.candidate-3.outputs.cache-hit }}
+        run: bash __tests__/benchmark-cache-restore.sh record "${{ matrix.tool }}" "${{ matrix.os }}" "${{ matrix.profile }}" candidate 3 "$CACHE_HIT"
 
       - name: Summarize benchmark
         run: bash __tests__/benchmark-cache-restore.sh summarize "${{ matrix.tool }}" "$GITHUB_STEP_SUMMARY"

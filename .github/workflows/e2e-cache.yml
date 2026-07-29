@@ -242,7 +242,7 @@ jobs:
           cache-dependency-path: __tests__/cache/gradle1/*.gradle*
       - name: Confirm that ~/.gradle/caches directory has been made
         run: bash __tests__/check-dir.sh "$HOME/.gradle/caches"
-      - name: Confirm that the Gradle Wrapper cache has been made
+      - name: Confirm that the Gradle Wrapper cache has been restored
         run: bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists/setup-java-e2e-gradle1"
   gradle2-restore:
     runs-on: ${{ matrix.os }}
@@ -314,7 +314,7 @@ jobs:
           cache-dependency-path: __tests__/cache/maven/pom.xml
       - name: Confirm that ~/.m2/repository directory has been made
         run: bash __tests__/check-dir.sh "$HOME/.m2/repository"
-      - name: Confirm that the Maven Wrapper cache has been made
+      - name: Confirm that the Maven Wrapper cache has been restored
         run: bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists/setup-java-e2e-maven1"
   maven2-restore:
     runs-on: ${{ matrix.os }}
