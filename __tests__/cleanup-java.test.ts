@@ -120,6 +120,49 @@ describe('cleanup', () => {
     await cleanup();
     expect(spyCacheSave).toHaveBeenCalled();
   });
+
+  it.each(['maven', 'gradle', 'sbt'])(
+    'does not save the %s cache in read-only mode',
+    async packageManager => {
+      createStateForSuccessfulRestoreWithWrapper(packageManager);
+      (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
+        switch (name) {
+          case 'cache':
+            return packageManager;
+          case 'cache-read-only':
+            return 'true';
+          default:
+            return '';
+        }
+      });
+
+      await cleanup();
+
+      expect(spyCacheSave).not.toHaveBeenCalled();
+      expect(core.getState).not.toHaveBeenCalled();
+      expect(spyInfo).toHaveBeenCalledWith(
+        'Cache saving is skipped because cache-read-only is enabled.'
+      );
+    }
+  );
+
+  it('saves the cache when read-only mode is explicitly disabled', async () => {
+    spyCacheSave.mockResolvedValue(0);
+    (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
+      switch (name) {
+        case 'cache':
+          return 'maven';
+        case 'cache-read-only':
+          return 'false';
+        default:
+          return '';
+      }
+    });
+
+    await cleanup();
+
+    expect(spyCacheSave).toHaveBeenCalled();
+  });
 });
 
 function resetState() {
@@ -136,6 +179,21 @@ function createStateForSuccessfulRestore() {
         return 'setup-java-cache-primary-key';
       case 'cache-matched-key':
         return 'setup-java-cache-matched-key';
+      default:
+        return '';
+    }
+  });
+}
+
+function createStateForSuccessfulRestoreWithWrapper(packageManager: string) {
+  (core.getState as jest.Mock<any>).mockImplementation((name: any) => {
+    switch (name) {
+      case 'cache-primary-key':
+        return 'setup-java-cache-primary-key';
+      case 'cache-matched-key':
+        return 'setup-java-cache-matched-key';
+      case `cache-primary-key-${packageManager}-wrapper`:
+        return `setup-java-${packageManager}-wrapper-primary-key`;
       default:
         return '';
     }

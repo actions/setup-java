@@ -72,6 +72,8 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `cache-dependency-path`: The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.
 
+  - `cache-read-only`: Restore dependency caches without saving changes in the post action. Defaults to `false`. Use this for pull requests, merge queues, short-lived branches, and fan-out jobs that should consume caches populated by a default-branch or seed job.
+
   #### Maven options
   The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
 
@@ -191,6 +193,54 @@ The workflow output `cache-hit` is set to indicate if an exact match was found f
 The workflow output `cache-primary-key` exposes the primary cache key computed by the action for the configured build tool. It is useful for composing with [`actions/cache`](https://github.com/actions/cache) or [`actions/cache/restore`](https://github.com/actions/cache/tree/main/restore) in later steps or dependent jobs that need to reuse the exact same key. It is empty when caching is not enabled or when caching is skipped (for example, when the cache service is unavailable).
 
 The cache input is optional, and caching is turned off by default.
+
+Set `cache-read-only: true` to restore the main dependency cache and any Maven
+or Gradle wrapper cache without archiving or uploading changes after the job.
+For example, a workflow can allow only the default branch to write caches while
+pull requests, merge queues, and short-lived branches remain read-only:
+
+```yaml
+- uses: actions/setup-java@v6
+  with:
+    distribution: 'temurin'
+    java-version: '25'
+    cache: 'maven'
+    cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+```
+
+For a fan-out matrix, use one seed job to populate a complete cache and make
+every matrix job a read-only consumer. The seed and consumers must use the same
+runner OS and cache dependency inputs so they compute the same key:
+
+```yaml
+jobs:
+  seed-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'maven'
+      - run: mvn dependency:go-offline dependency:resolve-plugins
+
+  build:
+    needs: seed-cache
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goal: [test, verify, package]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'maven'
+          cache-read-only: true
+      - run: mvn ${{ matrix.goal }}
+```
 
 **Maven Wrapper:** when `cache: 'maven'` is enabled, the action also caches and restores the Maven Wrapper distribution downloaded to `~/.m2/wrapper/dists` (in addition to the local repository), so wrapper-based (`./mvnw`) builds don't re-download the Maven distribution. The wrapper distribution is stored in a **separate** cache entry keyed only on `**/.mvn/wrapper/maven-wrapper.properties`, so it stays cached across the frequent `pom.xml` changes that rotate the main dependency cache key.
 

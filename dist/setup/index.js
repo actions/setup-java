@@ -72120,6 +72120,7 @@ const MAVEN_GPG_PASSPHRASE_DEFAULT_ENV = 'MAVEN_GPG_PASSPHRASE';
 const GPG_PASSPHRASE_PROFILE_ID = 'setup-java-gpg';
 const INPUT_CACHE = 'cache';
 const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
+const INPUT_CACHE_READ_ONLY = 'cache-read-only';
 const constants_INPUT_JOB_STATUS = 'job-status';
 const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
 const M2_DIR = '.m2';

@@ -38,6 +38,7 @@ export const GPG_PASSPHRASE_PROFILE_ID = 'setup-java-gpg';
 
 export const INPUT_CACHE = 'cache';
 export const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
+export const INPUT_CACHE_READ_ONLY = 'cache-read-only';
 export const INPUT_JOB_STATUS = 'job-status';
 
 export const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
