@@ -213,7 +213,7 @@ async function computeAdditionalCacheKey(
 
 /**
  * Restore the dependency cache
- * @param id ID of the package manager, should be "maven" or "gradle"
+ * @param id ID of the package manager, should be "maven", "gradle", or "sbt"
  * @param cacheDependencyPath The path to a dependency file
  * @param cachePaths Paths to cache instead of the package manager defaults
  */
