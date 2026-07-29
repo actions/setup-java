@@ -48,7 +48,7 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `distribution`: Java [distribution](#supported-distributions). Required unless `java-version-file` points to `.sdkmanrc` with a recognized distribution suffix (for example `java=21.0.5-tem`).
 
-  - `java-package`: The packaging variant of the chosen distribution. Possible values: `jdk`, `jre`, `jdk+fx`, `jre+fx`. For Azul Zulu, `jdk+crac` and `jre+crac` are also supported. For Eclipse Temurin 24 and later, `jdk+jmods` includes the separately packaged JMOD files. Default value: `jdk`.
+  - `java-package`: The packaging variant of the chosen distribution. Possible values across all distributions are `jdk`, `jre`, `jdk+fx`, `jre+fx`, `jdk+crac`, `jre+crac`, `jdk+jmods`, `jdk+jcef`, `jre+jcef`, `jdk+ft`, and `jre+ft`. Supported values vary by distribution; see the [package compatibility table](docs/advanced-usage.md#package-compatibility). Default value: `jdk`.
 
   - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
 
