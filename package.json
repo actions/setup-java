@@ -18,7 +18,7 @@
     "fix": "npm run format && npm run lint:fix && npm run build",
     "prepare": "husky install",
     "prerelease": "npm run-script build",
-    "release": "git add -f dist/setup/*.js dist/cleanup/index.js",
+    "release": "git add -f dist/setup/*.js dist/setup/package.json dist/cleanup/index.js",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage"
   },
   "lint-staged": {
