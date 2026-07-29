@@ -50,7 +50,11 @@ export class OpenJdkDistribution extends JavaBase {
       );
     }
 
-    return matchingReleases[0];
+    const release = matchingReleases[0];
+    return {
+      ...release,
+      checksum: await this.fetchChecksum(`${release.url}.sha256`, 'sha256')
+    };
   }
 
   protected async downloadTool(

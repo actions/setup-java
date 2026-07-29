@@ -103,8 +103,11 @@ const util = await import('../../src/util.js');
 describe('findPackageForDownload', () => {
   let distribution: InstanceType<typeof MicrosoftDistributions>;
   let spyGetManifestFromRepo: any;
+  let spyHttpClientGet: any;
   let spyDebug: any;
   let spyCoreError: any;
+
+  const MICROSOFT_CHECKSUM = 'b'.repeat(64);
 
   beforeEach(() => {
     mockOsArch.mockReturnValue('x64');
@@ -122,6 +125,15 @@ describe('findPackageForDownload', () => {
       result: data,
       statusCode: 200,
       headers: {}
+    });
+
+    // Every resolved release fetches `${download_url}.sha256sum.txt`; stub
+    // it with a GNU-style `<hex>  <filename>` payload so tests never reach
+    // the real network.
+    spyHttpClientGet = jest.spyOn(HttpClient.prototype, 'get');
+    spyHttpClientGet.mockResolvedValue({
+      message: {statusCode: 200},
+      readBody: async () => `${MICROSOFT_CHECKSUM}  microsoft-jdk.tar.gz\n`
     });
 
     spyDebug = core.debug as jest.Mock;
@@ -310,6 +322,34 @@ describe('findPackageForDownload', () => {
     expect(result.signatureUrl).toBe(
       'https://example.test/jdk.tar.gz.custom.sig'
     );
+  });
+
+  it('fetches the authoritative sha256 checksum from the GNU-style sibling file', async () => {
+    mockOsPlatform.mockReturnValue(process.platform);
+
+    const result = await distribution['findPackageForDownload']('17.0.7');
+
+    expect(result.checksum).toEqual({
+      algorithm: 'sha256',
+      value: MICROSOFT_CHECKSUM,
+      source: `${result.url}.sha256sum.txt`
+    });
+    expect(spyHttpClientGet).toHaveBeenCalledWith(
+      `${result.url}.sha256sum.txt`
+    );
+    expect(spyHttpClientGet).toHaveBeenCalledTimes(1);
+  });
+
+  it('parses only the first whitespace-delimited token from the GNU checksum payload', async () => {
+    spyHttpClientGet.mockResolvedValue({
+      message: {statusCode: 200},
+      readBody: async () =>
+        `${MICROSOFT_CHECKSUM}  microsoft-jdk-17.0.7-linux-x64.tar.gz\n`
+    });
+
+    const result = await distribution['findPackageForDownload']('17.0.7');
+
+    expect(result.checksum?.value).toBe(MICROSOFT_CHECKSUM);
   });
 });
 

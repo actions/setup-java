@@ -242,6 +242,26 @@ describe('getArchitectureOptions', () => {
 });
 
 describe('findPackageForDownload', () => {
+  let spyPackageDetails: any;
+
+  const ZULU_CHECKSUM = 'a'.repeat(64);
+
+  beforeEach(() => {
+    // The resolved winning package fetches sha256_hash from the Azul
+    // package-details endpoint; stub it so tests never reach the real
+    // network.
+    spyPackageDetails = jest.spyOn(HttpClient.prototype, 'getJson');
+    spyPackageDetails.mockResolvedValue({
+      statusCode: 200,
+      headers: {},
+      result: {sha256_hash: ZULU_CHECKSUM}
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it.each([
     ['8', '8.0.282+8'],
     ['11.x', '11.0.10+9'],
@@ -279,6 +299,38 @@ describe('findPackageForDownload', () => {
     const result = await distribution['findPackageForDownload']('17.0.10');
     expect(result.url).toBe(
       'https://cdn.azul.com/zulu/bin/zulu17.48.15-ca-jdk17.0.10-windows_aarch64.zip'
+    );
+    expect(result.checksum).toEqual({
+      algorithm: 'sha256',
+      value: ZULU_CHECKSUM,
+      source: 'https://api.azul.com/metadata/v1/zulu/packages/test-uuid-12446'
+    });
+    // Only the winning package's UUID triggers a details request.
+    expect(spyPackageDetails).toHaveBeenCalledWith(
+      'https://api.azul.com/metadata/v1/zulu/packages/test-uuid-12446'
+    );
+    expect(spyPackageDetails).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips checksum verification when sha256_hash is missing or malformed', async () => {
+    spyPackageDetails.mockResolvedValue({
+      statusCode: 200,
+      headers: {},
+      result: {sha256_hash: '123'}
+    });
+
+    const distribution = new ZuluDistribution({
+      version: '',
+      architecture: 'arm64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    distribution['getAvailableVersions'] = async () => manifestData;
+    const result = await distribution['findPackageForDownload']('17.0.10');
+
+    expect(result.checksum).toBeUndefined();
+    expect(core.debug).toHaveBeenCalledWith(
+      expect.stringContaining('No authoritative sha256 checksum')
     );
   });
 

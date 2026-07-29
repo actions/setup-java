@@ -10,6 +10,8 @@ import {
   isVersionSatisfies
 } from '../util.js';
 import {
+  ChecksumAlgorithm,
+  ChecksumMetadata,
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
@@ -100,6 +102,44 @@ export abstract class JavaBase {
       }
       throw error;
     }
+  }
+
+  protected async fetchChecksum(
+    checksumUrl: string,
+    algorithm: ChecksumAlgorithm
+  ): Promise<ChecksumMetadata | undefined> {
+    const response = await this.http.get(checksumUrl);
+    const statusCode = response.message.statusCode;
+    const source = (() => {
+      try {
+        const url = new URL(checksumUrl);
+        return `${url.origin}${url.pathname}`;
+      } catch {
+        return 'an invalid checksum URL';
+      }
+    })();
+
+    if (statusCode === httpm.HttpCodes.NotFound) {
+      core.debug(
+        `No authoritative ${algorithm} checksum is available for ${this.distribution} from ${source}; skipping checksum verification.`
+      );
+      return undefined;
+    }
+
+    if (statusCode !== httpm.HttpCodes.OK) {
+      throw new Error(
+        `Failed to fetch the authoritative ${algorithm} checksum for ${this.distribution} from ${source} (HTTP ${statusCode}).`
+      );
+    }
+
+    const body = await response.readBody();
+    const value = body.trim().split(/\s+/, 1)[0] ?? '';
+    if (!value) {
+      throw new Error(
+        `Received an empty authoritative ${algorithm} checksum for ${this.distribution} from ${source}.`
+      );
+    }
+    return {algorithm, value, source: checksumUrl};
   }
 
   public async setupJava(): Promise<JavaInstallerResults> {

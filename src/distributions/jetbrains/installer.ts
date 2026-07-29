@@ -50,7 +50,13 @@ export class JetBrainsDistribution extends JavaBase {
       throw this.createVersionNotFoundError(range, availableVersionStrings);
     }
 
-    return resolvedFullVersion;
+    return {
+      ...resolvedFullVersion,
+      checksum: await this.fetchChecksum(
+        `${resolvedFullVersion.url}.checksum`,
+        'sha512'
+      )
+    };
   }
 
   protected async downloadTool(

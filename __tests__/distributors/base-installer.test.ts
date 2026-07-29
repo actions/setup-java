@@ -18,6 +18,7 @@ import path from 'path';
 import * as semver from 'semver';
 import fs from 'fs';
 import {createHash} from 'crypto';
+import {HttpClient} from '@actions/http-client';
 
 import os from 'os';
 
@@ -122,6 +123,13 @@ class EmptyJavaBase extends JavaBase {
 
   public downloadRelease(javaRelease: JavaDownloadRelease): Promise<string> {
     return this.downloadAndVerify(javaRelease);
+  }
+
+  public fetchChecksumForTest(
+    checksumUrl: string,
+    algorithm: 'sha256' | 'sha512'
+  ) {
+    return this.fetchChecksum(checksumUrl, algorithm);
   }
 }
 
@@ -938,6 +946,119 @@ describe('downloadAndVerify', () => {
       );
     }
   );
+});
+
+describe('fetchChecksum', () => {
+  const options: JavaInstallerOptions = {
+    version: '21',
+    architecture: 'x64',
+    packageType: 'jdk',
+    checkLatest: false
+  };
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  function mockGet(statusCode: number, body: string) {
+    return jest.spyOn(HttpClient.prototype, 'get').mockResolvedValue({
+      message: {statusCode},
+      readBody: async () => body
+    } as any);
+  }
+
+  it('parses a bare hex digest', async () => {
+    const digest = 'a'.repeat(64);
+    const spy = mockGet(200, digest);
+    const distribution = new EmptyJavaBase(options);
+
+    const checksum = await distribution.fetchChecksumForTest(
+      'https://vendor.example/jdk.tar.gz.sha256',
+      'sha256'
+    );
+
+    expect(spy).toHaveBeenCalledWith(
+      'https://vendor.example/jdk.tar.gz.sha256'
+    );
+    expect(checksum).toEqual({
+      algorithm: 'sha256',
+      value: digest,
+      source: 'https://vendor.example/jdk.tar.gz.sha256'
+    });
+  });
+
+  it('parses only the first token of a GNU-style checksum file', async () => {
+    const digest = 'b'.repeat(128);
+    mockGet(200, `${digest}  jbrsdk-21.0.3-linux-x64-b465.3.tar.gz\n`);
+    const distribution = new EmptyJavaBase(options);
+
+    const checksum = await distribution.fetchChecksumForTest(
+      'https://vendor.example/jdk.tar.gz.checksum',
+      'sha512'
+    );
+
+    expect(checksum).toEqual({
+      algorithm: 'sha512',
+      value: digest,
+      source: 'https://vendor.example/jdk.tar.gz.checksum'
+    });
+  });
+
+  it('trims surrounding whitespace and newlines', async () => {
+    const digest = 'c'.repeat(64);
+    mockGet(200, `\n  ${digest}  \n`);
+    const distribution = new EmptyJavaBase(options);
+
+    const checksum = await distribution.fetchChecksumForTest(
+      'https://vendor.example/jdk.tar.gz.sha256',
+      'sha256'
+    );
+
+    expect(checksum.value).toBe(digest);
+  });
+
+  it('skips verification when the sibling checksum is not published', async () => {
+    mockGet(404, 'Not Found');
+    const distribution = new EmptyJavaBase(options);
+
+    await expect(
+      distribution.fetchChecksumForTest(
+        'https://vendor.example/jdk.tar.gz.sha256',
+        'sha256'
+      )
+    ).resolves.toBeUndefined();
+    expect(core.debug).toHaveBeenCalledWith(
+      'No authoritative sha256 checksum is available for Empty from https://vendor.example/jdk.tar.gz.sha256; skipping checksum verification.'
+    );
+  });
+
+  it('surfaces unexpected HTTP failures without query parameters', async () => {
+    mockGet(500, 'Server Error');
+    const distribution = new EmptyJavaBase(options);
+
+    await expect(
+      distribution.fetchChecksumForTest(
+        'https://vendor.example/jdk.tar.gz.sha256?token=secret',
+        'sha256'
+      )
+    ).rejects.toThrow(
+      'Failed to fetch the authoritative sha256 checksum for Empty from https://vendor.example/jdk.tar.gz.sha256 (HTTP 500).'
+    );
+  });
+
+  it('rejects an empty successful checksum response', async () => {
+    mockGet(200, '  \n');
+    const distribution = new EmptyJavaBase(options);
+
+    await expect(
+      distribution.fetchChecksumForTest(
+        'https://vendor.example/jdk.tar.gz.sha256',
+        'sha256'
+      )
+    ).rejects.toThrow(
+      'Received an empty authoritative sha256 checksum for Empty from https://vendor.example/jdk.tar.gz.sha256.'
+    );
+  });
 });
 
 describe('normalizeVersion', () => {

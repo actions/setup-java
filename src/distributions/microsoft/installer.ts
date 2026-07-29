@@ -114,7 +114,11 @@ export class MicrosoftDistributions extends JavaBase {
     return {
       url: file.download_url,
       signatureUrl,
-      version: foundRelease.version
+      version: foundRelease.version,
+      checksum: await this.fetchChecksum(
+        `${file.download_url}.sha256sum.txt`,
+        'sha256'
+      )
     };
   }
 

@@ -129,6 +129,14 @@ describe('GraalVMDistribution', () => {
     (distribution as any).http = mockHttpClient;
     (communityDistribution as any).http = mockHttpClient;
 
+    // Default checksum sibling response for `${url}.sha256` requests made by
+    // GraalVM (Oracle) and GraalVM EA. Individual tests override this when
+    // they need to assert the exact URL/digest contract.
+    mockHttpClient.get.mockResolvedValue({
+      message: {statusCode: 200},
+      readBody: jest.fn().mockResolvedValue('a'.repeat(64))
+    });
+
     (util.getDownloadArchiveExtension as jest.Mock<any>).mockReturnValue(
       'tar.gz'
     );
@@ -407,9 +415,16 @@ describe('GraalVMDistribution', () => {
 
         expect(result).toEqual({
           url: 'https://download.oracle.com/graalvm/17/archive/graalvm-jdk-17.0.5_linux-x64_bin.tar.gz',
-          version: '17.0.5'
+          version: '17.0.5',
+          checksum: {
+            algorithm: 'sha256',
+            value: 'a'.repeat(64),
+            source:
+              'https://download.oracle.com/graalvm/17/archive/graalvm-jdk-17.0.5_linux-x64_bin.tar.gz.sha256'
+          }
         });
         expect(mockHttpClient.head).toHaveBeenCalledWith(result.url);
+        expect(mockHttpClient.get).toHaveBeenCalledWith(`${result.url}.sha256`);
       });
 
       it('should construct correct URL for major version (latest)', async () => {
@@ -422,7 +437,13 @@ describe('GraalVMDistribution', () => {
 
         expect(result).toEqual({
           url: 'https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz',
-          version: '21'
+          version: '21',
+          checksum: {
+            algorithm: 'sha256',
+            value: 'a'.repeat(64),
+            source:
+              'https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz.sha256'
+          }
         });
       });
 
@@ -465,7 +486,13 @@ describe('GraalVMDistribution', () => {
 
           expect(result).toEqual({
             url: 'https://download.oracle.com/graalvm/25/latest/graalvm-jdk-25_linux-x64_bin.tar.gz',
-            version: '25'
+            version: '25',
+            checksum: {
+              algorithm: 'sha256',
+              value: 'a'.repeat(64),
+              source:
+                'https://download.oracle.com/graalvm/25/latest/graalvm-jdk-25_linux-x64_bin.tar.gz.sha256'
+            }
           });
         });
 
@@ -637,13 +664,20 @@ describe('GraalVMDistribution', () => {
 
         expect(result).toEqual({
           url: 'https://example.com/download/graalvm-jdk-23_linux-x64_bin.tar.gz',
-          version: '23-ea-20240716'
+          version: '23-ea-20240716',
+          checksum: {
+            algorithm: 'sha256',
+            value: 'a'.repeat(64),
+            source:
+              'https://example.com/download/graalvm-jdk-23_linux-x64_bin.tar.gz.sha256'
+          }
         });
 
         expect(mockHttpClient.getJson).toHaveBeenCalledWith(
           'https://api.github.com/repos/graalvm/oracle-graalvm-ea-builds/contents/versions/23-ea.json?ref=main',
           {Accept: 'application/json'}
         );
+        expect(mockHttpClient.get).toHaveBeenCalledWith(`${result.url}.sha256`);
       });
 
       it('should throw error when no latest EA version found', async () => {
@@ -876,8 +910,15 @@ describe('GraalVMDistribution', () => {
       expect(fetchEASpy).toHaveBeenCalledWith('23-ea');
       expect(result).toEqual({
         url: 'https://example.com/download/graalvm-jdk-23_linux-x64_bin.tar.gz',
-        version: '23-ea-20240716'
+        version: '23-ea-20240716',
+        checksum: {
+          algorithm: 'sha256',
+          value: 'a'.repeat(64),
+          source:
+            'https://example.com/download/graalvm-jdk-23_linux-x64_bin.tar.gz.sha256'
+        }
       });
+      expect(mockHttpClient.get).toHaveBeenCalledWith(`${result.url}.sha256`);
 
       // Verify debug logging
       expect(core.debug).toHaveBeenCalledWith('Searching for EA build: 23-ea');
@@ -976,7 +1017,13 @@ describe('GraalVMDistribution', () => {
 
       expect(result).toEqual({
         url: 'https://example.com/download/graalvm-jdk-23_linux-aarch64_bin.tar.gz',
-        version: '23-ea-20240716'
+        version: '23-ea-20240716',
+        checksum: {
+          algorithm: 'sha256',
+          value: 'a'.repeat(64),
+          source:
+            'https://example.com/download/graalvm-jdk-23_linux-aarch64_bin.tar.gz.sha256'
+        }
       });
     });
 
@@ -1151,6 +1198,80 @@ describe('GraalVMDistribution', () => {
           url: 'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
           version: '21.0.2'
         });
+        // The asset had no `digest` field, so no checksum should be attached,
+        // and the checksum sibling-URL fetch path (used by Oracle GraalVM)
+        // must not be consulted for GraalVM Community.
+        expect(result.checksum).toBeUndefined();
+        expect(mockHttpClient.get).not.toHaveBeenCalled();
+      });
+
+      it('strips the `sha256:` prefix from a GitHub release asset digest', async () => {
+        const digest = 'd'.repeat(64);
+        mockHttpClient.getJson.mockResolvedValue({
+          result: [
+            {
+              draft: false,
+              prerelease: false,
+              assets: [
+                {
+                  name: 'graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
+                  browser_download_url:
+                    'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
+                  digest: `sha256:${digest}`
+                }
+              ]
+            }
+          ],
+          statusCode: 200,
+          headers: {}
+        });
+
+        const result = await (
+          communityDistribution as any
+        ).findPackageForDownload('21.0.2');
+
+        expect(result.checksum).toEqual({
+          algorithm: 'sha256',
+          value: digest,
+          source:
+            'https://api.github.com/repos/graalvm/graalvm-ce-builds/releases?per_page=100'
+        });
+        // The digest came from the release listing itself, so no additional
+        // HTTP request should be made to resolve the checksum.
+        expect(mockHttpClient.get).not.toHaveBeenCalled();
+      });
+
+      it('safely skips a missing or malformed release asset digest', async () => {
+        mockHttpClient.getJson.mockResolvedValue({
+          result: [
+            {
+              draft: false,
+              prerelease: false,
+              assets: [
+                {
+                  name: 'graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
+                  browser_download_url:
+                    'https://github.com/graalvm/graalvm-ce-builds/releases/download/jdk-21.0.2/graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz',
+                  digest: 'md5:not-a-sha256-digest'
+                }
+              ]
+            }
+          ],
+          statusCode: 200,
+          headers: {}
+        });
+
+        const result = await (
+          communityDistribution as any
+        ).findPackageForDownload('21.0.2');
+
+        expect(result.checksum).toBeUndefined();
+        expect(mockHttpClient.get).not.toHaveBeenCalled();
+        expect(core.debug).toHaveBeenCalledWith(
+          expect.stringContaining(
+            'No authoritative sha256 digest is available for graalvm-community-jdk-21.0.2_linux-x64_bin.tar.gz'
+          )
+        );
       });
 
       it('should resolve the latest GraalVM Community release for a major version', async () => {
