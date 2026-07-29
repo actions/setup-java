@@ -224,10 +224,10 @@ describe('dependency cache', () => {
           join(workspace, '.mvn', 'wrapper', 'maven-wrapper.properties')
         );
 
-        await restore('maven', '');
+        await restore('maven', '', ['/custom/maven/repository']);
         // Main dependency cache no longer carries the wrapper dists path.
         expect(spyCacheRestore).toHaveBeenCalledWith(
-          [join(os.homedir(), '.m2', 'repository')],
+          ['/custom/maven/repository'],
           expect.any(String)
         );
         expect(spyCacheRestore).toHaveBeenCalledWith(
@@ -394,10 +394,10 @@ describe('dependency cache', () => {
       it('restores the gradle wrapper distribution cache independently of the main cache', async () => {
         createFile(join(workspace, 'build.gradle'));
 
-        await restore('gradle', '');
+        await restore('gradle', '', ['/custom/gradle/caches']);
         // Main dependency cache no longer carries the wrapper path.
         expect(spyCacheRestore).toHaveBeenCalledWith(
-          [join(os.homedir(), '.gradle', 'caches')],
+          ['/custom/gradle/caches'],
           expect.any(String)
         );
         // Wrapper distribution is restored on its own, keyed only on the
@@ -576,6 +576,34 @@ describe('dependency cache', () => {
         expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
       });
     });
+    describe('cache-path', () => {
+      it.each([
+        ['maven', ['/custom/maven/repository']],
+        ['gradle', ['/custom/gradle/caches']],
+        [
+          'sbt',
+          [
+            '/custom/ivy/cache',
+            '/custom/coursier/cache',
+            '!/custom/ivy/cache/*.lock'
+          ]
+        ]
+      ])(
+        'restores and persists custom paths for %s',
+        async (packageManager, cachePaths) => {
+          await restore(packageManager, '', cachePaths);
+
+          expect(spyCacheRestore).toHaveBeenCalledWith(
+            cachePaths,
+            expect.any(String)
+          );
+          expect(spySaveState).toHaveBeenCalledWith(
+            'cache-paths',
+            JSON.stringify(cachePaths)
+          );
+        }
+      );
+    });
   });
   describe('save', () => {
     let spyCacheSave: any;
@@ -624,6 +652,42 @@ describe('dependency cache', () => {
         new cache.ValidationError('Validation failed')
       );
     });
+
+    it.each([
+      ['maven', ['/custom/maven/repository']],
+      ['gradle', ['/custom/gradle/caches']],
+      [
+        'sbt',
+        [
+          '/custom/ivy/cache',
+          '/custom/coursier/cache',
+          '!/custom/ivy/cache/*.lock'
+        ]
+      ]
+    ])(
+      'saves the persisted custom paths for %s',
+      async (packageManager, cachePaths) => {
+        (core.getState as jest.Mock<any>).mockImplementation((name: any) => {
+          switch (name) {
+            case 'cache-primary-key':
+              return 'setup-java-cache-primary-key';
+            case 'cache-matched-key':
+              return 'setup-java-cache-matched-key';
+            case 'cache-paths':
+              return JSON.stringify(cachePaths);
+            default:
+              return '';
+          }
+        });
+
+        await save(packageManager);
+
+        expect(spyCacheSave).toHaveBeenCalledWith(
+          cachePaths,
+          'setup-java-cache-primary-key'
+        );
+      }
+    );
 
     describe('for maven', () => {
       it('uploads cache even if no pom.xml found', async () => {

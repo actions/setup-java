@@ -301,6 +301,10 @@ describe('setup action orchestration', () => {
     inputs.set('cache', 'maven');
     inputs.set('cache-dependency-path', '**/pom.xml');
     multilineInputs.set('java-version', ['21']);
+    multilineInputs.set('cache-path', [
+      '/custom/maven/repository',
+      '!/custom/maven/repository/excluded'
+    ]);
     const setupJava = jest.fn(async () => ({
       version: '21.0.4+7',
       path: '/opt/java/21'
@@ -312,7 +316,10 @@ describe('setup action orchestration', () => {
     expect(problemMatcher.configureProblemMatcher).toHaveBeenCalledWith(
       expect.stringMatching(/\.github[/\\]java\.json$/)
     );
-    expect(cache.restore).toHaveBeenCalledWith('maven', '**/pom.xml');
+    expect(cache.restore).toHaveBeenCalledWith('maven', '**/pom.xml', [
+      '/custom/maven/repository',
+      '!/custom/maven/repository/excluded'
+    ]);
     expect(
       (toolchains.configureToolchains as jest.Mock).mock.invocationCallOrder[0]
     ).toBeLessThan(
