@@ -52,8 +52,10 @@ const utils = await import('../../src/util.js');
 
 describe('getAvailableVersions', () => {
   let spyHttpClient: any;
+  let spyHttpGet: any;
   let spyUtilGetDownloadArchiveExtension: any;
   let spyCoreError: any;
+  const archiveChecksum = 'f'.repeat(64);
 
   beforeEach(() => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
@@ -61,6 +63,11 @@ describe('getAvailableVersions', () => {
       statusCode: 200,
       headers: {},
       result: manifestData
+    });
+    spyHttpGet = jest.spyOn(HttpClient.prototype, 'get');
+    spyHttpGet.mockResolvedValue({
+      message: {statusCode: 200},
+      readBody: async () => `${archiveChecksum}  archive`
     });
 
     spyUtilGetDownloadArchiveExtension =
@@ -282,8 +289,30 @@ describe('getAvailableVersions', () => {
           await distribution['findPackageForDownload'](normalizedVersion);
         expect(availableVersion).not.toBeNull();
         expect(availableVersion.url).toBe(expectedLink);
+        expect(availableVersion.checksum).toEqual({
+          algorithm: 'sha256',
+          value: archiveChecksum,
+          source: expectedLink.replace(/\.(?:tar\.gz|zip)$/, '.sha256.txt')
+        });
       }
     );
+
+    it('uses the checksum published beside the selected EA archive', async () => {
+      const distribution = new SapMachineDistribution({
+        version: '21-ea',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      mockPlatform(distribution, 'linux');
+
+      const release = await distribution['findPackageForDownload']('21');
+
+      expect(spyHttpGet).toHaveBeenCalledWith(
+        release.url.replace(/\.(?:tar\.gz|zip)$/, '.sha256.txt')
+      );
+      expect(release.checksum?.value).toBe(archiveChecksum);
+    });
 
     it.each([
       ['8', 'linux', 'x64'],

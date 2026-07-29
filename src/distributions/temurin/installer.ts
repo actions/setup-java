@@ -69,7 +69,12 @@ export class TemurinDistribution extends JavaBase {
         return {
           version: formattedVersion,
           url: item.binaries[0].package.link,
-          signatureUrl: item.binaries[0].package.signature_link
+          signatureUrl: item.binaries[0].package.signature_link,
+          checksum: {
+            algorithm: 'sha256',
+            value: item.binaries[0].package.checksum,
+            source: item.binaries[0].package.checksum_link
+          }
         } as JavaDownloadRelease;
       });
 
@@ -132,7 +137,7 @@ export class TemurinDistribution extends JavaBase {
   }
 
   private async downloadPackage(release: JavaDownloadRelease): Promise<string> {
-    const archivePath = await tc.downloadTool(release.url);
+    const archivePath = await this.downloadAndVerify(release);
 
     if (this.verifySignature) {
       if (!release.signatureUrl) {

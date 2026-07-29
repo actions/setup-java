@@ -125,6 +125,25 @@ jobs:
         run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
+  setup-java-checksum-verification:
+    name: Corretto checksum verification - ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout_step
+      - name: setup-java with forced download
+        uses: ./
+        id: setup-java
+        with:
+          java-version: '21'
+          distribution: corretto
+          force-download: true
+      - name: Verify Java
+        env:
+          JAVA_VERSION: '21'
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
+        shell: bash
+
   setup-java-alpine-linux:
     name: ${{ matrix.distribution }} ${{ matrix.version }} (jdk-${{ contains(matrix.os, 'macos') && !contains(matrix.os, 'intel') && 'arm64' || 'x64' }}) - alpine-linux - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}

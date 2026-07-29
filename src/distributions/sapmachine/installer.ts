@@ -56,7 +56,14 @@ export class SapMachineDistribution extends JavaBase {
     }
 
     const resolvedVersion = matchedVersions[0];
-    return resolvedVersion;
+    const checksumUrl = resolvedVersion.url.replace(
+      /\.(?:tar\.gz|zip)$/,
+      '.sha256.txt'
+    );
+    return {
+      ...resolvedVersion,
+      checksum: await this.fetchChecksum(checksumUrl, 'sha256')
+    };
   }
 
   private async getAvailableVersions(): Promise<ISapMachineVersions[]> {
@@ -104,7 +111,7 @@ export class SapMachineDistribution extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    let javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await this.downloadAndVerify(javaRelease);
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();

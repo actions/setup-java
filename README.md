@@ -95,6 +95,14 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `show-download-progress`: Set to `true` to keep Maven artifact download and transfer progress in build logs. Default value: `false`. By default, the action adds `-ntp` (`--no-transfer-progress`) to `MAVEN_ARGS`. This input has no effect on non-Maven builds. See [Maven transfer progress](docs/advanced-usage.md#maven-transfer-progress-download-logs) for more details.
 
+### Download integrity verification
+
+When a selected distribution publishes an authoritative checksum for an archive, `setup-java` automatically verifies each downloaded JDK, JRE, or JMOD archive before extraction and caching. No input is required. Automatic checksum verification is currently available for `temurin`, `semeru`, `adopt`, `corretto`, `dragonwell`, `kona`, `sapmachine`, `graalvm`, `graalvm-community`, `zulu`, `oracle`, `oracle-openjdk`, `microsoft`, and `jetbrains`.
+
+Distributions or individual releases without an authoritative checksum continue to install normally, with the omission reported only in debug logs. Archives resolved directly from the runner tool cache are not downloaded again and therefore are not reverified.
+
+Checksums detect corrupted or unexpectedly modified downloads before they are persisted in the runner tool cache.
+
 ### Basic Configuration
 
 #### Eclipse Temurin

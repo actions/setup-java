@@ -16,6 +16,9 @@ import type {
 
 import path from 'path';
 import * as semver from 'semver';
+import fs from 'fs';
+import {createHash} from 'crypto';
+import {HttpClient} from '@actions/http-client';
 
 import os from 'os';
 
@@ -116,6 +119,17 @@ class EmptyJavaBase extends JavaBase {
       version: availableVersion,
       url: `some/random_url/java/${availableVersion}`
     };
+  }
+
+  public downloadRelease(javaRelease: JavaDownloadRelease): Promise<string> {
+    return this.downloadAndVerify(javaRelease);
+  }
+
+  public fetchChecksumForTest(
+    checksumUrl: string,
+    algorithm: 'sha256' | 'sha512' | ('sha256' | 'sha512')[]
+  ) {
+    return this.fetchChecksum(checksumUrl, algorithm);
   }
 }
 
@@ -814,6 +828,306 @@ describe('setupJava', () => {
     expect(spyCoreInfo).toHaveBeenCalledWith(
       'Installing Java 11.0.9 (not setting as default)'
     );
+  });
+});
+
+describe('downloadAndVerify', () => {
+  const options: JavaInstallerOptions = {
+    version: '21',
+    architecture: 'x64',
+    packageType: 'jdk',
+    checkLatest: false
+  };
+  let temporaryDirectory: string;
+  let archivePath: string;
+
+  beforeEach(async () => {
+    temporaryDirectory = await fs.promises.mkdtemp(
+      path.join(os.tmpdir(), 'setup-java-base-')
+    );
+    archivePath = path.join(temporaryDirectory, 'archive');
+    await fs.promises.writeFile(archivePath, 'downloaded archive');
+    (tc.downloadTool as jest.Mock<any>).mockResolvedValue(archivePath);
+  });
+
+  afterEach(async () => {
+    await fs.promises.rm(temporaryDirectory, {recursive: true, force: true});
+    jest.resetAllMocks();
+  });
+
+  it('returns a download after successful verification', async () => {
+    const distribution = new EmptyJavaBase(options);
+    const result = await distribution.downloadRelease({
+      version: '21.0.8',
+      url: 'https://vendor.example/jdk.tar.gz',
+      checksum: {
+        algorithm: 'sha256',
+        value: createHash('sha256').update('downloaded archive').digest('hex')
+      }
+    });
+
+    expect(result).toBe(archivePath);
+    expect(fs.existsSync(archivePath)).toBe(true);
+    expect(core.debug).toHaveBeenCalledWith(
+      'Verified sha256 checksum for Empty version 21.0.8.'
+    );
+  });
+
+  it('removes the download after verification failure', async () => {
+    const distribution = new EmptyJavaBase(options);
+
+    await expect(
+      distribution.downloadRelease({
+        version: '21.0.8',
+        url: 'https://vendor.example/jdk.tar.gz?token=secret',
+        checksum: {algorithm: 'sha256', value: 'a'.repeat(64)}
+      })
+    ).rejects.toThrow('Checksum verification failed for Empty version 21.0.8');
+
+    expect(fs.existsSync(archivePath)).toBe(false);
+  });
+
+  it('preserves the verification error when removing the download fails', async () => {
+    const distribution = new EmptyJavaBase(options);
+    const cleanupError = new Error('cleanup failed');
+    jest.spyOn(fs.promises, 'rm').mockRejectedValueOnce(cleanupError);
+
+    const result = distribution.downloadRelease({
+      version: '21.0.8',
+      url: 'https://vendor.example/jdk.tar.gz',
+      checksum: {algorithm: 'sha256', value: 'a'.repeat(64)}
+    });
+
+    await expect(result).rejects.toMatchObject({
+      message: expect.stringContaining(
+        'Failed to remove the downloaded archive after verification failure: cleanup failed'
+      ),
+      cause: expect.objectContaining({
+        message: expect.stringContaining(
+          'Checksum verification failed for Empty version 21.0.8'
+        )
+      })
+    });
+  });
+
+  it('logs when authoritative checksum metadata is unavailable', async () => {
+    const distribution = new EmptyJavaBase(options);
+
+    await expect(
+      distribution.downloadRelease({
+        version: '21.0.8',
+        url: 'https://vendor.example/jdk.tar.gz'
+      })
+    ).resolves.toBe(archivePath);
+
+    expect(core.debug).toHaveBeenCalledWith(
+      'No authoritative checksum is available for Empty version 21.0.8; skipping checksum verification.'
+    );
+  });
+
+  it.each([undefined, '', '   '])(
+    'skips verification when the vendor digest is %p',
+    async value => {
+      const distribution = new EmptyJavaBase(options);
+
+      await expect(
+        distribution.downloadRelease({
+          version: '21.0.8',
+          url: 'https://vendor.example/jdk.tar.gz',
+          checksum: {
+            algorithm: 'sha256',
+            value
+          } as JavaDownloadRelease['checksum']
+        })
+      ).resolves.toBe(archivePath);
+
+      expect(core.debug).toHaveBeenCalledWith(
+        'No authoritative checksum is available for Empty version 21.0.8; skipping checksum verification.'
+      );
+    }
+  );
+});
+
+describe('fetchChecksum', () => {
+  const options: JavaInstallerOptions = {
+    version: '21',
+    architecture: 'x64',
+    packageType: 'jdk',
+    checkLatest: false
+  };
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  function mockGet(statusCode: number, body: string) {
+    return jest.spyOn(HttpClient.prototype, 'get').mockResolvedValue({
+      message: {statusCode},
+      readBody: async () => body
+    } as any);
+  }
+
+  it('parses a bare hex digest', async () => {
+    const digest = 'a'.repeat(64);
+    const spy = mockGet(200, digest);
+    const distribution = new EmptyJavaBase(options);
+
+    const checksum = await distribution.fetchChecksumForTest(
+      'https://vendor.example/jdk.tar.gz.sha256',
+      'sha256'
+    );
+
+    expect(spy).toHaveBeenCalledWith(
+      'https://vendor.example/jdk.tar.gz.sha256'
+    );
+    expect(checksum).toEqual({
+      algorithm: 'sha256',
+      value: digest,
+      source: 'https://vendor.example/jdk.tar.gz.sha256'
+    });
+  });
+
+  it('parses only the first token of a GNU-style checksum file', async () => {
+    const digest = 'b'.repeat(128);
+    mockGet(200, `${digest}  jbrsdk-21.0.3-linux-x64-b465.3.tar.gz\n`);
+    const distribution = new EmptyJavaBase(options);
+
+    const checksum = await distribution.fetchChecksumForTest(
+      'https://vendor.example/jdk.tar.gz.checksum',
+      'sha512'
+    );
+
+    expect(checksum).toEqual({
+      algorithm: 'sha512',
+      value: digest,
+      source: 'https://vendor.example/jdk.tar.gz.checksum'
+    });
+  });
+
+  it('trims surrounding whitespace and newlines', async () => {
+    const digest = 'c'.repeat(64);
+    mockGet(200, `\n  ${digest}  \n`);
+    const distribution = new EmptyJavaBase(options);
+
+    const checksum = await distribution.fetchChecksumForTest(
+      'https://vendor.example/jdk.tar.gz.sha256',
+      'sha256'
+    );
+
+    expect(checksum.value).toBe(digest);
+  });
+
+  it('skips verification when the sibling checksum is not published', async () => {
+    mockGet(404, 'Not Found');
+    const distribution = new EmptyJavaBase(options);
+
+    await expect(
+      distribution.fetchChecksumForTest(
+        'https://vendor.example/jdk.tar.gz.sha256',
+        'sha256'
+      )
+    ).resolves.toBeUndefined();
+    expect(core.debug).toHaveBeenCalledWith(
+      'No authoritative sha256 checksum is available for Empty from https://vendor.example/jdk.tar.gz.sha256; skipping checksum verification.'
+    );
+  });
+
+  it('surfaces unexpected HTTP failures without query parameters', async () => {
+    mockGet(500, 'Server Error');
+    const distribution = new EmptyJavaBase(options);
+
+    await expect(
+      distribution.fetchChecksumForTest(
+        'https://vendor.example/jdk.tar.gz.sha256?token=secret',
+        'sha256'
+      )
+    ).rejects.toThrow(
+      'Failed to fetch the authoritative sha256 checksum for Empty from https://vendor.example/jdk.tar.gz.sha256 (HTTP 500).'
+    );
+  });
+
+  it('rejects an empty successful checksum response', async () => {
+    mockGet(200, '  \n');
+    const distribution = new EmptyJavaBase(options);
+
+    await expect(
+      distribution.fetchChecksumForTest(
+        'https://vendor.example/jdk.tar.gz.sha256',
+        'sha256'
+      )
+    ).rejects.toThrow(
+      'Received an empty authoritative sha256 checksum for Empty from https://vendor.example/jdk.tar.gz.sha256.'
+    );
+  });
+
+  describe('with a list of candidate algorithms', () => {
+    it('infers sha512 when the digest is 128 hex characters', async () => {
+      const digest = 'd'.repeat(128);
+      mockGet(200, `${digest}  jbrsdk.tar.gz\n`);
+      const distribution = new EmptyJavaBase(options);
+
+      const checksum = await distribution.fetchChecksumForTest(
+        'https://vendor.example/jbrsdk.tar.gz.checksum',
+        ['sha512', 'sha256']
+      );
+
+      expect(checksum).toEqual({
+        algorithm: 'sha512',
+        value: digest,
+        source: 'https://vendor.example/jbrsdk.tar.gz.checksum'
+      });
+    });
+
+    it('infers sha256 when the digest is 64 hex characters, even though sha512 was preferred', async () => {
+      // Reproduces older JetBrains JBR builds (e.g. JBR 11), which publish a
+      // SHA-256 digest at the generic `.checksum` sibling instead of SHA-512.
+      const digest = 'e'.repeat(64);
+      mockGet(200, `${digest}  jbrsdk_nomod-11_0_16-osx-x64-b2043.64.tar.gz\n`);
+      const distribution = new EmptyJavaBase(options);
+
+      const checksum = await distribution.fetchChecksumForTest(
+        'https://vendor.example/jbrsdk_nomod-11_0_16-osx-x64-b2043.64.tar.gz.checksum',
+        ['sha512', 'sha256']
+      );
+
+      expect(checksum).toEqual({
+        algorithm: 'sha256',
+        value: digest,
+        source:
+          'https://vendor.example/jbrsdk_nomod-11_0_16-osx-x64-b2043.64.tar.gz.checksum'
+      });
+    });
+
+    it('falls back to the first candidate algorithm when the digest length matches none of them', async () => {
+      const digest = 'f'.repeat(40); // e.g. sha1, not supported
+      mockGet(200, `${digest}  jbrsdk.tar.gz\n`);
+      const distribution = new EmptyJavaBase(options);
+
+      const checksum = await distribution.fetchChecksumForTest(
+        'https://vendor.example/jbrsdk.tar.gz.checksum',
+        ['sha512', 'sha256']
+      );
+
+      // No candidate algorithm matches, so the first-listed one is kept;
+      // downstream verification will reject it as malformed.
+      expect(checksum.algorithm).toBe('sha512');
+      expect(checksum.value).toBe(digest);
+    });
+
+    it('reports the checksum as unavailable using a combined algorithm label on 404', async () => {
+      mockGet(404, 'Not Found');
+      const distribution = new EmptyJavaBase(options);
+
+      await expect(
+        distribution.fetchChecksumForTest(
+          'https://vendor.example/jbrsdk.tar.gz.checksum',
+          ['sha512', 'sha256']
+        )
+      ).resolves.toBeUndefined();
+      expect(core.debug).toHaveBeenCalledWith(
+        'No authoritative sha512 or sha256 checksum is available for Empty from https://vendor.example/jbrsdk.tar.gz.checksum; skipping checksum verification.'
+      );
+    });
   });
 });
 

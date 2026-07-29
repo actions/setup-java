@@ -12040,7 +12040,7 @@ exports.NodeListStaticImpl = NodeListStaticImpl;
 
 /***/ }),
 
-/***/ 2256:
+/***/ 9875:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -13485,7 +13485,7 @@ const NodeListImpl_1 = __nccwpck_require__(5788);
 Object.defineProperty(exports, "NodeList", ({ enumerable: true, get: function () { return NodeListImpl_1.NodeListImpl; } }));
 const NodeListStaticImpl_1 = __nccwpck_require__(7654);
 Object.defineProperty(exports, "NodeListStatic", ({ enumerable: true, get: function () { return NodeListStaticImpl_1.NodeListStaticImpl; } }));
-const NonDocumentTypeChildNodeImpl_1 = __nccwpck_require__(2256);
+const NonDocumentTypeChildNodeImpl_1 = __nccwpck_require__(9875);
 const NonElementParentNodeImpl_1 = __nccwpck_require__(5325);
 const ParentNodeImpl_1 = __nccwpck_require__(1824);
 const ProcessingInstructionImpl_1 = __nccwpck_require__(2755);
@@ -129411,7 +129411,60 @@ function retrying_http_client_getErrorMessage(error) {
     return error instanceof Error ? error.message : 'network error';
 }
 
+;// CONCATENATED MODULE: external "stream/promises"
+const promises_namespaceObject = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("stream/promises");
+;// CONCATENATED MODULE: ./src/checksum.ts
+
+
+
+function sanitizedSource(source) {
+    if (!source) {
+        return '';
+    }
+    try {
+        const url = new URL(source);
+        return ` from ${url.origin}${url.pathname}`;
+    }
+    catch {
+        return ' from an invalid checksum source';
+    }
+}
+// Length, in hex characters, of a digest produced by each supported algorithm.
+// Exported so callers (e.g. fetchChecksum) can infer which algorithm a vendor
+// actually used when it doesn't disclose it via the checksum URL/filename.
+function expectedDigestLength(algorithm) {
+    return algorithm === 'sha256' ? 64 : algorithm === 'sha512' ? 128 : 0;
+}
+function normalizeExpectedDigest(checksum) {
+    const algorithm = checksum.algorithm;
+    const digest = typeof checksum.value === 'string'
+        ? checksum.value.trim().toLowerCase()
+        : '';
+    const expectedLength = expectedDigestLength(algorithm);
+    if (expectedLength === 0) {
+        throw new Error(`Unsupported checksum algorithm '${String(algorithm)}'${sanitizedSource(checksum.source)}. Supported algorithms are sha256 and sha512.`);
+    }
+    if (!new RegExp(`^[a-f0-9]{${expectedLength}}$`).test(digest)) {
+        throw new Error(`Malformed ${algorithm} checksum metadata${sanitizedSource(checksum.source)}: expected a ${expectedLength}-character hexadecimal digest.`);
+    }
+    return digest;
+}
+async function calculateChecksum(filePath, algorithm) {
+    const hash = (0,external_crypto_namespaceObject.createHash)(algorithm);
+    await (0,promises_namespaceObject.pipeline)((0,external_fs_namespaceObject.createReadStream)(filePath), hash);
+    return hash.digest('hex');
+}
+async function verifyChecksum(filePath, checksum, context) {
+    const expected = normalizeExpectedDigest(checksum);
+    const actual = await calculateChecksum(filePath, checksum.algorithm);
+    const matches = (0,external_crypto_namespaceObject.timingSafeEqual)(Buffer.from(expected, 'hex'), Buffer.from(actual, 'hex'));
+    if (!matches) {
+        throw new Error(`Checksum verification failed for ${context.distribution} version ${context.version}: ${checksum.algorithm} expected ${expected}, actual ${actual}.`);
+    }
+}
+
 ;// CONCATENATED MODULE: ./src/distributions/base-installer.ts
+
 
 
 
@@ -129453,6 +129506,76 @@ class JavaBase {
                 : true;
         this.verifySignature = installerOptions.verifySignature ?? false;
         this.verifySignaturePublicKey = installerOptions.verifySignaturePublicKey;
+    }
+    async downloadAndVerify(javaRelease) {
+        const archivePath = await downloadTool(javaRelease.url);
+        const checksum = javaRelease.checksum;
+        if (!checksum || !checksum.value?.trim()) {
+            core_debug(`No authoritative checksum is available for ${this.distribution} version ${javaRelease.version}; skipping checksum verification.`);
+            return archivePath;
+        }
+        try {
+            await verifyChecksum(archivePath, checksum, {
+                distribution: this.distribution,
+                version: javaRelease.version
+            });
+            core_debug(`Verified ${checksum.algorithm} checksum for ${this.distribution} version ${javaRelease.version}.`);
+            return archivePath;
+        }
+        catch (error) {
+            let cleanupError;
+            let cleanupFailed = false;
+            try {
+                await external_fs_namespaceObject.promises.rm(archivePath, { force: true });
+            }
+            catch (caughtCleanupError) {
+                cleanupError = caughtCleanupError;
+                cleanupFailed = true;
+            }
+            if (cleanupFailed) {
+                throw new Error(`${error.message} Failed to remove the downloaded archive after verification failure: ${cleanupError.message}`, { cause: error });
+            }
+            throw error;
+        }
+    }
+    async fetchChecksum(checksumUrl, algorithm) {
+        // Some vendors (e.g. JetBrains) publish a single, generically-named
+        // checksum sibling (`.checksum`) whose digest algorithm isn't disclosed
+        // by the URL and has changed across releases. Accepting a list of
+        // candidate algorithms lets callers pass every algorithm the vendor is
+        // known to use; the actual algorithm is then inferred from the length of
+        // the returned digest.
+        const algorithms = Array.isArray(algorithm) ? algorithm : [algorithm];
+        const algorithmLabel = algorithms.join(' or ');
+        const response = await this.http.get(checksumUrl);
+        const statusCode = response.message.statusCode;
+        const source = (() => {
+            try {
+                const url = new URL(checksumUrl);
+                return `${url.origin}${url.pathname}`;
+            }
+            catch {
+                return 'an invalid checksum URL';
+            }
+        })();
+        if (statusCode === HttpCodes.NotFound) {
+            core_debug(`No authoritative ${algorithmLabel} checksum is available for ${this.distribution} from ${source}; skipping checksum verification.`);
+            return undefined;
+        }
+        if (statusCode !== HttpCodes.OK) {
+            throw new Error(`Failed to fetch the authoritative ${algorithmLabel} checksum for ${this.distribution} from ${source} (HTTP ${statusCode}).`);
+        }
+        const body = await response.readBody();
+        const value = body.trim().split(/\s+/, 1)[0] ?? '';
+        if (!value) {
+            throw new Error(`Received an empty authoritative ${algorithmLabel} checksum for ${this.distribution} from ${source}.`);
+        }
+        // Prefer the strongest algorithm whose digest length matches what was
+        // actually returned; fall back to the first candidate (preserving prior
+        // behavior/error messages) when the digest doesn't match any of them.
+        const resolvedAlgorithm = algorithms.find(algo => value.length === expectedDigestLength(algo)) ??
+            algorithms[0];
+        return { algorithm: resolvedAlgorithm, value, source: checksumUrl };
     }
     async setupJava() {
         if (this.verifySignature && !this.supportsSignatureVerification()) {
@@ -129808,7 +129931,8 @@ class ZuluDistribution extends JavaBase {
             return {
                 version: convertVersionToSemver(javaVersion),
                 url: item.download_url,
-                zuluVersion: convertVersionToSemver(item.distro_version)
+                zuluVersion: convertVersionToSemver(item.distro_version),
+                packageUuid: item.package_uuid
             };
         });
         const satisfiedVersions = availableVersions
@@ -129819,22 +129943,37 @@ class ZuluDistribution extends JavaBase {
             return (-semver_default().compareBuild(a.version, b.version) ||
                 -semver_default().compareBuild(a.zuluVersion, b.zuluVersion));
         })
-            .map(item => {
-            return {
-                version: item.version,
-                url: item.url
-            };
-        });
+            .map((item) => ({
+            version: item.version,
+            url: item.url,
+            packageUuid: item.packageUuid
+        }));
         const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
         if (!resolvedFullVersion) {
             const availableVersionStrings = availableVersions.map(item => item.version);
             throw this.createVersionNotFoundError(version, availableVersionStrings);
         }
-        return resolvedFullVersion;
+        const packageDetailsUrl = `https://api.azul.com/metadata/v1/zulu/packages/${resolvedFullVersion.packageUuid}`;
+        const packageDetails = (await this.http.getJson(packageDetailsUrl)).result;
+        const digest = packageDetails?.sha256_hash?.match(/^[a-f0-9]{64}$/i)?.[0];
+        if (!digest) {
+            core_debug(`No authoritative sha256 checksum is available for Zulu version ${resolvedFullVersion.version} from ${packageDetailsUrl}; skipping checksum verification.`);
+        }
+        return {
+            version: resolvedFullVersion.version,
+            url: resolvedFullVersion.url,
+            checksum: digest
+                ? {
+                    algorithm: 'sha256',
+                    value: digest,
+                    source: packageDetailsUrl
+                }
+                : undefined
+        };
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
+        let javaArchivePath = await this.downloadAndVerify(javaRelease);
         info(`Extracting Java archive...`);
         const extension = getDownloadArchiveExtension();
         if (process.platform === 'win32') {
@@ -130017,7 +130156,12 @@ class TemurinDistribution extends JavaBase {
             return {
                 version: formattedVersion,
                 url: item.binaries[0].package.link,
-                signatureUrl: item.binaries[0].package.signature_link
+                signatureUrl: item.binaries[0].package.signature_link,
+                checksum: {
+                    algorithm: 'sha256',
+                    value: item.binaries[0].package.checksum,
+                    source: item.binaries[0].package.checksum_link
+                }
             };
         });
         const satisfiedVersions = availableVersionsWithBinaries
@@ -130057,7 +130201,7 @@ class TemurinDistribution extends JavaBase {
         return true;
     }
     async downloadPackage(release) {
-        const archivePath = await downloadTool(release.url);
+        const archivePath = await this.downloadAndVerify(release);
         if (this.verifySignature) {
             if (!release.signatureUrl) {
                 throw new Error(`Input 'verify-signature' is enabled, but no signature URL was found for Temurin version ${release.version}.`);
@@ -130222,7 +130366,12 @@ class AdoptDistribution extends JavaBase {
             .map(item => {
             return {
                 version: item.version_data.semver,
-                url: item.binaries[0].package.link
+                url: item.binaries[0].package.link,
+                checksum: {
+                    algorithm: 'sha256',
+                    value: item.binaries[0].package.checksum,
+                    source: item.binaries[0].package.checksum_link
+                }
             };
         });
         const satisfiedVersions = availableVersionsWithBinaries
@@ -130239,7 +130388,7 @@ class AdoptDistribution extends JavaBase {
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
+        let javaArchivePath = await this.downloadAndVerify(javaRelease);
         info(`Extracting Java archive...`);
         const extension = getDownloadArchiveExtension();
         if (process.platform === 'win32') {
@@ -130348,7 +130497,7 @@ class LibericaDistributions extends JavaBase {
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
+        let javaArchivePath = await this.downloadAndVerify(javaRelease);
         info(`Extracting Java archive...`);
         const extension = getDownloadArchiveExtension();
         if (process.platform === 'win32') {
@@ -130477,7 +130626,7 @@ class LibericaNikDistributions extends JavaBase {
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
+        let javaArchivePath = await this.downloadAndVerify(javaRelease);
         info(`Extracting Java archive...`);
         const extension = getDownloadArchiveExtension();
         if (process.platform === 'win32') {
@@ -130623,7 +130772,7 @@ class MicrosoftDistributions extends JavaBase {
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
+        let javaArchivePath = await this.downloadAndVerify(javaRelease);
         if (this.verifySignature) {
             if (!javaRelease.signatureUrl) {
                 throw new Error(`Input 'verify-signature' is enabled, but no signature URL was found for Microsoft Build of OpenJDK version ${javaRelease.version}.`);
@@ -130672,7 +130821,8 @@ class MicrosoftDistributions extends JavaBase {
         return {
             url: file.download_url,
             signatureUrl,
-            version: foundRelease.version
+            version: foundRelease.version,
+            checksum: await this.fetchChecksum(`${file.download_url}.sha256sum.txt`, 'sha256')
         };
     }
     supportsSignatureVerification() {
@@ -130757,7 +130907,12 @@ class SemeruDistribution extends JavaBase {
                 : item.version_data.semver.replace('-beta+', '+');
             return {
                 version: formattedVersion,
-                url: item.binaries[0].package.link
+                url: item.binaries[0].package.link,
+                checksum: {
+                    algorithm: 'sha256',
+                    value: item.binaries[0].package.checksum,
+                    source: item.binaries[0].package.checksum_link
+                }
             };
         });
         const satisfiedVersions = availableVersionsWithBinaries
@@ -130777,7 +130932,7 @@ class SemeruDistribution extends JavaBase {
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
+        let javaArchivePath = await this.downloadAndVerify(javaRelease);
         info(`Extracting Java archive...`);
         const extension = getDownloadArchiveExtension();
         if (process.platform === 'win32') {
@@ -130872,13 +131027,14 @@ class SemeruDistribution extends JavaBase {
 
 
 
+const CORRETTO_VERSIONS_URL = 'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
 class CorrettoDistribution extends JavaBase {
     constructor(installerOptions) {
         super('Corretto', installerOptions);
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
+        let javaArchivePath = await this.downloadAndVerify(javaRelease);
         info(`Extracting Java archive...`);
         const extension = getDownloadArchiveExtension();
         if (process.platform === 'win32') {
@@ -130916,7 +131072,12 @@ class CorrettoDistribution extends JavaBase {
             .map(item => {
             return {
                 version: convertVersionToSemver(item.correttoVersion),
-                url: item.downloadLink
+                url: item.downloadLink,
+                checksum: {
+                    algorithm: 'sha256',
+                    value: item.checksum_sha256,
+                    source: CORRETTO_VERSIONS_URL
+                }
             };
         });
         const resolvedVersion = matchingVersions.length > 0 ? matchingVersions[0] : null;
@@ -130933,11 +131094,10 @@ class CorrettoDistribution extends JavaBase {
         if (isDebug()) {
             console.time('Retrieving available versions for Corretto took'); // eslint-disable-line no-console
         }
-        const availableVersionsUrl = 'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
-        const fetchCurrentVersions = await this.http.getJson(availableVersionsUrl);
+        const fetchCurrentVersions = await this.http.getJson(CORRETTO_VERSIONS_URL);
         const fetchedCurrentVersions = fetchCurrentVersions.result;
         if (!fetchedCurrentVersions) {
-            throw Error(`Could not fetch latest corretto versions from ${availableVersionsUrl}`);
+            throw Error(`Could not fetch latest corretto versions from ${CORRETTO_VERSIONS_URL}`);
         }
         const eligibleVersions = fetchedCurrentVersions?.[platform]?.[arch]?.[imageType];
         const availableVersions = this.getAvailableVersionsForPlatform(eligibleVersions);
@@ -131012,7 +131172,7 @@ class OracleDistribution extends JavaBase {
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
+        let javaArchivePath = await this.downloadAndVerify(javaRelease);
         info(`Extracting Java archive...`);
         const extension = getDownloadArchiveExtension();
         if (process.platform === 'win32') {
@@ -131065,7 +131225,11 @@ class OracleDistribution extends JavaBase {
         for (const url of possibleUrls) {
             const response = await this.http.head(url);
             if (response.message.statusCode === HttpCodes.OK) {
-                return { url, version: range };
+                return {
+                    url,
+                    version: range,
+                    checksum: await this.fetchChecksum(`${url}.sha256`, 'sha256')
+                };
             }
             if (response.message.statusCode !== HttpCodes.NotFound) {
                 throw new Error(`Http request for Oracle JDK failed with status code: ${response.message.statusCode}`);
@@ -131119,7 +131283,13 @@ class DragonwellDistribution extends JavaBase {
             .map(item => {
             return {
                 version: item.jdk_version,
-                url: item.download_link
+                url: item.download_link,
+                checksum: item.checksum
+                    ? {
+                        algorithm: 'sha256',
+                        value: item.checksum
+                    }
+                    : undefined
             };
         });
         if (!matchedVersions.length) {
@@ -131150,7 +131320,7 @@ class DragonwellDistribution extends JavaBase {
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
+        let javaArchivePath = await this.downloadAndVerify(javaRelease);
         info(`Extracting Java archive...`);
         const extension = getDownloadArchiveExtension();
         if (process.platform === 'win32') {
@@ -131284,7 +131454,11 @@ class SapMachineDistribution extends JavaBase {
             throw this.createVersionNotFoundError(version, availableVersionStrings);
         }
         const resolvedVersion = matchedVersions[0];
-        return resolvedVersion;
+        const checksumUrl = resolvedVersion.url.replace(/\.(?:tar\.gz|zip)$/, '.sha256.txt');
+        return {
+            ...resolvedVersion,
+            checksum: await this.fetchChecksum(checksumUrl, 'sha256')
+        };
     }
     async getAvailableVersions() {
         const platform = this.getPlatformOption();
@@ -131307,7 +131481,7 @@ class SapMachineDistribution extends JavaBase {
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
+        let javaArchivePath = await this.downloadAndVerify(javaRelease);
         info(`Extracting Java archive...`);
         const extension = getDownloadArchiveExtension();
         if (process.platform === 'win32') {
@@ -131443,7 +131617,7 @@ class GraalVMDistribution extends JavaBase {
     async downloadTool(javaRelease) {
         try {
             info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-            let javaArchivePath = await downloadTool(javaRelease.url);
+            let javaArchivePath = await this.downloadAndVerify(javaRelease);
             info(`Extracting Java archive...`);
             const extension = getDownloadArchiveExtension();
             if (installer_IS_WINDOWS) {
@@ -131488,7 +131662,11 @@ class GraalVMDistribution extends JavaBase {
         const fileUrl = this.constructFileUrl(range, major, platform, arch, extension);
         const response = await this.http.head(fileUrl);
         this.handleHttpResponse(response, range);
-        return { url: fileUrl, version: range };
+        return {
+            url: fileUrl,
+            version: range,
+            checksum: await this.fetchChecksum(`${fileUrl}.sha256`, 'sha256')
+        };
     }
     validateVersionRange(range) {
         if (!range || typeof range !== 'string') {
@@ -131569,7 +131747,8 @@ class GraalVMDistribution extends JavaBase {
         core_debug(`Download URL: ${downloadUrl}`);
         return {
             url: downloadUrl,
-            version: latestVersion.version
+            version: latestVersion.version,
+            checksum: await this.fetchChecksum(`${downloadUrl}.sha256`, 'sha256')
         };
     }
     async fetchEAJson(javaEaVersion) {
@@ -131681,9 +131860,20 @@ class GraalVMCommunityDistribution extends GraalVMDistribution {
                 for (const asset of release.assets ?? []) {
                     const version = this.extractAssetVersion(asset.name, assetSuffix);
                     if (version) {
+                        const digest = asset.digest?.match(/^sha256:([a-f0-9]{64})$/i)?.[1];
+                        if (!digest) {
+                            core_debug(`No authoritative sha256 digest is available for ${asset.name}; skipping checksum verification for this asset.`);
+                        }
                         versions.set(version, {
                             version,
-                            url: asset.browser_download_url
+                            url: asset.browser_download_url,
+                            checksum: digest
+                                ? {
+                                    algorithm: 'sha256',
+                                    value: digest,
+                                    source: GRAALVM_COMMUNITY_RELEASES_URL
+                                }
+                                : undefined
                         });
                     }
                 }
@@ -131748,11 +131938,18 @@ class JetBrainsDistribution extends JavaBase {
             const availableVersionStrings = versionsRaw.map(item => `${item.tag_name} (${item.semver}+${item.build})`);
             throw this.createVersionNotFoundError(range, availableVersionStrings);
         }
-        return resolvedFullVersion;
+        return {
+            ...resolvedFullVersion,
+            // JetBrains' `.checksum` sibling doesn't disclose its algorithm via the
+            // filename, and older JBR builds (e.g. JBR 11) publish a SHA-256 digest
+            // there while newer builds publish SHA-512. Accept either, preferring
+            // the stronger SHA-512 when the digest length is ambiguous.
+            checksum: await this.fetchChecksum(`${resolvedFullVersion.url}.checksum`, ['sha512', 'sha256'])
+        };
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        const javaArchivePath = await downloadTool(javaRelease.url);
+        const javaArchivePath = await this.downloadAndVerify(javaRelease);
         info(`Extracting Java archive...`);
         const extractedJavaPath = await extractJdkFile(javaArchivePath, 'tar.gz');
         const archiveName = external_fs_default().readdirSync(extractedJavaPath)[0];
@@ -131899,13 +132096,14 @@ class JetBrainsDistribution extends JavaBase {
 
 
 
+const KONA_RELEASES_URL = 'https://tencent.github.io/konajdk/releases/kona-v1.json';
 class KonaDistribution extends JavaBase {
     constructor(installerOptions) {
         super('Kona', installerOptions);
     }
     async downloadTool(javaRelease) {
         info(`Downloading Kona JDK ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        const javaArchivePath = await downloadTool(javaRelease.url);
+        const javaArchivePath = await this.downloadAndVerify(javaRelease);
         info(`Extracting Java archive...`);
         const extension = getDownloadArchiveExtension();
         const archivePath = process.platform === 'win32'
@@ -131933,7 +132131,14 @@ class KonaDistribution extends JavaBase {
             .map(item => {
             return {
                 version: item.version,
-                url: item.downloadUrl
+                url: item.downloadUrl,
+                checksum: item.checksum
+                    ? {
+                        algorithm: 'sha256',
+                        value: item.checksum,
+                        source: KONA_RELEASES_URL
+                    }
+                    : undefined
             };
         })
             .sort((a, b) => -semver_default().compareBuild(a.version, b.version));
@@ -131960,14 +132165,13 @@ class KonaDistribution extends JavaBase {
         return availableReleases;
     }
     async fetchReleaseInfo() {
-        const releasesInfoUrl = 'https://tencent.github.io/konajdk/releases/kona-v1.json';
         try {
-            core_debug(`Fetching Kona release info from URL: ${releasesInfoUrl}`);
-            return (await this.http.getJson(releasesInfoUrl))
+            core_debug(`Fetching Kona release info from URL: ${KONA_RELEASES_URL}`);
+            return (await this.http.getJson(KONA_RELEASES_URL))
                 .result;
         }
         catch (err) {
-            core_debug(`Fetching Kona release info from the URL: ${releasesInfoUrl} failed with the error: ${err.message}`);
+            core_debug(`Fetching Kona release info from the URL: ${KONA_RELEASES_URL} failed with the error: ${err.message}`);
             return null;
         }
     }
@@ -132047,11 +132251,15 @@ class OpenJdkDistribution extends JavaBase {
         if (!matchingReleases.length) {
             throw this.createVersionNotFoundError(range, releases.map(release => release.version), `Platform: ${platform}`);
         }
-        return matchingReleases[0];
+        const release = matchingReleases[0];
+        return {
+            ...release,
+            checksum: await this.fetchChecksum(`${release.url}.sha256`, 'sha256')
+        };
     }
     async downloadTool(javaRelease) {
         info(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
-        let javaArchivePath = await downloadTool(javaRelease.url);
+        let javaArchivePath = await this.downloadAndVerify(javaRelease);
         info(`Extracting Java archive...`);
         const extension = javaRelease.url.endsWith('.zip') ? 'zip' : 'tar.gz';
         if (extension === 'zip') {

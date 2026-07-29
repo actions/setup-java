@@ -202,6 +202,12 @@ describe('getAvailableVersions', () => {
         await distribution['findPackageForDownload'](version);
       expect(availableVersion).not.toBeNull();
       expect(availableVersion.url).toBe(expectedLink);
+      expect(availableVersion.checksum).toEqual({
+        algorithm: 'sha256',
+        value: expect.stringMatching(/^[a-f0-9]{64}$/),
+        source:
+          'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json'
+      });
     });
 
     it('with latest resolves to the newest available major version', async () => {

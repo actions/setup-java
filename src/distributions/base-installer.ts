@@ -10,6 +10,8 @@ import {
   isVersionSatisfies
 } from '../util.js';
 import {
+  ChecksumAlgorithm,
+  ChecksumMetadata,
   JavaDownloadRelease,
   JavaInstallerOptions,
   JavaInstallerResults
@@ -17,6 +19,7 @@ import {
 import {MACOS_JAVA_CONTENT_POSTFIX} from '../constants.js';
 import {RetryingHttpClient} from '../retrying-http-client.js';
 import os from 'os';
+import {expectedDigestLength, verifyChecksum} from '../checksum.js';
 
 export abstract class JavaBase {
   protected http: httpm.HttpClient;
@@ -60,6 +63,101 @@ export abstract class JavaBase {
   protected abstract findPackageForDownload(
     range: string
   ): Promise<JavaDownloadRelease>;
+
+  protected async downloadAndVerify(
+    javaRelease: JavaDownloadRelease
+  ): Promise<string> {
+    const archivePath = await tc.downloadTool(javaRelease.url);
+    const checksum = javaRelease.checksum;
+    if (!checksum || !checksum.value?.trim()) {
+      core.debug(
+        `No authoritative checksum is available for ${this.distribution} version ${javaRelease.version}; skipping checksum verification.`
+      );
+      return archivePath;
+    }
+
+    try {
+      await verifyChecksum(archivePath, checksum, {
+        distribution: this.distribution,
+        version: javaRelease.version
+      });
+      core.debug(
+        `Verified ${checksum.algorithm} checksum for ${this.distribution} version ${javaRelease.version}.`
+      );
+      return archivePath;
+    } catch (error) {
+      let cleanupError: unknown;
+      let cleanupFailed = false;
+      try {
+        await fs.promises.rm(archivePath, {force: true});
+      } catch (caughtCleanupError) {
+        cleanupError = caughtCleanupError;
+        cleanupFailed = true;
+      }
+      if (cleanupFailed) {
+        throw new Error(
+          `${(error as Error).message} Failed to remove the downloaded archive after verification failure: ${(cleanupError as Error).message}`,
+          {cause: error}
+        );
+      }
+      throw error;
+    }
+  }
+
+  protected async fetchChecksum(
+    checksumUrl: string,
+    algorithm: ChecksumAlgorithm | ChecksumAlgorithm[]
+  ): Promise<ChecksumMetadata | undefined> {
+    // Some vendors (e.g. JetBrains) publish a single, generically-named
+    // checksum sibling (`.checksum`) whose digest algorithm isn't disclosed
+    // by the URL and has changed across releases. Accepting a list of
+    // candidate algorithms lets callers pass every algorithm the vendor is
+    // known to use; the actual algorithm is then inferred from the length of
+    // the returned digest.
+    const algorithms = Array.isArray(algorithm) ? algorithm : [algorithm];
+    const algorithmLabel = algorithms.join(' or ');
+
+    const response = await this.http.get(checksumUrl);
+    const statusCode = response.message.statusCode;
+    const source = (() => {
+      try {
+        const url = new URL(checksumUrl);
+        return `${url.origin}${url.pathname}`;
+      } catch {
+        return 'an invalid checksum URL';
+      }
+    })();
+
+    if (statusCode === httpm.HttpCodes.NotFound) {
+      core.debug(
+        `No authoritative ${algorithmLabel} checksum is available for ${this.distribution} from ${source}; skipping checksum verification.`
+      );
+      return undefined;
+    }
+
+    if (statusCode !== httpm.HttpCodes.OK) {
+      throw new Error(
+        `Failed to fetch the authoritative ${algorithmLabel} checksum for ${this.distribution} from ${source} (HTTP ${statusCode}).`
+      );
+    }
+
+    const body = await response.readBody();
+    const value = body.trim().split(/\s+/, 1)[0] ?? '';
+    if (!value) {
+      throw new Error(
+        `Received an empty authoritative ${algorithmLabel} checksum for ${this.distribution} from ${source}.`
+      );
+    }
+
+    // Prefer the strongest algorithm whose digest length matches what was
+    // actually returned; fall back to the first candidate (preserving prior
+    // behavior/error messages) when the digest doesn't match any of them.
+    const resolvedAlgorithm =
+      algorithms.find(algo => value.length === expectedDigestLength(algo)) ??
+      algorithms[0];
+
+    return {algorithm: resolvedAlgorithm, value, source: checksumUrl};
+  }
 
   public async setupJava(): Promise<JavaInstallerResults> {
     if (this.verifySignature && !this.supportsSignatureVerification()) {

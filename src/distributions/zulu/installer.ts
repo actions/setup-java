@@ -6,7 +6,7 @@ import fs from 'fs';
 import semver from 'semver';
 
 import {JavaBase} from '../base-installer.js';
-import {IZuluVersions} from './models.js';
+import {IZuluPackageDetails, IZuluVersions} from './models.js';
 import {
   extractJdkFile,
   getDownloadArchiveExtension,
@@ -19,6 +19,15 @@ import {
   JavaInstallerOptions,
   JavaInstallerResults
 } from '../base-models.js';
+
+// The Azul Metadata API only reports the sha256 checksum on the
+// package-details endpoint, keyed by package_uuid, so the resolved candidate
+// must retain its UUID after sorting until the single follow-up request is made.
+interface ZuluResolvedRelease {
+  version: string;
+  url: string;
+  packageUuid: string;
+}
 
 export class ZuluDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
@@ -40,7 +49,8 @@ export class ZuluDistribution extends JavaBase {
       return {
         version: convertVersionToSemver(javaVersion),
         url: item.download_url,
-        zuluVersion: convertVersionToSemver(item.distro_version)
+        zuluVersion: convertVersionToSemver(item.distro_version),
+        packageUuid: item.package_uuid
       };
     });
 
@@ -54,12 +64,11 @@ export class ZuluDistribution extends JavaBase {
           -semver.compareBuild(a.zuluVersion, b.zuluVersion)
         );
       })
-      .map(item => {
-        return {
-          version: item.version,
-          url: item.url
-        } as JavaDownloadRelease;
-      });
+      .map((item): ZuluResolvedRelease => ({
+        version: item.version,
+        url: item.url,
+        packageUuid: item.packageUuid
+      }));
 
     const resolvedFullVersion =
       satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
@@ -70,7 +79,29 @@ export class ZuluDistribution extends JavaBase {
       throw this.createVersionNotFoundError(version, availableVersionStrings);
     }
 
-    return resolvedFullVersion;
+    const packageDetailsUrl = `https://api.azul.com/metadata/v1/zulu/packages/${resolvedFullVersion.packageUuid}`;
+    const packageDetails = (
+      await this.http.getJson<IZuluPackageDetails>(packageDetailsUrl)
+    ).result;
+    const digest = packageDetails?.sha256_hash?.match(/^[a-f0-9]{64}$/i)?.[0];
+
+    if (!digest) {
+      core.debug(
+        `No authoritative sha256 checksum is available for Zulu version ${resolvedFullVersion.version} from ${packageDetailsUrl}; skipping checksum verification.`
+      );
+    }
+
+    return {
+      version: resolvedFullVersion.version,
+      url: resolvedFullVersion.url,
+      checksum: digest
+        ? {
+            algorithm: 'sha256',
+            value: digest,
+            source: packageDetailsUrl
+          }
+        : undefined
+    };
   }
 
   protected async downloadTool(
@@ -79,7 +110,7 @@ export class ZuluDistribution extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    let javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await this.downloadAndVerify(javaRelease);
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();

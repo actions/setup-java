@@ -19,6 +19,9 @@ import {
   ICorrettoAvailableVersions
 } from './models.js';
 
+const CORRETTO_VERSIONS_URL =
+  'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
+
 export class CorrettoDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('Corretto', installerOptions);
@@ -30,7 +33,7 @@ export class CorrettoDistribution extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    let javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await this.downloadAndVerify(javaRelease);
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();
@@ -86,7 +89,12 @@ export class CorrettoDistribution extends JavaBase {
       .map(item => {
         return {
           version: convertVersionToSemver(item.correttoVersion),
-          url: item.downloadLink
+          url: item.downloadLink,
+          checksum: {
+            algorithm: 'sha256',
+            value: item.checksum_sha256,
+            source: CORRETTO_VERSIONS_URL
+          }
         } as JavaDownloadRelease;
       });
 
@@ -110,16 +118,14 @@ export class CorrettoDistribution extends JavaBase {
       console.time('Retrieving available versions for Corretto took'); // eslint-disable-line no-console
     }
 
-    const availableVersionsUrl =
-      'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
     const fetchCurrentVersions =
       await this.http.getJson<ICorrettoAllAvailableVersions>(
-        availableVersionsUrl
+        CORRETTO_VERSIONS_URL
       );
     const fetchedCurrentVersions = fetchCurrentVersions.result;
     if (!fetchedCurrentVersions) {
       throw Error(
-        `Could not fetch latest corretto versions from ${availableVersionsUrl}`
+        `Could not fetch latest corretto versions from ${CORRETTO_VERSIONS_URL}`
       );
     }
 

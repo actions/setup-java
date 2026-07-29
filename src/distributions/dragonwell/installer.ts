@@ -46,7 +46,13 @@ export class DragonwellDistribution extends JavaBase {
       .map(item => {
         return {
           version: item.jdk_version,
-          url: item.download_link
+          url: item.download_link,
+          checksum: item.checksum
+            ? {
+                algorithm: 'sha256',
+                value: item.checksum
+              }
+            : undefined
         } as JavaDownloadRelease;
       });
 
@@ -102,7 +108,7 @@ export class DragonwellDistribution extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    let javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await this.downloadAndVerify(javaRelease);
 
     core.info(`Extracting Java archive...`);
     const extension = getDownloadArchiveExtension();

@@ -347,6 +347,14 @@ describe('findPackageForDownload', () => {
     const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
     expect(resolvedVersion.signatureUrl).toBeDefined();
+    const vendorPackage = (manifestData as any[]).find(
+      item => item.version_data.semver === expected
+    ).binaries[0].package;
+    expect(resolvedVersion.checksum).toEqual({
+      algorithm: 'sha256',
+      value: vendorPackage.checksum,
+      source: vendorPackage.checksum_link
+    });
   });
 
   it('version "latest" is normalized to the newest available version', async () => {

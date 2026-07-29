@@ -50,6 +50,14 @@ const archivePage = `
   <th>9.0.4 (build 9.0.4+11)</th>
   <a href="https://download.java.net/java/GA/jdk9/9.0.4/binaries/openjdk-9.0.4_linux-x64_bin.tar.gz">tar.gz</a>
 `;
+const GA_CHECKSUM = 'c'.repeat(64);
+const EA_CHECKSUM = 'd'.repeat(64);
+const checksumPages: Record<string, string> = {
+  'https://download.java.net/java/GA/jdk26.0.2/hash/10/GPL/openjdk-26.0.2_linux-x64_bin.tar.gz.sha256':
+    GA_CHECKSUM,
+  'https://download.java.net/java/early_access/jdk27/32/GPL/openjdk-27-ea+32_linux-x64_bin.tar.gz.sha256':
+    EA_CHECKSUM
+};
 
 function createDistribution(
   version = '26',
@@ -82,8 +90,16 @@ describe('OpenJdkDistribution', () => {
           'https://jdk.java.net/27/': earlyAccessPage,
           'https://jdk.java.net/archive/': archivePage
         };
+        if (url in pages) {
+          return {
+            message: {statusCode: 200},
+            readBody: async () => pages[url]
+          } as Awaited<ReturnType<HttpClient['get']>>;
+        }
+        // Any other GET is a `${archiveUrl}.sha256` checksum sibling request.
         return {
-          readBody: async () => pages[url] ?? ''
+          message: {statusCode: 200},
+          readBody: async () => checksumPages[url] ?? 'e'.repeat(64)
         } as Awaited<ReturnType<HttpClient['get']>>;
       });
   });
@@ -97,8 +113,15 @@ describe('OpenJdkDistribution', () => {
 
     expect(result).toEqual({
       version: '26.0.2+10',
-      url: 'https://download.java.net/java/GA/jdk26.0.2/hash/10/GPL/openjdk-26.0.2_linux-x64_bin.tar.gz'
+      url: 'https://download.java.net/java/GA/jdk26.0.2/hash/10/GPL/openjdk-26.0.2_linux-x64_bin.tar.gz',
+      checksum: {
+        algorithm: 'sha256',
+        value: GA_CHECKSUM,
+        source:
+          'https://download.java.net/java/GA/jdk26.0.2/hash/10/GPL/openjdk-26.0.2_linux-x64_bin.tar.gz.sha256'
+      }
     });
+    expect(getSpy).toHaveBeenCalledWith(`${result.url}.sha256`);
   });
 
   it('resolves an archived GA release', async () => {
@@ -144,9 +167,16 @@ describe('OpenJdkDistribution', () => {
 
     expect(result).toEqual({
       version: '27.0.0+32',
-      url: 'https://download.java.net/java/early_access/jdk27/32/GPL/openjdk-27-ea+32_linux-x64_bin.tar.gz'
+      url: 'https://download.java.net/java/early_access/jdk27/32/GPL/openjdk-27-ea+32_linux-x64_bin.tar.gz',
+      checksum: {
+        algorithm: 'sha256',
+        value: EA_CHECKSUM,
+        source:
+          'https://download.java.net/java/early_access/jdk27/32/GPL/openjdk-27-ea+32_linux-x64_bin.tar.gz.sha256'
+      }
     });
     expect(getSpy).not.toHaveBeenCalledWith('https://jdk.java.net/archive/');
+    expect(getSpy).toHaveBeenCalledWith(`${result.url}.sha256`);
   });
 
   it('reports available versions when no release matches', async () => {

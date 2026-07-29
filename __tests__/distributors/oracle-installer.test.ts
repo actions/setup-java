@@ -47,7 +47,10 @@ describe('findPackageForDownload', () => {
   let distribution: InstanceType<typeof OracleDistribution>;
   let spyDebug: any;
   let spyHttpClient: any;
+  let spyHttpClientGet: any;
   let spyCoreError: any;
+
+  const ORACLE_CHECKSUM = 'f'.repeat(64);
 
   beforeEach(() => {
     distribution = new OracleDistribution({
@@ -63,6 +66,14 @@ describe('findPackageForDownload', () => {
     // Mock core.error to suppress error logs
     spyCoreError = core.error as jest.Mock;
     spyCoreError.mockImplementation(() => {});
+
+    // Every resolved release fetches its `${url}.sha256` sibling checksum;
+    // stub it so tests never reach the real network.
+    spyHttpClientGet = jest.spyOn(HttpClient.prototype, 'get');
+    spyHttpClientGet.mockResolvedValue({
+      message: {statusCode: 200},
+      readBody: async () => ORACLE_CHECKSUM
+    });
   });
 
   it.each([
@@ -133,6 +144,23 @@ describe('findPackageForDownload', () => {
     expect(result.url).toBe(url);
   });
 
+  it('fetches the authoritative sha256 checksum for the resolved archive', async () => {
+    spyHttpClient = jest.spyOn(HttpClient.prototype, 'head');
+    spyHttpClient.mockResolvedValue({message: {statusCode: 200}});
+
+    const result = await distribution['findPackageForDownload']('21');
+
+    jest.restoreAllMocks();
+
+    expect(result.checksum).toEqual({
+      algorithm: 'sha256',
+      value: ORACLE_CHECKSUM,
+      source: `${result.url}.sha256`
+    });
+    expect(spyHttpClientGet).toHaveBeenCalledWith(`${result.url}.sha256`);
+    expect(spyHttpClientGet).toHaveBeenCalledTimes(1);
+  });
+
   it.each([
     ['amd64', 'x64'],
     ['arm64', 'aarch64']
@@ -196,6 +224,10 @@ describe('findPackageForDownload with latest', () => {
   it('resolves the newest major version from the Adoptium API', async () => {
     spyHttpClientHead = jest.spyOn(HttpClient.prototype, 'head');
     spyHttpClientHead.mockResolvedValue({message: {statusCode: 200}});
+    jest.spyOn(HttpClient.prototype, 'get').mockResolvedValue({
+      message: {statusCode: 200},
+      readBody: async () => 'f'.repeat(64)
+    } as any);
 
     const distribution = new OracleDistribution({
       version: 'latest',

@@ -31,7 +31,7 @@ export class MicrosoftDistributions extends JavaBase {
     core.info(
       `Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`
     );
-    let javaArchivePath = await tc.downloadTool(javaRelease.url);
+    let javaArchivePath = await this.downloadAndVerify(javaRelease);
 
     if (this.verifySignature) {
       if (!javaRelease.signatureUrl) {
@@ -114,7 +114,11 @@ export class MicrosoftDistributions extends JavaBase {
     return {
       url: file.download_url,
       signatureUrl,
-      version: foundRelease.version
+      version: foundRelease.version,
+      checksum: await this.fetchChecksum(
+        `${file.download_url}.sha256sum.txt`,
+        'sha256'
+      )
     };
   }
 

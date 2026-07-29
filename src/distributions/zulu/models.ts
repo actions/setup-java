@@ -10,3 +10,7 @@ export interface IZuluVersions {
   latest: boolean;
   availability_type: string;
 }
+
+export interface IZuluPackageDetails {
+  sha256_hash?: string;
+}

@@ -208,6 +208,14 @@ describe('findPackageForDownload', () => {
     distribution['getAvailableVersions'] = async () => manifestData as any;
     const resolvedVersion = await distribution['findPackageForDownload'](input);
     expect(resolvedVersion.version).toBe(expected);
+    const vendorPackage = (manifestData as any[]).find(
+      item => item.version_data.semver === expected
+    ).binaries[0].package;
+    expect(resolvedVersion.checksum).toEqual({
+      algorithm: 'sha256',
+      value: vendorPackage.checksum,
+      source: vendorPackage.checksum_link
+    });
   });
 
   it('version is found but binaries list is empty', async () => {
