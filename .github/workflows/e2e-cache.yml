@@ -62,6 +62,7 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
           cache: gradle
+          cache-read-only: true
       - name: Confirm that ~/.gradle/caches directory has been made
         run: bash __tests__/check-dir.sh "$HOME/.gradle/caches"
   maven-save:
@@ -105,6 +106,7 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
           cache: maven
+          cache-read-only: true
       - name: Confirm that ~/.m2/repository directory has been made
         run: bash __tests__/check-dir.sh "$HOME/.m2/repository"
   sbt-save:
@@ -169,6 +171,7 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
           cache: sbt
+          cache-read-only: true
 
       - name: Confirm that ~/Library/Caches/Coursier directory has been made
         if: matrix.os == 'macos-15-intel'

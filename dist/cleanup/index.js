@@ -97338,6 +97338,7 @@ const MAVEN_GPG_PASSPHRASE_DEFAULT_ENV = 'MAVEN_GPG_PASSPHRASE';
 const GPG_PASSPHRASE_PROFILE_ID = 'setup-java-gpg';
 const INPUT_CACHE = 'cache';
 const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
+const INPUT_CACHE_READ_ONLY = 'cache-read-only';
 const INPUT_JOB_STATUS = 'job-status';
 const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
 const M2_DIR = '.m2';
@@ -97365,7 +97366,7 @@ function getTempDir() {
     return tempDirectory;
 }
 function util_getBooleanInput(inputName, defaultValue = false) {
-    const inputValue = core.getInput(inputName);
+    const inputValue = getInput(inputName);
     const normalizedValue = inputValue.trim().toLowerCase();
     if (!normalizedValue) {
         return defaultValue;
@@ -98076,7 +98077,14 @@ async function removePrivateKeyFromKeychain() {
 async function cleanup_java_saveCache() {
     const jobStatus = isJobStatusSuccess();
     const cache = getInput(INPUT_CACHE);
-    return jobStatus && cache ? save(cache) : Promise.resolve();
+    if (!jobStatus || !cache) {
+        return;
+    }
+    if (util_getBooleanInput(INPUT_CACHE_READ_ONLY, false)) {
+        info('Cache saving is skipped because cache-read-only is enabled.');
+        return;
+    }
+    await save(cache);
 }
 /**
  * The save process is best-effort, and it should not make the workflow fail
