@@ -97365,7 +97365,18 @@ function getTempDir() {
     return tempDirectory;
 }
 function util_getBooleanInput(inputName, defaultValue = false) {
-    return ((core.getInput(inputName) || String(defaultValue)).toUpperCase() === 'TRUE');
+    const inputValue = core.getInput(inputName);
+    const normalizedValue = inputValue.trim().toLowerCase();
+    if (!normalizedValue) {
+        return defaultValue;
+    }
+    if (normalizedValue === 'true') {
+        return true;
+    }
+    if (normalizedValue === 'false') {
+        return false;
+    }
+    throw new Error(`Invalid value '${inputValue}' for boolean input '${inputName}'. Expected 'true' or 'false'.`);
 }
 function getVersionFromToolcachePath(toolPath) {
     if (toolPath) {
