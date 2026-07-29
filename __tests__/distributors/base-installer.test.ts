@@ -127,7 +127,7 @@ class EmptyJavaBase extends JavaBase {
 
   public fetchChecksumForTest(
     checksumUrl: string,
-    algorithm: 'sha256' | 'sha512'
+    algorithm: 'sha256' | 'sha512' | ('sha256' | 'sha512')[]
   ) {
     return this.fetchChecksum(checksumUrl, algorithm);
   }
@@ -1058,6 +1058,76 @@ describe('fetchChecksum', () => {
     ).rejects.toThrow(
       'Received an empty authoritative sha256 checksum for Empty from https://vendor.example/jdk.tar.gz.sha256.'
     );
+  });
+
+  describe('with a list of candidate algorithms', () => {
+    it('infers sha512 when the digest is 128 hex characters', async () => {
+      const digest = 'd'.repeat(128);
+      mockGet(200, `${digest}  jbrsdk.tar.gz\n`);
+      const distribution = new EmptyJavaBase(options);
+
+      const checksum = await distribution.fetchChecksumForTest(
+        'https://vendor.example/jbrsdk.tar.gz.checksum',
+        ['sha512', 'sha256']
+      );
+
+      expect(checksum).toEqual({
+        algorithm: 'sha512',
+        value: digest,
+        source: 'https://vendor.example/jbrsdk.tar.gz.checksum'
+      });
+    });
+
+    it('infers sha256 when the digest is 64 hex characters, even though sha512 was preferred', async () => {
+      // Reproduces older JetBrains JBR builds (e.g. JBR 11), which publish a
+      // SHA-256 digest at the generic `.checksum` sibling instead of SHA-512.
+      const digest = 'e'.repeat(64);
+      mockGet(200, `${digest}  jbrsdk_nomod-11_0_16-osx-x64-b2043.64.tar.gz\n`);
+      const distribution = new EmptyJavaBase(options);
+
+      const checksum = await distribution.fetchChecksumForTest(
+        'https://vendor.example/jbrsdk_nomod-11_0_16-osx-x64-b2043.64.tar.gz.checksum',
+        ['sha512', 'sha256']
+      );
+
+      expect(checksum).toEqual({
+        algorithm: 'sha256',
+        value: digest,
+        source:
+          'https://vendor.example/jbrsdk_nomod-11_0_16-osx-x64-b2043.64.tar.gz.checksum'
+      });
+    });
+
+    it('falls back to the first candidate algorithm when the digest length matches none of them', async () => {
+      const digest = 'f'.repeat(40); // e.g. sha1, not supported
+      mockGet(200, `${digest}  jbrsdk.tar.gz\n`);
+      const distribution = new EmptyJavaBase(options);
+
+      const checksum = await distribution.fetchChecksumForTest(
+        'https://vendor.example/jbrsdk.tar.gz.checksum',
+        ['sha512', 'sha256']
+      );
+
+      // No candidate algorithm matches, so the first-listed one is kept;
+      // downstream verification will reject it as malformed.
+      expect(checksum.algorithm).toBe('sha512');
+      expect(checksum.value).toBe(digest);
+    });
+
+    it('reports the checksum as unavailable using a combined algorithm label on 404', async () => {
+      mockGet(404, 'Not Found');
+      const distribution = new EmptyJavaBase(options);
+
+      await expect(
+        distribution.fetchChecksumForTest(
+          'https://vendor.example/jbrsdk.tar.gz.checksum',
+          ['sha512', 'sha256']
+        )
+      ).resolves.toBeUndefined();
+      expect(core.debug).toHaveBeenCalledWith(
+        'No authoritative sha512 or sha256 checksum is available for Empty from https://vendor.example/jbrsdk.tar.gz.checksum; skipping checksum verification.'
+      );
+    });
   });
 });
 

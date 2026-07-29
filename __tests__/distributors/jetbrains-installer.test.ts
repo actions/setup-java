@@ -293,4 +293,31 @@ describe('findPackageForDownload', () => {
 
     expect(result.checksum?.value).toBe(JETBRAINS_CHECKSUM);
   });
+
+  it('falls back to a sha256 checksum for older JBR builds that only publish one', async () => {
+    // Older JBR 11 builds (e.g. jbrsdk_nomod-11_0_16-*-b2043.64.tar.gz) publish
+    // a SHA-256 digest at the generic `.checksum` sibling instead of SHA-512.
+    const sha256Checksum = 'a'.repeat(64);
+    spyHttpClientGet.mockResolvedValue({
+      message: {statusCode: 200},
+      readBody: async () =>
+        `${sha256Checksum}  jbrsdk_nomod-11_0_16-osx-x64-b2043.64.tar.gz\n`
+    } as any);
+
+    const distribution = new JetBrainsDistribution({
+      version: '21',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    distribution['getAvailableVersions'] = async () => manifestData as any;
+
+    const result = await distribution['findPackageForDownload']('21');
+
+    expect(result.checksum).toEqual({
+      algorithm: 'sha256',
+      value: sha256Checksum,
+      source: `${result.url}.checksum`
+    });
+  });
 });

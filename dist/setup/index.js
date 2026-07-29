@@ -129429,12 +129429,18 @@ function sanitizedSource(source) {
         return ' from an invalid checksum source';
     }
 }
+// Length, in hex characters, of a digest produced by each supported algorithm.
+// Exported so callers (e.g. fetchChecksum) can infer which algorithm a vendor
+// actually used when it doesn't disclose it via the checksum URL/filename.
+function expectedDigestLength(algorithm) {
+    return algorithm === 'sha256' ? 64 : algorithm === 'sha512' ? 128 : 0;
+}
 function normalizeExpectedDigest(checksum) {
     const algorithm = checksum.algorithm;
     const digest = typeof checksum.value === 'string'
         ? checksum.value.trim().toLowerCase()
         : '';
-    const expectedLength = algorithm === 'sha256' ? 64 : algorithm === 'sha512' ? 128 : 0;
+    const expectedLength = expectedDigestLength(algorithm);
     if (expectedLength === 0) {
         throw new Error(`Unsupported checksum algorithm '${String(algorithm)}'${sanitizedSource(checksum.source)}. Supported algorithms are sha256 and sha512.`);
     }
@@ -129533,6 +129539,14 @@ class JavaBase {
         }
     }
     async fetchChecksum(checksumUrl, algorithm) {
+        // Some vendors (e.g. JetBrains) publish a single, generically-named
+        // checksum sibling (`.checksum`) whose digest algorithm isn't disclosed
+        // by the URL and has changed across releases. Accepting a list of
+        // candidate algorithms lets callers pass every algorithm the vendor is
+        // known to use; the actual algorithm is then inferred from the length of
+        // the returned digest.
+        const algorithms = Array.isArray(algorithm) ? algorithm : [algorithm];
+        const algorithmLabel = algorithms.join(' or ');
         const response = await this.http.get(checksumUrl);
         const statusCode = response.message.statusCode;
         const source = (() => {
@@ -129545,18 +129559,23 @@ class JavaBase {
             }
         })();
         if (statusCode === HttpCodes.NotFound) {
-            core_debug(`No authoritative ${algorithm} checksum is available for ${this.distribution} from ${source}; skipping checksum verification.`);
+            core_debug(`No authoritative ${algorithmLabel} checksum is available for ${this.distribution} from ${source}; skipping checksum verification.`);
             return undefined;
         }
         if (statusCode !== HttpCodes.OK) {
-            throw new Error(`Failed to fetch the authoritative ${algorithm} checksum for ${this.distribution} from ${source} (HTTP ${statusCode}).`);
+            throw new Error(`Failed to fetch the authoritative ${algorithmLabel} checksum for ${this.distribution} from ${source} (HTTP ${statusCode}).`);
         }
         const body = await response.readBody();
         const value = body.trim().split(/\s+/, 1)[0] ?? '';
         if (!value) {
-            throw new Error(`Received an empty authoritative ${algorithm} checksum for ${this.distribution} from ${source}.`);
+            throw new Error(`Received an empty authoritative ${algorithmLabel} checksum for ${this.distribution} from ${source}.`);
         }
-        return { algorithm, value, source: checksumUrl };
+        // Prefer the strongest algorithm whose digest length matches what was
+        // actually returned; fall back to the first candidate (preserving prior
+        // behavior/error messages) when the digest doesn't match any of them.
+        const resolvedAlgorithm = algorithms.find(algo => value.length === expectedDigestLength(algo)) ??
+            algorithms[0];
+        return { algorithm: resolvedAlgorithm, value, source: checksumUrl };
     }
     async setupJava() {
         if (this.verifySignature && !this.supportsSignatureVerification()) {
@@ -131921,7 +131940,11 @@ class JetBrainsDistribution extends JavaBase {
         }
         return {
             ...resolvedFullVersion,
-            checksum: await this.fetchChecksum(`${resolvedFullVersion.url}.checksum`, 'sha512')
+            // JetBrains' `.checksum` sibling doesn't disclose its algorithm via the
+            // filename, and older JBR builds (e.g. JBR 11) publish a SHA-256 digest
+            // there while newer builds publish SHA-512. Accept either, preferring
+            // the stronger SHA-512 when the digest length is ambiguous.
+            checksum: await this.fetchChecksum(`${resolvedFullVersion.url}.checksum`, ['sha512', 'sha256'])
         };
     }
     async downloadTool(javaRelease) {

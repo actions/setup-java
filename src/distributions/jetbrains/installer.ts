@@ -52,9 +52,13 @@ export class JetBrainsDistribution extends JavaBase {
 
     return {
       ...resolvedFullVersion,
+      // JetBrains' `.checksum` sibling doesn't disclose its algorithm via the
+      // filename, and older JBR builds (e.g. JBR 11) publish a SHA-256 digest
+      // there while newer builds publish SHA-512. Accept either, preferring
+      // the stronger SHA-512 when the digest length is ambiguous.
       checksum: await this.fetchChecksum(
         `${resolvedFullVersion.url}.checksum`,
-        'sha512'
+        ['sha512', 'sha256']
       )
     };
   }

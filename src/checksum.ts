@@ -22,14 +22,22 @@ function sanitizedSource(source: string | undefined): string {
   }
 }
 
+// Length, in hex characters, of a digest produced by each supported algorithm.
+// Exported so callers (e.g. fetchChecksum) can infer which algorithm a vendor
+// actually used when it doesn't disclose it via the checksum URL/filename.
+export function expectedDigestLength(
+  algorithm: ChecksumMetadata['algorithm']
+): number {
+  return algorithm === 'sha256' ? 64 : algorithm === 'sha512' ? 128 : 0;
+}
+
 function normalizeExpectedDigest(checksum: ChecksumMetadata): string {
   const algorithm = checksum.algorithm;
   const digest =
     typeof checksum.value === 'string'
       ? checksum.value.trim().toLowerCase()
       : '';
-  const expectedLength =
-    algorithm === 'sha256' ? 64 : algorithm === 'sha512' ? 128 : 0;
+  const expectedLength = expectedDigestLength(algorithm);
 
   if (expectedLength === 0) {
     throw new Error(

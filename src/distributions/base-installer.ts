@@ -19,7 +19,7 @@ import {
 import {MACOS_JAVA_CONTENT_POSTFIX} from '../constants.js';
 import {RetryingHttpClient} from '../retrying-http-client.js';
 import os from 'os';
-import {verifyChecksum} from '../checksum.js';
+import {expectedDigestLength, verifyChecksum} from '../checksum.js';
 
 export abstract class JavaBase {
   protected http: httpm.HttpClient;
@@ -106,8 +106,17 @@ export abstract class JavaBase {
 
   protected async fetchChecksum(
     checksumUrl: string,
-    algorithm: ChecksumAlgorithm
+    algorithm: ChecksumAlgorithm | ChecksumAlgorithm[]
   ): Promise<ChecksumMetadata | undefined> {
+    // Some vendors (e.g. JetBrains) publish a single, generically-named
+    // checksum sibling (`.checksum`) whose digest algorithm isn't disclosed
+    // by the URL and has changed across releases. Accepting a list of
+    // candidate algorithms lets callers pass every algorithm the vendor is
+    // known to use; the actual algorithm is then inferred from the length of
+    // the returned digest.
+    const algorithms = Array.isArray(algorithm) ? algorithm : [algorithm];
+    const algorithmLabel = algorithms.join(' or ');
+
     const response = await this.http.get(checksumUrl);
     const statusCode = response.message.statusCode;
     const source = (() => {
@@ -121,14 +130,14 @@ export abstract class JavaBase {
 
     if (statusCode === httpm.HttpCodes.NotFound) {
       core.debug(
-        `No authoritative ${algorithm} checksum is available for ${this.distribution} from ${source}; skipping checksum verification.`
+        `No authoritative ${algorithmLabel} checksum is available for ${this.distribution} from ${source}; skipping checksum verification.`
       );
       return undefined;
     }
 
     if (statusCode !== httpm.HttpCodes.OK) {
       throw new Error(
-        `Failed to fetch the authoritative ${algorithm} checksum for ${this.distribution} from ${source} (HTTP ${statusCode}).`
+        `Failed to fetch the authoritative ${algorithmLabel} checksum for ${this.distribution} from ${source} (HTTP ${statusCode}).`
       );
     }
 
@@ -136,10 +145,18 @@ export abstract class JavaBase {
     const value = body.trim().split(/\s+/, 1)[0] ?? '';
     if (!value) {
       throw new Error(
-        `Received an empty authoritative ${algorithm} checksum for ${this.distribution} from ${source}.`
+        `Received an empty authoritative ${algorithmLabel} checksum for ${this.distribution} from ${source}.`
       );
     }
-    return {algorithm, value, source: checksumUrl};
+
+    // Prefer the strongest algorithm whose digest length matches what was
+    // actually returned; fall back to the first candidate (preserving prior
+    // behavior/error messages) when the digest doesn't match any of them.
+    const resolvedAlgorithm =
+      algorithms.find(algo => value.length === expectedDigestLength(algo)) ??
+      algorithms[0];
+
+    return {algorithm: resolvedAlgorithm, value, source: checksumUrl};
   }
 
   public async setupJava(): Promise<JavaInstallerResults> {
