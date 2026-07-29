@@ -463,7 +463,7 @@ jobs:
           cache: maven
           cache-dependency-path: |
             __tests__/cache/maven2/pom.xml
-            README.md
+            .github/workflows/e2e-cache.yml
           cache-path: |
             ${{ runner.temp }}/setup-java-custom-maven-repository
             !${{ runner.temp }}/setup-java-custom-maven-repository/**/*.lastUpdated
@@ -486,7 +486,9 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
           cache: maven
-          cache-dependency-path: __tests__/cache/maven2/pom.xml
+          cache-dependency-path: |
+            __tests__/cache/maven2/pom.xml
+            .github/workflows/e2e-cache.yml
           cache-path: |
             ${{ runner.temp }}/setup-java-custom-maven-repository
             !${{ runner.temp }}/setup-java-custom-maven-repository/**/*.lastUpdated
