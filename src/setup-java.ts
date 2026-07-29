@@ -28,6 +28,7 @@ export async function run() {
     const cacheDependencyPath = core.getInput(
       constants.INPUT_CACHE_DEPENDENCY_PATH
     );
+    const cachePath = core.getMultilineInput(constants.INPUT_CACHE_PATH);
     const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
     const forceDownload = getBooleanInput(
       constants.INPUT_FORCE_DOWNLOAD,
@@ -132,7 +133,7 @@ export async function run() {
     await auth.configureAuthentication();
     configureMavenArgs();
     if (cache && isCacheFeatureAvailable()) {
-      await restore(cache, cacheDependencyPath);
+      await restore(cache, cacheDependencyPath, cachePath);
     }
   } catch (error) {
     core.setFailed((error as Error).message);

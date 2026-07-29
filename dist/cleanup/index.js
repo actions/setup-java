@@ -97338,6 +97338,7 @@ const MAVEN_GPG_PASSPHRASE_DEFAULT_ENV = 'MAVEN_GPG_PASSPHRASE';
 const GPG_PASSPHRASE_PROFILE_ID = 'setup-java-gpg';
 const INPUT_CACHE = 'cache';
 const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
+const INPUT_CACHE_PATH = 'cache-path';
 const INPUT_CACHE_READ_ONLY = 'cache-read-only';
 const INPUT_JOB_STATUS = 'job-status';
 const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
@@ -97771,6 +97772,7 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
 
 
 const STATE_CACHE_PRIMARY_KEY = 'cache-primary-key';
+const STATE_CACHE_PATHS = 'cache-paths';
 const CACHE_MATCHED_KEY = 'cache-matched-key';
 const CACHE_KEY_PREFIX = 'setup-java';
 const supportedPackageManager = [
@@ -97852,6 +97854,21 @@ function findPackageManager(id) {
     }
     return packageManager;
 }
+function resolveCachePaths(packageManager, cachePaths) {
+    return cachePaths.length > 0 ? cachePaths : packageManager.path;
+}
+function getCachePathsFromState(packageManager) {
+    const cachePathsState = getState(STATE_CACHE_PATHS);
+    if (!cachePathsState) {
+        return packageManager.path;
+    }
+    const cachePaths = JSON.parse(cachePathsState);
+    if (!Array.isArray(cachePaths) ||
+        !cachePaths.every(cachePath => typeof cachePath === 'string')) {
+        throw new Error('Invalid cache paths retrieved from state.');
+    }
+    return cachePaths;
+}
 /**
  * State keys used to carry an additional cache's restore-time information over
  * to the post (save) action, scoped by the additional cache name.
@@ -97896,28 +97913,31 @@ async function computeAdditionalCacheKey(additionalCache) {
  * Restore the dependency cache
  * @param id ID of the package manager, should be "maven" or "gradle"
  * @param cacheDependencyPath The path to a dependency file
+ * @param cachePaths Paths to cache instead of the package manager defaults
  */
-async function restore(id, cacheDependencyPath) {
+async function restore(id, cacheDependencyPath, cachePaths = []) {
     const packageManager = findPackageManager(id);
+    const resolvedCachePaths = resolveCachePaths(packageManager, cachePaths);
     const [primaryKey, preparedAdditionalCaches] = await Promise.all([
         computeCacheKey(packageManager, cacheDependencyPath),
         prepareAdditionalCaches(packageManager.additionalCaches ?? [])
     ]);
     core.debug(`primary key is ${primaryKey}`);
     core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
+    core.saveState(STATE_CACHE_PATHS, JSON.stringify(resolvedCachePaths));
     core.setOutput(STATE_CACHE_PRIMARY_KEY, primaryKey);
     for (const preparedCache of preparedAdditionalCaches) {
         core.debug(`${preparedCache.cache.name} primary key is ${preparedCache.primaryKey}`);
         core.saveState(additionalCachePrimaryKeyState(preparedCache.cache.name), preparedCache.primaryKey);
     }
     await Promise.all([
-        restorePrimaryCache(packageManager, primaryKey),
+        restorePrimaryCache(packageManager, resolvedCachePaths, primaryKey),
         ...preparedAdditionalCaches.map(preparedCache => restoreAdditionalCache(preparedCache))
     ]);
 }
-async function restorePrimaryCache(packageManager, primaryKey) {
+async function restorePrimaryCache(packageManager, cachePaths, primaryKey) {
     // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
-    const matchedKey = await cache.restoreCache(packageManager.path, primaryKey);
+    const matchedKey = await cache.restoreCache(cachePaths, primaryKey);
     if (matchedKey) {
         core.saveState(CACHE_MATCHED_KEY, matchedKey);
         core.setOutput('cache-hit', matchedKey === primaryKey);
@@ -97963,6 +97983,7 @@ async function restoreAdditionalCache(preparedCache) {
  */
 async function save(id) {
     const packageManager = findPackageManager(id);
+    const cachePaths = getCachePathsFromState(packageManager);
     const matchedKey = getState(CACHE_MATCHED_KEY);
     // Inputs are re-evaluated before the post action, so we want the original key used for restore
     const primaryKey = getState(STATE_CACHE_PRIMARY_KEY);
@@ -97985,7 +98006,7 @@ async function save(id) {
         return;
     }
     try {
-        const cacheId = await cache_saveCache(packageManager.path, primaryKey);
+        const cacheId = await cache_saveCache(cachePaths, primaryKey);
         if (cacheId === -1) {
             // saveCache returns -1 without throwing when the cache was not saved,
             // e.g. a reserve collision or a read-only token (fork PR). @actions/cache

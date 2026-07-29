@@ -72,6 +72,8 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `cache-dependency-path`: The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.
 
+  - `cache-path`: The dependency cache path to use instead of the default path for the package manager selected by `cache`. This option supports a list of paths and exclusion patterns. The build tool must be configured to use the same location.
+
   - `cache-read-only`: Restore dependency caches without saving changes in the post action. Defaults to `false`. Use this for pull requests, merge queues, short-lived branches, and fan-out jobs that should consume caches populated by a default-branch or seed job.
 
   #### Maven options
@@ -187,6 +189,34 @@ The action has a built-in functionality for caching and restoring dependencies. 
 - sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.scala`, `**/project/**.sbt`
 
 When the option `cache-dependency-path` is specified, the hash is based on the matching file. This option supports wildcards and a list of file names, and is especially useful for monorepos.
+
+Use `cache-path` to replace the selected package manager's default dependency
+cache paths. Each non-empty line is passed to `actions/cache`, including
+supported exclusion patterns. `setup-java` does not configure the build tool,
+so the build must use the same paths:
+
+```yaml
+- uses: actions/setup-java@v6
+  with:
+    distribution: 'temurin'
+    java-version: '25'
+    cache: 'maven'
+    cache-path: |
+      /custom/maven/repository
+      !/custom/maven/repository/**/*.lastUpdated
+- run: mvn -Dmaven.repo.local=/custom/maven/repository verify
+```
+
+`cache-path` does not change the cache key. The key continues to use the runner
+OS, architecture, selected package manager, and dependency-file hash described
+above. Jobs intended to share a cache key must therefore use the same
+`cache-path` values so that they restore and save the same filesystem
+locations.
+
+The Maven and Gradle wrapper caches remain at their documented default paths
+and are managed independently of `cache-path`. For advanced keying, fallback
+keys, or cache topologies that do not map to one package manager's dependency
+paths, use [`actions/cache`](https://github.com/actions/cache) directly.
 
 The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
 

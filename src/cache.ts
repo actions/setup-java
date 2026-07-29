@@ -9,6 +9,7 @@ import * as core from '@actions/core';
 import * as glob from '@actions/glob';
 
 const STATE_CACHE_PRIMARY_KEY = 'cache-primary-key';
+const STATE_CACHE_PATHS = 'cache-paths';
 const CACHE_MATCHED_KEY = 'cache-matched-key';
 const CACHE_KEY_PREFIX = 'setup-java';
 
@@ -136,6 +137,29 @@ function findPackageManager(id: string): PackageManager {
   return packageManager;
 }
 
+function resolveCachePaths(
+  packageManager: PackageManager,
+  cachePaths: string[]
+): string[] {
+  return cachePaths.length > 0 ? cachePaths : packageManager.path;
+}
+
+function getCachePathsFromState(packageManager: PackageManager): string[] {
+  const cachePathsState = core.getState(STATE_CACHE_PATHS);
+  if (!cachePathsState) {
+    return packageManager.path;
+  }
+
+  const cachePaths: unknown = JSON.parse(cachePathsState);
+  if (
+    !Array.isArray(cachePaths) ||
+    !cachePaths.every(cachePath => typeof cachePath === 'string')
+  ) {
+    throw new Error('Invalid cache paths retrieved from state.');
+  }
+  return cachePaths;
+}
+
 /**
  * State keys used to carry an additional cache's restore-time information over
  * to the post (save) action, scoped by the additional cache name.
@@ -191,9 +215,15 @@ async function computeAdditionalCacheKey(
  * Restore the dependency cache
  * @param id ID of the package manager, should be "maven" or "gradle"
  * @param cacheDependencyPath The path to a dependency file
+ * @param cachePaths Paths to cache instead of the package manager defaults
  */
-export async function restore(id: string, cacheDependencyPath: string) {
+export async function restore(
+  id: string,
+  cacheDependencyPath: string,
+  cachePaths: string[] = []
+) {
   const packageManager = findPackageManager(id);
+  const resolvedCachePaths = resolveCachePaths(packageManager, cachePaths);
   const [primaryKey, preparedAdditionalCaches] = await Promise.all([
     computeCacheKey(packageManager, cacheDependencyPath),
     prepareAdditionalCaches(packageManager.additionalCaches ?? [])
@@ -201,6 +231,7 @@ export async function restore(id: string, cacheDependencyPath: string) {
 
   core.debug(`primary key is ${primaryKey}`);
   core.saveState(STATE_CACHE_PRIMARY_KEY, primaryKey);
+  core.saveState(STATE_CACHE_PATHS, JSON.stringify(resolvedCachePaths));
   core.setOutput(STATE_CACHE_PRIMARY_KEY, primaryKey);
 
   for (const preparedCache of preparedAdditionalCaches) {
@@ -214,7 +245,7 @@ export async function restore(id: string, cacheDependencyPath: string) {
   }
 
   await Promise.all([
-    restorePrimaryCache(packageManager, primaryKey),
+    restorePrimaryCache(packageManager, resolvedCachePaths, primaryKey),
     ...preparedAdditionalCaches.map(preparedCache =>
       restoreAdditionalCache(preparedCache)
     )
@@ -223,10 +254,11 @@ export async function restore(id: string, cacheDependencyPath: string) {
 
 async function restorePrimaryCache(
   packageManager: PackageManager,
+  cachePaths: string[],
   primaryKey: string
 ) {
   // No "restoreKeys" is set, to start with a clear cache after dependency update (see https://github.com/actions/setup-java/issues/269)
-  const matchedKey = await cache.restoreCache(packageManager.path, primaryKey);
+  const matchedKey = await cache.restoreCache(cachePaths, primaryKey);
   if (matchedKey) {
     core.saveState(CACHE_MATCHED_KEY, matchedKey);
     core.setOutput('cache-hit', matchedKey === primaryKey);
@@ -286,6 +318,7 @@ async function restoreAdditionalCache(preparedCache: PreparedAdditionalCache) {
  */
 export async function save(id: string) {
   const packageManager = findPackageManager(id);
+  const cachePaths = getCachePathsFromState(packageManager);
   const matchedKey = core.getState(CACHE_MATCHED_KEY);
 
   // Inputs are re-evaluated before the post action, so we want the original key used for restore
@@ -313,7 +346,7 @@ export async function save(id: string) {
     return;
   }
   try {
-    const cacheId = await cache.saveCache(packageManager.path, primaryKey);
+    const cacheId = await cache.saveCache(cachePaths, primaryKey);
     if (cacheId === -1) {
       // saveCache returns -1 without throwing when the cache was not saved,
       // e.g. a reserve collision or a read-only token (fork PR). @actions/cache

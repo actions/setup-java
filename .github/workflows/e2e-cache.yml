@@ -335,7 +335,9 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
           cache: maven
-          cache-dependency-path: __tests__/cache/maven2/pom.xml
+          cache-dependency-path: |
+            __tests__/cache/maven2/pom.xml
+            README.md
       - name: Confirm that ~/.m2/repository directory has not been made
         run: bash __tests__/check-dir.sh "$HOME/.m2/repository" absent
   sbt1-save:
@@ -446,3 +448,48 @@ jobs:
       - name: Confirm that ~/.cache/coursier directory has not been made
         if: matrix.os == 'ubuntu-22.04'
         run: bash "$GITHUB_WORKSPACE/__tests__/check-dir.sh" "$HOME/.cache/coursier" absent
+  custom-maven-path-save:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Run setup-java with a custom Maven cache path
+        uses: ./
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: maven
+          cache-dependency-path: |
+            __tests__/cache/maven2/pom.xml
+            README.md
+          cache-path: |
+            ${{ runner.temp }}/setup-java-custom-maven-repository
+            !${{ runner.temp }}/setup-java-custom-maven-repository/**/*.lastUpdated
+      - name: Populate the custom Maven repository
+        run: |
+          mvn -Dmaven.repo.local="$RUNNER_TEMP/setup-java-custom-maven-repository" verify -f __tests__/cache/maven2/pom.xml
+          touch "$RUNNER_TEMP/setup-java-custom-maven-repository/setup-java-cache-path-marker"
+          bash __tests__/check-dir.sh "$RUNNER_TEMP/setup-java-custom-maven-repository"
+  custom-maven-path-restore:
+    runs-on: ubuntu-latest
+    needs: custom-maven-path-save
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Run setup-java with a custom Maven cache path
+        uses: ./
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+          cache: maven
+          cache-dependency-path: __tests__/cache/maven2/pom.xml
+          cache-path: |
+            ${{ runner.temp }}/setup-java-custom-maven-repository
+            !${{ runner.temp }}/setup-java-custom-maven-repository/**/*.lastUpdated
+          cache-read-only: true
+      - name: Confirm that the custom Maven repository has been restored
+        run: test -f "$RUNNER_TEMP/setup-java-custom-maven-repository/setup-java-cache-path-marker"
