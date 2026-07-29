@@ -68941,6 +68941,11 @@ module.exports = /*#__PURE__*/JSON.parse('{"name":"@actions/cache","version":"6.
 /************************************************************************/
 var __webpack_exports__ = {};
 
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  e: () => (/* binding */ run)
+});
+
 // NAMESPACE OBJECT: ./node_modules/@azure/storage-blob/dist/esm/generated/src/models/mappers.js
 var mappers_namespaceObject = {};
 __nccwpck_require__.r(mappers_namespaceObject);
@@ -132361,7 +132366,13 @@ async function run() {
         setFailed(error.message);
     }
 }
-run();
+if (process.argv[1] === (0,external_url_.fileURLToPath)(import.meta.url)) {
+    run();
+}
+else {
+    // https://nodejs.org/api/modules.html#modules_accessing_the_main_module
+    info('the script is loaded as a module, so skipping the execution');
+}
 function getJdkFileInput() {
     const jdkFile = getInput(INPUT_JDK_FILE);
     const deprecatedJdkFile = getInput(INPUT_JDK_FILE_DEPRECATED);
@@ -132400,3 +132411,5 @@ async function installVersion(version, options, toolchainId = 0) {
     info('');
 }
 
+var __webpack_exports__run = __webpack_exports__.e;
+export { __webpack_exports__run as run };

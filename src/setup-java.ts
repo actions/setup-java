@@ -16,7 +16,7 @@ import {JavaInstallerOptions} from './distributions/base-models.js';
 import {configureMavenArgs} from './maven-args.js';
 import {configureProblemMatcher} from './problem-matcher.js';
 
-async function run() {
+export async function run() {
   try {
     const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
     let distributionName = core.getInput(constants.INPUT_DISTRIBUTION);
@@ -139,7 +139,12 @@ async function run() {
   }
 }
 
-run();
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  run();
+} else {
+  // https://nodejs.org/api/modules.html#modules_accessing_the_main_module
+  core.info('the script is loaded as a module, so skipping the execution');
+}
 
 function getJdkFileInput(): string {
   const jdkFile = core.getInput(constants.INPUT_JDK_FILE);
