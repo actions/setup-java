@@ -6,6 +6,7 @@ import {
 } from '../../src/distributions/package-types.js';
 import os from 'os';
 import {validateJavaPlatform} from '../../src/distributions/platform-types.js';
+import {normalizeArchitecture} from '../../src/distributions/platform-types.js';
 
 const supportedDistributionsOnCurrentPlatform = Object.values(
   JavaDistribution
@@ -132,7 +133,7 @@ describe('getJavaDistribution', () => {
       architecture: ''
     });
 
-    const expected = os.arch() === 'arm64' ? 'aarch64' : os.arch();
+    const expected = normalizeArchitecture(os.arch());
     expect(distribution!['architecture']).toBe(expected);
   });
 

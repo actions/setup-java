@@ -45,10 +45,10 @@ describe('Java platform capabilities', () => {
   it('rejects version-dependent architecture restrictions', () => {
     expect(() =>
       validateJavaPlatform('corretto', 'linux', 'x86', '17')
-    ).toThrow(/x86 \(<=11\)/);
+    ).toThrow(/x86 \(<12\)/);
     expect(() =>
       validateJavaPlatform('corretto', 'linux', 'x86', '17.0.2.8.1')
-    ).toThrow(/x86 \(<=11\)/);
+    ).toThrow(/x86 \(<12\)/);
     expect(validateJavaPlatform('corretto', 'linux', 'x86', '11')).toBe('x86');
   });
 
@@ -91,7 +91,9 @@ describe('Java platform capabilities', () => {
         'x64',
         'armv7',
         'aarch64',
-        'ppc64le'
+        'ppc64le',
+        'ppc64',
+        's390x'
       ]) {
         expect(content).toContain(architecture);
       }

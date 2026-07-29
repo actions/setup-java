@@ -35,14 +35,14 @@ export const JAVA_PLATFORM_CAPABILITIES: Record<
 > = {
   [JavaDistribution.Adopt]: {
     platforms: {
-      linux: [...STANDARD_LINUX, {architecture: 'armv7', versionRange: '<=17'}],
+      linux: [...STANDARD_LINUX, {architecture: 'armv7', versionRange: '<18'}],
       macos: X64_ARM64,
       windows: ['x64', 'x86', 'aarch64']
     }
   },
   [JavaDistribution.AdoptHotspot]: {
     platforms: {
-      linux: [...STANDARD_LINUX, {architecture: 'armv7', versionRange: '<=17'}],
+      linux: [...STANDARD_LINUX, {architecture: 'armv7', versionRange: '<18'}],
       macos: X64_ARM64,
       windows: ['x64', 'x86', 'aarch64']
     }
@@ -56,7 +56,7 @@ export const JAVA_PLATFORM_CAPABILITIES: Record<
   },
   [JavaDistribution.Temurin]: {
     platforms: {
-      linux: [...STANDARD_LINUX, {architecture: 'armv7', versionRange: '<=17'}],
+      linux: [...STANDARD_LINUX, {architecture: 'armv7', versionRange: '<18'}],
       macos: X64_ARM64,
       windows: ['x64', 'x86', 'aarch64']
     }
@@ -104,12 +104,12 @@ export const JAVA_PLATFORM_CAPABILITIES: Record<
     platforms: {
       linux: [
         'x64',
-        {architecture: 'x86', versionRange: '<=11'},
+        {architecture: 'x86', versionRange: '<12'},
         {architecture: 'armv7', versionRange: '11'},
         'aarch64'
       ],
       macos: X64_ARM64,
-      windows: ['x64', {architecture: 'x86', versionRange: '<=11'}]
+      windows: ['x64', {architecture: 'x86', versionRange: '<12'}]
     }
   },
   [JavaDistribution.Oracle]: {
@@ -225,7 +225,7 @@ export function validateJavaPlatform(
   }
 
   const capability = JAVA_PLATFORM_CAPABILITIES[distributionName];
-  if ('unrestricted' in capability) {
+  if ('unrestricted' in capability && capability.unrestricted === true) {
     return normalizedArchitecture;
   }
 
