@@ -299,6 +299,19 @@ describe('getAvailableVersions', () => {
         expect(availableVersion.url).toBe(expectedLink);
       }
     );
+
+    it('keeps the canonical ARM runner value separate from the vendor value', () => {
+      jest.spyOn(os, 'arch').mockReturnValue('arm');
+      const distribution = new CorrettoDistribution({
+        version: '11',
+        architecture: '',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+
+      expect(distribution['architecture']).toBe('armv7');
+      expect(distribution['distributionArchitecture']()).toBe('arm');
+    });
   });
 
   const mockPlatform = (

@@ -495,6 +495,25 @@ jobs:
         run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
         shell: bash
 
+  setup-java-unsupported-platform:
+    name: Reject unsupported Oracle x86 on Linux
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout_step
+      - name: Attempt unsupported setup
+        id: unsupported-setup
+        continue-on-error: true
+        uses: ./
+        with:
+          distribution: oracle
+          java-version: '21'
+          architecture: x86
+      - name: Verify setup was rejected
+        if: always()
+        env:
+          SETUP_OUTCOME: ${{ steps.unsupported-setup.outcome }}
+        run: test "$SETUP_OUTCOME" = failure
+
   setup-java-version-both-version-inputs-presents:
     name: ${{ matrix.distribution }} version (should be from input) - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}

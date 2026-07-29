@@ -12040,7 +12040,7 @@ exports.NodeListStaticImpl = NodeListStaticImpl;
 
 /***/ }),
 
-/***/ 9875:
+/***/ 2256:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 
@@ -13485,7 +13485,7 @@ const NodeListImpl_1 = __nccwpck_require__(5788);
 Object.defineProperty(exports, "NodeList", ({ enumerable: true, get: function () { return NodeListImpl_1.NodeListImpl; } }));
 const NodeListStaticImpl_1 = __nccwpck_require__(7654);
 Object.defineProperty(exports, "NodeListStatic", ({ enumerable: true, get: function () { return NodeListStaticImpl_1.NodeListStaticImpl; } }));
-const NonDocumentTypeChildNodeImpl_1 = __nccwpck_require__(9875);
+const NonDocumentTypeChildNodeImpl_1 = __nccwpck_require__(2256);
 const NonElementParentNodeImpl_1 = __nccwpck_require__(5325);
 const ParentNodeImpl_1 = __nccwpck_require__(1824);
 const ProcessingInstructionImpl_1 = __nccwpck_require__(2755);
@@ -129510,7 +129510,352 @@ async function verifyChecksum(filePath, checksum, context) {
     }
 }
 
+;// CONCATENATED MODULE: ./src/distributions/package-types.ts
+
+
+var JavaDistribution;
+(function (JavaDistribution) {
+    JavaDistribution["Adopt"] = "adopt";
+    JavaDistribution["AdoptHotspot"] = "adopt-hotspot";
+    JavaDistribution["AdoptOpenJ9"] = "adopt-openj9";
+    JavaDistribution["Temurin"] = "temurin";
+    JavaDistribution["Zulu"] = "zulu";
+    JavaDistribution["Liberica"] = "liberica";
+    JavaDistribution["LibericaNik"] = "liberica-nik";
+    JavaDistribution["JdkFile"] = "jdkfile";
+    JavaDistribution["Microsoft"] = "microsoft";
+    JavaDistribution["Semeru"] = "semeru";
+    JavaDistribution["Corretto"] = "corretto";
+    JavaDistribution["Oracle"] = "oracle";
+    JavaDistribution["Dragonwell"] = "dragonwell";
+    JavaDistribution["SapMachine"] = "sapmachine";
+    JavaDistribution["GraalVM"] = "graalvm";
+    JavaDistribution["GraalVMCommunity"] = "graalvm-community";
+    JavaDistribution["JetBrains"] = "jetbrains";
+    JavaDistribution["Kona"] = "kona";
+    JavaDistribution["OracleOpenJdk"] = "oracle-openjdk";
+})(JavaDistribution || (JavaDistribution = {}));
+const JAVA_PACKAGE_CAPABILITIES = {
+    [JavaDistribution.Adopt]: ['jdk', 'jre'],
+    [JavaDistribution.AdoptHotspot]: ['jdk', 'jre'],
+    [JavaDistribution.AdoptOpenJ9]: ['jdk', 'jre'],
+    [JavaDistribution.Temurin]: ['jdk', 'jre', 'jdk+jmods'],
+    [JavaDistribution.Zulu]: [
+        'jdk',
+        'jre',
+        'jdk+fx',
+        'jre+fx',
+        'jdk+crac',
+        'jre+crac'
+    ],
+    [JavaDistribution.Liberica]: ['jdk', 'jre', 'jdk+fx', 'jre+fx'],
+    [JavaDistribution.LibericaNik]: ['jdk', 'jdk+fx'],
+    [JavaDistribution.JdkFile]: ['jdk'],
+    [JavaDistribution.Microsoft]: ['jdk'],
+    [JavaDistribution.Semeru]: ['jdk', 'jre'],
+    [JavaDistribution.Corretto]: ['jdk', 'jre'],
+    [JavaDistribution.Oracle]: ['jdk'],
+    [JavaDistribution.Dragonwell]: ['jdk'],
+    [JavaDistribution.SapMachine]: ['jdk', 'jre'],
+    [JavaDistribution.GraalVM]: ['jdk'],
+    [JavaDistribution.GraalVMCommunity]: ['jdk'],
+    [JavaDistribution.JetBrains]: [
+        'jdk',
+        'jre',
+        'jdk+jcef',
+        'jre+jcef',
+        'jdk+ft',
+        'jre+ft'
+    ],
+    [JavaDistribution.Kona]: ['jdk'],
+    [JavaDistribution.OracleOpenJdk]: ['jdk']
+};
+function validateJavaPackage(distributionName, packageType, version) {
+    if (!isJavaDistribution(distributionName)) {
+        return;
+    }
+    const supportedPackages = JAVA_PACKAGE_CAPABILITIES[distributionName];
+    if (!supportedPackages.includes(packageType)) {
+        throw createUnsupportedPackageError(distributionName, packageType, supportedPackages);
+    }
+    if (distributionName === JavaDistribution.Temurin &&
+        packageType === 'jdk+jmods' &&
+        !canResolveTemurinJmods(version)) {
+        throw createUnsupportedPackageError(distributionName, packageType, supportedPackages, `Package 'jdk+jmods' requires Java 24 or later; requested version '${version}'.`);
+    }
+}
+function isJavaDistribution(value) {
+    return Object.prototype.hasOwnProperty.call(JAVA_PACKAGE_CAPABILITIES, value);
+}
+function canResolveTemurinJmods(version) {
+    const normalizedVersion = version.trim().toLowerCase();
+    if (normalizedVersion === 'latest') {
+        return true;
+    }
+    let normalizedRange = normalizedVersion
+        .replace(/-ea$/, '')
+        .replace('-ea.', '+');
+    if (/^\d+(\.\d+){3,}$/.test(normalizedRange)) {
+        normalizedRange = convertVersionToSemver(normalizedRange);
+    }
+    if (!semver_default().validRange(normalizedRange)) {
+        // JavaBase owns general version validation and its targeted error messages.
+        return true;
+    }
+    return semver_default().intersects(normalizedRange, '>=24.0.0', {
+        includePrerelease: true
+    });
+}
+function createUnsupportedPackageError(distributionName, packageType, supportedPackages, detail) {
+    const message = [
+        `Java package '${packageType}' is not supported for distribution '${distributionName}'.`,
+        `Supported package types: ${supportedPackages.join(', ')}.`
+    ];
+    if (detail) {
+        message.push(detail);
+    }
+    return new Error(message.join(' '));
+}
+
+;// CONCATENATED MODULE: ./src/distributions/platform-types.ts
+
+
+const X64_ARM64 = ['x64', 'aarch64'];
+const X64_X86 = ['x64', 'x86'];
+const STANDARD_LINUX = ['x64', 'x86', 'aarch64', 'ppc64le', 's390x'];
+const JAVA_PLATFORM_CAPABILITIES = {
+    [JavaDistribution.Adopt]: {
+        platforms: {
+            linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<18' }],
+            macos: X64_ARM64,
+            windows: ['x64', 'x86', 'aarch64']
+        }
+    },
+    [JavaDistribution.AdoptHotspot]: {
+        platforms: {
+            linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<18' }],
+            macos: X64_ARM64,
+            windows: ['x64', 'x86', 'aarch64']
+        }
+    },
+    [JavaDistribution.AdoptOpenJ9]: {
+        platforms: {
+            linux: STANDARD_LINUX,
+            macos: ['x64'],
+            windows: X64_X86
+        }
+    },
+    [JavaDistribution.Temurin]: {
+        platforms: {
+            linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<18' }],
+            macos: X64_ARM64,
+            windows: ['x64', 'x86', 'aarch64']
+        }
+    },
+    [JavaDistribution.Zulu]: {
+        platforms: {
+            linux: ['x64', 'x86', 'armv7', 'aarch64'],
+            macos: X64_ARM64,
+            windows: ['x64', 'x86', 'aarch64']
+        }
+    },
+    [JavaDistribution.Liberica]: {
+        platforms: {
+            linux: ['x64', 'x86', 'armv7', 'aarch64', 'ppc64le'],
+            macos: X64_ARM64,
+            windows: ['x64', 'x86', 'aarch64'],
+            solaris: ['x64']
+        }
+    },
+    [JavaDistribution.LibericaNik]: {
+        platforms: {
+            linux: X64_ARM64,
+            macos: X64_ARM64,
+            windows: X64_ARM64
+        }
+    },
+    [JavaDistribution.JdkFile]: {
+        unrestricted: true
+    },
+    [JavaDistribution.Microsoft]: {
+        platforms: {
+            linux: X64_ARM64,
+            macos: X64_ARM64,
+            windows: X64_ARM64
+        }
+    },
+    [JavaDistribution.Semeru]: {
+        platforms: {
+            linux: ['x64', 'x86', 'ppc64le', 'ppc64', 's390x', 'aarch64'],
+            macos: X64_ARM64,
+            windows: ['x64', 'aarch64']
+        }
+    },
+    [JavaDistribution.Corretto]: {
+        platforms: {
+            linux: [
+                'x64',
+                { architecture: 'x86', versionRange: '<12' },
+                { architecture: 'armv7', versionRange: '11' },
+                'aarch64'
+            ],
+            macos: X64_ARM64,
+            windows: ['x64', { architecture: 'x86', versionRange: '<12' }]
+        }
+    },
+    [JavaDistribution.Oracle]: {
+        platforms: {
+            linux: X64_ARM64,
+            macos: X64_ARM64,
+            windows: ['x64']
+        }
+    },
+    [JavaDistribution.Dragonwell]: {
+        platforms: {
+            linux: X64_ARM64,
+            windows: ['x64']
+        }
+    },
+    [JavaDistribution.SapMachine]: {
+        platforms: {
+            linux: ['x64', 'aarch64', 'ppc64le'],
+            macos: X64_ARM64,
+            windows: X64_ARM64
+        }
+    },
+    [JavaDistribution.GraalVM]: {
+        platforms: {
+            linux: X64_ARM64,
+            macos: X64_ARM64,
+            windows: ['x64']
+        }
+    },
+    [JavaDistribution.GraalVMCommunity]: {
+        platforms: {
+            linux: X64_ARM64,
+            macos: X64_ARM64,
+            windows: ['x64']
+        }
+    },
+    [JavaDistribution.JetBrains]: {
+        platforms: {
+            linux: X64_ARM64,
+            macos: X64_ARM64,
+            windows: X64_ARM64
+        }
+    },
+    [JavaDistribution.Kona]: {
+        platforms: {
+            linux: X64_ARM64,
+            macos: X64_ARM64,
+            windows: ['x64']
+        }
+    },
+    [JavaDistribution.OracleOpenJdk]: {
+        platforms: {
+            linux: X64_ARM64,
+            macos: X64_ARM64,
+            windows: ['x64']
+        }
+    }
+};
+const ARCHITECTURE_ALIASES = {
+    amd64: 'x64',
+    arm: 'armv7',
+    ia32: 'x86',
+    arm64: 'aarch64'
+};
+const CANONICAL_ARCHITECTURES = [
+    'x86',
+    'x64',
+    'armv7',
+    'aarch64',
+    'ppc64le',
+    'ppc64',
+    's390x'
+];
+const PLATFORM_ALIASES = {
+    darwin: 'macos',
+    linux: 'linux',
+    sunos: 'solaris',
+    win32: 'windows'
+};
+function normalizeArchitecture(architecture) {
+    const trimmedArchitecture = architecture.trim();
+    const normalizedArchitecture = trimmedArchitecture.toLowerCase();
+    return (ARCHITECTURE_ALIASES[normalizedArchitecture] ??
+        (CANONICAL_ARCHITECTURES.includes(normalizedArchitecture)
+            ? normalizedArchitecture
+            : trimmedArchitecture));
+}
+function normalizePlatform(platform) {
+    return PLATFORM_ALIASES[platform];
+}
+function validateJavaPlatform(distributionName, platform, architecture, version) {
+    const normalizedArchitecture = normalizeArchitecture(architecture);
+    if (!platform_types_isJavaDistribution(distributionName)) {
+        return normalizedArchitecture;
+    }
+    const capability = JAVA_PLATFORM_CAPABILITIES[distributionName];
+    if ('unrestricted' in capability && capability.unrestricted === true) {
+        return normalizedArchitecture;
+    }
+    const normalizedPlatform = normalizePlatform(platform);
+    const architectures = normalizedPlatform
+        ? capability.platforms[normalizedPlatform]
+        : undefined;
+    const supported = architectures?.some(item => {
+        const architectureCapability = typeof item === 'string' ? { architecture: item } : item;
+        return (architectureCapability.architecture === normalizedArchitecture &&
+            (!('versionRange' in architectureCapability) ||
+                isVersionCompatible(version, architectureCapability.versionRange)));
+    });
+    if (!supported) {
+        throw new Error(`Distribution '${distributionName}' does not support operating system '${normalizedPlatform ?? platform}' with architecture '${normalizedArchitecture}' for Java version '${version}'. Supported combinations: ${formatSupportedCombinations(capability)}.`);
+    }
+    return normalizedArchitecture;
+}
+function platform_types_isJavaDistribution(value) {
+    return Object.prototype.hasOwnProperty.call(JAVA_PLATFORM_CAPABILITIES, value);
+}
+function isVersionCompatible(version, supportedRange) {
+    let normalizedVersion = version.trim().toLowerCase();
+    if (normalizedVersion === 'latest') {
+        return true;
+    }
+    if (/^\d+(\.\d+){3,}$/.test(normalizedVersion)) {
+        normalizedVersion = normalizeExtendedVersionToSemver(normalizedVersion);
+    }
+    const requestedRange = semver_default().validRange(normalizedVersion.replace(/-ea$/, ''));
+    const capabilityRange = semver_default().validRange(supportedRange);
+    if (!requestedRange || !capabilityRange) {
+        return true;
+    }
+    function normalizeExtendedVersionToSemver(version) {
+        const versionParts = version.split('.');
+        const mainVersion = versionParts.slice(0, 3).join('.');
+        if (versionParts.length > 3) {
+            return `${mainVersion}+${versionParts.slice(3).join('.')}`;
+        }
+        return version;
+    }
+    return semver_default().intersects(requestedRange, capabilityRange, {
+        includePrerelease: true
+    });
+}
+function formatSupportedCombinations(capability) {
+    return Object.entries(capability.platforms)
+        .map(([platform, architectures]) => {
+        const values = architectures.map(item => typeof item === 'string'
+            ? item
+            : `${item.architecture} (${item.versionRange})`);
+        return `${platform} (${values.join(', ')})`;
+    })
+        .join('; ');
+}
+
 ;// CONCATENATED MODULE: ./src/distributions/base-installer.ts
+
 
 
 
@@ -129543,7 +129888,7 @@ class JavaBase {
             stable: this.stable,
             latest: this.latest
         } = this.normalizeVersion(installerOptions.version));
-        this.architecture = installerOptions.architecture || external_os_default().arch();
+        this.architecture = normalizeArchitecture(installerOptions.architecture || external_os_default().arch());
         this.packageType = installerOptions.packageType;
         this.checkLatest = installerOptions.checkLatest;
         this.forceDownload = installerOptions.forceDownload ?? false;
@@ -129867,22 +130212,7 @@ class JavaBase {
         exportVariable(`JAVA_HOME_${majorVersion}_${this.architecture.toUpperCase()}`, toolPath);
     }
     distributionArchitecture() {
-        // default mappings of config architectures to distribution architectures
-        // override if a distribution uses any different names; see liberica for an example
-        // node's os.arch() - which this defaults to - can return any of:
-        // 'arm', 'arm64', 'ia32', 'mips', 'mipsel', 'ppc', 'ppc64', 's390', 's390x', and 'x64'
-        // so we need to map these to java distribution architectures
-        // 'amd64' is included here too b/c it's a common alias for 'x64' people might use explicitly
-        switch (this.architecture) {
-            case 'amd64':
-                return 'x64';
-            case 'ia32':
-                return 'x86';
-            case 'arm64':
-                return 'aarch64';
-            default:
-                return this.architecture;
-        }
+        return this.architecture;
     }
 }
 
@@ -130102,6 +130432,8 @@ class ZuluDistribution extends JavaBase {
                 // would let a 32-bit request resolve to a 64-bit JDK. Use "i686" to
                 // target only genuine 32-bit builds, matching the legacy API behavior.
                 return 'i686';
+            case 'armv7':
+                return 'arm';
             case 'aarch64':
             case 'arm64':
                 return 'aarch64';
@@ -130348,6 +130680,10 @@ class TemurinDistribution extends JavaBase {
                 return process.platform;
         }
     }
+    distributionArchitecture() {
+        const architecture = super.distributionArchitecture();
+        return architecture === 'armv7' ? 'arm' : architecture;
+    }
 }
 
 ;// CONCATENATED MODULE: ./src/distributions/adopt/installer.ts
@@ -130525,6 +130861,10 @@ class AdoptDistribution extends JavaBase {
             default:
                 return process.platform;
         }
+    }
+    distributionArchitecture() {
+        const architecture = super.distributionArchitecture();
+        return architecture === 'armv7' ? 'arm' : architecture;
     }
 }
 
@@ -131193,6 +131533,10 @@ class CorrettoDistribution extends JavaBase {
             default:
                 return process.platform;
         }
+    }
+    distributionArchitecture() {
+        const architecture = super.distributionArchitecture();
+        return architecture === 'armv7' ? 'arm' : architecture;
     }
     getCorrettoVersion(resource) {
         const regex = /(\d+.+)\//;
@@ -132376,114 +132720,9 @@ class OpenJdkDistribution extends JavaBase {
     }
 }
 
-;// CONCATENATED MODULE: ./src/distributions/package-types.ts
-
-
-var JavaDistribution;
-(function (JavaDistribution) {
-    JavaDistribution["Adopt"] = "adopt";
-    JavaDistribution["AdoptHotspot"] = "adopt-hotspot";
-    JavaDistribution["AdoptOpenJ9"] = "adopt-openj9";
-    JavaDistribution["Temurin"] = "temurin";
-    JavaDistribution["Zulu"] = "zulu";
-    JavaDistribution["Liberica"] = "liberica";
-    JavaDistribution["LibericaNik"] = "liberica-nik";
-    JavaDistribution["JdkFile"] = "jdkfile";
-    JavaDistribution["Microsoft"] = "microsoft";
-    JavaDistribution["Semeru"] = "semeru";
-    JavaDistribution["Corretto"] = "corretto";
-    JavaDistribution["Oracle"] = "oracle";
-    JavaDistribution["Dragonwell"] = "dragonwell";
-    JavaDistribution["SapMachine"] = "sapmachine";
-    JavaDistribution["GraalVM"] = "graalvm";
-    JavaDistribution["GraalVMCommunity"] = "graalvm-community";
-    JavaDistribution["JetBrains"] = "jetbrains";
-    JavaDistribution["Kona"] = "kona";
-    JavaDistribution["OracleOpenJdk"] = "oracle-openjdk";
-})(JavaDistribution || (JavaDistribution = {}));
-const JAVA_PACKAGE_CAPABILITIES = {
-    [JavaDistribution.Adopt]: ['jdk', 'jre'],
-    [JavaDistribution.AdoptHotspot]: ['jdk', 'jre'],
-    [JavaDistribution.AdoptOpenJ9]: ['jdk', 'jre'],
-    [JavaDistribution.Temurin]: ['jdk', 'jre', 'jdk+jmods'],
-    [JavaDistribution.Zulu]: [
-        'jdk',
-        'jre',
-        'jdk+fx',
-        'jre+fx',
-        'jdk+crac',
-        'jre+crac'
-    ],
-    [JavaDistribution.Liberica]: ['jdk', 'jre', 'jdk+fx', 'jre+fx'],
-    [JavaDistribution.LibericaNik]: ['jdk', 'jdk+fx'],
-    [JavaDistribution.JdkFile]: ['jdk'],
-    [JavaDistribution.Microsoft]: ['jdk'],
-    [JavaDistribution.Semeru]: ['jdk', 'jre'],
-    [JavaDistribution.Corretto]: ['jdk', 'jre'],
-    [JavaDistribution.Oracle]: ['jdk'],
-    [JavaDistribution.Dragonwell]: ['jdk'],
-    [JavaDistribution.SapMachine]: ['jdk', 'jre'],
-    [JavaDistribution.GraalVM]: ['jdk'],
-    [JavaDistribution.GraalVMCommunity]: ['jdk'],
-    [JavaDistribution.JetBrains]: [
-        'jdk',
-        'jre',
-        'jdk+jcef',
-        'jre+jcef',
-        'jdk+ft',
-        'jre+ft'
-    ],
-    [JavaDistribution.Kona]: ['jdk'],
-    [JavaDistribution.OracleOpenJdk]: ['jdk']
-};
-function validateJavaPackage(distributionName, packageType, version) {
-    if (!isJavaDistribution(distributionName)) {
-        return;
-    }
-    const supportedPackages = JAVA_PACKAGE_CAPABILITIES[distributionName];
-    if (!supportedPackages.includes(packageType)) {
-        throw createUnsupportedPackageError(distributionName, packageType, supportedPackages);
-    }
-    if (distributionName === JavaDistribution.Temurin &&
-        packageType === 'jdk+jmods' &&
-        !canResolveTemurinJmods(version)) {
-        throw createUnsupportedPackageError(distributionName, packageType, supportedPackages, `Package 'jdk+jmods' requires Java 24 or later; requested version '${version}'.`);
-    }
-}
-function isJavaDistribution(value) {
-    return Object.prototype.hasOwnProperty.call(JAVA_PACKAGE_CAPABILITIES, value);
-}
-function canResolveTemurinJmods(version) {
-    const normalizedVersion = version.trim().toLowerCase();
-    if (normalizedVersion === 'latest') {
-        return true;
-    }
-    let normalizedRange = normalizedVersion
-        .replace(/-ea$/, '')
-        .replace('-ea.', '+');
-    if (/^\d+(\.\d+){3,}$/.test(normalizedRange)) {
-        normalizedRange = convertVersionToSemver(normalizedRange);
-    }
-    if (!semver_default().validRange(normalizedRange)) {
-        // JavaBase owns general version validation and its targeted error messages.
-        return true;
-    }
-    return semver_default().intersects(normalizedRange, '>=24.0.0', {
-        includePrerelease: true
-    });
-}
-function createUnsupportedPackageError(distributionName, packageType, supportedPackages, detail) {
-    const message = [
-        `Java package '${packageType}' is not supported for distribution '${distributionName}'.`,
-        `Supported package types: ${supportedPackages.join(', ')}.`
-    ];
-    if (detail) {
-        message.push(detail);
-    }
-    return new Error(message.join(' '));
-}
-
 ;// CONCATENATED MODULE: ./src/distributions/distribution-factory.ts
+
+
 
 
 
@@ -132503,44 +132742,49 @@ function createUnsupportedPackageError(distributionName, packageType, supportedP
 
 function getJavaDistribution(distributionName, installerOptions, jdkFile) {
     validateJavaPackage(distributionName, installerOptions.packageType, installerOptions.version);
+    const architecture = validateJavaPlatform(distributionName, process.platform, installerOptions.architecture || external_os_default().arch(), installerOptions.version);
+    const normalizedInstallerOptions = {
+        ...installerOptions,
+        architecture
+    };
     switch (distributionName) {
         case JavaDistribution.JdkFile:
-            return new LocalDistribution(installerOptions, jdkFile);
+            return new LocalDistribution(normalizedInstallerOptions, jdkFile);
         case JavaDistribution.Adopt:
         case JavaDistribution.AdoptHotspot:
-            return new AdoptDistribution(installerOptions, AdoptImplementation.Hotspot);
+            return new AdoptDistribution(normalizedInstallerOptions, AdoptImplementation.Hotspot);
         case JavaDistribution.AdoptOpenJ9:
-            return new AdoptDistribution(installerOptions, AdoptImplementation.OpenJ9);
+            return new AdoptDistribution(normalizedInstallerOptions, AdoptImplementation.OpenJ9);
         case JavaDistribution.Temurin:
-            return new TemurinDistribution(installerOptions, TemurinImplementation.Hotspot);
+            return new TemurinDistribution(normalizedInstallerOptions, TemurinImplementation.Hotspot);
         case JavaDistribution.Zulu:
-            return new ZuluDistribution(installerOptions);
+            return new ZuluDistribution(normalizedInstallerOptions);
         case JavaDistribution.Liberica:
-            return new LibericaDistributions(installerOptions);
+            return new LibericaDistributions(normalizedInstallerOptions);
         case JavaDistribution.LibericaNik:
-            return new LibericaNikDistributions(installerOptions);
+            return new LibericaNikDistributions(normalizedInstallerOptions);
         case JavaDistribution.Microsoft:
-            return new MicrosoftDistributions(installerOptions);
+            return new MicrosoftDistributions(normalizedInstallerOptions);
         case JavaDistribution.Semeru:
-            return new SemeruDistribution(installerOptions);
+            return new SemeruDistribution(normalizedInstallerOptions);
         case JavaDistribution.Corretto:
-            return new CorrettoDistribution(installerOptions);
+            return new CorrettoDistribution(normalizedInstallerOptions);
         case JavaDistribution.Oracle:
-            return new OracleDistribution(installerOptions);
+            return new OracleDistribution(normalizedInstallerOptions);
         case JavaDistribution.Dragonwell:
-            return new DragonwellDistribution(installerOptions);
+            return new DragonwellDistribution(normalizedInstallerOptions);
         case JavaDistribution.SapMachine:
-            return new SapMachineDistribution(installerOptions);
+            return new SapMachineDistribution(normalizedInstallerOptions);
         case JavaDistribution.GraalVM:
-            return new GraalVMDistribution(installerOptions);
+            return new GraalVMDistribution(normalizedInstallerOptions);
         case JavaDistribution.GraalVMCommunity:
-            return new GraalVMCommunityDistribution(installerOptions);
+            return new GraalVMCommunityDistribution(normalizedInstallerOptions);
         case JavaDistribution.JetBrains:
-            return new JetBrainsDistribution(installerOptions);
+            return new JetBrainsDistribution(normalizedInstallerOptions);
         case JavaDistribution.Kona:
-            return new KonaDistribution(installerOptions);
+            return new KonaDistribution(normalizedInstallerOptions);
         case JavaDistribution.OracleOpenJdk:
-            return new OpenJdkDistribution(installerOptions);
+            return new OpenJdkDistribution(normalizedInstallerOptions);
         default:
             return null;
     }

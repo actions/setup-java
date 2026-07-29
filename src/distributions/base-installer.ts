@@ -20,6 +20,7 @@ import {MACOS_JAVA_CONTENT_POSTFIX} from '../constants.js';
 import {RetryingHttpClient} from '../retrying-http-client.js';
 import os from 'os';
 import {expectedDigestLength, verifyChecksum} from '../checksum.js';
+import {normalizeArchitecture} from './platform-types.js';
 
 export abstract class JavaBase {
   protected http: httpm.HttpClient;
@@ -45,7 +46,9 @@ export abstract class JavaBase {
       stable: this.stable,
       latest: this.latest
     } = this.normalizeVersion(installerOptions.version));
-    this.architecture = installerOptions.architecture || os.arch();
+    this.architecture = normalizeArchitecture(
+      installerOptions.architecture || os.arch()
+    );
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
     this.forceDownload = installerOptions.forceDownload ?? false;
@@ -451,22 +454,6 @@ export abstract class JavaBase {
   }
 
   protected distributionArchitecture(): string {
-    // default mappings of config architectures to distribution architectures
-    // override if a distribution uses any different names; see liberica for an example
-
-    // node's os.arch() - which this defaults to - can return any of:
-    // 'arm', 'arm64', 'ia32', 'mips', 'mipsel', 'ppc', 'ppc64', 's390', 's390x', and 'x64'
-    // so we need to map these to java distribution architectures
-    // 'amd64' is included here too b/c it's a common alias for 'x64' people might use explicitly
-    switch (this.architecture) {
-      case 'amd64':
-        return 'x64';
-      case 'ia32':
-        return 'x86';
-      case 'arm64':
-        return 'aarch64';
-      default:
-        return this.architecture;
-    }
+    return this.architecture;
   }
 }

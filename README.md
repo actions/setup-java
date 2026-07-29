@@ -50,7 +50,7 @@ For more details,  see the full release notes on the [releases page](https://git
 
   - `java-package`: The packaging variant of the chosen distribution. Possible values across all distributions are `jdk`, `jre`, `jdk+fx`, `jre+fx`, `jdk+crac`, `jre+crac`, `jdk+jmods`, `jdk+jcef`, `jre+jcef`, `jdk+ft`, and `jre+ft`. Supported values vary by distribution; see the [package compatibility table](docs/advanced-usage.md#package-compatibility). Default value: `jdk`.
 
-  - `architecture`: The target architecture of the package. Possible values: `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`. Default value: Derived from the runner machine.
+  - `architecture`: The target architecture of the package. Canonical values are `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`, `ppc64`, and `s390x`; the aliases `ia32`, `amd64`, `arm`, and `arm64` normalize to `x86`, `x64`, `armv7`, and `aarch64`. Supported values vary by distribution and operating system. Default value: Derived from the runner machine.
 
   - `jdk-file`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM. Note: `distribution` must be set to 'jdkfile' (case-sensitive; all lowercase) when using this option. (The camelCase `jdkFile` input is still accepted as a deprecated alias and may be removed in a future release.)
 

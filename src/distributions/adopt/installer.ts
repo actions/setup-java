@@ -260,4 +260,9 @@ export class AdoptDistribution extends JavaBase {
         return process.platform;
     }
   }
+
+  protected distributionArchitecture(): string {
+    const architecture = super.distributionArchitecture();
+    return architecture === 'armv7' ? 'arm' : architecture;
+  }
 }

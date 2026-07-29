@@ -4,6 +4,20 @@ import {
   JAVA_PACKAGE_CAPABILITIES,
   JavaDistribution
 } from '../../src/distributions/package-types.js';
+import os from 'os';
+import {validateJavaPlatform} from '../../src/distributions/platform-types.js';
+import {normalizeArchitecture} from '../../src/distributions/platform-types.js';
+
+const supportedDistributionsOnCurrentPlatform = Object.values(
+  JavaDistribution
+).filter(distributionName => {
+  try {
+    validateJavaPlatform(distributionName, process.platform, 'x64', '25');
+    return distributionName !== JavaDistribution.JdkFile;
+  } catch {
+    return false;
+  }
+});
 
 const installerOptions = (packageType: string, version = '25') => ({
   version,
@@ -13,41 +27,29 @@ const installerOptions = (packageType: string, version = '25') => ({
 });
 
 describe('getJavaDistribution', () => {
-  it.each([
-    'adopt',
-    'adopt-hotspot',
-    'adopt-openj9',
-    'temurin',
-    'zulu',
-    'liberica',
-    'liberica-nik',
-    'microsoft',
-    'semeru',
-    'corretto',
-    'oracle',
-    'dragonwell',
-    'sapmachine',
-    'graalvm',
-    'graalvm-community',
-    'jetbrains',
-    'kona',
-    'oracle-openjdk'
-  ])('uses the shared retrying HTTP client for %s', distributionName => {
-    const distribution = getJavaDistribution(distributionName, {
-      version: '21',
-      architecture: 'x64',
-      packageType: 'jdk',
-      checkLatest: false
-    });
+  it.each(supportedDistributionsOnCurrentPlatform)(
+    'uses the shared retrying HTTP client for %s',
+    distributionName => {
+      const distribution = getJavaDistribution(distributionName, {
+        version: '25',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
 
-    expect(distribution).not.toBeNull();
-    expect(distribution!['http']).toBeInstanceOf(RetryingHttpClient);
-  });
+      expect(distribution).not.toBeNull();
+      expect(distribution!['http']).toBeInstanceOf(RetryingHttpClient);
+    }
+  );
 
   it.each(
     Object.entries(JAVA_PACKAGE_CAPABILITIES).flatMap(
       ([distributionName, packageTypes]) =>
-        packageTypes.map(packageType => [distributionName, packageType])
+        supportedDistributionsOnCurrentPlatform.includes(
+          distributionName as JavaDistribution
+        ) || distributionName === JavaDistribution.JdkFile
+          ? packageTypes.map(packageType => [distributionName, packageType])
+          : []
     )
   )('accepts %s with java-package %s', (distributionName, packageType) => {
     expect(
@@ -110,5 +112,37 @@ describe('getJavaDistribution', () => {
         installerOptions('not-a-package')
       )
     ).toBeNull();
+  });
+
+  it.each([
+    ['amd64', 'x64'],
+    ['ia32', 'x86'],
+    ['arm64', 'aarch64']
+  ])('passes normalized architecture %s as %s', (input, expected) => {
+    const normalized = getJavaDistribution(JavaDistribution.JdkFile, {
+      ...installerOptions('jdk'),
+      architecture: input
+    });
+
+    expect(normalized!['architecture']).toBe(expected);
+  });
+
+  it('uses the runner architecture when the input is empty', () => {
+    const distribution = getJavaDistribution(JavaDistribution.Temurin, {
+      ...installerOptions('jdk'),
+      architecture: ''
+    });
+
+    const expected = normalizeArchitecture(os.arch());
+    expect(distribution!['architecture']).toBe(expected);
+  });
+
+  it('rejects an unsupported combination before creating an HTTP client', () => {
+    expect(() =>
+      getJavaDistribution(JavaDistribution.Oracle, {
+        ...installerOptions('jdk'),
+        architecture: 'x86'
+      })
+    ).toThrow(/does not support operating system/);
   });
 });

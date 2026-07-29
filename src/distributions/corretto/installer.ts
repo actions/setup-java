@@ -194,6 +194,11 @@ export class CorrettoDistribution extends JavaBase {
     }
   }
 
+  protected distributionArchitecture(): string {
+    const architecture = super.distributionArchitecture();
+    return architecture === 'armv7' ? 'arm' : architecture;
+  }
+
   private getCorrettoVersion(resource: string): string {
     const regex = /(\d+.+)\//;
     const match = regex.exec(resource);
