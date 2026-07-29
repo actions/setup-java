@@ -44,11 +44,7 @@ export class SapMachineDistribution extends JavaBase {
       .map(item => {
         return {
           version: item.version,
-          url: item.downloadLink,
-          checksum: {
-            algorithm: 'sha256',
-            value: item.checksum
-          }
+          url: item.downloadLink
         } as JavaDownloadRelease;
       });
 
@@ -60,7 +56,14 @@ export class SapMachineDistribution extends JavaBase {
     }
 
     const resolvedVersion = matchedVersions[0];
-    return resolvedVersion;
+    const checksumUrl = resolvedVersion.url.replace(
+      /\.(?:tar\.gz|zip)$/,
+      '.sha256.txt'
+    );
+    return {
+      ...resolvedVersion,
+      checksum: await this.fetchChecksum(checksumUrl, 'sha256')
+    };
   }
 
   private async getAvailableVersions(): Promise<ISapMachineVersions[]> {
