@@ -83,29 +83,25 @@ async function generateMergedToolchainDefinition(original, version, vendor, id, 
         '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
         '@xsi:schemaLocation': 'http://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd'
     };
-    const { create: xmlCreate } = await __webpack_require__.e(/* import() */ 697).then(__webpack_require__.bind(__webpack_require__, 4697));
-    // convert existing toolchains into TS native objects for better handling
-    // xmlbuilder2 will convert the document into a `{toolchains: { toolchain: [] | {} }}` structure
-    // instead of the desired `toolchains: [{}]` one or simply `[{}]`
-    const jsObj = xmlCreate(original)
-        .root()
-        .toObject();
-    if (jsObj.toolchains) {
+    const { XMLParser } = await __webpack_require__.e(/* import() */ 824).then(__webpack_require__.bind(__webpack_require__, 5824));
+    const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: '@',
+        parseAttributeValue: false,
+        parseTagValue: false,
+        trimValues: true,
+        isArray: tagName => tagName === 'toolchain'
+    });
+    const jsObj = parser.parse(original);
+    if (isToolchainsRoot(jsObj.toolchains)) {
         // preserve the existing root attributes (xmlns, schemaLocation, …) so we don't
         // silently rewrite user-managed metadata or change the effective XML namespace;
-        // xmlbuilder2 exposes attributes as `@`-prefixed keys on the element object
-        const existingAttributes = Object.fromEntries(Object.entries(jsObj.toolchains).filter(([key]) => key.startsWith('@')));
+        // fast-xml-parser exposes attributes as `@`-prefixed keys on the element object
+        const existingAttributes = Object.fromEntries(Object.entries(jsObj.toolchains).filter(([key, value]) => key.startsWith('@') && typeof value === 'string'));
         // fall back to the defaults only for attributes the existing file is missing
         rootAttributes = { ...rootAttributes, ...existingAttributes };
         if (jsObj.toolchains.toolchain) {
-            // in case only a single child exists xmlbuilder2 will not create an array and using verbose = true equally doesn't work here
-            // See https://oozcitak.github.io/xmlbuilder2/serialization.html#js-object-and-map-serializers for details
-            if (Array.isArray(jsObj.toolchains.toolchain)) {
-                jsToolchains.push(...jsObj.toolchains.toolchain);
-            }
-            else {
-                jsToolchains.push(jsObj.toolchains.toolchain);
-            }
+            jsToolchains.push(...jsObj.toolchains.toolchain);
         }
     }
     // remove potential duplicates based on type & id (which should be a unique combination);
@@ -118,18 +114,7 @@ async function generateMergedToolchainDefinition(original, version, vendor, id, 
         typeof value.provides?.id !== 'string' ||
         index ===
             self.findIndex(t => t.type === value.type && t.provides?.id === value.provides?.id));
-    return xmlCreate({
-        toolchains: {
-            ...rootAttributes,
-            toolchain: jsToolchains
-        }
-    }).end({
-        format: 'xml',
-        wellFormed: false,
-        headless: false,
-        prettyPrint: true,
-        width: 80
-    });
+    return serializeToolchains(rootAttributes, jsToolchains);
 }
 function generateNewToolchainDefinition(version, vendor, id, jdkHome) {
     return [
@@ -181,6 +166,73 @@ async function writeToolchainsFileToDisk(directory, settings) {
         flag: 'w'
     });
 }
+function serializeToolchains(rootAttributes, toolchains) {
+    return [
+        '<?xml version="1.0"?>',
+        serializeOpeningTag('toolchains', rootAttributes, 0),
+        ...toolchains.flatMap(toolchain => serializeXmlElement('toolchain', toolchain, 1)),
+        '</toolchains>'
+    ].join('\n');
+}
+function serializeOpeningTag(name, attributes, depth) {
+    const indent = '  '.repeat(depth);
+    const attributeEntries = Object.entries(attributes);
+    if (!attributeEntries.length) {
+        return `${indent}<${name}>`;
+    }
+    const [firstAttribute, ...restAttributes] = attributeEntries;
+    const lines = [
+        `${indent}<${name} ${formatXmlAttribute(firstAttribute)}`,
+        ...restAttributes.map(([attributeName, value]) => {
+            return `${indent}  ${formatXmlAttribute([attributeName, value])}`;
+        })
+    ];
+    lines[lines.length - 1] += '>';
+    return lines.join('\n');
+}
+function serializeXmlElement(name, value, depth) {
+    const indent = '  '.repeat(depth);
+    if (Array.isArray(value)) {
+        return value.flatMap(item => serializeXmlElement(name, item, depth));
+    }
+    if (!isXmlElementObject(value)) {
+        return [
+            `${indent}<${name}>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_7__/* .escapeXmlText */ .I)(String(value ?? ''))}</${name}>`
+        ];
+    }
+    const attributes = Object.fromEntries(Object.entries(value)
+        .filter(([key, attributeValue]) => {
+        return key.startsWith('@') && typeof attributeValue === 'string';
+    })
+        .map(([key, attributeValue]) => [key, attributeValue]));
+    const childEntries = Object.entries(value).filter(([key]) => !key.startsWith('@') && key !== '#text');
+    const textValue = value['#text'];
+    if (!childEntries.length) {
+        if (textValue !== undefined) {
+            return [
+                `${serializeOpeningTag(name, attributes, depth)}${(0,_xml_js__WEBPACK_IMPORTED_MODULE_7__/* .escapeXmlText */ .I)(String(textValue ?? ''))}</${name}>`
+            ];
+        }
+        return [`${serializeOpeningTag(name, attributes, depth)}</${name}>`];
+    }
+    return [
+        serializeOpeningTag(name, attributes, depth),
+        ...(textValue === undefined
+            ? []
+            : [`${'  '.repeat(depth + 1)}${(0,_xml_js__WEBPACK_IMPORTED_MODULE_7__/* .escapeXmlText */ .I)(String(textValue ?? ''))}`]),
+        ...childEntries.flatMap(([childName, childValue]) => serializeXmlElement(childName, childValue, depth + 1)),
+        `${indent}</${name}>`
+    ];
+}
+function formatXmlAttribute([name, value]) {
+    return `${name.slice(1)}="${(0,_xml_js__WEBPACK_IMPORTED_MODULE_7__/* .escapeXmlAttribute */ .R)(value)}"`;
+}
+function isToolchainsRoot(value) {
+    return isXmlElementObject(value);
+}
+function isXmlElementObject(value) {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 
 /***/ }),
@@ -189,9 +241,9 @@ async function writeToolchainsFileToDisk(directory, settings) {
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   I: () => (/* binding */ escapeXmlText)
+/* harmony export */   I: () => (/* binding */ escapeXmlText),
+/* harmony export */   R: () => (/* binding */ escapeXmlAttribute)
 /* harmony export */ });
-/* unused harmony export escapeXmlAttribute */
 function escapeXmlText(value) {
     return value
         .replace(/&/g, '&amp;')
@@ -199,7 +251,7 @@ function escapeXmlText(value) {
         .replace(/>/g, '&gt;');
 }
 // Use for user-controlled values written into XML attributes. Text nodes should
-// use escapeXmlText so quotes remain byte-compatible with xmlbuilder2 output.
+// use escapeXmlText so quotes remain byte-compatible with previous output.
 function escapeXmlAttribute(value) {
     return escapeXmlText(value).replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }

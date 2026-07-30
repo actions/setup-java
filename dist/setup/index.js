@@ -36320,11 +36320,11 @@ async function configureInstalledToolchains(toolchainConfigurations) {
     }
 }
 async function startCacheRestore(cache, cacheDependencyPath, cachePath) {
-    const { isCacheFeatureAvailable } = await Promise.all(/* import() */[__nccwpck_require__.e(767), __nccwpck_require__.e(394)]).then(__nccwpck_require__.bind(__nccwpck_require__, 1394));
+    const { isCacheFeatureAvailable } = await Promise.all(/* import() */[__nccwpck_require__.e(824), __nccwpck_require__.e(971), __nccwpck_require__.e(394)]).then(__nccwpck_require__.bind(__nccwpck_require__, 1394));
     if (!isCacheFeatureAvailable()) {
         return;
     }
-    const { restore } = await Promise.all(/* import() */[__nccwpck_require__.e(767), __nccwpck_require__.e(377)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7377));
+    const { restore } = await Promise.all(/* import() */[__nccwpck_require__.e(824), __nccwpck_require__.e(971), __nccwpck_require__.e(377)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7377));
     await restore(cache, cacheDependencyPath, cachePath);
 }
 

@@ -232,9 +232,9 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   I: () => (/* binding */ escapeXmlText)
+/* harmony export */   I: () => (/* binding */ escapeXmlText),
+/* harmony export */   R: () => (/* binding */ escapeXmlAttribute)
 /* harmony export */ });
-/* unused harmony export escapeXmlAttribute */
 function escapeXmlText(value) {
     return value
         .replace(/&/g, '&amp;')
@@ -242,7 +242,7 @@ function escapeXmlText(value) {
         .replace(/>/g, '&gt;');
 }
 // Use for user-controlled values written into XML attributes. Text nodes should
-// use escapeXmlText so quotes remain byte-compatible with xmlbuilder2 output.
+// use escapeXmlText so quotes remain byte-compatible with previous output.
 function escapeXmlAttribute(value) {
     return escapeXmlText(value).replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }

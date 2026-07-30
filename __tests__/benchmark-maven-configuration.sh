@@ -75,9 +75,9 @@ XML
     index_bytes=$(node -e "const fs=require('fs'); process.stdout.write(String(fs.statSync(process.argv[1]).size))" "$action_path/dist/setup/index.js")
     js_bytes=$(node -e "const fs=require('fs'); const path=require('path'); let total=0; for (const entry of fs.readdirSync(process.argv[1])) { if (entry.endsWith('.js')) total += fs.statSync(path.join(process.argv[1], entry)).size; } process.stdout.write(String(total));" "$action_path/dist/setup")
     chunk_count=$(find "$action_path/dist/setup" -maxdepth 1 -name '*.js' | wc -l | tr -d ' ')
-    xmlbuilder_chunks=$(grep -Rsl "xmlbuilder2" "$action_path/dist/setup"/*.js 2>/dev/null | xargs -n 1 basename 2>/dev/null | paste -sd ';' - || true)
+    xml_parser_chunks=$(grep -Rsl "fast-xml-parser" "$action_path/dist/setup"/*.js 2>/dev/null | xargs -n 1 basename 2>/dev/null | paste -sd ';' - || true)
     printf '%s,%s,%s,%s\n' \
-      "$implementation" "$index_bytes" "$js_bytes" "${xmlbuilder_chunks:-none} ($chunk_count js files)" \
+      "$implementation" "$index_bytes" "$js_bytes" "${xml_parser_chunks:-none} ($chunk_count js files)" \
       >> "$sizes_file"
     ;;
   summarize)
@@ -139,14 +139,14 @@ if (fs.existsSync(sizesFile)) {
     '',
     '## setup entry/chunk sizes',
     '',
-    '| Implementation | dist/setup/index.js bytes | dist/setup JS bytes | xmlbuilder2 chunk location |',
+    '| Implementation | dist/setup/index.js bytes | dist/setup JS bytes | XML parser chunk location |',
     '| --- | ---: | ---: | --- |'
   );
   for (const line of fs.readFileSync(sizesFile, 'utf8').trim().split('\n')) {
     if (!line) continue;
-    const [implementation, indexBytes, jsBytes, xmlbuilderChunks] = line.split(',');
+    const [implementation, indexBytes, jsBytes, xmlParserChunks] = line.split(',');
     lines.push(
-      `| ${implementation} | ${indexBytes} | ${jsBytes} | ${xmlbuilderChunks} |`
+      `| ${implementation} | ${indexBytes} | ${jsBytes} | ${xmlParserChunks} |`
     );
   }
 }

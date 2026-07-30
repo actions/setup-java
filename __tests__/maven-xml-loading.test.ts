@@ -1,39 +1,31 @@
 import {describe, expect, it, jest} from '@jest/globals';
 
 const mockXmlBuilderFactory = jest.fn();
-const mockXmlCreate = jest.fn((input: unknown) => {
-  if (typeof input === 'string') {
-    return {
-      root: () => ({
-        toObject: () => ({
-          toolchains: {
-            toolchain: {
-              type: 'foo',
-              provides: {id: 'custom'},
-              configuration: {fooHome: '/opt/foo'}
-            }
-          }
-        })
-      })
-    };
+const mockParse = jest.fn(() => ({
+  toolchains: {
+    toolchain: [
+      {
+        type: 'foo',
+        provides: {id: 'custom'},
+        configuration: {fooHome: '/opt/foo'}
+      }
+    ]
   }
+}));
 
-  return {
-    end: () => '<merged-toolchains />'
-  };
-});
-
-jest.unstable_mockModule('xmlbuilder2', () => {
+jest.unstable_mockModule('fast-xml-parser', () => {
   mockXmlBuilderFactory();
   return {
-    create: mockXmlCreate
+    XMLParser: jest.fn().mockImplementation(() => ({
+      parse: mockParse
+    }))
   };
 });
 
 const toolchains = await import('../src/toolchains.js');
 
 describe('Maven XML loading', () => {
-  it('does not load xmlbuilder2 for new toolchains.xml generation', async () => {
+  it('does not load fast-xml-parser for new toolchains.xml generation', async () => {
     const xml = await toolchains.generateToolchainDefinition(
       '',
       '21',
@@ -44,10 +36,10 @@ describe('Maven XML loading', () => {
 
     expect(xml).toContain('<id>temurin_21</id>');
     expect(mockXmlBuilderFactory).not.toHaveBeenCalled();
-    expect(mockXmlCreate).not.toHaveBeenCalled();
+    expect(mockParse).not.toHaveBeenCalled();
   });
 
-  it('loads xmlbuilder2 for existing toolchains.xml merge generation', async () => {
+  it('loads fast-xml-parser for existing toolchains.xml merge generation', async () => {
     await expect(
       toolchains.generateToolchainDefinition(
         '<toolchains><toolchain><type>foo</type></toolchain></toolchains>',
@@ -56,9 +48,9 @@ describe('Maven XML loading', () => {
         'temurin_21',
         '/opt/java/21'
       )
-    ).resolves.toBe('<merged-toolchains />');
+    ).resolves.toContain('<id>temurin_21</id>');
 
     expect(mockXmlBuilderFactory).toHaveBeenCalledTimes(1);
-    expect(mockXmlCreate).toHaveBeenCalledTimes(2);
+    expect(mockParse).toHaveBeenCalledTimes(1);
   });
 });

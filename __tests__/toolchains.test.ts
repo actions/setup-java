@@ -13,7 +13,7 @@ import * as fs from 'fs';
 import os from 'os';
 import * as path from 'path';
 import * as io from '@actions/io';
-import {create as parseXml} from 'xmlbuilder2';
+import {XMLParser} from 'fast-xml-parser';
 
 // Mock @actions/core before importing source modules that depend on it
 jest.unstable_mockModule('@actions/core', () => ({
@@ -939,9 +939,9 @@ describe('toolchains tests', () => {
       jdkInfo.id,
       jdkInfo.jdkHome
     );
-    const parsed = parseXml(xml).root().toObject() as any;
+    const parsed = parseXmlObject(xml) as any;
 
-    expect(parsed.toolchains.toolchain.type).toBe('jdk');
+    expect(parsed.toolchains.toolchain[0].type).toBe('jdk');
     expect(xmlElementText(xml, 'version')).toBe(jdkInfo.version);
     expect(xmlElementText(xml, 'vendor')).toBe(jdkInfo.vendor);
     expect(xmlElementText(xml, 'id')).toBe(jdkInfo.id);
@@ -1014,6 +1014,39 @@ describe('toolchains tests', () => {
       expect(mergedToolchains).toContain(`<jdkHome>${jdk.jdkHome}</jdkHome>`);
     }
     expect((mergedToolchains.match(/<toolchain>/g) || []).length).toBe(2);
+  });
+
+  it('preserves custom attributes and elements when merging existing toolchains.xml', async () => {
+    const originalFile = `<toolchains xmlns="http://maven.apache.org/TOOLCHAINS/1.0.0" customRoot="A &amp; B">
+        <toolchain customAttr="custom &amp; value">
+          <type>foo</type>
+          <provides customProvides="yes">
+            <custom attr="custom &quot; attr">baz &amp; qux</custom>
+          </provides>
+          <configuration>
+            <fooHome>/usr/local/bin/foo</fooHome>
+          </configuration>
+        </toolchain>
+      </toolchains>`;
+
+    const mergedToolchains = await toolchains.generateToolchainDefinition(
+      originalFile,
+      '21&<>"\'',
+      'Temurin&<>"\'',
+      'temurin_21&<>"\'',
+      '/opt/java/21&<>"\''
+    );
+    const parsed = parseXmlObject(mergedToolchains) as any;
+    const merged = parsed.toolchains.toolchain;
+
+    expect(parsed.toolchains['@customRoot']).toBe('A & B');
+    expect(merged).toHaveLength(2);
+    expect(merged[0].provides.id).toBe('temurin_21&<>"\'');
+    expect(merged[0].configuration.jdkHome).toBe('/opt/java/21&<>"\'');
+    expect(merged[1]['@customAttr']).toBe('custom & value');
+    expect(merged[1].provides['@customProvides']).toBe('yes');
+    expect(merged[1].provides.custom['#text']).toBe('baz & qux');
+    expect(merged[1].provides.custom['@attr']).toBe('custom " attr');
   });
 
   it('preserves toolchains from previous executions across multiple setup-java runs', async () => {
@@ -1135,5 +1168,19 @@ describe('validateToolchainIds', () => {
 function xmlElementText(xml: string, tagName: string): string {
   const match = new RegExp(`<${tagName}>([\\s\\S]*?)</${tagName}>`).exec(xml);
   expect(match).not.toBeNull();
-  return parseXml(`<value>${match?.[1]}</value>`).root().node.textContent ?? '';
+  return (parseXmlObject(`<value>${match?.[1]}</value>`) as {value: string})
+    .value;
+}
+
+function parseXmlObject(xml: string): unknown {
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: '@',
+    textNodeName: '#text',
+    parseAttributeValue: false,
+    parseTagValue: false,
+    trimValues: true,
+    isArray: tagName => tagName === 'toolchain'
+  });
+  return parser.parse(xml);
 }

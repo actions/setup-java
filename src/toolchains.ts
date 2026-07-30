@@ -5,7 +5,7 @@ import * as core from '@actions/core';
 import * as io from '@actions/io';
 import * as constants from './constants.js';
 export {validateToolchainIds} from './toolchain-ids.js';
-import {escapeXmlText} from './xml.js';
+import {escapeXmlAttribute, escapeXmlText} from './xml.js';
 
 interface JdkInfo {
   version: string;
@@ -111,31 +111,30 @@ async function generateMergedToolchainDefinition(
     '@xsi:schemaLocation':
       'http://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd'
   };
-  const {create: xmlCreate} = await import('xmlbuilder2');
-  // convert existing toolchains into TS native objects for better handling
-  // xmlbuilder2 will convert the document into a `{toolchains: { toolchain: [] | {} }}` structure
-  // instead of the desired `toolchains: [{}]` one or simply `[{}]`
-  const jsObj = xmlCreate(original)
-    .root()
-    .toObject() as unknown as ExtractedToolchains;
-  if (jsObj.toolchains) {
+  const {XMLParser} = await import('fast-xml-parser');
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: '@',
+    parseAttributeValue: false,
+    parseTagValue: false,
+    trimValues: true,
+    isArray: tagName => tagName === 'toolchain'
+  });
+  const jsObj = parser.parse(original) as ExtractedToolchains;
+  if (isToolchainsRoot(jsObj.toolchains)) {
     // preserve the existing root attributes (xmlns, schemaLocation, …) so we don't
     // silently rewrite user-managed metadata or change the effective XML namespace;
-    // xmlbuilder2 exposes attributes as `@`-prefixed keys on the element object
+    // fast-xml-parser exposes attributes as `@`-prefixed keys on the element object
     const existingAttributes = Object.fromEntries(
-      Object.entries(jsObj.toolchains).filter(([key]) => key.startsWith('@'))
+      Object.entries(jsObj.toolchains).filter(
+        ([key, value]) => key.startsWith('@') && typeof value === 'string'
+      )
     ) as Record<string, string>;
     // fall back to the defaults only for attributes the existing file is missing
     rootAttributes = {...rootAttributes, ...existingAttributes};
 
     if (jsObj.toolchains.toolchain) {
-      // in case only a single child exists xmlbuilder2 will not create an array and using verbose = true equally doesn't work here
-      // See https://oozcitak.github.io/xmlbuilder2/serialization.html#js-object-and-map-serializers for details
-      if (Array.isArray(jsObj.toolchains.toolchain)) {
-        jsToolchains.push(...jsObj.toolchains.toolchain);
-      } else {
-        jsToolchains.push(jsObj.toolchains.toolchain);
-      }
+      jsToolchains.push(...jsObj.toolchains.toolchain);
     }
   }
 
@@ -154,18 +153,7 @@ async function generateMergedToolchainDefinition(
         )
   );
 
-  return xmlCreate({
-    toolchains: {
-      ...rootAttributes,
-      toolchain: jsToolchains
-    }
-  }).end({
-    format: 'xml',
-    wellFormed: false,
-    headless: false,
-    prettyPrint: true,
-    width: 80
-  });
+  return serializeToolchains(rootAttributes, jsToolchains);
 }
 
 export function generateNewToolchainDefinition(
@@ -226,23 +214,134 @@ async function writeToolchainsFileToDisk(directory: string, settings: string) {
   });
 }
 
+function serializeToolchains(
+  rootAttributes: Record<string, string>,
+  toolchains: Toolchain[]
+) {
+  return [
+    '<?xml version="1.0"?>',
+    serializeOpeningTag('toolchains', rootAttributes, 0),
+    ...toolchains.flatMap(toolchain =>
+      serializeXmlElement('toolchain', toolchain, 1)
+    ),
+    '</toolchains>'
+  ].join('\n');
+}
+
+function serializeOpeningTag(
+  name: string,
+  attributes: Record<string, string>,
+  depth: number
+) {
+  const indent = '  '.repeat(depth);
+  const attributeEntries = Object.entries(attributes);
+  if (!attributeEntries.length) {
+    return `${indent}<${name}>`;
+  }
+
+  const [firstAttribute, ...restAttributes] = attributeEntries;
+  const lines = [
+    `${indent}<${name} ${formatXmlAttribute(firstAttribute)}`,
+    ...restAttributes.map(([attributeName, value]) => {
+      return `${indent}  ${formatXmlAttribute([attributeName, value])}`;
+    })
+  ];
+  lines[lines.length - 1] += '>';
+  return lines.join('\n');
+}
+
+function serializeXmlElement(
+  name: string,
+  value: XmlElementValue,
+  depth: number
+): string[] {
+  const indent = '  '.repeat(depth);
+  if (Array.isArray(value)) {
+    return value.flatMap(item => serializeXmlElement(name, item, depth));
+  }
+
+  if (!isXmlElementObject(value)) {
+    return [
+      `${indent}<${name}>${escapeXmlText(String(value ?? ''))}</${name}>`
+    ];
+  }
+
+  const attributes = Object.fromEntries(
+    Object.entries(value)
+      .filter(([key, attributeValue]) => {
+        return key.startsWith('@') && typeof attributeValue === 'string';
+      })
+      .map(([key, attributeValue]) => [key, attributeValue as string])
+  );
+  const childEntries = Object.entries(value).filter(
+    ([key]) => !key.startsWith('@') && key !== '#text'
+  );
+  const textValue = value['#text'];
+
+  if (!childEntries.length) {
+    if (textValue !== undefined) {
+      return [
+        `${serializeOpeningTag(name, attributes, depth)}${escapeXmlText(
+          String(textValue ?? '')
+        )}</${name}>`
+      ];
+    }
+    return [`${serializeOpeningTag(name, attributes, depth)}</${name}>`];
+  }
+
+  return [
+    serializeOpeningTag(name, attributes, depth),
+    ...(textValue === undefined
+      ? []
+      : [`${'  '.repeat(depth + 1)}${escapeXmlText(String(textValue ?? ''))}`]),
+    ...childEntries.flatMap(([childName, childValue]) =>
+      serializeXmlElement(childName, childValue, depth + 1)
+    ),
+    `${indent}</${name}>`
+  ];
+}
+
+function formatXmlAttribute([name, value]: [string, string]) {
+  return `${name.slice(1)}="${escapeXmlAttribute(value)}"`;
+}
+
+function isToolchainsRoot(value: ExtractedToolchains['toolchains']) {
+  return isXmlElementObject(value);
+}
+
+function isXmlElementObject(
+  value: unknown
+): value is Record<string, XmlElementValue> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 interface ExtractedToolchains {
-  toolchains: {
-    // root attributes such as xmlns / schemaLocation are exposed as `@`-prefixed keys
-    [attribute: `@${string}`]: string;
-    toolchain?: Toolchain[] | Toolchain;
-  };
+  toolchains: ToolchainsRoot | string;
+}
+
+interface ToolchainsRoot extends XmlElementObject {
+  // root attributes such as xmlns / schemaLocation are exposed as `@`-prefixed keys
+  [attribute: `@${string}`]: string;
+  toolchain?: Toolchain[];
 }
 
 // Toolchain type definition according to Maven Toolchains XSD 1.1.0
 interface Toolchain {
   type: string;
-  provides:
-    | {
-        version: string;
-        vendor: string;
-        id: string;
-      }
-    | any;
-  configuration: any;
+  provides?: XmlElementObject;
+  configuration?: XmlElementObject;
+  [customElement: string]: XmlElementValue;
 }
+
+interface XmlElementObject {
+  [name: string]: XmlElementValue;
+}
+
+type XmlElementValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | XmlElementObject
+  | XmlElementValue[];
