@@ -36241,16 +36241,6 @@ async function run() {
     catch (error) {
         actionError = error;
     }
-    if (mavenConfiguration) {
-        try {
-            await mavenConfiguration;
-        }
-        catch (error) {
-            if (!actionError) {
-                actionError = error;
-            }
-        }
-    }
     if (cacheRestore) {
         try {
             await cacheRestore;

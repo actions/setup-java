@@ -1,0 +1,4 @@
+name: setup-java CodeQL configuration
+
+paths-ignore:
+  - dist/**

@@ -33,8 +33,8 @@ jest.unstable_mockModule('xmlbuilder2', () => {
 const toolchains = await import('../src/toolchains.js');
 
 describe('Maven XML loading', () => {
-  it('does not load xmlbuilder2 for new toolchains.xml generation', () => {
-    const xml = toolchains.generateToolchainDefinition(
+  it('does not load xmlbuilder2 for new toolchains.xml generation', async () => {
+    const xml = await toolchains.generateToolchainDefinition(
       '',
       '21',
       'temurin',

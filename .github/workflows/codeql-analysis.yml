@@ -18,3 +18,5 @@ jobs:
       security-events: write
     name: CodeQL analysis
     uses: actions/reusable-workflows/.github/workflows/codeql-analysis.yml@main
+    with:
+      codeql-cfg-path: ./.github/codeql/codeql-config.yml

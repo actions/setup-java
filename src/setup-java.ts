@@ -139,16 +139,6 @@ export async function run() {
     actionError = error as Error;
   }
 
-  if (mavenConfiguration) {
-    try {
-      await mavenConfiguration;
-    } catch (error) {
-      if (!actionError) {
-        actionError = error as Error;
-      }
-    }
-  }
-
   if (cacheRestore) {
     try {
       await cacheRestore;

@@ -150,7 +150,7 @@ describe('toolchains tests', () => {
       )
     );
     expect(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         '',
         jdkInfo.version,
         jdkInfo.vendor,
@@ -889,7 +889,7 @@ describe('toolchains tests', () => {
     expect(updated).toContain(`<jdkHome>${jdkInfo.jdkHome}</jdkHome>`);
   }, 100000);
 
-  it('generates valid toolchains.xml with minimal configuration', () => {
+  it('generates valid toolchains.xml with minimal configuration', async () => {
     const jdkInfo = {
       version: 'JAVA_VERSION',
       vendor: 'JAVA_VENDOR',
@@ -915,7 +915,7 @@ describe('toolchains tests', () => {
 </toolchains>`;
 
     expect(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         '',
         jdkInfo.version,
         jdkInfo.vendor,
@@ -960,16 +960,6 @@ describe('toolchains tests', () => {
       return '';
     });
 
-    function xmlElementText(xml: string, tagName: string): string {
-      const match = new RegExp(`<${tagName}>([\\s\\S]*?)</${tagName}>`).exec(
-        xml
-      );
-      expect(match).not.toBeNull();
-      return (
-        parseXml(`<value>${match?.[1]}</value>`).root().node.textContent ?? ''
-      );
-    }
-
     await toolchains.configureToolchains(
       version,
       distributionName,
@@ -980,7 +970,7 @@ describe('toolchains tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
     expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         '',
         version,
         distributionName,

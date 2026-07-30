@@ -64,7 +64,7 @@ export async function createToolchainsSettings({
 }
 
 // only exported for testing purposes
-export function generateToolchainDefinition(
+export async function generateToolchainDefinition(
   original: string,
   version: string,
   vendor: string,

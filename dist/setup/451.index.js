@@ -57,7 +57,7 @@ async function createToolchainsSettings({ jdkInfo, settingsDirectory }) {
     await writeToolchainsFileToDisk(settingsDirectory, updatedToolchains);
 }
 // only exported for testing purposes
-function generateToolchainDefinition(original, version, vendor, id, jdkHome) {
+async function generateToolchainDefinition(original, version, vendor, id, jdkHome) {
     if (!original?.length) {
         return generateNewToolchainDefinition(version, vendor, id, jdkHome);
     }
