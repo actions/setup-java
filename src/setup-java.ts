@@ -1,15 +1,13 @@
 import fs from 'fs';
 import * as core from '@actions/core';
-import * as auth from './auth.js';
 import {getBooleanInput, getVersionFromFileContent} from './util.js';
-import * as toolchains from './toolchains.js';
 import * as constants from './constants.js';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
 import {getJavaDistribution} from './distributions/distribution-factory.js';
 import {JavaInstallerOptions} from './distributions/base-models.js';
-import {configureMavenArgs} from './maven-args.js';
 import {configureProblemMatcher} from './problem-matcher.js';
+import {validateToolchainIds} from './toolchain-ids.js';
 
 export async function run() {
   const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
@@ -33,9 +31,9 @@ export async function run() {
   const verifySignaturePublicKey =
     core.getInput(constants.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
   const toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
-
   let actionError: Error | undefined;
   let cacheRestore: Promise<void> | undefined;
+  const toolchainConfigurations: ToolchainConfiguration[] = [];
 
   try {
     core.startGroup('Installed distributions');
@@ -44,7 +42,7 @@ export async function run() {
       throw new Error('java-version or java-version-file input expected');
     }
 
-    toolchains.validateToolchainIds(versions, versionFile, toolchainIds);
+    validateToolchainIds(versions, versionFile, toolchainIds);
 
     if (!versions.length) {
       core.debug(
@@ -93,7 +91,9 @@ export async function run() {
       cacheRestore = cache
         ? startCacheRestore(cache, cacheDependencyPath, cachePath)
         : undefined;
-      await installVersion(versionInfo.version, installerInputsOptions);
+      toolchainConfigurations.push(
+        await installVersion(versionInfo.version, installerInputsOptions)
+      );
     } else {
       // When using java-version input, distribution is still required
       if (!distributionName) {
@@ -117,7 +117,9 @@ export async function run() {
         ? startCacheRestore(cache, cacheDependencyPath, cachePath)
         : undefined;
       for (const [index, version] of versions.entries()) {
-        await installVersion(version, installerInputsOptions, index);
+        toolchainConfigurations.push(
+          await installVersion(version, installerInputsOptions, index)
+        );
       }
     }
     core.endGroup();
@@ -129,8 +131,7 @@ export async function run() {
     );
     configureProblemMatcher(path.join(matchersPath, 'java.json'));
 
-    await auth.configureAuthentication();
-    configureMavenArgs();
+    await configureMaven(toolchainConfigurations);
   } catch (error) {
     actionError = error as Error;
   }
@@ -174,7 +175,7 @@ async function installVersion(
   version: string,
   options: installerInputsOptions,
   toolchainId = 0
-) {
+): Promise<ToolchainConfiguration> {
   const {
     distributionName,
     jdkFile,
@@ -217,19 +218,19 @@ async function installVersion(
   const isLatest = version.trim().toLowerCase() === 'latest';
   const toolchainVersion = isLatest ? result.version : version;
 
-  await toolchains.configureToolchains(
-    toolchainVersion,
-    distributionName,
-    result.path,
-    toolchainIds[toolchainId]
-  );
-
   core.info('');
   core.info('Java configuration:');
   core.info(`  Distribution: ${distributionName}`);
   core.info(`  Version: ${result.version}`);
   core.info(`  Path: ${result.path}`);
   core.info('');
+
+  return {
+    version: toolchainVersion,
+    distributionName,
+    path: result.path,
+    toolchainId: toolchainIds[toolchainId]
+  };
 }
 
 interface installerInputsOptions {
@@ -243,6 +244,47 @@ interface installerInputsOptions {
   distributionName: string;
   jdkFile: string;
   toolchainIds: Array<string>;
+}
+
+interface ToolchainConfiguration {
+  version: string;
+  distributionName: string;
+  path: string;
+  toolchainId?: string;
+}
+
+async function configureMaven(
+  toolchainConfigurations: ToolchainConfiguration[]
+): Promise<void> {
+  const authentication = import('./auth.js').then(auth =>
+    auth.configureAuthentication()
+  );
+  const toolchains = configureInstalledToolchains(toolchainConfigurations);
+
+  const results = await Promise.allSettled([authentication, toolchains]);
+  const failure = results.find(
+    (result): result is PromiseRejectedResult => result.status === 'rejected'
+  );
+  if (failure) {
+    throw failure.reason;
+  }
+
+  const {configureMavenArgs} = await import('./maven-args.js');
+  configureMavenArgs();
+}
+
+async function configureInstalledToolchains(
+  toolchainConfigurations: ToolchainConfiguration[]
+): Promise<void> {
+  const toolchains = await import('./toolchains.js');
+  for (const configuration of toolchainConfigurations) {
+    await toolchains.configureToolchains(
+      configuration.version,
+      configuration.distributionName,
+      configuration.path,
+      configuration.toolchainId
+    );
+  }
 }
 
 async function startCacheRestore(

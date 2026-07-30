@@ -13,6 +13,7 @@ import * as io from '@actions/io';
 import * as fs from 'fs';
 import * as path from 'path';
 import os from 'os';
+import {XMLParser} from 'fast-xml-parser';
 
 // Mock @actions/core before importing source modules that depend on it
 jest.unstable_mockModule('@actions/core', () => ({
@@ -270,6 +271,41 @@ describe('auth tests', () => {
       expectedSettings
     );
   });
+
+  it('escapes settings.xml values while preserving parsed semantics', () => {
+    const id = `packages&<>"'é`;
+    const username = `USER&<>"'é`;
+    const password = `TOKEN&<>"'é`;
+    const gpgPassphrase = `GPG&<>"'é`;
+
+    const xml = auth.generate(id, username, password, gpgPassphrase);
+    const parsed = parseXmlObject(xml) as any;
+
+    expect(parsed.settings.interactiveMode).toBe('false');
+    expect(xmlElementText(xml, 'id')).toBe(id);
+    expect(xmlElementText(xml, 'username')).toBe(`\${env.${username}}`);
+    expect(xmlElementText(xml, 'password')).toBe(`\${env.${password}}`);
+    expect(xmlElementText(xml, 'gpg.passphraseEnvName')).toBe(gpgPassphrase);
+    expect(parsed.settings.activeProfiles.activeProfile).toBe('setup-java-gpg');
+  });
+
+  function xmlElementText(xml: string, tagName: string): string {
+    const match = new RegExp(`<${tagName}>([\\s\\S]*?)</${tagName}>`).exec(xml);
+    expect(match).not.toBeNull();
+    return (parseXmlObject(`<value>${match?.[1]}</value>`) as {value: string})
+      .value;
+  }
+
+  function parseXmlObject(xml: string): unknown {
+    const parser = new XMLParser({
+      ignoreAttributes: false,
+      attributeNamePrefix: '@',
+      parseAttributeValue: false,
+      parseTagValue: false,
+      trimValues: true
+    });
+    return parser.parse(xml);
+  }
 
   it('uses deprecated input aliases and warns', () => {
     const mockGetInput = core.getInput as jest.MockedFunction<

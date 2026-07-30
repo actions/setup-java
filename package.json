@@ -49,8 +49,8 @@
     "@actions/http-client": "^4.0.1",
     "@actions/io": "^3.0.2",
     "@actions/tool-cache": "^4.0.0",
-    "semver": "^7.8.5",
-    "xmlbuilder2": "^4.0.3"
+    "fast-xml-parser": "^5.10.1",
+    "semver": "^7.8.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
