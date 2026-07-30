@@ -41,6 +41,10 @@ jest.unstable_mockModule('../src/toolchains.js', () => ({
   configureToolchains: jest.fn()
 }));
 
+jest.unstable_mockModule('../src/toolchain-ids.js', () => ({
+  validateToolchainIds: jest.fn()
+}));
+
 jest.unstable_mockModule('../src/cache.js', () => ({
   restore: jest.fn()
 }));
@@ -72,6 +76,7 @@ const core = await import('@actions/core');
 const fs = (await import('fs')).default;
 const util = await import('../src/util.js');
 const toolchains = await import('../src/toolchains.js');
+const toolchainIds = await import('../src/toolchain-ids.js');
 const cache = await import('../src/cache.js');
 const cacheFeature = await import('../src/cache-feature.js');
 const factory = await import('../src/distributions/distribution-factory.js');
@@ -109,6 +114,9 @@ describe('setup action orchestration', () => {
       }
     );
     (cacheFeature.isCacheFeatureAvailable as jest.Mock).mockReturnValue(true);
+    (toolchainIds.validateToolchainIds as jest.Mock).mockImplementation(
+      () => undefined
+    );
     (toolchains.configureToolchains as jest.Mock).mockResolvedValue(undefined);
     (auth.configureAuthentication as jest.Mock).mockResolvedValue(undefined);
     (cache.restore as jest.Mock).mockResolvedValue(undefined);
@@ -215,7 +223,7 @@ describe('setup action orchestration', () => {
       },
       '/tmp/java.tar.gz'
     );
-    expect(toolchains.validateToolchainIds).toHaveBeenCalledWith(
+    expect(toolchainIds.validateToolchainIds).toHaveBeenCalledWith(
       [],
       '.sdkmanrc',
       ['file-jdk']
@@ -342,20 +350,26 @@ describe('setup action orchestration', () => {
       );
 
       expect(
+        (problemMatcher.configureProblemMatcher as jest.Mock).mock
+          .invocationCallOrder[0]
+      ).toBeLessThan(
+        (auth.configureAuthentication as jest.Mock).mock.invocationCallOrder[0]
+      );
+      expect(
+        (problemMatcher.configureProblemMatcher as jest.Mock).mock
+          .invocationCallOrder[0]
+      ).toBeLessThan(
         (toolchains.configureToolchains as jest.Mock).mock
           .invocationCallOrder[0]
-      ).toBeLessThan(
-        (problemMatcher.configureProblemMatcher as jest.Mock).mock
-          .invocationCallOrder[0]
-      );
-      expect(
-        (problemMatcher.configureProblemMatcher as jest.Mock).mock
-          .invocationCallOrder[0]
-      ).toBeLessThan(
-        (auth.configureAuthentication as jest.Mock).mock.invocationCallOrder[0]
       );
       expect(
         (auth.configureAuthentication as jest.Mock).mock.invocationCallOrder[0]
+      ).toBeLessThan(
+        (mavenArgs.configureMavenArgs as jest.Mock).mock.invocationCallOrder[0]
+      );
+      expect(
+        (toolchains.configureToolchains as jest.Mock).mock
+          .invocationCallOrder[0]
       ).toBeLessThan(
         (mavenArgs.configureMavenArgs as jest.Mock).mock.invocationCallOrder[0]
       );
@@ -372,6 +386,54 @@ describe('setup action orchestration', () => {
       await runPromise;
     }
 
+    expect(core.setFailed).not.toHaveBeenCalled();
+  });
+
+  it('overlaps independent Maven settings and toolchains configuration', async () => {
+    inputs.set('distribution', 'temurin');
+    multilineInputs.set('java-version', ['21']);
+    (factory.getJavaDistribution as jest.Mock).mockReturnValue({
+      setupJava: jest.fn(async () => ({
+        version: '21.0.4+7',
+        path: '/opt/java/21'
+      }))
+    });
+    const authentication = deferred<void>();
+    const toolchainConfiguration = deferred<void>();
+    (auth.configureAuthentication as jest.Mock).mockReturnValue(
+      authentication.promise
+    );
+    (toolchains.configureToolchains as jest.Mock).mockReturnValue(
+      toolchainConfiguration.promise
+    );
+
+    const runPromise = run();
+    try {
+      await tick();
+      await tick();
+
+      expect(auth.configureAuthentication).toHaveBeenCalled();
+      expect(toolchains.configureToolchains).toHaveBeenCalledWith(
+        '21',
+        'temurin',
+        '/opt/java/21',
+        undefined
+      );
+      expect(mavenArgs.configureMavenArgs).not.toHaveBeenCalled();
+
+      authentication.resolve();
+      await tick();
+      expect(mavenArgs.configureMavenArgs).not.toHaveBeenCalled();
+
+      toolchainConfiguration.resolve();
+      await runPromise;
+    } finally {
+      authentication.resolve();
+      toolchainConfiguration.resolve();
+      await runPromise;
+    }
+
+    expect(mavenArgs.configureMavenArgs).toHaveBeenCalled();
     expect(core.setFailed).not.toHaveBeenCalled();
   });
 

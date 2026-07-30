@@ -141,7 +141,7 @@ var external_os_default = /*#__PURE__*/__webpack_require__.n(external_os_);
 // EXTERNAL MODULE: external "crypto"
 var external_crypto_ = __webpack_require__(6982);
 // EXTERNAL MODULE: external "stream/promises"
-var promises_ = __webpack_require__(4548);
+var promises_ = __webpack_require__(9786);
 ;// CONCATENATED MODULE: ./src/checksum.ts
 
 

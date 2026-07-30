@@ -4,31 +4,14 @@ import * as path from 'path';
 import * as core from '@actions/core';
 import * as io from '@actions/io';
 import * as constants from './constants.js';
-
-import {create as xmlCreate} from 'xmlbuilder2';
+export {validateToolchainIds} from './toolchain-ids.js';
+import {escapeXmlText} from './xml.js';
 
 interface JdkInfo {
   version: string;
   vendor: string;
   id: string;
   jdkHome: string;
-}
-
-export function validateToolchainIds(
-  versions: string[],
-  versionFile: string,
-  toolchainIds: string[]
-) {
-  if (!toolchainIds.length) {
-    return;
-  }
-
-  const versionCount = versions.length || (versionFile ? 1 : 0);
-  if (versionCount !== toolchainIds.length) {
-    throw new Error(
-      `The number of Maven toolchain IDs (${toolchainIds.length}) must match the number of Java versions (${versionCount})`
-    );
-  }
 }
 
 export async function configureToolchains(
@@ -70,7 +53,7 @@ export async function createToolchainsSettings({
   await io.mkdirP(settingsDirectory);
   const originalToolchains =
     await readExistingToolchainsFile(settingsDirectory);
-  const updatedToolchains = generateToolchainDefinition(
+  const updatedToolchains = await generateToolchainDefinition(
     originalToolchains,
     jdkInfo.version,
     jdkInfo.vendor,
@@ -82,6 +65,26 @@ export async function createToolchainsSettings({
 
 // only exported for testing purposes
 export function generateToolchainDefinition(
+  original: string,
+  version: string,
+  vendor: string,
+  id: string,
+  jdkHome: string
+) {
+  if (!original?.length) {
+    return generateNewToolchainDefinition(version, vendor, id, jdkHome);
+  }
+
+  return generateMergedToolchainDefinition(
+    original,
+    version,
+    vendor,
+    id,
+    jdkHome
+  );
+}
+
+async function generateMergedToolchainDefinition(
   original: string,
   version: string,
   vendor: string,
@@ -108,49 +111,48 @@ export function generateToolchainDefinition(
     '@xsi:schemaLocation':
       'http://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd'
   };
-  if (original?.length) {
-    // convert existing toolchains into TS native objects for better handling
-    // xmlbuilder2 will convert the document into a `{toolchains: { toolchain: [] | {} }}` structure
-    // instead of the desired `toolchains: [{}]` one or simply `[{}]`
-    const jsObj = xmlCreate(original)
-      .root()
-      .toObject() as unknown as ExtractedToolchains;
-    if (jsObj.toolchains) {
-      // preserve the existing root attributes (xmlns, schemaLocation, …) so we don't
-      // silently rewrite user-managed metadata or change the effective XML namespace;
-      // xmlbuilder2 exposes attributes as `@`-prefixed keys on the element object
-      const existingAttributes = Object.fromEntries(
-        Object.entries(jsObj.toolchains).filter(([key]) => key.startsWith('@'))
-      ) as Record<string, string>;
-      // fall back to the defaults only for attributes the existing file is missing
-      rootAttributes = {...rootAttributes, ...existingAttributes};
+  const {create: xmlCreate} = await import('xmlbuilder2');
+  // convert existing toolchains into TS native objects for better handling
+  // xmlbuilder2 will convert the document into a `{toolchains: { toolchain: [] | {} }}` structure
+  // instead of the desired `toolchains: [{}]` one or simply `[{}]`
+  const jsObj = xmlCreate(original)
+    .root()
+    .toObject() as unknown as ExtractedToolchains;
+  if (jsObj.toolchains) {
+    // preserve the existing root attributes (xmlns, schemaLocation, …) so we don't
+    // silently rewrite user-managed metadata or change the effective XML namespace;
+    // xmlbuilder2 exposes attributes as `@`-prefixed keys on the element object
+    const existingAttributes = Object.fromEntries(
+      Object.entries(jsObj.toolchains).filter(([key]) => key.startsWith('@'))
+    ) as Record<string, string>;
+    // fall back to the defaults only for attributes the existing file is missing
+    rootAttributes = {...rootAttributes, ...existingAttributes};
 
-      if (jsObj.toolchains.toolchain) {
-        // in case only a single child exists xmlbuilder2 will not create an array and using verbose = true equally doesn't work here
-        // See https://oozcitak.github.io/xmlbuilder2/serialization.html#js-object-and-map-serializers for details
-        if (Array.isArray(jsObj.toolchains.toolchain)) {
-          jsToolchains.push(...jsObj.toolchains.toolchain);
-        } else {
-          jsToolchains.push(jsObj.toolchains.toolchain);
-        }
+    if (jsObj.toolchains.toolchain) {
+      // in case only a single child exists xmlbuilder2 will not create an array and using verbose = true equally doesn't work here
+      // See https://oozcitak.github.io/xmlbuilder2/serialization.html#js-object-and-map-serializers for details
+      if (Array.isArray(jsObj.toolchains.toolchain)) {
+        jsToolchains.push(...jsObj.toolchains.toolchain);
+      } else {
+        jsToolchains.push(jsObj.toolchains.toolchain);
       }
     }
-
-    // remove potential duplicates based on type & id (which should be a unique combination);
-    // self.findIndex will only return the first occurrence, ensuring duplicates are skipped
-    jsToolchains = jsToolchains.filter(
-      (value, index, self) =>
-        // ensure non-jdk toolchains are kept in the results, we must not touch them because they belong to the user
-        value.type !== 'jdk' ||
-        // keep toolchains that lack a usable string id (e.g. partially-formed user files);
-        // we cannot safely deduplicate them and must not crash while reading them
-        typeof value.provides?.id !== 'string' ||
-        index ===
-          self.findIndex(
-            t => t.type === value.type && t.provides?.id === value.provides?.id
-          )
-    );
   }
+
+  // remove potential duplicates based on type & id (which should be a unique combination);
+  // self.findIndex will only return the first occurrence, ensuring duplicates are skipped
+  jsToolchains = jsToolchains.filter(
+    (value, index, self) =>
+      // ensure non-jdk toolchains are kept in the results, we must not touch them because they belong to the user
+      value.type !== 'jdk' ||
+      // keep toolchains that lack a usable string id (e.g. partially-formed user files);
+      // we cannot safely deduplicate them and must not crash while reading them
+      typeof value.provides?.id !== 'string' ||
+      index ===
+        self.findIndex(
+          t => t.type === value.type && t.provides?.id === value.provides?.id
+        )
+  );
 
   return xmlCreate({
     toolchains: {
@@ -164,6 +166,32 @@ export function generateToolchainDefinition(
     prettyPrint: true,
     width: 80
   });
+}
+
+export function generateNewToolchainDefinition(
+  version: string,
+  vendor: string,
+  id: string,
+  jdkHome: string
+) {
+  return [
+    '<?xml version="1.0"?>',
+    '<toolchains xmlns="http://maven.apache.org/TOOLCHAINS/1.1.0"',
+    '  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"',
+    '  xsi:schemaLocation="http://maven.apache.org/TOOLCHAINS/1.1.0 https://maven.apache.org/xsd/toolchains-1.1.0.xsd">',
+    '  <toolchain>',
+    '    <type>jdk</type>',
+    '    <provides>',
+    `      <version>${escapeXmlText(version)}</version>`,
+    `      <vendor>${escapeXmlText(vendor)}</vendor>`,
+    `      <id>${escapeXmlText(id)}</id>`,
+    '    </provides>',
+    '    <configuration>',
+    `      <jdkHome>${escapeXmlText(jdkHome)}</jdkHome>`,
+    '    </configuration>',
+    '  </toolchain>',
+    '</toolchains>'
+  ].join('\n');
 }
 
 async function readExistingToolchainsFile(directory: string) {

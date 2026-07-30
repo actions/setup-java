@@ -264,6 +264,115 @@ class TemurinDistribution extends base_installer/* JavaBase */.O {
 }
 
 
+/***/ }),
+
+/***/ 8343:
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Fh: () => (/* binding */ importKey),
+/* harmony export */   Yi: () => (/* binding */ verifyPackageSignature)
+/* harmony export */ });
+/* unused harmony exports PRIVATE_KEY_FILE, toGpgPath, deleteKey */
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9896);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6928);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8701);
+/* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5260);
+/* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(9805);
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4527);
+
+
+
+
+
+
+const PRIVATE_KEY_FILE = path__WEBPACK_IMPORTED_MODULE_1__.join(_util_js__WEBPACK_IMPORTED_MODULE_5__/* .getTempDir */ .G4(), 'private-key.asc');
+const PRIVATE_KEY_FINGERPRINT_REGEX = /\w{40}/;
+// Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
+// The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
+// internally. Passing Windows paths with backslashes can cause fatal GPG errors
+// (exit code 2), so all paths passed to GPG must be in POSIX format on Windows.
+function toGpgPath(p) {
+    if (process.platform !== 'win32')
+        return p;
+    return p
+        .replace(/\\/g, '/')
+        .replace(/^([A-Za-z]):\//, (_, drive) => `/${drive.toLowerCase()}/`);
+}
+async function importKey(privateKey) {
+    fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(PRIVATE_KEY_FILE, privateKey, {
+        encoding: 'utf-8',
+        flag: 'w'
+    });
+    let output = '';
+    const options = {
+        silent: true,
+        listeners: {
+            stdout: (data) => {
+                output += data.toString();
+            }
+        }
+    };
+    await _actions_exec__WEBPACK_IMPORTED_MODULE_3__/* .exec */ .m('gpg', [
+        '--batch',
+        '--import-options',
+        'import-show',
+        '--import',
+        PRIVATE_KEY_FILE
+    ], options);
+    await _actions_io__WEBPACK_IMPORTED_MODULE_2__/* .rmRF */ .Yz(PRIVATE_KEY_FILE);
+    const match = output.match(PRIVATE_KEY_FINGERPRINT_REGEX);
+    return match && match[0];
+}
+async function deleteKey(keyFingerprint) {
+    await exec.exec('gpg', ['--batch', '--yes', '--delete-secret-and-public-key', keyFingerprint], {
+        silent: true
+    });
+}
+async function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
+    const signaturePath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_4__/* .downloadTool */ .bq(signatureUrl);
+    let gpgHome;
+    try {
+        gpgHome = fs__WEBPACK_IMPORTED_MODULE_0__.mkdtempSync(path__WEBPACK_IMPORTED_MODULE_1__.join(_util_js__WEBPACK_IMPORTED_MODULE_5__/* .getTempDir */ .G4(), 'verify-signature-gpg-home-'));
+    }
+    catch (error) {
+        try {
+            await _actions_io__WEBPACK_IMPORTED_MODULE_2__/* .rmRF */ .Yz(signaturePath);
+        }
+        catch {
+            // ignore cleanup failures
+        }
+        throw new Error(`Failed to create temporary GPG home directory for signature verification: ${error.message}`, { cause: error });
+    }
+    try {
+        const publicKeyFile = path__WEBPACK_IMPORTED_MODULE_1__.join(gpgHome, 'public-key.asc');
+        fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(publicKeyFile, publicKeyContent, { encoding: 'utf-8' });
+        const options = { silent: true };
+        await _actions_exec__WEBPACK_IMPORTED_MODULE_3__/* .exec */ .m('gpg', [
+            '--homedir',
+            toGpgPath(gpgHome),
+            '--batch',
+            '--import',
+            toGpgPath(publicKeyFile)
+        ], options);
+        await _actions_exec__WEBPACK_IMPORTED_MODULE_3__/* .exec */ .m('gpg', [
+            '--homedir',
+            toGpgPath(gpgHome),
+            '--batch',
+            '--verify',
+            toGpgPath(signaturePath),
+            toGpgPath(archivePath)
+        ], options);
+    }
+    finally {
+        await _actions_io__WEBPACK_IMPORTED_MODULE_2__/* .rmRF */ .Yz(signaturePath);
+        await _actions_io__WEBPACK_IMPORTED_MODULE_2__/* .rmRF */ .Yz(gpgHome);
+    }
+}
+
+
 /***/ })
 
 };

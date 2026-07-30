@@ -1,0 +1,160 @@
+name: Benchmark Maven configuration
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseline-ref:
+        description: Git ref containing the baseline implementation
+        required: true
+        default: main
+        type: string
+      candidate-ref:
+        description: Git ref containing the candidate implementation (defaults to the dispatched ref)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  benchmark:
+    name: ${{ matrix.os }} ${{ matrix.cache }} ${{ matrix.versions.name }} ${{ matrix.toolchains }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-15-intel]
+        cache: [none, maven, gradle]
+        versions:
+          - name: single
+            java-version: '21'
+          - name: multiple
+            java-version: |
+              17
+              21
+        toolchains: [empty, existing]
+    steps:
+      - name: Checkout benchmark workflow
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Checkout baseline
+        uses: actions/checkout@v7
+        with:
+          path: baseline
+          persist-credentials: false
+          ref: ${{ inputs.baseline-ref }}
+      - name: Checkout candidate
+        uses: actions/checkout@v7
+        with:
+          path: candidate
+          persist-credentials: false
+          ref: ${{ inputs.candidate-ref || github.ref }}
+
+      - name: Record bundle sizes
+        run: |
+          bash __tests__/benchmark-maven-configuration.sh record-size baseline baseline
+          bash __tests__/benchmark-maven-configuration.sh record-size candidate candidate
+
+      - name: Prepare baseline iteration 1
+        run: bash __tests__/benchmark-maven-configuration.sh prepare "${{ matrix.cache }}" "${{ matrix.toolchains }}"
+      - name: Start baseline iteration 1 timer
+        run: bash __tests__/benchmark-maven-configuration.sh start
+      - name: Run baseline iteration 1
+        uses: ./baseline
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.versions.java-version }}
+          cache: ${{ matrix.cache == 'none' && '' || matrix.cache }}
+          cache-dependency-path: benchmark/${{ matrix.cache == 'gradle' && 'build.gradle' || 'pom.xml' }}
+          settings-path: benchmark-maven-home
+      - name: Record baseline iteration 1
+        run: bash __tests__/benchmark-maven-configuration.sh record "${{ matrix.os }}" "${{ matrix.cache }}" "${{ matrix.versions.name }}" "${{ matrix.toolchains }}" baseline 1
+
+      - name: Prepare candidate iteration 1
+        run: bash __tests__/benchmark-maven-configuration.sh prepare "${{ matrix.cache }}" "${{ matrix.toolchains }}"
+      - name: Start candidate iteration 1 timer
+        run: bash __tests__/benchmark-maven-configuration.sh start
+      - name: Run candidate iteration 1
+        uses: ./candidate
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.versions.java-version }}
+          cache: ${{ matrix.cache == 'none' && '' || matrix.cache }}
+          cache-dependency-path: benchmark/${{ matrix.cache == 'gradle' && 'build.gradle' || 'pom.xml' }}
+          settings-path: benchmark-maven-home
+      - name: Record candidate iteration 1
+        run: bash __tests__/benchmark-maven-configuration.sh record "${{ matrix.os }}" "${{ matrix.cache }}" "${{ matrix.versions.name }}" "${{ matrix.toolchains }}" candidate 1
+
+      - name: Prepare baseline iteration 2
+        run: bash __tests__/benchmark-maven-configuration.sh prepare "${{ matrix.cache }}" "${{ matrix.toolchains }}"
+      - name: Start baseline iteration 2 timer
+        run: bash __tests__/benchmark-maven-configuration.sh start
+      - name: Run baseline iteration 2
+        uses: ./baseline
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.versions.java-version }}
+          cache: ${{ matrix.cache == 'none' && '' || matrix.cache }}
+          cache-dependency-path: benchmark/${{ matrix.cache == 'gradle' && 'build.gradle' || 'pom.xml' }}
+          settings-path: benchmark-maven-home
+      - name: Record baseline iteration 2
+        run: bash __tests__/benchmark-maven-configuration.sh record "${{ matrix.os }}" "${{ matrix.cache }}" "${{ matrix.versions.name }}" "${{ matrix.toolchains }}" baseline 2
+
+      - name: Prepare candidate iteration 2
+        run: bash __tests__/benchmark-maven-configuration.sh prepare "${{ matrix.cache }}" "${{ matrix.toolchains }}"
+      - name: Start candidate iteration 2 timer
+        run: bash __tests__/benchmark-maven-configuration.sh start
+      - name: Run candidate iteration 2
+        uses: ./candidate
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.versions.java-version }}
+          cache: ${{ matrix.cache == 'none' && '' || matrix.cache }}
+          cache-dependency-path: benchmark/${{ matrix.cache == 'gradle' && 'build.gradle' || 'pom.xml' }}
+          settings-path: benchmark-maven-home
+      - name: Record candidate iteration 2
+        run: bash __tests__/benchmark-maven-configuration.sh record "${{ matrix.os }}" "${{ matrix.cache }}" "${{ matrix.versions.name }}" "${{ matrix.toolchains }}" candidate 2
+
+      - name: Prepare baseline iteration 3
+        run: bash __tests__/benchmark-maven-configuration.sh prepare "${{ matrix.cache }}" "${{ matrix.toolchains }}"
+      - name: Start baseline iteration 3 timer
+        run: bash __tests__/benchmark-maven-configuration.sh start
+      - name: Run baseline iteration 3
+        uses: ./baseline
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.versions.java-version }}
+          cache: ${{ matrix.cache == 'none' && '' || matrix.cache }}
+          cache-dependency-path: benchmark/${{ matrix.cache == 'gradle' && 'build.gradle' || 'pom.xml' }}
+          settings-path: benchmark-maven-home
+      - name: Record baseline iteration 3
+        run: bash __tests__/benchmark-maven-configuration.sh record "${{ matrix.os }}" "${{ matrix.cache }}" "${{ matrix.versions.name }}" "${{ matrix.toolchains }}" baseline 3
+
+      - name: Prepare candidate iteration 3
+        run: bash __tests__/benchmark-maven-configuration.sh prepare "${{ matrix.cache }}" "${{ matrix.toolchains }}"
+      - name: Start candidate iteration 3 timer
+        run: bash __tests__/benchmark-maven-configuration.sh start
+      - name: Run candidate iteration 3
+        uses: ./candidate
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.versions.java-version }}
+          cache: ${{ matrix.cache == 'none' && '' || matrix.cache }}
+          cache-dependency-path: benchmark/${{ matrix.cache == 'gradle' && 'build.gradle' || 'pom.xml' }}
+          settings-path: benchmark-maven-home
+      - name: Record candidate iteration 3
+        run: bash __tests__/benchmark-maven-configuration.sh record "${{ matrix.os }}" "${{ matrix.cache }}" "${{ matrix.versions.name }}" "${{ matrix.toolchains }}" candidate 3
+
+      - name: Summarize benchmark
+        run: bash __tests__/benchmark-maven-configuration.sh summarize "$GITHUB_STEP_SUMMARY"
+      - name: Upload raw benchmark data
+        uses: actions/upload-artifact@v6
+        with:
+          name: maven-config-${{ matrix.os }}-${{ matrix.cache }}-${{ matrix.versions.name }}-${{ matrix.toolchains }}
+          path: .benchmark-results/
+          if-no-files-found: error

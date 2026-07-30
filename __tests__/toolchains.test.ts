@@ -13,6 +13,7 @@ import * as fs from 'fs';
 import os from 'os';
 import * as path from 'path';
 import * as io from '@actions/io';
+import {create as parseXml} from 'xmlbuilder2';
 
 // Mock @actions/core before importing source modules that depend on it
 jest.unstable_mockModule('@actions/core', () => ({
@@ -95,7 +96,7 @@ describe('toolchains tests', () => {
     expect(fs.existsSync(altHome)).toBe(true);
     expect(fs.existsSync(altToolchainsFile)).toBe(true);
     expect(fs.readFileSync(altToolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         '',
         jdkInfo.version,
         jdkInfo.vendor,
@@ -140,7 +141,7 @@ describe('toolchains tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
     expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         '',
         jdkInfo.version,
         jdkInfo.vendor,
@@ -221,7 +222,7 @@ describe('toolchains tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
     expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -230,7 +231,7 @@ describe('toolchains tests', () => {
       )
     );
     expect(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -306,7 +307,7 @@ describe('toolchains tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
     expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -315,7 +316,7 @@ describe('toolchains tests', () => {
       )
     );
     expect(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -383,7 +384,7 @@ describe('toolchains tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
     expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -392,7 +393,7 @@ describe('toolchains tests', () => {
       )
     );
     expect(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -453,7 +454,7 @@ describe('toolchains tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
     expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -462,7 +463,7 @@ describe('toolchains tests', () => {
       )
     );
     expect(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -545,7 +546,7 @@ describe('toolchains tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
     expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -554,7 +555,7 @@ describe('toolchains tests', () => {
       )
     );
     expect(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -604,7 +605,7 @@ describe('toolchains tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
     expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -613,7 +614,7 @@ describe('toolchains tests', () => {
       )
     );
     expect(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -662,7 +663,7 @@ describe('toolchains tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
     expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -671,7 +672,7 @@ describe('toolchains tests', () => {
       )
     );
     expect(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -745,7 +746,7 @@ describe('toolchains tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
     expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -754,7 +755,7 @@ describe('toolchains tests', () => {
       )
     );
     expect(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -824,7 +825,7 @@ describe('toolchains tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(toolchainsFile)).toBe(true);
     expect(fs.readFileSync(toolchainsFile, 'utf-8')).toEqual(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -833,7 +834,7 @@ describe('toolchains tests', () => {
       )
     );
     expect(
-      toolchains.generateToolchainDefinition(
+      await toolchains.generateToolchainDefinition(
         originalFile,
         jdkInfo.version,
         jdkInfo.vendor,
@@ -924,6 +925,29 @@ describe('toolchains tests', () => {
     ).toEqual(expectedToolchains);
   }, 100000);
 
+  it('escapes new toolchains.xml values while preserving parsed semantics', () => {
+    const jdkInfo = {
+      version: `21&<>"'é`,
+      vendor: `Temurin&<>"'é`,
+      id: `temurin&<>"'é`,
+      jdkHome: `/opt/java&<>"'é`
+    };
+
+    const xml = toolchains.generateNewToolchainDefinition(
+      jdkInfo.version,
+      jdkInfo.vendor,
+      jdkInfo.id,
+      jdkInfo.jdkHome
+    );
+    const parsed = parseXml(xml).root().toObject() as any;
+
+    expect(parsed.toolchains.toolchain.type).toBe('jdk');
+    expect(xmlElementText(xml, 'version')).toBe(jdkInfo.version);
+    expect(xmlElementText(xml, 'vendor')).toBe(jdkInfo.vendor);
+    expect(xmlElementText(xml, 'id')).toBe(jdkInfo.id);
+    expect(xmlElementText(xml, 'jdkHome')).toBe(jdkInfo.jdkHome);
+  });
+
   it('creates toolchains.xml with correct id when none is supplied', async () => {
     const version = '17';
     const distributionName = 'temurin';
@@ -935,6 +959,16 @@ describe('toolchains tests', () => {
       if (name === 'settings-path') return m2Dir;
       return '';
     });
+
+    function xmlElementText(xml: string, tagName: string): string {
+      const match = new RegExp(`<${tagName}>([\\s\\S]*?)</${tagName}>`).exec(
+        xml
+      );
+      expect(match).not.toBeNull();
+      return (
+        parseXml(`<value>${match?.[1]}</value>`).root().node.textContent ?? ''
+      );
+    }
 
     await toolchains.configureToolchains(
       version,
@@ -1071,3 +1105,9 @@ describe('validateToolchainIds', () => {
     ).toThrow(expectedMessage);
   });
 });
+
+function xmlElementText(xml: string, tagName: string): string {
+  const match = new RegExp(`<${tagName}>([\\s\\S]*?)</${tagName}>`).exec(xml);
+  expect(match).not.toBeNull();
+  return parseXml(`<value>${match?.[1]}</value>`).root().node.textContent ?? '';
+}

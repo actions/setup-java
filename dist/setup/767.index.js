@@ -5784,7 +5784,7 @@ exports.colors = [6, 2, 3, 4, 5, 1];
 try {
 	// Optional dependency (as in, doesn't need to be installed, NOT like optionalDependencies in package.json)
 	// eslint-disable-next-line import/no-extraneous-dependencies
-	const supportsColor = __webpack_require__(9069);
+	const supportsColor = __webpack_require__(1450);
 
 	if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
 		exports.colors = [
@@ -6020,7 +6020,7 @@ formatters.O = function (v) {
 
 /***/ }),
 
-/***/ 6194:
+/***/ 3813:
 /***/ ((module) => {
 
 
@@ -6651,13 +6651,13 @@ function plural(ms, msAbs, n, name) {
 
 /***/ }),
 
-/***/ 9069:
+/***/ 1450:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
 
 const os = __webpack_require__(857);
 const tty = __webpack_require__(2018);
-const hasFlag = __webpack_require__(6194);
+const hasFlag = __webpack_require__(3813);
 
 const {env} = process;
 
