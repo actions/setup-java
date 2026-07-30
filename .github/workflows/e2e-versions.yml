@@ -290,10 +290,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java env variables
         run: |
+          $javaArch = if ($env:RUNNER_ARCH -eq "ARM64") { "AARCH64" } else { $env:RUNNER_ARCH }
           $versionsArr = "11","17"
           foreach ($version in $versionsArr)
           {
-            $envName = "JAVA_HOME_${version}_${env:RUNNER_ARCH}"
+            $envName = "JAVA_HOME_${version}_${javaArch}"
             $JavaVersionPath = [Environment]::GetEnvironmentVariable($envName)
             if (-not (Test-Path "$JavaVersionPath")) {
               Write-Host "$envName is not found"
@@ -582,6 +583,9 @@ jobs:
         os: *default_os
         distribution: ['adopt', 'adopt-openj9', 'zulu']
         java-version-file: ['.java-version', '.tool-versions']
+        exclude:
+          - os: macos-latest
+            distribution: adopt-openj9
     steps:
       - *checkout_step
       - name: Create .java-version file
@@ -683,7 +687,8 @@ jobs:
         shell: bash
       - name: Verify JAVA_HOME_21 env var is set
         run: |
-          $envName = "JAVA_HOME_21_${env:RUNNER_ARCH}"
+          $javaArch = if ($env:RUNNER_ARCH -eq "ARM64") { "AARCH64" } else { $env:RUNNER_ARCH }
+          $envName = "JAVA_HOME_21_${javaArch}"
           $JavaVersionPath = [Environment]::GetEnvironmentVariable($envName)
           if (-not $JavaVersionPath) {
             Write-Host "$envName is not set"
