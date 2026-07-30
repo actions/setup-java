@@ -31,10 +31,8 @@ export async function run() {
   const verifySignaturePublicKey =
     core.getInput(constants.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
   const toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
-
   let actionError: Error | undefined;
   let cacheRestore: Promise<void> | undefined;
-  let mavenConfiguration: Promise<void> | undefined;
   const toolchainConfigurations: ToolchainConfiguration[] = [];
 
   try {
@@ -133,8 +131,7 @@ export async function run() {
     );
     configureProblemMatcher(path.join(matchersPath, 'java.json'));
 
-    mavenConfiguration = configureMaven(toolchainConfigurations);
-    await mavenConfiguration;
+    await configureMaven(toolchainConfigurations);
   } catch (error) {
     actionError = error as Error;
   }

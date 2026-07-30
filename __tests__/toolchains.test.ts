@@ -980,6 +980,42 @@ describe('toolchains tests', () => {
     );
   }, 100000);
 
+  it('merges a second JDK into a toolchains.xml produced by the new-file fast path', async () => {
+    const firstJdk = {
+      version: '17',
+      vendor: 'temurin',
+      id: 'temurin_17',
+      jdkHome: '/opt/java/17'
+    };
+    const secondJdk = {
+      version: '21',
+      vendor: 'temurin',
+      id: 'temurin_21',
+      jdkHome: '/opt/java/21'
+    };
+
+    const firstToolchains = await toolchains.generateToolchainDefinition(
+      '',
+      firstJdk.version,
+      firstJdk.vendor,
+      firstJdk.id,
+      firstJdk.jdkHome
+    );
+    const mergedToolchains = await toolchains.generateToolchainDefinition(
+      firstToolchains,
+      secondJdk.version,
+      secondJdk.vendor,
+      secondJdk.id,
+      secondJdk.jdkHome
+    );
+
+    for (const jdk of [firstJdk, secondJdk]) {
+      expect(mergedToolchains).toContain(`<id>${jdk.id}</id>`);
+      expect(mergedToolchains).toContain(`<jdkHome>${jdk.jdkHome}</jdkHome>`);
+    }
+    expect((mergedToolchains.match(/<toolchain>/g) || []).length).toBe(2);
+  });
+
   it('preserves toolchains from previous executions across multiple setup-java runs', async () => {
     // Regression test for https://github.com/actions/setup-java/issues/1099
     // Running setup-java several times in the same job (e.g. multiple steps / multiple

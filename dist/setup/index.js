@@ -36167,7 +36167,6 @@ async function run() {
     const toolchainIds = setup_java_core/* getMultilineInput */.q3(constants/* INPUT_MVN_TOOLCHAIN_ID */.nr);
     let actionError;
     let cacheRestore;
-    let mavenConfiguration;
     const toolchainConfigurations = [];
     try {
         setup_java_core/* startGroup */.Oh('Installed distributions');
@@ -36235,8 +36234,7 @@ async function run() {
         setup_java_core/* endGroup */.N4();
         const matchersPath = external_path_.join(external_path_.dirname((0,external_url_.fileURLToPath)(import.meta.url)), '..', '..', '.github');
         configureProblemMatcher(external_path_.join(matchersPath, 'java.json'));
-        mavenConfiguration = configureMaven(toolchainConfigurations);
-        await mavenConfiguration;
+        await configureMaven(toolchainConfigurations);
     }
     catch (error) {
         actionError = error;

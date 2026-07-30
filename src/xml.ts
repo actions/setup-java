@@ -5,6 +5,8 @@ export function escapeXmlText(value: string): string {
     .replace(/>/g, '&gt;');
 }
 
+// Use for user-controlled values written into XML attributes. Text nodes should
+// use escapeXmlText so quotes remain byte-compatible with xmlbuilder2 output.
 export function escapeXmlAttribute(value: string): string {
   return escapeXmlText(value).replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 }
