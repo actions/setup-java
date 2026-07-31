@@ -46,7 +46,7 @@ steps:
 ```
 
 ### Adopt
-**NOTE:** Adopt OpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` to `temurin` to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
+**NOTE:** The legacy `adopt`, `adopt-hotspot`, and `adopt-openj9` distributions are deprecated in setup-java v5 and will be removed in setup-java v6. Migrate `adopt` and `adopt-hotspot` to `temurin`, and `adopt-openj9` to `semeru`, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 
 ```yaml
 steps:
@@ -953,4 +953,3 @@ Notes and caveats:
 - Prefer giving the certificate a stable, descriptive `-alias` so re-runs are idempotent (re-importing the same alias will fail; add `keytool -delete -alias internal-ca ...` first if you re-run within a long-lived runner).
 
 This documents the post-install workflow; there is no dedicated action input for supplying a custom `cacerts` file.
-
