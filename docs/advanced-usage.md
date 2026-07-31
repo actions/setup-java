@@ -40,7 +40,7 @@ steps:
 ```
 
 ### Adopt
-**NOTE:** Adopt OpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` to `temurin` to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
+**NOTE:** The legacy `adopt`, `adopt-hotspot`, and `adopt-openj9` distributions are deprecated and will be removed in setup-java v6. Migrate `adopt` and `adopt-hotspot` to `temurin`, and `adopt-openj9` to `semeru`, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 
 ```yaml
 steps:

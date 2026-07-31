@@ -8,7 +8,7 @@ inputs:
   java-version-file:
     description: 'The path to the `.java-version` file. See examples of supported syntax in README file'
   distribution:
-    description: 'Java distribution. See the list of supported distributions in README file'
+    description: 'Java distribution. See the list of supported distributions in README file. Legacy AdoptOpenJDK values (adopt, adopt-hotspot, adopt-openj9) are deprecated and will be removed in setup-java v6.'
     required: true
   java-package:
     description: 'The package type (jdk, jre, jdk+fx, jre+fx)'
