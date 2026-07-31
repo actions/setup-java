@@ -33,6 +33,8 @@ This action allows you to work with Java and Scala projects.
 
   See [GPG](docs/advanced-usage.md#gpg) for details.
 
+- **Legacy AdoptOpenJDK distributions were removed.** Replace `adopt` or `adopt-hotspot` with `temurin`, and replace `adopt-openj9` with `semeru`.
+
 ## Breaking changes in V5
 
 - Upgraded action from node20 to node24
@@ -101,7 +103,7 @@ For more details,  see the full release notes on the [releases page](https://git
 
 ### Download integrity verification
 
-When a selected distribution publishes an authoritative checksum for an archive, `setup-java` automatically verifies each downloaded JDK, JRE, or JMOD archive before extraction and caching. No input is required. Automatic checksum verification is currently available for `temurin`, `semeru`, `adopt`, `corretto`, `dragonwell`, `kona`, `sapmachine`, `graalvm`, `graalvm-community`, `zulu`, `oracle`, `oracle-openjdk`, `microsoft`, and `jetbrains`.
+When a selected distribution publishes an authoritative checksum for an archive, `setup-java` automatically verifies each downloaded JDK, JRE, or JMOD archive before extraction and caching. No input is required. Automatic checksum verification is currently available for `temurin`, `semeru`, `corretto`, `dragonwell`, `kona`, `sapmachine`, `graalvm`, `graalvm-community`, `zulu`, `oracle`, `oracle-openjdk`, `microsoft`, and `jetbrains`.
 
 Distributions or individual releases without an authoritative checksum continue to install normally, with the omission reported only in debug logs. Archives resolved directly from the runner tool cache are not downloaded again and therefore are not reverified.
 
@@ -152,8 +154,6 @@ Currently, the following distributions are supported:
 |-|-|-|
 | `temurin` | [Eclipse Temurin](https://adoptium.net/) | [`temurin` license](https://adoptium.net/about.html)
 | `zulu` | [Azul Zulu OpenJDK](https://www.azul.com/downloads/zulu-community/?package=jdk) | [`zulu` license](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
-| `adopt` or `adopt-hotspot` | [AdoptOpenJDK Hotspot](https://adoptopenjdk.net/) | [`adopt-hotspot` license](https://adoptopenjdk.net/about.html) |
-| `adopt-openj9` | [AdoptOpenJDK OpenJ9](https://adoptopenjdk.net/) | [`adopt-openj9` license](https://adoptopenjdk.net/about.html) |
 | `liberica` | [Liberica JDK](https://bell-sw.com/) | [`liberica` license](https://bell-sw.com/liberica_eula/) |
 | `liberica-nik` | [Liberica Native Image Kit](https://bell-sw.com/pages/downloads/native-image-kit/) | [`liberica-nik` license](https://bell-sw.com/liberica_nik_eula/) |
 | `microsoft` | [Microsoft Build of OpenJDK](https://www.microsoft.com/openjdk) | [`microsoft` license](https://docs.microsoft.com/java/openjdk/faq)
@@ -171,7 +171,6 @@ Currently, the following distributions are supported:
 
 > [!NOTE]
 > - The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
-> - AdoptOpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` and `adopt-openj9`, to `temurin` and `semeru` respectively, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 > - Oracle OpenJDK builds are created and hosted by Oracle. After a limited number of releases, Oracle archives these builds and no longer provides security updates. To continue receiving security patches, users must move to Oracle JDK or choose a different vendor.
 > - For Azul Zulu OpenJDK, architecture `arm64` is mapped to `aarch64` when querying the Azul Metadata API.
 > - To comply with the GraalVM Free Terms and Conditions (GFTC) license, it is recommended to use GraalVM JDK 17 version 17.0.12, as this is the only version of GraalVM JDK 17 available under the GFTC license. Additionally, it is encouraged to consider upgrading to GraalVM JDK 21, which offers the latest features and improvements.

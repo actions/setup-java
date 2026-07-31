@@ -61,18 +61,6 @@ describe('Java platform capabilities', () => {
     }
   );
 
-  it('keeps Adopt HotSpot aliases aligned with the Temurin-first resolver', () => {
-    expect(validateJavaPlatform('adopt', 'darwin', 'arm64', '21')).toBe(
-      'aarch64'
-    );
-    expect(validateJavaPlatform('adopt-hotspot', 'win32', 'arm64', '21')).toBe(
-      'aarch64'
-    );
-    expect(() =>
-      validateJavaPlatform('adopt-openj9', 'darwin', 'arm64', '16')
-    ).toThrow(/does not support operating system 'macos'/);
-  });
-
   it('allows local archives on any platform and architecture', () => {
     expect(validateJavaPlatform('jdkfile', 'aix', 'mips64', '21')).toBe(
       'mips64'

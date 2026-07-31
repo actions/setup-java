@@ -117,6 +117,15 @@ describe('getJavaDistribution', () => {
     ).toBeNull();
   });
 
+  it.each(['adopt', 'adopt-hotspot', 'adopt-openj9'])(
+    'does not support legacy Adopt distribution %s',
+    async distributionName => {
+      expect(
+        await getJavaDistribution(distributionName, installerOptions('jdk'))
+      ).toBeNull();
+    }
+  );
+
   it.each([
     ['amd64', 'x64'],
     ['ia32', 'x86'],

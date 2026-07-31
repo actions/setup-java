@@ -2,9 +2,6 @@ import semver from 'semver';
 import {convertVersionToSemver} from '../util.js';
 
 export enum JavaDistribution {
-  Adopt = 'adopt',
-  AdoptHotspot = 'adopt-hotspot',
-  AdoptOpenJ9 = 'adopt-openj9',
   Temurin = 'temurin',
   Zulu = 'zulu',
   Liberica = 'liberica',
@@ -24,9 +21,6 @@ export enum JavaDistribution {
 }
 
 export const JAVA_PACKAGE_CAPABILITIES = {
-  [JavaDistribution.Adopt]: ['jdk', 'jre'],
-  [JavaDistribution.AdoptHotspot]: ['jdk', 'jre'],
-  [JavaDistribution.AdoptOpenJ9]: ['jdk', 'jre'],
   [JavaDistribution.Temurin]: ['jdk', 'jre', 'jdk+jmods'],
   [JavaDistribution.Zulu]: [
     'jdk',

@@ -30,23 +30,6 @@ export async function getJavaDistribution(
       const {LocalDistribution} = await import('./local/installer.js');
       return new LocalDistribution(normalizedInstallerOptions, jdkFile);
     }
-    case JavaDistribution.Adopt:
-    case JavaDistribution.AdoptHotspot: {
-      const {AdoptDistribution, AdoptImplementation} =
-        await import('./adopt/installer.js');
-      return new AdoptDistribution(
-        normalizedInstallerOptions,
-        AdoptImplementation.Hotspot
-      );
-    }
-    case JavaDistribution.AdoptOpenJ9: {
-      const {AdoptDistribution, AdoptImplementation} =
-        await import('./adopt/installer.js');
-      return new AdoptDistribution(
-        normalizedInstallerOptions,
-        AdoptImplementation.OpenJ9
-      );
-    }
     case JavaDistribution.Temurin: {
       const {TemurinDistribution, TemurinImplementation} =
         await import('./temurin/installer.js');

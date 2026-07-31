@@ -30883,9 +30883,6 @@ const DISTRIBUTIONS_ONLY_MAJOR_VERSION = ['corretto'];
 
 var JavaDistribution;
 (function (JavaDistribution) {
-    JavaDistribution["Adopt"] = "adopt";
-    JavaDistribution["AdoptHotspot"] = "adopt-hotspot";
-    JavaDistribution["AdoptOpenJ9"] = "adopt-openj9";
     JavaDistribution["Temurin"] = "temurin";
     JavaDistribution["Zulu"] = "zulu";
     JavaDistribution["Liberica"] = "liberica";
@@ -30904,9 +30901,6 @@ var JavaDistribution;
     JavaDistribution["OracleOpenJdk"] = "oracle-openjdk";
 })(JavaDistribution || (JavaDistribution = {}));
 const JAVA_PACKAGE_CAPABILITIES = {
-    [JavaDistribution.Adopt]: ['jdk', 'jre'],
-    [JavaDistribution.AdoptHotspot]: ['jdk', 'jre'],
-    [JavaDistribution.AdoptOpenJ9]: ['jdk', 'jre'],
     [JavaDistribution.Temurin]: ['jdk', 'jre', 'jdk+jmods'],
     [JavaDistribution.Zulu]: [
         'jdk',
@@ -31002,30 +30996,8 @@ function createUnsupportedPackageError(distributionName, packageType, supportedP
 
 
 const X64_ARM64 = ['x64', 'aarch64'];
-const X64_X86 = ['x64', 'x86'];
 const STANDARD_LINUX = ['x64', 'x86', 'aarch64', 'ppc64le', 's390x'];
 const JAVA_PLATFORM_CAPABILITIES = {
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.Adopt]: {
-        platforms: {
-            linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<18' }],
-            macos: X64_ARM64,
-            windows: ['x64', 'x86', 'aarch64']
-        }
-    },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.AdoptHotspot]: {
-        platforms: {
-            linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<18' }],
-            macos: X64_ARM64,
-            windows: ['x64', 'x86', 'aarch64']
-        }
-    },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.AdoptOpenJ9]: {
-        platforms: {
-            linux: STANDARD_LINUX,
-            macos: ['x64'],
-            windows: X64_X86
-        }
-    },
     [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.Temurin]: {
         platforms: {
             linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<18' }],
@@ -31920,7 +31892,6 @@ __nccwpck_require__.d(__webpack_exports__, {
   q3: () => (/* binding */ getMultilineInput),
   pq: () => (/* binding */ info),
   _o: () => (/* binding */ isDebug),
-  lm: () => (/* binding */ notice),
   LZ: () => (/* binding */ saveState),
   C1: () => (/* binding */ setFailed),
   uH: () => (/* binding */ setOutput),
@@ -31929,7 +31900,7 @@ __nccwpck_require__.d(__webpack_exports__, {
   $e: () => (/* binding */ warning)
 });
 
-// UNUSED EXPORTS: ExitCode, getBooleanInput, getIDToken, getState, group, markdownSummary, platform, setCommandEcho, summary, toPlatformPath, toPosixPath, toWin32Path
+// UNUSED EXPORTS: ExitCode, getBooleanInput, getIDToken, getState, group, markdownSummary, notice, platform, setCommandEcho, summary, toPlatformPath, toPosixPath, toWin32Path
 
 // EXTERNAL MODULE: external "os"
 var external_os_ = __nccwpck_require__(857);
@@ -31955,7 +31926,7 @@ function toCommandValue(input) {
  * @returns The command properties to send with the actual annotation command
  * See IssueCommandProperties: https://github.com/actions/runner/blob/main/src/Runner.Worker/ActionCommandManager.cs#L646
  */
-function toCommandProperties(annotationProperties) {
+function utils_toCommandProperties(annotationProperties) {
     if (!Object.keys(annotationProperties).length) {
         return {};
     }
@@ -32005,12 +31976,12 @@ function toCommandProperties(annotationProperties) {
  * This is an internal utility function that powers the public API functions
  * such as setSecret, warning, error, and exportVariable.
  */
-function issueCommand(command, properties, message) {
+function command_issueCommand(command, properties, message) {
     const cmd = new Command(command, properties, message);
     process.stdout.write(cmd.toString() + external_os_.EOL);
 }
 function command_issue(name, message = '') {
-    issueCommand(name, {}, message);
+    command_issueCommand(name, {}, message);
 }
 const CMD_STRING = '::';
 class Command {
@@ -32608,7 +32579,7 @@ function exportVariable(name, val) {
     if (filePath) {
         return issueFileCommand('ENV', prepareKeyValueMessage(name, val));
     }
-    issueCommand('set-env', { name }, convertedVal);
+    command_issueCommand('set-env', { name }, convertedVal);
 }
 /**
  * Registers a secret which will get masked from logs
@@ -32640,7 +32611,7 @@ function exportVariable(name, val) {
  * ```
  */
 function core_setSecret(secret) {
-    issueCommand('add-mask', {}, secret);
+    command_issueCommand('add-mask', {}, secret);
 }
 /**
  * Prepends inputPath to the PATH (for this action and future actions)
@@ -32652,7 +32623,7 @@ function addPath(inputPath) {
         issueFileCommand('PATH', inputPath);
     }
     else {
-        issueCommand('add-path', {}, inputPath);
+        command_issueCommand('add-path', {}, inputPath);
     }
     process.env['PATH'] = `${inputPath}${external_path_.delimiter}${process.env['PATH']}`;
 }
@@ -32726,7 +32697,7 @@ function setOutput(name, value) {
         return issueFileCommand('OUTPUT', prepareKeyValueMessage(name, value));
     }
     process.stdout.write(external_os_.EOL);
-    issueCommand('set-output', { name }, toCommandValue(value));
+    command_issueCommand('set-output', { name }, toCommandValue(value));
 }
 /**
  * Enables or disables the echoing of commands into stdout for the rest of the step.
@@ -32762,7 +32733,7 @@ function isDebug() {
  * @param message debug message
  */
 function core_debug(message) {
-    issueCommand('debug', {}, message);
+    command_issueCommand('debug', {}, message);
 }
 /**
  * Adds an error issue
@@ -32770,7 +32741,7 @@ function core_debug(message) {
  * @param properties optional properties to add to the annotation.
  */
 function error(message, properties = {}) {
-    issueCommand('error', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('error', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Adds a warning issue
@@ -32778,7 +32749,7 @@ function error(message, properties = {}) {
  * @param properties optional properties to add to the annotation.
  */
 function warning(message, properties = {}) {
-    issueCommand('warning', toCommandProperties(properties), message instanceof Error ? message.toString() : message);
+    command_issueCommand('warning', utils_toCommandProperties(properties), message instanceof Error ? message.toString() : message);
 }
 /**
  * Adds a notice issue
@@ -32847,7 +32818,7 @@ function saveState(name, value) {
     if (filePath) {
         return issueFileCommand('STATE', prepareKeyValueMessage(name, value));
     }
-    issueCommand('save-state', { name }, toCommandValue(value));
+    command_issueCommand('save-state', { name }, toCommandValue(value));
 }
 /**
  * Gets the value of an state set by this action's main execution.
@@ -36049,15 +36020,6 @@ async function getJavaDistribution(distributionName, installerOptions, jdkFile) 
         case package_types/* JavaDistribution */.zS.JdkFile: {
             const { LocalDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(19)]).then(__nccwpck_require__.bind(__nccwpck_require__, 1019));
             return new LocalDistribution(normalizedInstallerOptions, jdkFile);
-        }
-        case package_types/* JavaDistribution */.zS.Adopt:
-        case package_types/* JavaDistribution */.zS.AdoptHotspot: {
-            const { AdoptDistribution, AdoptImplementation } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(874)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7874));
-            return new AdoptDistribution(normalizedInstallerOptions, AdoptImplementation.Hotspot);
-        }
-        case package_types/* JavaDistribution */.zS.AdoptOpenJ9: {
-            const { AdoptDistribution, AdoptImplementation } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(874)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7874));
-            return new AdoptDistribution(normalizedInstallerOptions, AdoptImplementation.OpenJ9);
         }
         case package_types/* JavaDistribution */.zS.Temurin: {
             const { TemurinDistribution, TemurinImplementation } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(463)]).then(__nccwpck_require__.bind(__nccwpck_require__, 463));
