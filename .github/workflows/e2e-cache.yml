@@ -34,7 +34,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '17'
           cache: gradle
       - name: Create files to cache
@@ -62,7 +62,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: gradle
           cache-read-only: true
@@ -85,7 +85,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: maven
       - name: Create files to cache
@@ -111,7 +111,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: maven
           cache-read-only: true
@@ -138,7 +138,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: sbt
       - name: Setup SBT
@@ -178,7 +178,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: sbt
           cache-read-only: true
@@ -207,7 +207,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '17'
           cache: gradle
           cache-dependency-path: __tests__/cache/gradle1/*.gradle*
@@ -236,7 +236,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: gradle
           cache-dependency-path: __tests__/cache/gradle1/*.gradle*
@@ -260,7 +260,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: gradle
           cache-dependency-path: __tests__/cache/gradle2/*.gradle*
@@ -281,7 +281,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: maven
           cache-dependency-path: __tests__/cache/maven/pom.xml
@@ -308,7 +308,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: maven
           cache-dependency-path: __tests__/cache/maven/pom.xml
@@ -332,7 +332,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: maven
           cache-dependency-path: |
@@ -359,7 +359,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: sbt
           cache-dependency-path: __tests__/cache/sbt/*.sbt
@@ -400,7 +400,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: sbt
           cache-dependency-path: __tests__/cache/sbt/*.sbt
@@ -434,7 +434,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: sbt
           cache-dependency-path: __tests__/cache/sbt2/*.sbt
@@ -458,7 +458,7 @@ jobs:
       - name: Run setup-java with a custom Maven cache path
         uses: ./
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: maven
           cache-dependency-path: |
@@ -483,7 +483,7 @@ jobs:
       - name: Run setup-java with a custom Maven cache path
         uses: ./
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           cache: maven
           cache-dependency-path: |

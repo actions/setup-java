@@ -21,10 +21,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15-intel, windows-latest, ubuntu-latest]
-        distribution: [
+        distribution:
+          [
             'temurin',
-            'adopt',
-            'adopt-openj9',
             'zulu',
             'liberica',
             'microsoft',
@@ -35,7 +34,7 @@ jobs:
             'jetbrains',
             'kona',
             'liberica-nik'
-          ] # internally 'adopt-hotspot' is the same as 'adopt'
+          ]
         version: ['21', '11', '17']
         exclude:
           - distribution: microsoft
@@ -581,11 +580,8 @@ jobs:
       fail-fast: false
       matrix:
         os: *default_os
-        distribution: ['adopt', 'adopt-openj9', 'zulu']
+        distribution: ['temurin', 'zulu']
         java-version-file: ['.java-version', '.tool-versions']
-        exclude:
-          - os: macos-latest
-            distribution: adopt-openj9
     steps:
       - *checkout_step
       - name: Create .java-version file
@@ -613,7 +609,7 @@ jobs:
       fail-fast: false
       matrix:
         os: *default_os
-        distribution: ['adopt', 'zulu', 'liberica']
+        distribution: ['temurin', 'zulu', 'liberica']
         java-version-file: ['.java-version', '.tool-versions', '.sdkmanrc']
     steps:
       - *checkout_step

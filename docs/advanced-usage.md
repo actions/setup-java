@@ -1,7 +1,6 @@
 # Usage
 - [Selecting a Java distribution](#Selecting-a-Java-distribution)
   - [Eclipse Temurin](#Eclipse-Temurin)
-  - [Adopt](#Adopt)
   - [Zulu](#Zulu)
   - [Liberica](#Liberica)
   - [Liberica Native Image Kit](#Liberica-Native-Image-Kit)
@@ -46,19 +45,6 @@ steps:
       distribution: 'temurin'
       java-version: '25'
       java-package: 'jdk+jmods' # optional, includes JMOD files with JDK 24 and later
-  - run: java --version
-```
-
-### Adopt
-**NOTE:** Adopt OpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` to `temurin` to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
-
-```yaml
-steps:
-  - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
-    with:
-      distribution: 'adopt-hotspot'
-      java-version: '11'
   - run: java --version
 ```
 
@@ -305,8 +291,6 @@ The package types have these meanings:
 | Distribution | Supported `java-package` values | Version support and important details |
 | --- | --- | --- |
 | `temurin` | `jdk`, `jre`, `jdk+jmods` | `jdk` and `jre` follow the Adoptium catalog. `jdk+jmods` is available for Java 24 and later and resolves both artifacts at the exact same Java version. |
-| `adopt`, `adopt-hotspot` | `jdk`, `jre` | HotSpot requests check Temurin first, then fall back to the archived AdoptOpenJDK catalog (Java 8 through 16). Migrate to `temurin` for supported releases. |
-| `adopt-openj9` | `jdk`, `jre` | Uses the archived AdoptOpenJDK OpenJ9 catalog, which ended at Java 16. Migrate to `semeru`. Some historical JRE/platform combinations were not published. |
 | `zulu` | `jdk`, `jre`, `jdk+fx`, `jre+fx`, `jdk+crac`, `jre+crac` | Standard JDK builds go back to Java 6; JRE and JavaFX bundles start at Java 8. The vendor catalog has gaps among older non-LTS releases. CRaC bundles start at Java 17 and have more limited OS and architecture availability. |
 | `liberica` | `jdk`, `jre`, `jdk+fx`, `jre+fx` | Standard JDK builds go back to Java 8 in the supported action catalog; JRE and JavaFX "full" bundles also start at Java 8. Exact versions follow BellSoft's catalog for the requested platform. |
 | `liberica-nik` | `jdk`, `jdk+fx` | `java-version` selects the embedded JDK version, not the NIK/GraalVM release number. BellSoft currently publishes matching standard and JavaFX "full" bundles for JDK 11 and later, with gaps between feature releases. Other values are not meaningful: they resolve to the standard bundle. |
@@ -495,8 +479,6 @@ absent from a vendor catalog.
 | Distribution | Linux | macOS | Windows | Other / version restrictions |
 | --- | --- | --- | --- | --- |
 | `temurin` | `x64`, `x86`, `armv7`, `aarch64`, `ppc64le`, `s390x` | `x64`, `aarch64` | `x64`, `x86`, `aarch64` | Linux `armv7` is available through Java 17. |
-| `adopt`, `adopt-hotspot` | `x64`, `x86`, `armv7`, `aarch64`, `ppc64le`, `s390x` | `x64`, `aarch64` | `x64`, `x86`, `aarch64` | HotSpot requests try Temurin before the archived catalog; Linux `armv7` is available through Java 17. |
-| `adopt-openj9` | `x64`, `x86`, `aarch64`, `ppc64le`, `s390x` | `x64` | `x64`, `x86` | Uses the archived AdoptOpenJDK OpenJ9 catalog. |
 | `zulu` | `x64`, `x86`, `armv7`, `aarch64` | `x64`, `aarch64` | `x64`, `x86`, `aarch64` | |
 | `liberica` | `x64`, `x86`, `armv7`, `aarch64`, `ppc64le` | `x64`, `aarch64` | `x64`, `x86`, `aarch64` | Solaris: `x64`. |
 | `liberica-nik` | `x64`, `aarch64` | `x64`, `aarch64` | `x64`, `aarch64` | |
@@ -566,7 +548,7 @@ If your use-case requires a custom distribution or a version that is not provide
 ```yaml
 steps:
   - run: |
-      download_url="https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz"
+      download_url="https://github.com/adoptium/temurin11-binaries/releases/download/jdk-11.0.12%2B7/OpenJDK11U-jdk_x64_linux_hotspot_11.0.12_7.tar.gz"
       wget -O $RUNNER_TEMP/java_package.tar.gz $download_url
   - uses: actions/setup-java@v6
     with:

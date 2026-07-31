@@ -35,7 +35,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           server-id: maven
           server-username-env-var: MAVEN_USERNAME
@@ -90,7 +90,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           server-id: maven
           server-username-env-var: MAVEN_USERNAME
@@ -128,7 +128,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           server-id: maven
           server-username-env-var: MAVEN_USERNAME
@@ -161,7 +161,7 @@ jobs:
         uses: ./
         id: setup-java
         with:
-          distribution: 'adopt'
+          distribution: 'temurin'
           java-version: '11'
           server-id: maven
           server-username-env-var: MAVEN_USERNAME
