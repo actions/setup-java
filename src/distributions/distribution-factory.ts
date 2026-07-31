@@ -1,3 +1,4 @@
+import * as core from '@actions/core';
 import {JavaBase} from './base-installer';
 import {JavaInstallerOptions} from './base-models';
 import {LocalDistribution} from './local/installer';
@@ -42,11 +43,13 @@ export function getJavaDistribution(
       return new LocalDistribution(installerOptions, jdkFile);
     case JavaDistribution.Adopt:
     case JavaDistribution.AdoptHotspot:
+      warnIfAdoptDistributionIsDeprecated(distributionName, 'temurin');
       return new AdoptDistribution(
         installerOptions,
         AdoptImplementation.Hotspot
       );
     case JavaDistribution.AdoptOpenJ9:
+      warnIfAdoptDistributionIsDeprecated(distributionName, 'semeru');
       return new AdoptDistribution(
         installerOptions,
         AdoptImplementation.OpenJ9
@@ -79,4 +82,13 @@ export function getJavaDistribution(
     default:
       return null;
   }
+}
+
+function warnIfAdoptDistributionIsDeprecated(
+  distributionName: string,
+  replacement: string
+): void {
+  core.warning(
+    `The '${distributionName}' legacy AdoptOpenJDK distribution is deprecated and will be removed in setup-java v6. Please migrate to the '${replacement}' distribution.`
+  );
 }
