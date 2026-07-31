@@ -8,8 +8,8 @@
     "build": "ncc build -o dist/setup src/setup-java.ts && ncc build -o dist/cleanup src/cleanup-java.ts",
     "format": "prettier --no-error-on-unmatched-pattern --config ./.prettierrc.js --write \"**/*.{ts,yml,yaml}\"",
     "format-check": "prettier --no-error-on-unmatched-pattern --config ./.prettierrc.js --check \"**/*.{ts,yml,yaml}\"",
-    "lint": "eslint --config ./.eslintrc.js \"**/*.ts\"",
-    "lint:fix": "eslint --config ./.eslintrc.js \"**/*.ts\" --fix",
+    "lint": "eslint --config ./.eslintrc.js --ext .ts .",
+    "lint:fix": "eslint --config ./.eslintrc.js --ext .ts . --fix",
     "prerelease": "npm run-script build",
     "release": "git add -f dist/setup/index.js dist/cleanup/index.js",
     "test": "jest"
