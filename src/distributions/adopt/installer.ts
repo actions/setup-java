@@ -59,12 +59,6 @@ export class AdoptDistribution extends JavaBase {
   protected async findPackageForDownload(
     version: string
   ): Promise<JavaDownloadRelease> {
-    if (this.jvmImpl === AdoptImplementation.Hotspot) {
-      core.notice(
-        "AdoptOpenJDK has moved to Eclipse Temurin https://github.com/actions/setup-java#supported-distributions please consider changing to the 'temurin' distribution type in your setup-java configuration."
-      );
-    }
-
     if (
       this.jvmImpl === AdoptImplementation.Hotspot &&
       this.temurinDistribution !== null

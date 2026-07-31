@@ -76905,9 +76905,6 @@ class AdoptDistribution extends base_installer_1.JavaBase {
     }
     findPackageForDownload(version) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.jvmImpl === AdoptImplementation.Hotspot) {
-                core.notice("AdoptOpenJDK has moved to Eclipse Temurin https://github.com/actions/setup-java#supported-distributions please consider changing to the 'temurin' distribution type in your setup-java configuration.");
-            }
             if (this.jvmImpl === AdoptImplementation.Hotspot &&
                 this.temurinDistribution !== null) {
                 try {
@@ -77560,12 +77557,36 @@ exports.CorrettoDistribution = CorrettoDistribution;
 /***/ }),
 
 /***/ 2970:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getJavaDistribution = void 0;
+const core = __importStar(__nccwpck_require__(37484));
 const installer_1 = __nccwpck_require__(21019);
 const installer_2 = __nccwpck_require__(41978);
 const installer_3 = __nccwpck_require__(37874);
@@ -77606,8 +77627,10 @@ function getJavaDistribution(distributionName, installerOptions, jdkFile) {
             return new installer_1.LocalDistribution(installerOptions, jdkFile);
         case JavaDistribution.Adopt:
         case JavaDistribution.AdoptHotspot:
+            warnIfAdoptDistributionIsDeprecated(distributionName, 'temurin');
             return new installer_3.AdoptDistribution(installerOptions, installer_3.AdoptImplementation.Hotspot);
         case JavaDistribution.AdoptOpenJ9:
+            warnIfAdoptDistributionIsDeprecated(distributionName, 'semeru');
             return new installer_3.AdoptDistribution(installerOptions, installer_3.AdoptImplementation.OpenJ9);
         case JavaDistribution.Temurin:
             return new installer_4.TemurinDistribution(installerOptions, installer_4.TemurinImplementation.Hotspot);
@@ -77640,6 +77663,9 @@ function getJavaDistribution(distributionName, installerOptions, jdkFile) {
     }
 }
 exports.getJavaDistribution = getJavaDistribution;
+function warnIfAdoptDistributionIsDeprecated(distributionName, replacement) {
+    core.warning(`The '${distributionName}' legacy AdoptOpenJDK distribution is deprecated and will be removed in setup-java v6. Please migrate to the '${replacement}' distribution.`);
+}
 
 
 /***/ }),

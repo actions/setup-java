@@ -108,8 +108,8 @@ Currently, the following distributions are supported:
 |-|-|-|
 | `temurin` | [Eclipse Temurin](https://adoptium.net/) | [`temurin` license](https://adoptium.net/about.html)
 | `zulu` | [Azul Zulu OpenJDK](https://www.azul.com/downloads/zulu-community/?package=jdk) | [`zulu` license](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
-| `adopt` or `adopt-hotspot` | [AdoptOpenJDK Hotspot](https://adoptopenjdk.net/) | [`adopt-hotspot` license](https://adoptopenjdk.net/about.html) |
-| `adopt-openj9` | [AdoptOpenJDK OpenJ9](https://adoptopenjdk.net/) | [`adopt-openj9` license](https://adoptopenjdk.net/about.html) |
+| `adopt` or `adopt-hotspot` (deprecated; use `temurin`) | [AdoptOpenJDK Hotspot](https://adoptopenjdk.net/) | [`adopt-hotspot` license](https://adoptopenjdk.net/about.html) |
+| `adopt-openj9` (deprecated; use `semeru`) | [AdoptOpenJDK OpenJ9](https://adoptopenjdk.net/) | [`adopt-openj9` license](https://adoptopenjdk.net/about.html) |
 | `liberica` | [Liberica JDK](https://bell-sw.com/) | [`liberica` license](https://bell-sw.com/liberica_eula/) |
 | `microsoft` | [Microsoft Build of OpenJDK](https://www.microsoft.com/openjdk) | [`microsoft` license](https://docs.microsoft.com/java/openjdk/faq)
 | `corretto` | [Amazon Corretto Build of OpenJDK](https://aws.amazon.com/corretto/) | [`corretto` license](https://aws.amazon.com/corretto/faqs/)
@@ -125,7 +125,7 @@ Currently, the following distributions are supported:
 
 > [!NOTE]
 > - The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
-> - AdoptOpenJDK got moved to Eclipse Temurin and won't be updated anymore. It is highly recommended to migrate workflows from `adopt` and `adopt-openj9`, to `temurin` and `semeru` respectively, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
+> - The legacy AdoptOpenJDK distributions are deprecated in setup-java v5 and will be removed in setup-java v6. Migrate `adopt` and `adopt-hotspot` to `temurin`, and `adopt-openj9` to `semeru`, to keep receiving software and security updates. See more details in the [Good-bye AdoptOpenJDK post](https://blog.adoptopenjdk.net/2021/08/goodbye-adoptopenjdk-hello-adoptium/).
 > - For Azul Zulu OpenJDK, architecture `arm64` is mapped to `aarch64` when querying the Azul Metadata API.
 > - To comply with the GraalVM Free Terms and Conditions (GFTC) license, it is recommended to use GraalVM JDK 17 version 17.0.12, as this is the only version of GraalVM JDK 17 available under the GFTC license. Additionally, it is encouraged to consider upgrading to GraalVM JDK 21, which offers the latest features and improvements.
 > - GraalVM Community is available as `distribution: 'graalvm-community'` for stable JDK 17 and later releases published on GitHub.
