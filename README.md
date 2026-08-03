@@ -29,7 +29,7 @@ steps:
 
 - [What it does](#what-it-does)
 - [What's new](#whats-new)
-- [Quick start](#quick-start)
+- [Usage](#usage)
 - [Inputs](#inputs)
 - [Supported distributions](#supported-distributions)
 - [Supported version syntax](#supported-version-syntax)
@@ -70,7 +70,7 @@ steps:
 - Requires runner version `v2.327.1` or later. See the [runner release notes](https://github.com/actions/runner/releases/tag/v2.327.1).
 - See the full [v5.0.0 release notes](https://github.com/actions/setup-java/releases/tag/v5.0.0).
 
-## Quick start
+## Usage
 
 ### Install Eclipse Temurin
 
