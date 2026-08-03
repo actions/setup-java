@@ -124,7 +124,7 @@ steps:
 | --- | --- | --- |
 | `java-version` | Java version to install. Supports whole versions, semver ranges, early-access versions, and `latest`. Required unless `java-version-file` is set. | |
 | `java-version-file` | Path to `.java-version`, `.tool-versions`, or `.sdkmanrc`. Used when `java-version` is not set. | |
-| `distribution` | Java distribution. Required unless `java-version-file` points to `.sdkmanrc` with a recognized distribution suffix. | |
+| `distribution` | Java distribution keyword. Values are case-sensitive and must match one of the supported keywords below. Required unless `java-version-file` points to `.sdkmanrc` with a recognized distribution suffix. | |
 | `java-package` | Package variant such as `jdk`, `jre`, `jdk+fx`, `jre+fx`, `jdk+crac`, `jre+crac`, `jdk+jmods`, `jdk+jcef`, `jre+jcef`, `jdk+ft`, or `jre+ft`. Support varies by distribution. | `jdk` |
 | `architecture` | Package architecture. Canonical values are `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`, `ppc64`, and `s390x`. Aliases `ia32`, `amd64`, `arm`, and `arm64` are normalized. | Runner architecture |
 | `jdk-file` | Local compressed JDK archive. Requires `distribution: jdkfile`. | |
@@ -134,7 +134,7 @@ steps:
 | `problem-matcher` | Register Java compiler and uncaught exception problem matchers. | `true` |
 | `verify-signature` | Verify downloaded Java package signatures when supported. Currently supported for `temurin` and `microsoft`. | `false` |
 | `verify-signature-public-key` | ASCII-armored GPG public key to use for signature verification. Overrides the bundled key. | |
-| `token` | Token for fetching GitHub.com-hosted version manifests, useful on GitHub Enterprise Server when unauthenticated requests are rate-limited. | `${{ github.token }}` on GitHub.com |
+| `token` | Token for fetching GitHub.com-hosted version manifests, useful on GitHub Enterprise Server when unauthenticated requests are rate-limited. | `${{ github.token }}` on GitHub.com; empty string on GHES |
 | `cache` | Enable dependency caching for `maven`, `gradle`, or `sbt`. | |
 | `cache-dependency-path` | Dependency file paths used for cache key hashing. Supports globs and multiline values. | Auto-detected by package manager |
 | `cache-path` | Cache paths to use instead of the package manager's default dependency cache path. Supports multiline values and exclusions. | |
@@ -232,7 +232,7 @@ steps:
   - run: mvn verify
 ```
 
-The primary dependency cache key is `setup-java-${{ runner.os }}-${{ arch }}-${{ packageManager }}-${{ fileHash }}`, where `arch` is the runner's Node.js process architecture. The primary cache stores dependency directories such as `~/.m2/repository`, `~/.gradle/caches`, or the sbt cache paths. Its file hash is based on these files by default:
+The primary dependency cache key is `setup-java-<runner-os>-<node-arch>-<package-manager>-<file-hash>`, where `<node-arch>` is the runner's Node.js process architecture. The primary cache stores dependency directories such as `~/.m2/repository`, `~/.gradle/caches`, or the sbt cache paths. Its file hash is based on these files by default:
 
 | Package manager | Files used for the primary dependency-cache key |
 | --- | --- |
@@ -316,7 +316,7 @@ jobs:
 
 ### Wrapper caches
 
-Maven and Gradle wrapper distributions are restored and saved as additional cache entries, separate from the primary dependency cache. These entries have their own keys in the form `setup-java-${{ runner.os }}-${{ arch }}-${{ wrapperCacheName }}-${{ fileHash }}`.
+Maven and Gradle wrapper distributions are restored and saved as additional cache entries, separate from the primary dependency cache. These entries have their own keys in the form `setup-java-<runner-os>-<node-arch>-<wrapper-cache-name>-<file-hash>`.
 
 | Package manager | Wrapper cache name | Cached path | Files used for wrapper-cache key |
 | --- | --- | --- | --- |
