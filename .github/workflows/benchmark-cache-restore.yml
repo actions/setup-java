@@ -202,7 +202,7 @@ jobs:
       - name: Summarize benchmark
         run: bash __tests__/benchmark-cache-restore.sh summarize "${{ matrix.tool }}" "$GITHUB_STEP_SUMMARY"
       - name: Upload raw timings
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: cache-restore-${{ matrix.os }}-${{ matrix.tool }}-${{ matrix.profile }}
           path: .benchmark-results/timings.csv
