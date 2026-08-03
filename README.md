@@ -4,242 +4,291 @@
 [![Validate Java e2e](https://github.com/actions/setup-java/actions/workflows/e2e-versions.yml/badge.svg?branch=main)](https://github.com/actions/setup-java/actions/workflows/e2e-versions.yml)
 [![Validate cache](https://github.com/actions/setup-java/actions/workflows/e2e-cache.yml/badge.svg?branch=main)](https://github.com/actions/setup-java/actions/workflows/e2e-cache.yml)
 
-The `setup-java` action provides the following functionality for GitHub Actions runners:
-- Downloading and setting up a requested version of Java. See [Usage](#usage) for a list of supported distributions.
-- Extracting and caching custom version of Java from a local file.
-- Configuring runner for publishing using Apache Maven.
-- Configuring runner for publishing using Gradle.
-- Configuring runner for using GPG private key.
-- Registering problem matchers for error output.
-- Caching dependencies managed by Apache Maven.
-- Caching dependencies managed by Gradle.
-- Caching dependencies managed by sbt.
-- [Maven Toolchains declaration](https://maven.apache.org/guides/mini/guide-using-toolchains.html) for specified JDK versions.
+Set up Java for GitHub Actions workflows. `setup-java` installs a requested Java distribution, adds it to `PATH`, configures `JAVA_HOME`, and can optionally cache build dependencies for Apache Maven, Gradle, and sbt; generate Maven publishing configuration, verify JDK package signatures, manage multiple JDKs, and manage Maven toolchains.
 
-This action allows you to work with Java and Scala projects.
-
-## What's new in V6
+```yaml
+steps:
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: temurin
+      java-version: '25'
+  - run: java --version
+```
 
 > [!NOTE]
-> V6 is still in development (`main` branch) and is not yet recommended for production workflows.
+> V6 is still in development on the `main` branch and is not yet recommended for production workflows. To use it, you must explicitly reference the `main` branch in your workflow, as in 
+>
+> ```yaml
+> - uses: actions/setup-java@main
+> ```
+> 
+> For production workflows, it is recommended to use the latest stable release `v5`.
 
-- **Migrated to ESM** to enable support for the latest `@actions/*` package versions. This is an internal implementation change.
+## Contents
 
-## Breaking changes in V6
+- [What it does](#what-it-does)
+- [What's new](#whats-new)
+- [Usage](#usage)
+- [Inputs](#inputs)
+- [Supported distributions](#supported-distributions)
+- [Supported version syntax](#supported-version-syntax)
+- [Caching dependencies](#caching-dependencies)
+- [Multiple JDKs and Maven toolchains](#multiple-jdks-and-maven-toolchains)
+- [Publishing packages](#publishing-packages)
+- [Advanced usage](#advanced-usage)
 
-- **Renamed inputs that accept environment-variable names** to make it clear that their values are not credentials. Replace `server-username`, `server-password`, and `gpg-passphrase` with `server-username-env-var`, `server-password-env-var`, and `gpg-passphrase-env-var`, respectively. The old names remain as deprecated aliases and emit a warning when used.
+## What it does
 
-- **The GPG passphrase is now passed to the Maven GPG Plugin through an environment variable (`gpg.passphraseEnvName`) instead of the deprecated `gpg.passphrase` server in `settings.xml`.** Set the environment variable name with `gpg-passphrase-env-var`, which defaults to `GPG_PASSPHRASE`. This requires `maven-gpg-plugin` **3.2.0 or newer**; older versions do not honor `gpg.passphraseEnvName` and, because the `gpg.passphrase` server is no longer written, will not pick up the passphrase. Upgrade the plugin to 3.2.0+.
+- Downloads and installs Java from a supported distribution.
+- Uses a requested Java version, a version file, or the `latest` stable release alias.
+- Extracts and caches a custom JDK archive from a local file.
+- Configures Maven `settings.xml`, Maven Toolchains, Maven GPG signing inputs, and environment-variable based credentials for publishing workflows.
+- Registers Java problem matchers for compiler diagnostics and uncaught exceptions.
+- Caches dependencies for Maven, Gradle, and sbt.
+- Verifies downloaded archive checksums when a distribution publishes authoritative checksums.
+- Optionally verifies package signatures for supported distributions.
 
-  See [GPG](docs/advanced-usage.md#gpg) for details.
+`setup-java` works with Java, Scala, Kotlin, Gradle, Maven, and sbt projects.
 
-- **Legacy AdoptOpenJDK distributions were removed.** Replace `adopt` or `adopt-hotspot` with `temurin`, and replace `adopt-openj9` with `semeru`.
+## What's new
 
-## Breaking changes in V5
+### V6 (in development)
 
-- Upgraded action from node20 to node24
-  > Make sure your runner is on version v2.327.1 or later to ensure compatibility with this release [Release Notes](https://github.com/actions/runner/releases/tag/v2.327.1)
+- Migrated the action implementation to ESM to support the latest `@actions/*` packages.
+- Renamed environment-variable-name inputs so they are not mistaken for secret values:
+  - `server-username` -> `server-username-env-var`
+  - `server-password` -> `server-password-env-var`
+  - `gpg-passphrase` -> `gpg-passphrase-env-var`
+- Deprecated aliases still work, but emit warnings.
+- Maven GPG passphrases are now passed through `gpg.passphraseEnvName` instead of a deprecated `gpg.passphrase` server entry in `settings.xml`. This requires `maven-gpg-plugin` 3.2.0 or newer. See [GPG](docs/advanced-usage.md#gpg).
+- Legacy AdoptOpenJDK distributions were removed. Use `temurin` instead of `adopt` or `adopt-hotspot`, and `semeru` instead of `adopt-openj9`.
 
-For more details,  see the full release notes on the [releases page](https://github.com/actions/setup-java/releases/tag/v5.0.0)
+### V5
+
+- Upgraded the action runtime from Node 20 to Node 24.
+- Requires runner version `v2.327.1` or later. See the [runner release notes](https://github.com/actions/runner/releases/tag/v2.327.1).
+- See the full [v5.0.0 release notes](https://github.com/actions/setup-java/releases/tag/v5.0.0).
 
 ## Usage
 
-  - `java-version`: The Java version that is going to be set up. Takes a whole or [semver](#supported-version-syntax) Java version. If not specified, the action will expect `java-version-file` input to be specified.
+### Install Eclipse Temurin
 
-  - `java-version-file`: The path to a file containing java version. Supported file types are `.java-version`, `.tool-versions`, and `.sdkmanrc`. See more details in [about .java-version-file](docs/advanced-usage.md#Java-version-file).
-
-  - `distribution`: Java [distribution](#supported-distributions). Required unless `java-version-file` points to `.sdkmanrc` with a recognized distribution suffix (for example `java=21.0.5-tem`).
-
-  - `java-package`: The packaging variant of the chosen distribution. Possible values across all distributions are `jdk`, `jre`, `jdk+fx`, `jre+fx`, `jdk+crac`, `jre+crac`, `jdk+jmods`, `jdk+jcef`, `jre+jcef`, `jdk+ft`, and `jre+ft`. Supported values vary by distribution; see the [package compatibility table](docs/advanced-usage.md#package-compatibility). Default value: `jdk`.
-
-  - `architecture`: The target architecture of the package. Canonical values are `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`, `ppc64`, and `s390x`; the aliases `ia32`, `amd64`, `arm`, and `arm64` normalize to `x86`, `x64`, `armv7`, and `aarch64`. Supported values vary by distribution and operating system. Default value: Derived from the runner machine.
-
-  - `jdk-file`: If a use-case requires a custom distribution setup-java uses the compressed JDK from the location pointed by this input and will take care of the installation and caching on the VM. Note: `distribution` must be set to 'jdkfile' (case-sensitive; all lowercase) when using this option. (The camelCase `jdkFile` input is still accepted as a deprecated alias and may be removed in a future release.)
-
-  - `check-latest`: Setting this option makes the action to check for the latest available version for the version spec.
-
-  - `force-download`: Set to `true` to always download Java and replace any matching version in the tool cache. This can help make builds reproducible when a runner image has modified a pre-installed JDK, such as its `cacerts` file. Default value: `false`.
-
-  - `set-default`: Set to `false` to install a JDK without making it the default. When `false`, `JAVA_HOME` and `PATH` are not updated, but `JAVA_HOME_<major>_<arch>` is still set so the JDK remains discoverable. Default value: `true`. See [Installing JDK without setting as default](docs/advanced-usage.md#Installing-JDK-without-setting-as-default) for more details.
-
-  - `problem-matcher`: Set to `false` to disable Java problem matcher annotations (compiler diagnostics and uncaught exceptions). Default value: `true`. See [Java problem matcher](docs/advanced-usage.md#java-problem-matcher-compiler-annotations) for details and annotation limits.
-
-  - `verify-signature`: Verifies downloaded Java package signatures when supported by the selected distribution. Currently supported for `temurin` and `microsoft`. If set to `true` for unsupported distributions, the action fails.
-
-  - `verify-signature-public-key`: ASCII-armored GPG public key used to verify the downloaded package signature. Overrides the default bundled key for the selected distribution.
-
-  - `token`: The token used to authenticate when fetching version manifests hosted on GitHub.com. Defaults to `${{ github.token }}` when running on GitHub.com; defaults to an empty string on GitHub Enterprise Server. On GHES, provide a GitHub.com personal access token if manifest requests are rate-limited. See [Using Microsoft distribution on GHES](docs/advanced-usage.md#using-microsoft-distribution-on-ghes) for more details.
-
-  - `cache`: Quick [setup caching](#caching-packages-dependencies) for the dependencies managed through one of the predefined package managers. It can be one of "maven", "gradle" or "sbt".
-
-  - `cache-dependency-path`: The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.
-
-  - `cache-path`: The dependency cache path to use instead of the default path for the package manager selected by `cache`. This option supports a list of paths and exclusion patterns. The build tool must be configured to use the same location.
-
-  - `cache-read-only`: Restore dependency caches without saving changes in the post action. Defaults to `false`. Use this for pull requests, merge queues, short-lived branches, and fan-out jobs that should consume caches populated by a default-branch or seed job.
-
-  #### Maven options
-  The action has a bunch of inputs to generate maven's [settings.xml](https://maven.apache.org/settings.html) on the fly and pass the values to Apache Maven GPG Plugin as well as Apache Maven Toolchains. See [advanced usage](docs/advanced-usage.md) for more.
-
-  - `overwrite-settings`: By default action overwrites the settings.xml. In order to skip generation of file if it exists, set this to `false`.
-
-  - `server-id`: ID of the distributionManagement repository in the pom.xml file. Default is `github`.
-
-  - `server-username-env-var`: Environment variable name for the username for authentication to the Apache Maven repository. Default is GITHUB\_ACTOR.
-
-  - `server-password-env-var`: Environment variable name for password or token for authentication to the Apache Maven repository. Default is GITHUB\_TOKEN.
-
-  - `settings-path`: Maven related setting to point to the directory where the settings.xml file will be written. Default is \~/.m2.
-
-  - `gpg-private-key`: GPG private key to import. Default is empty string.
-
-  - `gpg-passphrase-env-var`: Environment variable name for the GPG private key passphrase. Default is GPG\_PASSPHRASE.
-
-  - `mvn-toolchain-id`: Name of Maven Toolchain ID if the default name of `${distribution}_${java-version}` is not wanted. When supplied, the number of IDs must match the number of Java versions.
-
-  - `mvn-toolchain-vendor`: Name of Maven Toolchain Vendor if the default name of `${distribution}` is not wanted.
-
-  - `show-download-progress`: Set to `true` to keep Maven artifact download and transfer progress in build logs. Default value: `false`. By default, the action adds `-ntp` (`--no-transfer-progress`) to `MAVEN_ARGS`. This input has no effect on non-Maven builds. See [Maven transfer progress](docs/advanced-usage.md#maven-transfer-progress-download-logs) for more details.
-
-### Download integrity verification
-
-When a selected distribution publishes an authoritative checksum for an archive, `setup-java` automatically verifies each downloaded JDK, JRE, or JMOD archive before extraction and caching. No input is required. Automatic checksum verification is currently available for `temurin`, `semeru`, `corretto`, `dragonwell`, `kona`, `sapmachine`, `graalvm`, `graalvm-community`, `zulu`, `oracle`, `oracle-openjdk`, `microsoft`, and `jetbrains`.
-
-Distributions or individual releases without an authoritative checksum continue to install normally, with the omission reported only in debug logs. Archives resolved directly from the runner tool cache are not downloaded again and therefore are not reverified.
-
-Checksums detect corrupted or unexpectedly modified downloads before they are persisted in the runner tool cache.
-
-### Basic Configuration
-
-#### Eclipse Temurin
 ```yaml
 steps:
   - uses: actions/checkout@v7
   - uses: actions/setup-java@v6
     with:
-      distribution: 'temurin' # See 'Supported distributions' for available options
+      distribution: temurin
       java-version: '25'
   - run: java --version
 ```
 
-#### Azul Zulu OpenJDK
+### Install Microsoft Build of OpenJDK
+
 ```yaml
 steps:
   - uses: actions/checkout@v7
   - uses: actions/setup-java@v6
     with:
-      distribution: 'zulu' # See 'Supported distributions' for available options
+      distribution: microsoft
       java-version: '25'
   - run: java --version
 ```
 
-#### Supported version syntax
-The `java-version` input supports an exact version or a version range using [SemVer](https://semver.org/) notation. The values below are examples, not an exhaustive list:
-- major versions, such as: `8`, `11`, `16`, `17`, `21`, `25`
-- more specific versions: `8.0.282+8`, `8.0.232`, `11.0`, `11.0.4`, `17.0`
-- multi-field Java versions (JEP 322), such as: `11.0.9.1`, `18.0.1.1`
-- early access (EA) versions: `15-ea`, `15.0.0-ea`
-- the `latest` alias, which floats to the newest available stable (GA) release
+### Read the version from a file
+
+```yaml
+steps:
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: temurin
+      java-version-file: .java-version
+  - run: java --version
+```
+
+Supported version files are `.java-version`, `.tool-versions`, and `.sdkmanrc`. A `.sdkmanrc` file can also provide the distribution when it contains a recognized suffix, such as `java=21.0.5-tem`.
+
+### Use the newest stable Java
+
+```yaml
+steps:
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: temurin
+      java-version: latest
+  - run: java --version
+```
+
+`latest` always resolves from the distribution's remote metadata and uses the newest stable GA release. It is not supported with `java-version-file`, early-access versions, or `distribution: jdkfile`.
+
+## Inputs
+
+| Input | Description | Default |
+| --- | --- | --- |
+| `java-version` | Java version to install. Supports whole versions, semver ranges, early-access versions, and `latest`. Required unless `java-version-file` is set. | |
+| `java-version-file` | Path to `.java-version`, `.tool-versions`, or `.sdkmanrc`. Used when `java-version` is not set. | |
+| `distribution` | Java distribution keyword. Values are case-sensitive and must match one of the supported keywords below. Required unless `java-version-file` points to `.sdkmanrc` with a recognized distribution suffix. | |
+| `java-package` | Package variant such as `jdk`, `jre`, `jdk+fx`, `jre+fx`, `jdk+crac`, `jre+crac`, `jdk+jmods`, `jdk+jcef`, `jre+jcef`, `jdk+ft`, or `jre+ft`. Support varies by distribution. | `jdk` |
+| `architecture` | Package architecture. Canonical values are `x86`, `x64`, `armv7`, `aarch64`, `ppc64le`, `ppc64`, and `s390x`. Aliases `ia32`, `amd64`, `arm`, and `arm64` are normalized. | Runner architecture |
+| `jdk-file` | Local compressed JDK archive. Requires `distribution: jdkfile`. | |
+| `check-latest` | Check remote metadata for the latest version satisfying the version spec before using the runner tool cache. | `false` |
+| `force-download` | Always download Java and replace any matching version in the tool cache. | `false` |
+| `set-default` | Add Java to `PATH` and set `JAVA_HOME`. When `false`, only version-specific `JAVA_HOME_<major>_<arch>` variables are set. | `true` |
+| `problem-matcher` | Register Java compiler and uncaught exception problem matchers. | `true` |
+| `verify-signature` | Verify downloaded Java package signatures when supported. Currently supported for `temurin` and `microsoft`. | `false` |
+| `verify-signature-public-key` | ASCII-armored GPG public key to use for signature verification. Overrides the bundled key. | |
+| `token` | Token for fetching GitHub.com-hosted version manifests, useful on GitHub Enterprise Server when unauthenticated requests are rate-limited. | `${{ github.token }}` on GitHub.com; empty string on GHES |
+| `cache` | Enable dependency caching for `maven`, `gradle`, or `sbt`. | |
+| `cache-dependency-path` | Dependency file paths used for cache key hashing. Supports globs and multiline values. | Auto-detected by package manager |
+| `cache-path` | Cache paths to use instead of the package manager's default dependency cache path. Supports multiline values and exclusions. | |
+| `cache-read-only` | Restore caches without saving changes in the post step. | `false` |
+| `server-id` | Maven repository ID used in generated `settings.xml`. | `github` |
+| `server-username-env-var` | Environment variable name for Maven repository username. | `GITHUB_ACTOR` |
+| `server-password-env-var` | Environment variable name for Maven repository password or token. | `GITHUB_TOKEN` |
+| `settings-path` | Directory where `settings.xml` is written. | `~/.m2` |
+| `overwrite-settings` | Overwrite an existing `settings.xml`. | `true` |
+| `gpg-private-key` | GPG private key to import. | |
+| `gpg-passphrase-env-var` | Environment variable name for the GPG private key passphrase. | `GPG_PASSPHRASE` when a key is set |
+| `mvn-toolchain-id` | Maven Toolchain ID. When multiple Java versions are installed, the number of IDs must match the number of versions. | `${distribution}_${java-version}` |
+| `mvn-toolchain-vendor` | Maven Toolchain vendor value. | `${distribution}` |
+| `show-download-progress` | Keep Maven artifact download and transfer progress in logs. When `false`, the action adds `-ntp` to `MAVEN_ARGS`. | `false` |
+
+Deprecated aliases `jdkFile`, `server-username`, `server-password`, and `gpg-passphrase` remain accepted for compatibility, but should be replaced with the current input names.
+
+## Outputs
+
+| Output | Description |
+| --- | --- |
+| `distribution` | Distribution that was installed. |
+| `version` | Actual Java version that was installed. |
+| `path` | Installation path, also used for `JAVA_HOME` when `set-default` is enabled. |
+| `cache-hit` | Whether an exact dependency cache match was restored. |
+| `cache-primary-key` | Primary cache key computed for the selected package manager. Empty when caching is disabled or skipped. |
+
+## Supported distributions
+
+| Keyword | Distribution | License |
+| --- | --- | --- |
+| `corretto` | [Amazon Corretto](https://aws.amazon.com/corretto/) | [License](https://aws.amazon.com/corretto/faqs/) |
+| `dragonwell` | [Alibaba Dragonwell JDK](https://dragonwell-jdk.io/) | [License](https://www.aliyun.com/product/dragonwell/) |
+| `graalvm` | [Oracle GraalVM](https://www.graalvm.org/) | [License](https://www.oracle.com/downloads/licenses/graal-free-license.html) |
+| `graalvm-community` | [GraalVM Community](https://github.com/graalvm/graalvm-ce-builds/releases) | [License](https://github.com/oracle/graal/blob/master/LICENSE) |
+| `jetbrains` | [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime/) | [License](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE) |
+| `kona` | [Tencent Kona JDK](https://tencent.github.io/konajdk/) | [License](https://tencent.github.io/konajdk/LICENSE.txt) |
+| `liberica` | [Liberica JDK](https://bell-sw.com/) | [License](https://bell-sw.com/liberica_eula/) |
+| `liberica-nik` | [Liberica Native Image Kit](https://bell-sw.com/pages/downloads/native-image-kit/) | [License](https://bell-sw.com/liberica_nik_eula/) |
+| `microsoft` | [Microsoft Build of OpenJDK](https://www.microsoft.com/openjdk) | [License](https://docs.microsoft.com/java/openjdk/faq) |
+| `oracle` | [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) | [License](https://java.com/freeuselicense) |
+| `oracle-openjdk` | [Oracle OpenJDK](https://jdk.java.net/) | [License](https://openjdk.org/legal/gplv2+ce.html) |
+| `sapmachine` | [SAP SapMachine JDK/JRE](https://sapmachine.io/) | [License](https://github.com/SAP/SapMachine/blob/sapmachine/LICENSE) |
+| `semeru` | [IBM Semeru Runtime Open Edition](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) | [License](https://openjdk.java.net/legal/gplv2+ce.html) |
+| `temurin` | [Eclipse Temurin](https://adoptium.net/) | [License](https://adoptium.net/about.html) |
+| `zulu` | [Azul Zulu OpenJDK](https://www.azul.com/downloads/zulu-community/?package=jdk) | [License](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
+| `jdkfile` | Custom JDK archive | |
 
 > [!NOTE]
-> - `latest` always resolves the newest version from the distribution's remote metadata (it behaves like `check-latest: true`), so it ignores any older version already present in the runner tool cache. This has the same performance trade-off described in [Check latest](#check-latest).
-> - `latest` is only supported through the `java-version` input, not through `java-version-file`, and it resolves stable (GA) releases only — it cannot be combined with `-ea`.
-> - The `jdkfile` distribution does not support `latest`, as it installs from a local file.
-> - For `oracle` and `graalvm` (Oracle GraalVM), `latest` uses the Adoptium API only to determine the newest GA **major version number** — the JDK binary itself is still downloaded from the Oracle / GraalVM servers for that major. Because these distributions have no endpoint to list their own releases, if their servers haven't published the resolved major yet, the action fails and asks you to specify a concrete version. Note the Oracle JDK license caveat below still applies to a floating `latest`.
-> - For `graalvm-community`, `latest` floats to the newest GA release published on GitHub, so it never depends on the Adoptium API and always resolves to the newest major that GraalVM Community actually ships.
+> Distribution availability, package variants, architectures, and version metadata differ by vendor. Check the vendor documentation when a specific version or platform matters.
 
-#### Supported distributions
-Currently, the following distributions are supported:
-| Keyword | Distribution / Official site | License
-|-|-|-|
-| `temurin` | [Eclipse Temurin](https://adoptium.net/) | [`temurin` license](https://adoptium.net/about.html)
-| `zulu` | [Azul Zulu OpenJDK](https://www.azul.com/downloads/zulu-community/?package=jdk) | [`zulu` license](https://www.azul.com/products/zulu-and-zulu-enterprise/zulu-terms-of-use/) |
-| `liberica` | [Liberica JDK](https://bell-sw.com/) | [`liberica` license](https://bell-sw.com/liberica_eula/) |
-| `liberica-nik` | [Liberica Native Image Kit](https://bell-sw.com/pages/downloads/native-image-kit/) | [`liberica-nik` license](https://bell-sw.com/liberica_nik_eula/) |
-| `microsoft` | [Microsoft Build of OpenJDK](https://www.microsoft.com/openjdk) | [`microsoft` license](https://docs.microsoft.com/java/openjdk/faq)
-| `corretto` | [Amazon Corretto Build of OpenJDK](https://aws.amazon.com/corretto/) | [`corretto` license](https://aws.amazon.com/corretto/faqs/)
-| `semeru` | [IBM Semeru Runtime Open Edition](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) | [`semeru` license](https://openjdk.java.net/legal/gplv2+ce.html) |
-| `oracle` | [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) | [`oracle` license](https://java.com/freeuselicense)
-| `oracle-openjdk` | [Oracle OpenJDK](https://jdk.java.net/) | [`oracle-openjdk` license](https://openjdk.org/legal/gplv2+ce.html)
-| `dragonwell` | [Alibaba Dragonwell JDK](https://dragonwell-jdk.io/) | [`dragonwell` license](https://www.aliyun.com/product/dragonwell/)
-| `sapmachine` | [SAP SapMachine JDK/JRE](https://sapmachine.io/) | [`sapmachine` license](https://github.com/SAP/SapMachine/blob/sapmachine/LICENSE)
-| `graalvm` | [Oracle GraalVM](https://www.graalvm.org/) | [`graalvm` license](https://www.oracle.com/downloads/licenses/graal-free-license.html)
-| `graalvm-community` | [GraalVM Community](https://github.com/graalvm/graalvm-ce-builds/releases) | [`graalvm-community` license](https://github.com/oracle/graal/blob/master/LICENSE)
-| `jetbrains` | [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime/) | [`jetbrains` license](https://github.com/JetBrains/JetBrainsRuntime/blob/main/LICENSE)
-| `kona` | [Tencent Kona JDK](https://tencent.github.io/konajdk/) | [`kona` license](https://tencent.github.io/konajdk/LICENSE.txt)
-| `jdkfile` | Custom JDK Installation | |
+Additional distribution notes:
 
-> [!NOTE]
-> - The different distributors can provide discrepant list of available versions / supported configurations. Please refer to the official documentation to see the list of supported versions.
-> - Oracle OpenJDK builds are created and hosted by Oracle. After a limited number of releases, Oracle archives these builds and no longer provides security updates. To continue receiving security patches, users must move to Oracle JDK or choose a different vendor.
-> - For Azul Zulu OpenJDK, architecture `arm64` is mapped to `aarch64` when querying the Azul Metadata API.
-> - To comply with the GraalVM Free Terms and Conditions (GFTC) license, it is recommended to use GraalVM JDK 17 version 17.0.12, as this is the only version of GraalVM JDK 17 available under the GFTC license. Additionally, it is encouraged to consider upgrading to GraalVM JDK 21, which offers the latest features and improvements.
-> - GraalVM Community is available as `distribution: 'graalvm-community'` for stable JDK 17 and later releases published on GitHub.
+- Oracle OpenJDK builds are archived after a limited number of releases and no longer receive security updates. To continue receiving security patches, use Oracle JDK or another vendor.
+- Azul Zulu maps `arm64` to `aarch64` when querying the Azul Metadata API.
+- GraalVM Community is available as `distribution: graalvm-community` for stable JDK 17 and later releases.
+- On Ubuntu runners, commands executed with `sudo` do not inherit the `JAVA_HOME` and `PATH` set by `setup-java` and may fall back to the system-default JDK.
 
-**NOTE:** Oracle JDK 17 licensing varies by patch level. As shown on the [JDK 17 Archive](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html) (versions up to 17.0.12 are under the [NFTC](https://www.oracle.com/downloads/licenses/no-fee-license.html) license) and the [JDK 17.0.13+ Archive](https://www.oracle.com/java/technologies/javase/jdk17-0-13-later-archive-downloads.html) (versions 17.0.13 and later are under the [OTN](https://www.oracle.com/downloads/licenses/javase-license1.html) license). To stay on the free NFTC license, use `distribution: 'oracle'` with `java-version: '17.0.12'` (or earlier) instead of the floating `'17'`. Alternatively, upgrade to Oracle JDK 21+, which remains under the NFTC license.
+## Supported version syntax
 
-**NOTE:** On Ubuntu runners, commands executed via `sudo` do not inherit the `JAVA_HOME` and `PATH` set by `setup-java` and will fall back to the runner image's system-default JDK.
+`java-version` accepts exact versions, version ranges, early-access versions, and `latest`.
 
-### Caching packages dependencies
-The action has a built-in functionality for caching and restoring dependencies. It uses [toolkit/cache](https://github.com/actions/toolkit/tree/main/packages/cache) under hood for caching dependencies but requires less configuration settings. Supported package managers are gradle, maven and sbt. The format of the used cache key is `setup-java-${{ platform }}-${{ packageManager }}-${{ fileHash }}`, where the hash is based on the following files:
+| Syntax | Examples |
+| --- | --- |
+| Major version | `8`, `11`, `17`, `21`, `25` |
+| Specific feature or patch version | `11.0`, `11.0.4`, `17.0`, `8.0.282+8` |
+| JEP 322 multi-field versions | `11.0.9.1`, `18.0.1.1` |
+| Early access | `15-ea`, `15.0.0-ea`, `27-ea` |
+| Latest stable GA release | `latest` |
 
-- gradle: `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, and `**/versions.properties`
-- maven: `**/pom.xml`, `**/.mvn/wrapper/maven-wrapper.properties`, and `**/.mvn/extensions.xml`
-- sbt: all sbt build definition files `**/*.sbt`, `**/project/build.properties`, `**/project/**.scala`, `**/project/**.sbt`
+When `check-latest` is `false`, the action first tries the runner tool cache for the requested distribution, package type, architecture, and version range. It downloads Java only when no matching cached version is found. When `check-latest` is `true`, the action checks remote metadata first and downloads if the cached version is not current.
 
-When the option `cache-dependency-path` is specified, the hash is based on the matching file. This option supports wildcards and a list of file names, and is especially useful for monorepos.
+GitHub-hosted runners primarily pre-cache Eclipse Temurin JDKs. See the installed Java versions for [Ubuntu](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#java), [Windows](https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md#java), and [macOS](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md#java). On a fresh GitHub-hosted runner, requests for other distributions usually miss the tool cache and resolve from remote metadata. For broad version ranges such as a major version (`21`, `25`), this often behaves similarly to `check-latest: true` because the action downloads the latest available release that satisfies the range.
 
-Use `cache-path` to replace the selected package manager's default dependency
-cache paths. Each non-empty line is passed to `actions/cache`, including
-supported exclusion patterns. `setup-java` does not configure the build tool,
-so the build must use the same paths:
+## Download integrity and signatures
+
+`setup-java` automatically verifies downloaded archive checksums when a selected distribution publishes an authoritative checksum. Automatic checksum verification currently applies to `temurin`, `semeru`, `corretto`, `dragonwell`, `kona`, `sapmachine`, `graalvm`, `graalvm-community`, `zulu`, `oracle`, `oracle-openjdk`, `microsoft`, and `jetbrains`.
+
+Distributions or individual releases without an authoritative checksum continue to install normally, with the omission reported in debug logs. Archives resolved directly from the runner tool cache are not downloaded again and are not reverified.
+
+Use `verify-signature: true` to verify package signatures for distributions that support it. Currently supported distributions are `temurin` and `microsoft`; setting it for an unsupported distribution fails the workflow.
+
+## Caching dependencies
+
+Set `cache` to `maven`, `gradle`, or `sbt` to cache dependencies with minimal configuration.
+
+```yaml
+steps:
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: temurin
+      java-version: '25'
+      cache: maven
+  - run: mvn verify
+```
+
+The primary dependency cache key is `setup-java-<runner-os>-<node-arch>-<package-manager>-<file-hash>`, where `<node-arch>` is the runner's Node.js process architecture. The primary cache stores dependency directories such as `~/.m2/repository`, `~/.gradle/caches`, or the sbt cache paths. Its file hash is based on these files by default:
+
+| Package manager | Files used for the primary dependency-cache key |
+| --- | --- |
+| Gradle | `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, `**/versions.properties` |
+| Maven | `**/pom.xml`, `**/.mvn/wrapper/maven-wrapper.properties`, `**/.mvn/extensions.xml` |
+| sbt | `**/*.sbt`, `**/project/build.properties`, `**/project/**.scala`, `**/project/**.sbt` |
+
+Use `cache-dependency-path` to override the files used for key hashing, especially in monorepos:
 
 ```yaml
 - uses: actions/setup-java@v6
   with:
-    distribution: 'temurin'
+    distribution: temurin
     java-version: '25'
-    cache: 'maven'
+    cache: gradle
+    cache-dependency-path: |
+      sub-project/*.gradle*
+      sub-project/**/gradle-wrapper.properties
+```
+
+Use `cache-path` when the build tool stores dependencies outside the default location:
+
+```yaml
+- uses: actions/setup-java@v6
+  with:
+    distribution: temurin
+    java-version: '25'
+    cache: maven
     cache-path: |
       /custom/maven/repository
       !/custom/maven/repository/**/*.lastUpdated
 - run: mvn -Dmaven.repo.local=/custom/maven/repository verify
 ```
 
-`cache-path` does not change the cache key. The key continues to use the runner
-OS, architecture, selected package manager, and dependency-file hash described
-above. Jobs intended to share a cache key must therefore use the same
-`cache-path` values so that they restore and save the same filesystem
-locations.
+`cache-path` changes what is restored and saved, but not the cache key. Jobs that should share a cache key must use the same OS, architecture, package manager, dependency files, and cache paths.
 
-The Maven and Gradle wrapper caches remain at their documented default paths
-and are managed independently of `cache-path`. For advanced keying, fallback
-keys, or cache topologies that do not map to one package manager's dependency
-paths, use [`actions/cache`](https://github.com/actions/cache) directly.
+### Read-only caches
 
-The workflow output `cache-hit` is set to indicate if an exact match was found for the key [as actions/cache does](https://github.com/actions/cache/tree/main#outputs).
-
-The workflow output `cache-primary-key` exposes the primary cache key computed by the action for the configured build tool. It is useful for composing with [`actions/cache`](https://github.com/actions/cache) or [`actions/cache/restore`](https://github.com/actions/cache/tree/main/restore) in later steps or dependent jobs that need to reuse the exact same key. It is empty when caching is not enabled or when caching is skipped (for example, when the cache service is unavailable).
-
-The cache input is optional, and caching is turned off by default.
-
-Set `cache-read-only: true` to restore the main dependency cache and any Maven
-or Gradle wrapper cache without archiving or uploading changes after the job.
-For example, a workflow can allow only the default branch to write caches while
-pull requests, merge queues, and short-lived branches remain read-only:
+Set `cache-read-only: true` to restore dependency caches without saving changes in the post action. This is useful for pull requests, merge queues, short-lived branches, and matrix fan-out jobs that should only consume caches produced elsewhere.
 
 ```yaml
 - uses: actions/setup-java@v6
   with:
-    distribution: 'temurin'
+    distribution: temurin
     java-version: '25'
-    cache: 'maven'
+    cache: maven
     cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 ```
 
-For a fan-out matrix, use one seed job to populate a complete cache and make
-every matrix job a read-only consumer. The seed and consumers must use the same
-runner OS and cache dependency inputs so they compute the same key:
+For matrix fan-out, seed the cache once and make matrix jobs read-only consumers:
 
 ```yaml
 jobs:
@@ -249,9 +298,9 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '25'
-          cache: 'maven'
+          cache: maven
       - run: mvn dependency:go-offline dependency:resolve-plugins
 
   build:
@@ -264,76 +313,29 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '25'
-          cache: 'maven'
+          cache: maven
           cache-read-only: true
       - run: mvn ${{ matrix.goal }}
 ```
 
-**Maven Wrapper:** when `cache: 'maven'` is enabled, the action also caches and restores the Maven Wrapper distribution downloaded to `~/.m2/wrapper/dists` (in addition to the local repository), so wrapper-based (`./mvnw`) builds don't re-download the Maven distribution. The wrapper distribution is stored in a **separate** cache entry keyed only on `**/.mvn/wrapper/maven-wrapper.properties`, so it stays cached across the frequent `pom.xml` changes that rotate the main dependency cache key.
+### Wrapper caches
 
-#### Caching gradle dependencies
-```yaml
-steps:
-  - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
-    with:
-      distribution: 'temurin'
-      java-version: '25'
-      cache: 'gradle'
-      cache-dependency-path: | # optional
-        sub-project/*.gradle*
-        sub-project/**/gradle-wrapper.properties
-  - run: ./gradlew build --no-daemon
-```
-Using the `cache: gradle` provides a simple and effective way to cache Gradle dependencies with minimal configuration.
+Maven and Gradle wrapper distributions are restored and saved as additional cache entries, separate from the primary dependency cache. These entries have their own keys in the form `setup-java-<runner-os>-<node-arch>-<wrapper-cache-name>-<file-hash>`.
 
-**Gradle Wrapper:** when `cache: 'gradle'` is enabled, the action also caches and restores the Gradle Wrapper distribution downloaded to `~/.gradle/wrapper` (in addition to the Gradle caches), so wrapper-based (`./gradlew`) builds don't re-download the Gradle distribution. The wrapper distribution is stored in a **separate** cache entry keyed only on `**/gradle-wrapper.properties`, so it stays cached across the frequent `*.gradle*` changes that rotate the main dependency cache key.
+| Package manager | Wrapper cache name | Cached path | Files used for wrapper-cache key |
+| --- | --- | --- | --- |
+| Maven | `maven-wrapper` | `~/.m2/wrapper/dists` | `**/.mvn/wrapper/maven-wrapper.properties` |
+| Gradle | `gradle-wrapper` | `~/.gradle/wrapper` | `**/gradle-wrapper.properties` |
 
-For projects that require more advanced `Gradle` caching features, such as caching build outputs, support for Gradle configuration cache, encrypted cache storage, fine-grained cache control (including options to enable or disable the cache, set it to read-only or write-only, perform automated cleanup, and define custom cache rules), or optimized performance for complex CI workflows, consider using [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle).  
+These wrapper caches are independent from dependency caches, so they remain useful even when dependency files change frequently. The wrapper properties are also part of the Maven and Gradle primary dependency-cache key because wrapper changes can affect how dependencies are resolved, but the wrapper distribution files themselves are stored in the separate wrapper cache entries above.
 
-For setup details and a comprehensive overview of all available features, visit the [setup-gradle documentation](https://github.com/gradle/actions/blob/main/docs/setup-gradle.md).
+For advanced Gradle caching features such as build output caching, configuration cache support, encrypted cache storage, cleanup, and fine-grained cache control, consider [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle).
 
-#### Caching maven dependencies
-```yaml
-steps:
-  - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
-    with:
-      distribution: 'temurin'
-      java-version: '25'
-      cache: 'maven'
-      cache-dependency-path: 'sub-project/pom.xml' # optional
-  - name: Build with Maven
-    run: mvn package --file pom.xml
-```
+### Cache segment restore timeout
 
-> [!NOTE]
-> Maven resolves plugin dependencies lazily, so a cache created by a "thin" goal
-> (e.g. `mvn compile`) can be missing plugin dependencies that later
-> `test`/`verify`/`package` jobs then re-download on every run. See
-> [Ensuring the Maven cache is complete](docs/advanced-usage.md#ensuring-the-maven-cache-is-complete-plugin-dependencies)
-> for how to seed a complete cache.
-
-#### Caching sbt dependencies
-```yaml
-steps:
-  - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
-    with:
-      distribution: 'temurin'
-      java-version: '25'
-      cache: 'sbt'
-      cache-dependency-path: | # optional
-        sub-project/build.sbt
-        sub-project/project/build.properties
-  - name: Build with SBT
-    run: sbt package
-```
-
-#### Cache segment restore timeout
-Usually, cache gets downloaded in multiple segments of fixed sizes. Sometimes, a segment download gets stuck, which causes the workflow job to be stuck. The cache segment download timeout [was introduced](https://github.com/actions/toolkit/tree/main/packages/cache#cache-segment-restore-timeout) to solve this issue as it allows the segment download to get aborted and hence allows the job to proceed with a cache miss. The default value of the cache segment download timeout is set to 10 minutes and can be customized by specifying an environment variable named `SEGMENT_DOWNLOAD_TIMEOUT_MINS` with a timeout value in minutes.
+Cache downloads are split into segments. To reduce the chance of a stuck segment blocking a workflow, set `SEGMENT_DOWNLOAD_TIMEOUT_MINS`:
 
 ```yaml
 env:
@@ -342,98 +344,91 @@ steps:
   - uses: actions/checkout@v7
   - uses: actions/setup-java@v6
     with:
-      distribution: 'temurin'
+      distribution: temurin
       java-version: '25'
-      cache: 'gradle'
+      cache: gradle
   - run: ./gradlew build --no-daemon
 ```
 
-### Check latest
+## Multiple JDKs and Maven toolchains
 
-In the basic examples above, the `check-latest` flag defaults to `false`. When set to `false`, the action tries to first resolve a version of Java from the local tool cache on the runner. If unable to find a specific version in the cache, the action will download a version of Java. Use the default or set `check-latest` to `false` if you prefer a faster more consistent setup experience that prioritizes trying to use the cached versions at the expense of newer versions sometimes being available for download.
+Install multiple Java versions by providing a multiline `java-version` value. All configured JDKs are installed. The last one added to `PATH` becomes the default.
 
-If `check-latest` is set to `true`, the action first checks if the cached version is the latest one. If the locally cached version is not the most up-to-date, the latest version of Java will be downloaded. Set `check-latest` to `true` if you want the most up-to-date version of Java to always be used. Setting `check-latest` to `true` has performance implications as downloading versions of Java is slower than using cached versions.
+```yaml
+steps:
+  - uses: actions/setup-java@v6
+    with:
+      distribution: temurin
+      java-version: |
+        8
+        11
+        17
+        21
+        25
+```
 
-[GitHub-hosted runners](https://github.com/actions/runner-images) include Eclipse Temurin JDKs in their tool cache. Selecting Eclipse Temurin (`distribution: 'temurin'`) can save setup time by using a pre-installed JDK instead of downloading one. See the installed Java versions for [Ubuntu](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#java), [Windows](https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md#java), and [macOS](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md#java).
+Other installed JDKs are available through version-specific variables such as `JAVA_HOME_17_X64`. To use a specific version later in the job, set `JAVA_HOME` and prepend its `bin` directory to `PATH`.
 
-For Java distributions that are not cached on Hosted images, `check-latest` always behaves as `true` and downloads Java on the fly. Check out [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache) for more details about pre-cached Java versions.
+`setup-java` writes a Maven Toolchains declaration for each installed JDK. When multiple JDKs are installed, the declaration contains all of them. Customize the generated toolchain values with `mvn-toolchain-id` and `mvn-toolchain-vendor`.
 
+## Testing with a Java matrix
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: ['8', '11', '17', '21', '25']
+    name: Java ${{ matrix.java }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+      - run: java --version
+      - run: mvn verify
+```
+
+## Publishing packages
+
+`setup-java` generates Maven `settings.xml` and Maven Toolchains configuration. For Gradle publishing, it installs Java for the workflow; the Gradle build file remains responsible for reading credentials from environment variables.
+
+### Maven
 
 ```yaml
 steps:
   - uses: actions/checkout@v7
   - uses: actions/setup-java@v6
     with:
-      distribution: 'temurin'
+      distribution: temurin
       java-version: '25'
-      check-latest: true
-  - run: java --version
+      server-id: github
+      server-username-env-var: GITHUB_ACTOR
+      server-password-env-var: GITHUB_TOKEN
+  - run: mvn --batch-mode deploy
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-### Testing against different Java versions
-```yaml
-jobs:
-  build:
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        java: [ '8', '11', '17', '21', '25' ]
-    name: Java ${{ matrix.Java }} sample
-    steps:
-      - uses: actions/checkout@v7
-      - name: Setup java
-        uses: actions/setup-java@v6
-        with:
-          distribution: '<distribution>'
-          java-version: ${{ matrix.java }}
-      - run: java --version
-```
-
-### Install multiple JDKs
-
-All configured Java versions are added to the PATH. The last one added to the PATH (i.e., the last JDK set up by this action) will be used as the default and available globally. Other Java versions can be accessed through environment variables such as 'JAVA\_HOME\_{{ MAJOR\_VERSION }}\_{{ ARCHITECTURE }}'. To use a specific Java version, set the JAVA\_HOME environment variable accordingly and prepend its bin directory to the PATH to ensure it takes priority during execution.
+### GPG signing
 
 ```yaml
-   steps:
-      - uses: actions/setup-java@v6
-        with:
-          distribution: '<distribution>'
-          java-version: |
-            8
-            11
-            15
+steps:
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: temurin
+      java-version: '25'
+      gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+      gpg-passphrase-env-var: GPG_PASSPHRASE
+  - run: mvn --batch-mode deploy
+    env:
+      GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 ```
 
-### Using Maven Toolchains
-In the example above multiple JDKs are installed for the same job. The result after the last JDK is installed is a Maven Toolchains declaration containing references to all three JDKs. The values for `id`, `version`, and `vendor` of the individual Toolchain entries are the given input values for `distribution` and `java-version` (`vendor` being the combination of `${distribution}_${java-version}`) by default.
-
-### Advanced Configuration
-
-- [Selecting a Java distribution](docs/advanced-usage.md#Selecting-a-Java-distribution)
-    - [Eclipse Temurin](docs/advanced-usage.md#Eclipse-Temurin)
-    - [Adopt](docs/advanced-usage.md#Adopt)
-    - [Zulu](docs/advanced-usage.md#Zulu)
-    - [Liberica](docs/advanced-usage.md#Liberica)
-    - [Liberica Native Image Kit](docs/advanced-usage.md#Liberica-Native-Image-Kit)
-    - [Microsoft](docs/advanced-usage.md#Microsoft)
-    - [Amazon Corretto](docs/advanced-usage.md#Amazon-Corretto)
-    - [Oracle](docs/advanced-usage.md#Oracle)
-    - [Alibaba Dragonwell](docs/advanced-usage.md#Alibaba-Dragonwell)
-    - [SapMachine](docs/advanced-usage.md#SapMachine)
-    - [GraalVM](docs/advanced-usage.md#GraalVM)
-    - [JetBrains](docs/advanced-usage.md#JetBrains)
-    - [Tencent Kona](docs/advanced-usage.md#Tencent-Kona)
-- [Installing custom Java package type](docs/advanced-usage.md#Installing-custom-Java-package-type)
-- [Installing custom Java architecture](docs/advanced-usage.md#Installing-custom-Java-architecture)
-- [Installing custom Java distribution from local file](docs/advanced-usage.md#Installing-Java-from-local-file)
-- [Testing against different Java distributions](docs/advanced-usage.md#Testing-against-different-Java-distributions)
-- [Testing against different platforms](docs/advanced-usage.md#Testing-against-different-platforms)
-- [Publishing using Apache Maven](docs/advanced-usage.md#Publishing-using-Apache-Maven)
-- [Maven transfer progress (download logs)](docs/advanced-usage.md#maven-transfer-progress-download-logs)
-- [Publishing using Gradle](docs/advanced-usage.md#Publishing-using-Gradle)
-- [Hosted Tool Cache](docs/advanced-usage.md#Hosted-Tool-Cache)
-- [Modifying Maven Toolchains](docs/advanced-usage.md#Modifying-Maven-Toolchains)
-- [Java Version File](docs/advanced-usage.md#Java-version-file)
+Maven GPG signing requires `maven-gpg-plugin` 3.2.0 or newer because `setup-java` passes the passphrase through `gpg.passphraseEnvName`.
 
 ## Recommended permissions
 
@@ -444,10 +439,37 @@ permissions:
   contents: read # access to check out code and install dependencies
 ```
 
+Publishing workflows may require additional permissions depending on the target registry.
+
+## Advanced usage
+
+See [advanced usage](docs/advanced-usage.md) for detailed examples:
+
+- [Selecting a Java distribution](docs/advanced-usage.md#selecting-a-java-distribution)
+- [Installing custom Java package types](docs/advanced-usage.md#installing-custom-java-package-type)
+- [Package compatibility](docs/advanced-usage.md#package-compatibility)
+- [Ensuring the Maven cache is complete](docs/advanced-usage.md#ensuring-the-maven-cache-is-complete-plugin-dependencies)
+- [Installing custom Java architecture](docs/advanced-usage.md#installing-custom-java-architecture)
+- [Installing a JDK without setting it as default](docs/advanced-usage.md#installing-jdk-without-setting-as-default)
+- [Installing Java from a local file](docs/advanced-usage.md#installing-java-from-local-file)
+- [Testing against different Java distributions](docs/advanced-usage.md#testing-against-different-java-distributions)
+- [Testing against different platforms](docs/advanced-usage.md#testing-against-different-platforms)
+- [Publishing using Apache Maven](docs/advanced-usage.md#publishing-using-apache-maven)
+- [Maven transfer progress](docs/advanced-usage.md#maven-transfer-progress-download-logs)
+- [Publishing using Gradle](docs/advanced-usage.md#publishing-using-gradle)
+- [Hosted tool cache](docs/advanced-usage.md#hosted-tool-cache)
+- [Modifying Maven Toolchains](docs/advanced-usage.md#modifying-maven-toolchains)
+- [Java version files](docs/advanced-usage.md#java-version-file)
+- [Self-signed certificates and internal CAs on GitHub Enterprise](docs/advanced-usage.md#self-signed-certificates-and-internal-cas-github-enterprise)
+
 ## License
 
 The scripts and documentation in this project are released under the [MIT License](LICENSE).
 
 ## Contributions
 
-Contributions are welcome! See [Contributor's Guide](docs/contributors.md)
+Contributions are welcome. See our [Contributor's Guide](docs/contributors.md).
+
+## Code of Conduct
+
+:wave: Be nice. See [our code of conduct](CODE_OF_CONDUCT.md)
