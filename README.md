@@ -432,11 +432,11 @@ Maven GPG signing requires `maven-gpg-plugin` 3.2.0 or newer because `setup-java
 
 ## Recommended permissions
 
-Most workflows only need read access to repository contents:
+When using the `setup-java` action in your GitHub Actions workflow, it is recommended to set the following permissions to ensure proper functionality:
 
 ```yaml
 permissions:
-  contents: read
+  contents: read # access to check out code and install dependencies
 ```
 
 Publishing workflows may require additional permissions depending on the target registry.
