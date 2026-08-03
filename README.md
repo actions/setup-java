@@ -16,6 +16,15 @@ steps:
   - run: java --version
 ```
 
+> [!NOTE]
+> V6 is still in development on the `main` branch and is not yet recommended for production workflows. To use it, you must explicitly reference the `main` branch in your workflow, as in 
+>
+> ```yaml
+> - uses: actions/setup-java@main
+> ```
+> 
+> For production workflows, it is recommended to use the latest stable release `v5`.
+
 ## Contents
 
 - [What it does](#what-it-does)
@@ -44,10 +53,7 @@ steps:
 
 ## What's new
 
-### V6
-
-> [!NOTE]
-> V6 is still in development on the `main` branch and is not yet recommended for production workflows.
+### V6 (in development)
 
 - Migrated the action implementation to ESM to support the latest `@actions/*` packages.
 - Renamed environment-variable-name inputs so they are not mistaken for secret values:
@@ -462,4 +468,8 @@ The scripts and documentation in this project are released under the [MIT Licens
 
 ## Contributions
 
-Contributions are welcome. See the [Contributor's Guide](docs/contributors.md).
+Contributions are welcome. See our [Contributor's Guide](docs/contributors.md).
+
+## Code of Conduct
+
+:wave: Be nice. See [our code of conduct](CODE_OF_CONDUCT.md)
