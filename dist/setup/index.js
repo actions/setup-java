@@ -85156,9 +85156,11 @@ const constants = __importStar(__webpack_require__(694));
 const cache_1 = __webpack_require__(319);
 const path = __importStar(__webpack_require__(622));
 const distribution_factory_1 = __webpack_require__(729);
+const DEPRECATION_WARNING = 'setup-java v2 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            core.warning(DEPRECATION_WARNING);
             const version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
             const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, { required: true });
             const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
