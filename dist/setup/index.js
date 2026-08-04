@@ -132179,9 +132179,11 @@ const constants = __importStar(__nccwpck_require__(69042));
 const cache_1 = __nccwpck_require__(64810);
 const path = __importStar(__nccwpck_require__(71017));
 const distribution_factory_1 = __nccwpck_require__(10924);
+const DEPRECATION_WARNING = 'setup-java v3 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            core.warning(DEPRECATION_WARNING);
             const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
             const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, {
                 required: true

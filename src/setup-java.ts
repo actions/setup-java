@@ -13,8 +13,13 @@ import * as path from 'path';
 import {getJavaDistribution} from './distributions/distribution-factory';
 import {JavaInstallerOptions} from './distributions/base-models';
 
+const DEPRECATION_WARNING =
+  'setup-java v3 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.';
+
 async function run() {
   try {
+    core.warning(DEPRECATION_WARNING);
+
     const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
     const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, {
       required: true
