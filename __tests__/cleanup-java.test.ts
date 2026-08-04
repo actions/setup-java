@@ -8,6 +8,7 @@ import {
   beforeAll,
   afterAll
 } from '@jest/globals';
+import fs from 'fs';
 
 // Mock @actions/cache before importing source modules
 const real_cache_module = await import('@actions/cache');
@@ -162,6 +163,32 @@ describe('cleanup', () => {
     await cleanup();
 
     expect(spyCacheSave).toHaveBeenCalled();
+  });
+
+  it('saves the JDK cache without dependency caching', async () => {
+    const key = 'setup-java-jdk-v1-Linux-x64-key';
+    (core.getInput as jest.Mock).mockReturnValue('');
+    (core.getState as jest.Mock<any>).mockImplementation((name: string) =>
+      name === 'jdk-caches'
+        ? JSON.stringify([{key, path: '/toolcache/java'}])
+        : ''
+    );
+    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+    spyCacheSave.mockResolvedValue(1);
+
+    await cleanup();
+
+    expect(spyCacheSave).toHaveBeenCalledWith(['/toolcache/java'], key);
+  });
+
+  it('does not save a JDK cache when cache-jdk is disabled', async () => {
+    (core.getInput as jest.Mock<any>).mockImplementation((name: string) =>
+      name === 'cache-jdk' ? 'false' : ''
+    );
+
+    await cleanup();
+
+    expect(spyCacheSave).not.toHaveBeenCalled();
   });
 });
 

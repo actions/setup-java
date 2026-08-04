@@ -147,9 +147,10 @@ steps:
 | `verify-signature-public-key` | ASCII-armored GPG public key to use for signature verification. Overrides the bundled key. | |
 | `token` | Token for fetching GitHub.com-hosted version manifests, useful on GitHub Enterprise Server when unauthenticated requests are rate-limited. | `${{ github.token }}` on GitHub.com; empty string on GHES |
 | `cache` | Enable dependency caching for `maven`, `gradle`, or `sbt`. | |
+| `cache-jdk` | Cache downloaded JDK installations between jobs. Set to `false` to opt out. | `true` |
 | `cache-dependency-path` | Dependency file paths used for cache key hashing. Supports globs and multiline values. | Auto-detected by package manager |
 | `cache-path` | Cache paths to use instead of the package manager's default dependency cache path. Supports multiline values and exclusions. | |
-| `cache-read-only` | Restore caches without saving changes in the post step. | `false` |
+| `cache-read-only` | Restore dependency, wrapper, and JDK caches without saving changes in the post step. | `false` |
 | `server-id` | Maven repository ID used in generated `settings.xml`. | `github` |
 | `server-username-env-var` | Environment variable name for Maven repository username. | `GITHUB_ACTOR` |
 | `server-password-env-var` | Environment variable name for Maven repository password or token. | `GITHUB_TOKEN` |
@@ -230,6 +231,12 @@ Use `verify-signature: true` to verify package signatures for distributions that
 
 ## Caching dependencies
 
+Downloaded JDK installations are cached by default, independently of dependency
+caching. The JDK cache key includes the runner OS and platform, normalized
+architecture, distribution, package type, exact resolved version, and release
+identity, preventing incompatible JDKs from sharing an entry. Local `jdk-file`
+archives are keyed by their content hash. Set `cache-jdk: false` to opt out.
+
 Set `cache` to `maven`, `gradle`, or `sbt` to cache dependencies with minimal configuration.
 
 ```yaml
@@ -282,7 +289,7 @@ Use `cache-path` when the build tool stores dependencies outside the default loc
 
 ### Read-only caches
 
-Set `cache-read-only: true` to restore dependency caches without saving changes in the post action. This is useful for pull requests, merge queues, short-lived branches, and matrix fan-out jobs that should only consume caches produced elsewhere.
+Set `cache-read-only: true` to restore dependency, wrapper, and JDK caches without saving changes in the post action. This is useful for pull requests, merge queues, short-lived branches, and matrix fan-out jobs that should only consume caches produced elsewhere.
 
 ```yaml
 - uses: actions/setup-java@v5

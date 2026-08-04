@@ -37,6 +37,7 @@ export const MAVEN_GPG_PASSPHRASE_DEFAULT_ENV = 'MAVEN_GPG_PASSPHRASE';
 export const GPG_PASSPHRASE_PROFILE_ID = 'setup-java-gpg';
 
 export const INPUT_CACHE = 'cache';
+export const INPUT_CACHE_JDK = 'cache-jdk';
 export const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
 export const INPUT_CACHE_PATH = 'cache-path';
 export const INPUT_CACHE_READ_ONLY = 'cache-read-only';

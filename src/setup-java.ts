@@ -17,6 +17,7 @@ export async function run() {
   const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
   const jdkFile = getJdkFileInput();
   const cache = core.getInput(constants.INPUT_CACHE);
+  const cacheJdk = getBooleanInput(constants.INPUT_CACHE_JDK, true);
   const cacheDependencyPath = core.getInput(
     constants.INPUT_CACHE_DEPENDENCY_PATH
   );
@@ -80,6 +81,7 @@ export async function run() {
         packageType,
         checkLatest,
         forceDownload,
+        cacheJdk,
         setDefault,
         verifySignature,
         verifySignaturePublicKey,
@@ -105,6 +107,7 @@ export async function run() {
         packageType,
         checkLatest,
         forceDownload,
+        cacheJdk,
         setDefault,
         verifySignature,
         verifySignaturePublicKey,
@@ -183,6 +186,7 @@ async function installVersion(
     packageType,
     checkLatest,
     forceDownload,
+    cacheJdk,
     setDefault,
     verifySignature,
     verifySignaturePublicKey,
@@ -194,6 +198,7 @@ async function installVersion(
     packageType,
     checkLatest,
     forceDownload,
+    cacheJdk,
     setDefault,
     verifySignature,
     verifySignaturePublicKey,
@@ -238,6 +243,7 @@ interface installerInputsOptions {
   packageType: string;
   checkLatest: boolean;
   forceDownload: boolean;
+  cacheJdk: boolean;
   setDefault: boolean;
   verifySignature: boolean;
   verifySignaturePublicKey: string | undefined;

@@ -30764,6 +30764,401 @@ module.exports = {
 
 /***/ }),
 
+/***/ 7242:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   Ch: () => (/* binding */ INPUT_CACHE_READ_ONLY),
+/* harmony export */   GL: () => (/* binding */ INPUT_CACHE_JDK),
+/* harmony export */   gk: () => (/* binding */ INPUT_CACHE),
+/* harmony export */   wG: () => (/* binding */ INPUT_JOB_STATUS),
+/* harmony export */   wm: () => (/* binding */ STATE_GPG_PRIVATE_KEY_FINGERPRINT),
+/* harmony export */   wz: () => (/* binding */ INPUT_GPG_PRIVATE_KEY)
+/* harmony export */ });
+/* unused harmony exports MACOS_JAVA_CONTENT_POSTFIX, INPUT_JAVA_VERSION, INPUT_JAVA_VERSION_FILE, INPUT_ARCHITECTURE, INPUT_JAVA_PACKAGE, INPUT_DISTRIBUTION, INPUT_JDK_FILE, INPUT_JDK_FILE_DEPRECATED, INPUT_CHECK_LATEST, INPUT_FORCE_DOWNLOAD, INPUT_SET_DEFAULT, INPUT_PROBLEM_MATCHER, INPUT_VERIFY_SIGNATURE, INPUT_VERIFY_SIGNATURE_PUBLIC_KEY, INPUT_SERVER_ID, INPUT_SERVER_USERNAME_ENV_VAR, INPUT_SERVER_PASSWORD_ENV_VAR, INPUT_SERVER_USERNAME_DEPRECATED, INPUT_SERVER_PASSWORD_DEPRECATED, INPUT_SETTINGS_PATH, INPUT_OVERWRITE_SETTINGS, INPUT_GPG_PASSPHRASE_ENV_VAR, INPUT_GPG_PASSPHRASE_DEPRECATED, INPUT_DEFAULT_SERVER_USERNAME, INPUT_DEFAULT_SERVER_PASSWORD, INPUT_DEFAULT_GPG_PRIVATE_KEY, INPUT_DEFAULT_GPG_PASSPHRASE, MAVEN_GPG_PASSPHRASE_DEFAULT_ENV, GPG_PASSPHRASE_PROFILE_ID, INPUT_CACHE_DEPENDENCY_PATH, INPUT_CACHE_PATH, M2_DIR, MVN_SETTINGS_FILE, MVN_TOOLCHAINS_FILE, INPUT_MVN_TOOLCHAIN_ID, INPUT_MVN_TOOLCHAIN_VENDOR, INPUT_SHOW_DOWNLOAD_PROGRESS, MAVEN_ARGS_ENV, MAVEN_NO_TRANSFER_PROGRESS_FLAG, MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG, DISTRIBUTIONS_ONLY_MAJOR_VERSION */
+const MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
+const INPUT_JAVA_VERSION = 'java-version';
+const INPUT_JAVA_VERSION_FILE = 'java-version-file';
+const INPUT_ARCHITECTURE = 'architecture';
+const INPUT_JAVA_PACKAGE = 'java-package';
+const INPUT_DISTRIBUTION = 'distribution';
+const INPUT_JDK_FILE = 'jdk-file';
+const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
+const INPUT_CHECK_LATEST = 'check-latest';
+const INPUT_FORCE_DOWNLOAD = 'force-download';
+const INPUT_SET_DEFAULT = 'set-default';
+const INPUT_PROBLEM_MATCHER = 'problem-matcher';
+const INPUT_VERIFY_SIGNATURE = 'verify-signature';
+const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
+const INPUT_SERVER_ID = 'server-id';
+const INPUT_SERVER_USERNAME_ENV_VAR = 'server-username-env-var';
+const INPUT_SERVER_PASSWORD_ENV_VAR = 'server-password-env-var';
+const INPUT_SERVER_USERNAME_DEPRECATED = 'server-username';
+const INPUT_SERVER_PASSWORD_DEPRECATED = 'server-password';
+const INPUT_SETTINGS_PATH = 'settings-path';
+const INPUT_OVERWRITE_SETTINGS = 'overwrite-settings';
+const INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
+const INPUT_GPG_PASSPHRASE_ENV_VAR = 'gpg-passphrase-env-var';
+const INPUT_GPG_PASSPHRASE_DEPRECATED = 'gpg-passphrase';
+const INPUT_DEFAULT_SERVER_USERNAME = 'GITHUB_ACTOR';
+const INPUT_DEFAULT_SERVER_PASSWORD = 'GITHUB_TOKEN';
+const INPUT_DEFAULT_GPG_PRIVATE_KEY = (/* unused pure expression or super */ null && (undefined));
+const INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
+// The default name of the environment variable the maven-gpg-plugin reads the
+// passphrase from (property `gpg.passphraseEnvName`). When the configured
+// passphrase env var name matches this, no extra configuration is required.
+const MAVEN_GPG_PASSPHRASE_DEFAULT_ENV = 'MAVEN_GPG_PASSPHRASE';
+// Id of the settings.xml profile used to set `gpg.passphraseEnvName`.
+const GPG_PASSPHRASE_PROFILE_ID = 'setup-java-gpg';
+const INPUT_CACHE = 'cache';
+const INPUT_CACHE_JDK = 'cache-jdk';
+const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
+const INPUT_CACHE_PATH = 'cache-path';
+const INPUT_CACHE_READ_ONLY = 'cache-read-only';
+const INPUT_JOB_STATUS = 'job-status';
+const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
+const M2_DIR = '.m2';
+const MVN_SETTINGS_FILE = 'settings.xml';
+const MVN_TOOLCHAINS_FILE = 'toolchains.xml';
+const INPUT_MVN_TOOLCHAIN_ID = 'mvn-toolchain-id';
+const INPUT_MVN_TOOLCHAIN_VENDOR = 'mvn-toolchain-vendor';
+const INPUT_SHOW_DOWNLOAD_PROGRESS = 'show-download-progress';
+const MAVEN_ARGS_ENV = 'MAVEN_ARGS';
+const MAVEN_NO_TRANSFER_PROGRESS_FLAG = '-ntp';
+const MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = '--no-transfer-progress';
+const DISTRIBUTIONS_ONLY_MAJOR_VERSION = (/* unused pure expression or super */ null && (['corretto']));
+
+
+/***/ }),
+
+/***/ 4527:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   G4: () => (/* binding */ getTempDir),
+/* harmony export */   TX: () => (/* binding */ isJobStatusSuccess),
+/* harmony export */   Vt: () => (/* binding */ getBooleanInput)
+/* harmony export */ });
+/* unused harmony exports getVersionFromToolcachePath, extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies, getToolcachePath, isGhes, getVersionFromFileContent, convertVersionToSemver, getGitHubHttpHeaders, MAX_PAGINATION_PAGES, getNextPageUrlFromLinkHeader, validatePaginationUrl, renameWinArchive, getLatestMajorVersion */
+/* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(857);
+/* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(os__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(6928);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(9896);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__nccwpck_require__.n(fs__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(2088);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(semver__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(3838);
+/* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(9805);
+/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(7242);
+
+
+
+
+
+
+
+function getTempDir() {
+    const tempDirectory = process.env['RUNNER_TEMP'] || os__WEBPACK_IMPORTED_MODULE_0___default().tmpdir();
+    return tempDirectory;
+}
+function getBooleanInput(inputName, defaultValue = false) {
+    const inputValue = _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getInput */ .V4(inputName);
+    const normalizedValue = inputValue.trim().toLowerCase();
+    if (!normalizedValue) {
+        return defaultValue;
+    }
+    if (normalizedValue === 'true') {
+        return true;
+    }
+    if (normalizedValue === 'false') {
+        return false;
+    }
+    throw new Error(`Invalid value '${inputValue}' for boolean input '${inputName}'. Expected 'true' or 'false'.`);
+}
+function getVersionFromToolcachePath(toolPath) {
+    if (toolPath) {
+        return path.basename(path.dirname(toolPath));
+    }
+    return toolPath;
+}
+async function extractJdkFile(toolPath, extension) {
+    if (!extension) {
+        extension = toolPath.endsWith('.tar.gz')
+            ? 'tar.gz'
+            : path.extname(toolPath);
+        if (extension.startsWith('.')) {
+            extension = extension.substring(1);
+        }
+    }
+    switch (extension) {
+        case 'tar.gz':
+        case 'tar':
+            return await tc.extractTar(toolPath);
+        case 'zip':
+            return await tc.extractZip(toolPath);
+        default:
+            return await tc.extract7z(toolPath);
+    }
+}
+function getDownloadArchiveExtension() {
+    return process.platform === 'win32' ? 'zip' : 'tar.gz';
+}
+function isVersionSatisfies(range, version) {
+    // Some distributions (e.g. JetBrains Runtime) publish 4-segment versions
+    // like '17.0.8.1+1080.1' that semver rejects. If the candidate version
+    // isn't valid semver, it can't match — bail out rather than letting
+    // compareBuild / satisfies throw.
+    if (!semver.valid(version)) {
+        return false;
+    }
+    if (semver.valid(range)) {
+        // if full version with build digit is provided as a range (such as '1.2.3+4')
+        // we should check for exact equal via compareBuild
+        // since semver.satisfies doesn't handle 4th digit
+        const semRange = semver.parse(range);
+        if (semRange && semRange.build?.length > 0) {
+            return semver.compareBuild(range, version) === 0;
+        }
+    }
+    return semver.satisfies(version, range);
+}
+function getToolcachePath(toolName, version, architecture) {
+    const toolcacheRoot = process.env['RUNNER_TOOL_CACHE'] ?? '';
+    const fullPath = path.join(toolcacheRoot, toolName, version, architecture);
+    if (fs.existsSync(fullPath)) {
+        return fullPath;
+    }
+    return null;
+}
+function isJobStatusSuccess() {
+    const jobStatus = _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_6__/* .INPUT_JOB_STATUS */ .wG);
+    return jobStatus === 'success';
+}
+function isGhes() {
+    const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
+    const hostname = ghUrl.hostname.trimEnd().toUpperCase();
+    const isGitHubHost = hostname === 'GITHUB.COM';
+    const isGitHubEnterpriseCloudHost = hostname.endsWith('.GHE.COM');
+    const isLocalHost = hostname.endsWith('.LOCALHOST');
+    return !isGitHubHost && !isGitHubEnterpriseCloudHost && !isLocalHost;
+}
+function getVersionFromFileContent(content, distributionName, versionFile) {
+    let javaVersionRegExp;
+    let extractedDistribution;
+    function getFileName(versionFile) {
+        return path.basename(versionFile);
+    }
+    const versionFileName = getFileName(versionFile);
+    if (versionFileName == '.tool-versions') {
+        // Capture an optional asdf-java vendor prefix (e.g. `temurin-`, `corretto-`)
+        // in the `distribution` group so it can be mapped to a setup-java distribution.
+        javaVersionRegExp =
+            /^java\s+(?:(?<distribution>\S*)-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
+    }
+    else if (versionFileName == '.sdkmanrc') {
+        // Match both version and optional distribution identifier
+        javaVersionRegExp =
+            /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
+    }
+    else {
+        javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
+    }
+    const match = content.match(javaVersionRegExp);
+    const capturedVersion = match?.groups?.version
+        ? match.groups.version
+        : '';
+    // Extract distribution from .sdkmanrc file
+    if (versionFileName == '.sdkmanrc' && match?.groups?.distribution) {
+        const sdkmanDist = match.groups.distribution;
+        extractedDistribution = mapSdkmanDistribution(sdkmanDist);
+        core.debug(`Parsed distribution '${extractedDistribution}' from SDKMAN identifier '${sdkmanDist}'`);
+    }
+    // Extract distribution from asdf .tool-versions file
+    if (versionFileName == '.tool-versions' && match?.groups?.distribution) {
+        const asdfDist = match.groups.distribution;
+        extractedDistribution = mapAsdfDistribution(asdfDist);
+        if (extractedDistribution) {
+            core.debug(`Parsed distribution '${extractedDistribution}' from asdf identifier '${asdfDist}'`);
+        }
+    }
+    core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
+    if (!capturedVersion) {
+        return null;
+    }
+    const tentativeVersion = avoidOldNotation(capturedVersion);
+    const rawVersion = tentativeVersion.split('-')[0];
+    let version = semver.validRange(rawVersion)
+        ? tentativeVersion
+        : semver.coerce(tentativeVersion);
+    core.debug(`Range version from file is '${version}'`);
+    if (!version) {
+        return null;
+    }
+    // Apply DISTRIBUTIONS_ONLY_MAJOR_VERSION logic whenever the effective distribution
+    // (either explicitly provided or extracted from the version file) is in the list.
+    if (DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(extractedDistribution || distributionName)) {
+        const coerceVersion = semver.coerce(version) ?? version;
+        version = semver.major(coerceVersion).toString();
+    }
+    return {
+        version: version.toString(),
+        distribution: extractedDistribution
+    };
+}
+// Map SDKMAN distribution identifiers to setup-java distribution names
+function mapSdkmanDistribution(sdkmanDist) {
+    const distributionMap = {
+        tem: 'temurin',
+        sem: 'semeru',
+        albba: 'dragonwell',
+        zulu: 'zulu',
+        amzn: 'corretto',
+        graal: 'graalvm',
+        graalce: 'graalvm',
+        librca: 'liberica',
+        ms: 'microsoft',
+        oracle: 'oracle',
+        sapmchn: 'sapmachine',
+        jbr: 'jetbrains',
+        dragonwell: 'dragonwell',
+        kona: 'kona'
+    };
+    const mapped = distributionMap[sdkmanDist.toLowerCase()];
+    if (!mapped) {
+        core.warning(`Unknown SDKMAN distribution identifier '${sdkmanDist}'. Please specify the distribution explicitly.`);
+    }
+    return mapped;
+}
+// Map asdf-java (.tool-versions) vendor identifiers to setup-java distribution names.
+// asdf-java encodes the vendor as a prefix on the version string, e.g.
+// `java temurin-17.0.3+7` or `java semeru-openj9-11.0.25+9`. Packaging variants
+// (`-jre`, `-musl`, `-openj9`, `-crac`, `-javafx`, ...) are collapsed onto the
+// base vendor since setup-java does not distinguish them here.
+function mapAsdfDistribution(asdfDist) {
+    const normalized = asdfDist.toLowerCase();
+    // Multi-segment vendors that map to a distinct setup-java distribution.
+    if (normalized.startsWith('graalvm-community')) {
+        return 'graalvm-community';
+    }
+    if (normalized.startsWith('oracle-graalvm')) {
+        return 'graalvm';
+    }
+    const baseVendor = normalized.split('-')[0];
+    const distributionMap = {
+        temurin: 'temurin',
+        adoptopenjdk: 'temurin',
+        zulu: 'zulu',
+        corretto: 'corretto',
+        liberica: 'liberica',
+        microsoft: 'microsoft',
+        semeru: 'semeru',
+        ibm: 'semeru',
+        dragonwell: 'dragonwell',
+        graalvm: 'graalvm',
+        oracle: 'oracle',
+        sapmachine: 'sapmachine',
+        kona: 'kona',
+        jetbrains: 'jetbrains'
+    };
+    const mapped = distributionMap[baseVendor];
+    if (!mapped) {
+        core.warning(`Unknown asdf distribution identifier '${asdfDist}'. Please specify the distribution explicitly.`);
+    }
+    return mapped;
+}
+// By convention, action expects version 8 in the format `8.*` instead of `1.8`
+function avoidOldNotation(content) {
+    return content.startsWith('1.') ? content.substring(2) : content;
+}
+function convertVersionToSemver(version) {
+    // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1)
+    const versionArray = Array.isArray(version) ? version : version.split('.');
+    const mainVersion = versionArray.slice(0, 3).join('.');
+    if (versionArray.length > 3) {
+        return `${mainVersion}+${versionArray.slice(3).join('.')}`;
+    }
+    return mainVersion;
+}
+function getGitHubHttpHeaders() {
+    const resolvedToken = core.getInput('token') || process.env.GITHUB_TOKEN;
+    const auth = !resolvedToken ? undefined : `token ${resolvedToken}`;
+    const headers = {
+        accept: 'application/vnd.github.VERSION.raw'
+    };
+    if (auth) {
+        headers.authorization = auth;
+    }
+    return headers;
+}
+const MAX_PAGINATION_PAGES = 1000;
+function getNextPageUrlFromLinkHeader(headers) {
+    if (!headers) {
+        return null;
+    }
+    const linkHeader = headers.link ?? headers.Link;
+    if (!linkHeader) {
+        return null;
+    }
+    const normalizedLinkHeader = Array.isArray(linkHeader)
+        ? linkHeader.join(',')
+        : linkHeader;
+    // Split into individual link-values and find the one with rel="next"
+    // RFC 8288 allows rel to appear anywhere among the parameters
+    const linkValues = normalizedLinkHeader.split(/,(?=\s*<)/);
+    for (const linkValue of linkValues) {
+        const urlMatch = linkValue.match(/<([^>]+)>/);
+        if (!urlMatch)
+            continue;
+        const params = linkValue.slice(urlMatch[0].length);
+        // Use word boundary to match "next" as a standalone relation type
+        // RFC 8288 allows space-separated relation types like rel="next prev"
+        if (/;\s*rel="?[^"]*\bnext\b/i.test(params)) {
+            return urlMatch[1];
+        }
+    }
+    return null;
+}
+function validatePaginationUrl(url, allowedOrigin) {
+    try {
+        const parsed = new URL(url);
+        const allowed = new URL(allowedOrigin);
+        return parsed.origin === allowed.origin;
+    }
+    catch {
+        return false;
+    }
+}
+// Rename archive to add extension because after downloading
+// archive does not contain extension type and it leads to some issues
+// on Windows runners without PowerShell Core.
+//
+// For default PowerShell Windows it should contain extension type to unpack it.
+function renameWinArchive(javaArchivePath) {
+    const javaArchivePathRenamed = `${javaArchivePath}.zip`;
+    fs.renameSync(javaArchivePath, javaArchivePathRenamed);
+    return javaArchivePathRenamed;
+}
+// Resolve the newest available stable/GA feature (major) release.
+//
+// Some distributions (e.g. Oracle, GraalVM) construct their download URLs from a
+// concrete major version and don't expose an endpoint to list every available
+// release, so a bare `latest` alias can't be resolved from their own metadata.
+// The Adoptium (Temurin) API is used as a proxy for "what is the newest GA major
+// version out there", which those distributions typically publish at the same time.
+async function getLatestMajorVersion(http) {
+    const availableReleasesUrl = 'https://api.adoptium.net/v3/info/available_releases';
+    const response = await http.getJson(availableReleasesUrl);
+    const mostRecent = response.result?.most_recent_feature_release;
+    if (!mostRecent || Number.isNaN(Number(mostRecent))) {
+        throw new Error(`Could not determine the latest available Java major version from ${availableReleasesUrl}`);
+    }
+    return Number(mostRecent);
+}
+
+
+/***/ }),
+
 /***/ 2613:
 /***/ ((module) => {
 
@@ -34111,228 +34506,26 @@ function copyFile(srcFile, destFile, force) {
 }
 //# sourceMappingURL=io.js.map
 
-/***/ })
+/***/ }),
 
-/******/ });
-/************************************************************************/
-/******/ // The module cache
-/******/ var __webpack_module_cache__ = {};
-/******/ 
-/******/ // The require function
-/******/ function __nccwpck_require__(moduleId) {
-/******/ 	// Check if module is in cache
-/******/ 	var cachedModule = __webpack_module_cache__[moduleId];
-/******/ 	if (cachedModule !== undefined) {
-/******/ 		return cachedModule.exports;
-/******/ 	}
-/******/ 	// Create a new module (and put it into the cache)
-/******/ 	var module = __webpack_module_cache__[moduleId] = {
-/******/ 		// no module.id needed
-/******/ 		// no module.loaded needed
-/******/ 		exports: {}
-/******/ 	};
-/******/ 
-/******/ 	// Execute the module function
-/******/ 	var threw = true;
-/******/ 	try {
-/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
-/******/ 		threw = false;
-/******/ 	} finally {
-/******/ 		if(threw) delete __webpack_module_cache__[moduleId];
-/******/ 	}
-/******/ 
-/******/ 	// Return the exports of the module
-/******/ 	return module.exports;
-/******/ }
-/******/ 
-/******/ // expose the modules object (__webpack_modules__)
-/******/ __nccwpck_require__.m = __webpack_modules__;
-/******/ 
-/************************************************************************/
-/******/ /* webpack/runtime/compat get default export */
-/******/ (() => {
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__nccwpck_require__.n = (module) => {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			() => (module['default']) :
-/******/ 			() => (module);
-/******/ 		__nccwpck_require__.d(getter, { a: getter });
-/******/ 		return getter;
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/create fake namespace object */
-/******/ (() => {
-/******/ 	var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
-/******/ 	var leafPrototypes;
-/******/ 	// create a fake namespace object
-/******/ 	// mode & 1: value is a module id, require it
-/******/ 	// mode & 2: merge all properties of value into the ns
-/******/ 	// mode & 4: return value when already ns object
-/******/ 	// mode & 16: return value when it's Promise-like
-/******/ 	// mode & 8|1: behave like require
-/******/ 	__nccwpck_require__.t = function(value, mode) {
-/******/ 		if(mode & 1) value = this(value);
-/******/ 		if(mode & 8) return value;
-/******/ 		if(typeof value === 'object' && value) {
-/******/ 			if((mode & 4) && value.__esModule) return value;
-/******/ 			if((mode & 16) && typeof value.then === 'function') return value;
-/******/ 		}
-/******/ 		var ns = Object.create(null);
-/******/ 		__nccwpck_require__.r(ns);
-/******/ 		var def = {};
-/******/ 		leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
-/******/ 		for(var current = mode & 2 && value; typeof current == 'object' && !~leafPrototypes.indexOf(current); current = getProto(current)) {
-/******/ 			Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
-/******/ 		}
-/******/ 		def['default'] = () => (value);
-/******/ 		__nccwpck_require__.d(ns, def);
-/******/ 		return ns;
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/define property getters */
-/******/ (() => {
-/******/ 	// define getter functions for harmony exports
-/******/ 	__nccwpck_require__.d = (exports, definition) => {
-/******/ 		for(var key in definition) {
-/******/ 			if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
-/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 			}
-/******/ 		}
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/ensure chunk */
-/******/ (() => {
-/******/ 	__nccwpck_require__.f = {};
-/******/ 	// This file contains only the entry chunk.
-/******/ 	// The chunk loading function for additional chunks
-/******/ 	__nccwpck_require__.e = (chunkId) => {
-/******/ 		return Promise.all(Object.keys(__nccwpck_require__.f).reduce((promises, key) => {
-/******/ 			__nccwpck_require__.f[key](chunkId, promises);
-/******/ 			return promises;
-/******/ 		}, []));
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/get javascript chunk filename */
-/******/ (() => {
-/******/ 	// This function allow to reference async chunks
-/******/ 	__nccwpck_require__.u = (chunkId) => {
-/******/ 		// return url for filenames based on template
-/******/ 		return "" + chunkId + ".index.js";
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/hasOwnProperty shorthand */
-/******/ (() => {
-/******/ 	__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/make namespace object */
-/******/ (() => {
-/******/ 	// define __esModule on exports
-/******/ 	__nccwpck_require__.r = (exports) => {
-/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 		}
-/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/compat */
-/******/ 
-/******/ if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = new URL('.', import.meta.url).pathname.slice(import.meta.url.match(/^file:\/\/\/\w:/) ? 1 : 0, -1) + "/";
-/******/ 
-/******/ /* webpack/runtime/import chunk loading */
-/******/ (() => {
-/******/ 	// no baseURI
-/******/ 	
-/******/ 	// object to store loaded and loading chunks
-/******/ 	// undefined = chunk not loaded, null = chunk preloaded/prefetched
-/******/ 	// [resolve, Promise] = chunk loading, 0 = chunk loaded
-/******/ 	var installedChunks = {
-/******/ 		792: 0
-/******/ 	};
-/******/ 	
-/******/ 	var installChunk = (data) => {
-/******/ 		var {ids, modules, runtime} = data;
-/******/ 		// add "modules" to the modules object,
-/******/ 		// then flag all "ids" as loaded and fire callback
-/******/ 		var moduleId, chunkId, i = 0;
-/******/ 		for(moduleId in modules) {
-/******/ 			if(__nccwpck_require__.o(modules, moduleId)) {
-/******/ 				__nccwpck_require__.m[moduleId] = modules[moduleId];
-/******/ 			}
-/******/ 		}
-/******/ 		if(runtime) runtime(__nccwpck_require__);
-/******/ 		for(;i < ids.length; i++) {
-/******/ 			chunkId = ids[i];
-/******/ 			if(__nccwpck_require__.o(installedChunks, chunkId) && installedChunks[chunkId]) {
-/******/ 				installedChunks[chunkId][0]();
-/******/ 			}
-/******/ 			installedChunks[ids[i]] = 0;
-/******/ 		}
-/******/ 	
-/******/ 	}
-/******/ 	
-/******/ 	__nccwpck_require__.f.j = (chunkId, promises) => {
-/******/ 			// import() chunk loading for javascript
-/******/ 			var installedChunkData = __nccwpck_require__.o(installedChunks, chunkId) ? installedChunks[chunkId] : undefined;
-/******/ 			if(installedChunkData !== 0) { // 0 means "already installed".
-/******/ 	
-/******/ 				// a Promise means "currently loading".
-/******/ 				if(installedChunkData) {
-/******/ 					promises.push(installedChunkData[1]);
-/******/ 				} else {
-/******/ 					if(true) { // all chunks have JS
-/******/ 						// setup Promise in chunk cache
-/******/ 						var promise = import("./" + __nccwpck_require__.u(chunkId)).then(installChunk, (e) => {
-/******/ 							if(installedChunks[chunkId] !== 0) installedChunks[chunkId] = undefined;
-/******/ 							throw e;
-/******/ 						});
-/******/ 						var promise = Promise.race([promise, new Promise((resolve) => (installedChunkData = installedChunks[chunkId] = [resolve]))])
-/******/ 						promises.push(installedChunkData[1] = promise);
-/******/ 					}
-/******/ 				}
-/******/ 			}
-/******/ 	};
-/******/ 	
-/******/ 	// no prefetching
-/******/ 	
-/******/ 	// no preloaded
-/******/ 	
-/******/ 	// no external install chunk
-/******/ 	
-/******/ 	// no on chunks loaded
-/******/ })();
-/******/ 
-/************************************************************************/
-var __webpack_exports__ = {};
+/***/ 9805:
+/***/ ((__unused_webpack___webpack_module__, __unused_webpack___webpack_exports__, __nccwpck_require__) => {
 
-// EXPORTS
-__nccwpck_require__.d(__webpack_exports__, {
-  e: () => (/* binding */ run)
-});
+
+// UNUSED EXPORTS: HTTPError, cacheDir, cacheFile, downloadTool, evaluateVersions, extract7z, extractTar, extractXar, extractZip, find, findAllVersions, findFromManifest, getManifestFromRepo, isExplicitVersion
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 7 modules
 var lib_core = __nccwpck_require__(3838);
-// EXTERNAL MODULE: external "fs"
-var external_fs_ = __nccwpck_require__(9896);
-// EXTERNAL MODULE: external "path"
-var external_path_ = __nccwpck_require__(6928);
 // EXTERNAL MODULE: ./node_modules/@actions/io/lib/io.js
 var lib_io = __nccwpck_require__(8701);
-// EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js + 2 modules
-var lib_exec = __nccwpck_require__(5260);
 // EXTERNAL MODULE: external "crypto"
 var external_crypto_ = __nccwpck_require__(6982);
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __nccwpck_require__(9896);
 // EXTERNAL MODULE: ./node_modules/semver/index.js
 var node_modules_semver = __nccwpck_require__(2088);
 // EXTERNAL MODULE: external "os"
 var external_os_ = __nccwpck_require__(857);
-var external_os_default = /*#__PURE__*/__nccwpck_require__.n(external_os_);
 // EXTERNAL MODULE: external "child_process"
 var external_child_process_ = __nccwpck_require__(5317);
 ;// CONCATENATED MODULE: ./node_modules/@actions/tool-cache/lib/manifest.js
@@ -34441,6 +34634,8 @@ function _readLinuxVersionFile() {
     return _internal.readLinuxVersionFile();
 }
 //# sourceMappingURL=manifest.js.map
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(6928);
 // EXTERNAL MODULE: ./node_modules/@actions/http-client/lib/index.js + 1 modules
 var lib = __nccwpck_require__(4942);
 // EXTERNAL MODULE: external "stream"
@@ -34449,6 +34644,8 @@ var external_stream_ = __nccwpck_require__(2203);
 var external_util_ = __nccwpck_require__(9023);
 // EXTERNAL MODULE: external "assert"
 var external_assert_ = __nccwpck_require__(2613);
+// EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js + 2 modules
+var lib_exec = __nccwpck_require__(5260);
 ;// CONCATENATED MODULE: ./node_modules/@actions/tool-cache/lib/retry-helper.js
 var retry_helper_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -35137,364 +35334,226 @@ function _unique(values) {
     return Array.from(new Set(values));
 }
 //# sourceMappingURL=tool-cache.js.map
-;// CONCATENATED MODULE: ./src/constants.ts
-const MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
-const INPUT_JAVA_VERSION = 'java-version';
-const INPUT_JAVA_VERSION_FILE = 'java-version-file';
-const INPUT_ARCHITECTURE = 'architecture';
-const INPUT_JAVA_PACKAGE = 'java-package';
-const INPUT_DISTRIBUTION = 'distribution';
-const INPUT_JDK_FILE = 'jdk-file';
-const INPUT_JDK_FILE_DEPRECATED = 'jdkFile';
-const INPUT_CHECK_LATEST = 'check-latest';
-const INPUT_FORCE_DOWNLOAD = 'force-download';
-const INPUT_SET_DEFAULT = 'set-default';
-const INPUT_PROBLEM_MATCHER = 'problem-matcher';
-const INPUT_VERIFY_SIGNATURE = 'verify-signature';
-const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
-const INPUT_SERVER_ID = 'server-id';
-const INPUT_SERVER_USERNAME_ENV_VAR = 'server-username-env-var';
-const INPUT_SERVER_PASSWORD_ENV_VAR = 'server-password-env-var';
-const INPUT_SERVER_USERNAME_DEPRECATED = 'server-username';
-const INPUT_SERVER_PASSWORD_DEPRECATED = 'server-password';
-const INPUT_SETTINGS_PATH = 'settings-path';
-const INPUT_OVERWRITE_SETTINGS = 'overwrite-settings';
-const INPUT_GPG_PRIVATE_KEY = 'gpg-private-key';
-const INPUT_GPG_PASSPHRASE_ENV_VAR = 'gpg-passphrase-env-var';
-const INPUT_GPG_PASSPHRASE_DEPRECATED = 'gpg-passphrase';
-const INPUT_DEFAULT_SERVER_USERNAME = 'GITHUB_ACTOR';
-const INPUT_DEFAULT_SERVER_PASSWORD = 'GITHUB_TOKEN';
-const INPUT_DEFAULT_GPG_PRIVATE_KEY = (/* unused pure expression or super */ null && (undefined));
-const INPUT_DEFAULT_GPG_PASSPHRASE = 'GPG_PASSPHRASE';
-// The default name of the environment variable the maven-gpg-plugin reads the
-// passphrase from (property `gpg.passphraseEnvName`). When the configured
-// passphrase env var name matches this, no extra configuration is required.
-const MAVEN_GPG_PASSPHRASE_DEFAULT_ENV = 'MAVEN_GPG_PASSPHRASE';
-// Id of the settings.xml profile used to set `gpg.passphraseEnvName`.
-const GPG_PASSPHRASE_PROFILE_ID = 'setup-java-gpg';
-const INPUT_CACHE = 'cache';
-const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
-const INPUT_CACHE_PATH = 'cache-path';
-const INPUT_CACHE_READ_ONLY = 'cache-read-only';
-const INPUT_JOB_STATUS = 'job-status';
-const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
-const M2_DIR = '.m2';
-const MVN_SETTINGS_FILE = 'settings.xml';
-const MVN_TOOLCHAINS_FILE = 'toolchains.xml';
-const INPUT_MVN_TOOLCHAIN_ID = 'mvn-toolchain-id';
-const INPUT_MVN_TOOLCHAIN_VENDOR = 'mvn-toolchain-vendor';
-const INPUT_SHOW_DOWNLOAD_PROGRESS = 'show-download-progress';
-const MAVEN_ARGS_ENV = 'MAVEN_ARGS';
-const MAVEN_NO_TRANSFER_PROGRESS_FLAG = '-ntp';
-const MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG = '--no-transfer-progress';
-const constants_DISTRIBUTIONS_ONLY_MAJOR_VERSION = (/* unused pure expression or super */ null && (['corretto']));
 
-;// CONCATENATED MODULE: ./src/util.ts
+/***/ })
 
+/******/ });
+/************************************************************************/
+/******/ // The module cache
+/******/ var __webpack_module_cache__ = {};
+/******/ 
+/******/ // The require function
+/******/ function __nccwpck_require__(moduleId) {
+/******/ 	// Check if module is in cache
+/******/ 	var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 	if (cachedModule !== undefined) {
+/******/ 		return cachedModule.exports;
+/******/ 	}
+/******/ 	// Create a new module (and put it into the cache)
+/******/ 	var module = __webpack_module_cache__[moduleId] = {
+/******/ 		// no module.id needed
+/******/ 		// no module.loaded needed
+/******/ 		exports: {}
+/******/ 	};
+/******/ 
+/******/ 	// Execute the module function
+/******/ 	var threw = true;
+/******/ 	try {
+/******/ 		__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
+/******/ 		threw = false;
+/******/ 	} finally {
+/******/ 		if(threw) delete __webpack_module_cache__[moduleId];
+/******/ 	}
+/******/ 
+/******/ 	// Return the exports of the module
+/******/ 	return module.exports;
+/******/ }
+/******/ 
+/******/ // expose the modules object (__webpack_modules__)
+/******/ __nccwpck_require__.m = __webpack_modules__;
+/******/ 
+/************************************************************************/
+/******/ /* webpack/runtime/compat get default export */
+/******/ (() => {
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__nccwpck_require__.n = (module) => {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			() => (module['default']) :
+/******/ 			() => (module);
+/******/ 		__nccwpck_require__.d(getter, { a: getter });
+/******/ 		return getter;
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/create fake namespace object */
+/******/ (() => {
+/******/ 	var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
+/******/ 	var leafPrototypes;
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 16: return value when it's Promise-like
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__nccwpck_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = this(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if(typeof value === 'object' && value) {
+/******/ 			if((mode & 4) && value.__esModule) return value;
+/******/ 			if((mode & 16) && typeof value.then === 'function') return value;
+/******/ 		}
+/******/ 		var ns = Object.create(null);
+/******/ 		__nccwpck_require__.r(ns);
+/******/ 		var def = {};
+/******/ 		leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
+/******/ 		for(var current = mode & 2 && value; typeof current == 'object' && !~leafPrototypes.indexOf(current); current = getProto(current)) {
+/******/ 			Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
+/******/ 		}
+/******/ 		def['default'] = () => (value);
+/******/ 		__nccwpck_require__.d(ns, def);
+/******/ 		return ns;
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/define property getters */
+/******/ (() => {
+/******/ 	// define getter functions for harmony exports
+/******/ 	__nccwpck_require__.d = (exports, definition) => {
+/******/ 		for(var key in definition) {
+/******/ 			if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			}
+/******/ 		}
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/ensure chunk */
+/******/ (() => {
+/******/ 	__nccwpck_require__.f = {};
+/******/ 	// This file contains only the entry chunk.
+/******/ 	// The chunk loading function for additional chunks
+/******/ 	__nccwpck_require__.e = (chunkId) => {
+/******/ 		return Promise.all(Object.keys(__nccwpck_require__.f).reduce((promises, key) => {
+/******/ 			__nccwpck_require__.f[key](chunkId, promises);
+/******/ 			return promises;
+/******/ 		}, []));
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/get javascript chunk filename */
+/******/ (() => {
+/******/ 	// This function allow to reference async chunks
+/******/ 	__nccwpck_require__.u = (chunkId) => {
+/******/ 		// return url for filenames based on template
+/******/ 		return "" + chunkId + ".index.js";
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/hasOwnProperty shorthand */
+/******/ (() => {
+/******/ 	__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/make namespace object */
+/******/ (() => {
+/******/ 	// define __esModule on exports
+/******/ 	__nccwpck_require__.r = (exports) => {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/compat */
+/******/ 
+/******/ if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = new URL('.', import.meta.url).pathname.slice(import.meta.url.match(/^file:\/\/\/\w:/) ? 1 : 0, -1) + "/";
+/******/ 
+/******/ /* webpack/runtime/import chunk loading */
+/******/ (() => {
+/******/ 	// no baseURI
+/******/ 	
+/******/ 	// object to store loaded and loading chunks
+/******/ 	// undefined = chunk not loaded, null = chunk preloaded/prefetched
+/******/ 	// [resolve, Promise] = chunk loading, 0 = chunk loaded
+/******/ 	var installedChunks = {
+/******/ 		792: 0
+/******/ 	};
+/******/ 	
+/******/ 	var installChunk = (data) => {
+/******/ 		var {ids, modules, runtime} = data;
+/******/ 		// add "modules" to the modules object,
+/******/ 		// then flag all "ids" as loaded and fire callback
+/******/ 		var moduleId, chunkId, i = 0;
+/******/ 		for(moduleId in modules) {
+/******/ 			if(__nccwpck_require__.o(modules, moduleId)) {
+/******/ 				__nccwpck_require__.m[moduleId] = modules[moduleId];
+/******/ 			}
+/******/ 		}
+/******/ 		if(runtime) runtime(__nccwpck_require__);
+/******/ 		for(;i < ids.length; i++) {
+/******/ 			chunkId = ids[i];
+/******/ 			if(__nccwpck_require__.o(installedChunks, chunkId) && installedChunks[chunkId]) {
+/******/ 				installedChunks[chunkId][0]();
+/******/ 			}
+/******/ 			installedChunks[ids[i]] = 0;
+/******/ 		}
+/******/ 	
+/******/ 	}
+/******/ 	
+/******/ 	__nccwpck_require__.f.j = (chunkId, promises) => {
+/******/ 			// import() chunk loading for javascript
+/******/ 			var installedChunkData = __nccwpck_require__.o(installedChunks, chunkId) ? installedChunks[chunkId] : undefined;
+/******/ 			if(installedChunkData !== 0) { // 0 means "already installed".
+/******/ 	
+/******/ 				// a Promise means "currently loading".
+/******/ 				if(installedChunkData) {
+/******/ 					promises.push(installedChunkData[1]);
+/******/ 				} else {
+/******/ 					if(true) { // all chunks have JS
+/******/ 						// setup Promise in chunk cache
+/******/ 						var promise = import("./" + __nccwpck_require__.u(chunkId)).then(installChunk, (e) => {
+/******/ 							if(installedChunks[chunkId] !== 0) installedChunks[chunkId] = undefined;
+/******/ 							throw e;
+/******/ 						});
+/******/ 						var promise = Promise.race([promise, new Promise((resolve) => (installedChunkData = installedChunks[chunkId] = [resolve]))])
+/******/ 						promises.push(installedChunkData[1] = promise);
+/******/ 					}
+/******/ 				}
+/******/ 			}
+/******/ 	};
+/******/ 	
+/******/ 	// no prefetching
+/******/ 	
+/******/ 	// no preloaded
+/******/ 	
+/******/ 	// no external install chunk
+/******/ 	
+/******/ 	// no on chunks loaded
+/******/ })();
+/******/ 
+/************************************************************************/
+var __webpack_exports__ = {};
 
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  e: () => (/* binding */ run)
+});
 
-
-
-
-
-function getTempDir() {
-    const tempDirectory = process.env['RUNNER_TEMP'] || external_os_default().tmpdir();
-    return tempDirectory;
-}
-function getBooleanInput(inputName, defaultValue = false) {
-    const inputValue = lib_core/* getInput */.V4(inputName);
-    const normalizedValue = inputValue.trim().toLowerCase();
-    if (!normalizedValue) {
-        return defaultValue;
-    }
-    if (normalizedValue === 'true') {
-        return true;
-    }
-    if (normalizedValue === 'false') {
-        return false;
-    }
-    throw new Error(`Invalid value '${inputValue}' for boolean input '${inputName}'. Expected 'true' or 'false'.`);
-}
-function getVersionFromToolcachePath(toolPath) {
-    if (toolPath) {
-        return path.basename(path.dirname(toolPath));
-    }
-    return toolPath;
-}
-async function extractJdkFile(toolPath, extension) {
-    if (!extension) {
-        extension = toolPath.endsWith('.tar.gz')
-            ? 'tar.gz'
-            : path.extname(toolPath);
-        if (extension.startsWith('.')) {
-            extension = extension.substring(1);
-        }
-    }
-    switch (extension) {
-        case 'tar.gz':
-        case 'tar':
-            return await tc.extractTar(toolPath);
-        case 'zip':
-            return await tc.extractZip(toolPath);
-        default:
-            return await tc.extract7z(toolPath);
-    }
-}
-function getDownloadArchiveExtension() {
-    return process.platform === 'win32' ? 'zip' : 'tar.gz';
-}
-function isVersionSatisfies(range, version) {
-    // Some distributions (e.g. JetBrains Runtime) publish 4-segment versions
-    // like '17.0.8.1+1080.1' that semver rejects. If the candidate version
-    // isn't valid semver, it can't match — bail out rather than letting
-    // compareBuild / satisfies throw.
-    if (!semver.valid(version)) {
-        return false;
-    }
-    if (semver.valid(range)) {
-        // if full version with build digit is provided as a range (such as '1.2.3+4')
-        // we should check for exact equal via compareBuild
-        // since semver.satisfies doesn't handle 4th digit
-        const semRange = semver.parse(range);
-        if (semRange && semRange.build?.length > 0) {
-            return semver.compareBuild(range, version) === 0;
-        }
-    }
-    return semver.satisfies(version, range);
-}
-function getToolcachePath(toolName, version, architecture) {
-    const toolcacheRoot = process.env['RUNNER_TOOL_CACHE'] ?? '';
-    const fullPath = path.join(toolcacheRoot, toolName, version, architecture);
-    if (fs.existsSync(fullPath)) {
-        return fullPath;
-    }
-    return null;
-}
-function isJobStatusSuccess() {
-    const jobStatus = lib_core/* getInput */.V4(INPUT_JOB_STATUS);
-    return jobStatus === 'success';
-}
-function isGhes() {
-    const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
-    const hostname = ghUrl.hostname.trimEnd().toUpperCase();
-    const isGitHubHost = hostname === 'GITHUB.COM';
-    const isGitHubEnterpriseCloudHost = hostname.endsWith('.GHE.COM');
-    const isLocalHost = hostname.endsWith('.LOCALHOST');
-    return !isGitHubHost && !isGitHubEnterpriseCloudHost && !isLocalHost;
-}
-function getVersionFromFileContent(content, distributionName, versionFile) {
-    let javaVersionRegExp;
-    let extractedDistribution;
-    function getFileName(versionFile) {
-        return path.basename(versionFile);
-    }
-    const versionFileName = getFileName(versionFile);
-    if (versionFileName == '.tool-versions') {
-        // Capture an optional asdf-java vendor prefix (e.g. `temurin-`, `corretto-`)
-        // in the `distribution` group so it can be mapped to a setup-java distribution.
-        javaVersionRegExp =
-            /^java\s+(?:(?<distribution>\S*)-)?(?<version>\d+(?:\.\d+)*([+_.-](?:openj9[-._]?\d[\w.-]*|java\d+|jre[-_\w]*|OpenJDK\d+[\w_.-]*|[a-z0-9]+))*)/im;
-    }
-    else if (versionFileName == '.sdkmanrc') {
-        // Match both version and optional distribution identifier
-        javaVersionRegExp =
-            /^java\s*=\s*(?<version>[^-\s]+)(?:-(?<distribution>[a-z0-9]+))?/m;
-    }
-    else {
-        javaVersionRegExp = /(?<version>(?<=(^|\s|-))(\d+\S*))(\s|$)/;
-    }
-    const match = content.match(javaVersionRegExp);
-    const capturedVersion = match?.groups?.version
-        ? match.groups.version
-        : '';
-    // Extract distribution from .sdkmanrc file
-    if (versionFileName == '.sdkmanrc' && match?.groups?.distribution) {
-        const sdkmanDist = match.groups.distribution;
-        extractedDistribution = mapSdkmanDistribution(sdkmanDist);
-        core.debug(`Parsed distribution '${extractedDistribution}' from SDKMAN identifier '${sdkmanDist}'`);
-    }
-    // Extract distribution from asdf .tool-versions file
-    if (versionFileName == '.tool-versions' && match?.groups?.distribution) {
-        const asdfDist = match.groups.distribution;
-        extractedDistribution = mapAsdfDistribution(asdfDist);
-        if (extractedDistribution) {
-            core.debug(`Parsed distribution '${extractedDistribution}' from asdf identifier '${asdfDist}'`);
-        }
-    }
-    core.debug(`Parsed version '${capturedVersion}' from file '${versionFileName}'`);
-    if (!capturedVersion) {
-        return null;
-    }
-    const tentativeVersion = avoidOldNotation(capturedVersion);
-    const rawVersion = tentativeVersion.split('-')[0];
-    let version = semver.validRange(rawVersion)
-        ? tentativeVersion
-        : semver.coerce(tentativeVersion);
-    core.debug(`Range version from file is '${version}'`);
-    if (!version) {
-        return null;
-    }
-    // Apply DISTRIBUTIONS_ONLY_MAJOR_VERSION logic whenever the effective distribution
-    // (either explicitly provided or extracted from the version file) is in the list.
-    if (DISTRIBUTIONS_ONLY_MAJOR_VERSION.includes(extractedDistribution || distributionName)) {
-        const coerceVersion = semver.coerce(version) ?? version;
-        version = semver.major(coerceVersion).toString();
-    }
-    return {
-        version: version.toString(),
-        distribution: extractedDistribution
-    };
-}
-// Map SDKMAN distribution identifiers to setup-java distribution names
-function mapSdkmanDistribution(sdkmanDist) {
-    const distributionMap = {
-        tem: 'temurin',
-        sem: 'semeru',
-        albba: 'dragonwell',
-        zulu: 'zulu',
-        amzn: 'corretto',
-        graal: 'graalvm',
-        graalce: 'graalvm',
-        librca: 'liberica',
-        ms: 'microsoft',
-        oracle: 'oracle',
-        sapmchn: 'sapmachine',
-        jbr: 'jetbrains',
-        dragonwell: 'dragonwell',
-        kona: 'kona'
-    };
-    const mapped = distributionMap[sdkmanDist.toLowerCase()];
-    if (!mapped) {
-        core.warning(`Unknown SDKMAN distribution identifier '${sdkmanDist}'. Please specify the distribution explicitly.`);
-    }
-    return mapped;
-}
-// Map asdf-java (.tool-versions) vendor identifiers to setup-java distribution names.
-// asdf-java encodes the vendor as a prefix on the version string, e.g.
-// `java temurin-17.0.3+7` or `java semeru-openj9-11.0.25+9`. Packaging variants
-// (`-jre`, `-musl`, `-openj9`, `-crac`, `-javafx`, ...) are collapsed onto the
-// base vendor since setup-java does not distinguish them here.
-function mapAsdfDistribution(asdfDist) {
-    const normalized = asdfDist.toLowerCase();
-    // Multi-segment vendors that map to a distinct setup-java distribution.
-    if (normalized.startsWith('graalvm-community')) {
-        return 'graalvm-community';
-    }
-    if (normalized.startsWith('oracle-graalvm')) {
-        return 'graalvm';
-    }
-    const baseVendor = normalized.split('-')[0];
-    const distributionMap = {
-        temurin: 'temurin',
-        adoptopenjdk: 'temurin',
-        zulu: 'zulu',
-        corretto: 'corretto',
-        liberica: 'liberica',
-        microsoft: 'microsoft',
-        semeru: 'semeru',
-        ibm: 'semeru',
-        dragonwell: 'dragonwell',
-        graalvm: 'graalvm',
-        oracle: 'oracle',
-        sapmachine: 'sapmachine',
-        kona: 'kona',
-        jetbrains: 'jetbrains'
-    };
-    const mapped = distributionMap[baseVendor];
-    if (!mapped) {
-        core.warning(`Unknown asdf distribution identifier '${asdfDist}'. Please specify the distribution explicitly.`);
-    }
-    return mapped;
-}
-// By convention, action expects version 8 in the format `8.*` instead of `1.8`
-function avoidOldNotation(content) {
-    return content.startsWith('1.') ? content.substring(2) : content;
-}
-function convertVersionToSemver(version) {
-    // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1)
-    const versionArray = Array.isArray(version) ? version : version.split('.');
-    const mainVersion = versionArray.slice(0, 3).join('.');
-    if (versionArray.length > 3) {
-        return `${mainVersion}+${versionArray.slice(3).join('.')}`;
-    }
-    return mainVersion;
-}
-function getGitHubHttpHeaders() {
-    const resolvedToken = core.getInput('token') || process.env.GITHUB_TOKEN;
-    const auth = !resolvedToken ? undefined : `token ${resolvedToken}`;
-    const headers = {
-        accept: 'application/vnd.github.VERSION.raw'
-    };
-    if (auth) {
-        headers.authorization = auth;
-    }
-    return headers;
-}
-const MAX_PAGINATION_PAGES = 1000;
-function getNextPageUrlFromLinkHeader(headers) {
-    if (!headers) {
-        return null;
-    }
-    const linkHeader = headers.link ?? headers.Link;
-    if (!linkHeader) {
-        return null;
-    }
-    const normalizedLinkHeader = Array.isArray(linkHeader)
-        ? linkHeader.join(',')
-        : linkHeader;
-    // Split into individual link-values and find the one with rel="next"
-    // RFC 8288 allows rel to appear anywhere among the parameters
-    const linkValues = normalizedLinkHeader.split(/,(?=\s*<)/);
-    for (const linkValue of linkValues) {
-        const urlMatch = linkValue.match(/<([^>]+)>/);
-        if (!urlMatch)
-            continue;
-        const params = linkValue.slice(urlMatch[0].length);
-        // Use word boundary to match "next" as a standalone relation type
-        // RFC 8288 allows space-separated relation types like rel="next prev"
-        if (/;\s*rel="?[^"]*\bnext\b/i.test(params)) {
-            return urlMatch[1];
-        }
-    }
-    return null;
-}
-function validatePaginationUrl(url, allowedOrigin) {
-    try {
-        const parsed = new URL(url);
-        const allowed = new URL(allowedOrigin);
-        return parsed.origin === allowed.origin;
-    }
-    catch {
-        return false;
-    }
-}
-// Rename archive to add extension because after downloading
-// archive does not contain extension type and it leads to some issues
-// on Windows runners without PowerShell Core.
-//
-// For default PowerShell Windows it should contain extension type to unpack it.
-function renameWinArchive(javaArchivePath) {
-    const javaArchivePathRenamed = `${javaArchivePath}.zip`;
-    fs.renameSync(javaArchivePath, javaArchivePathRenamed);
-    return javaArchivePathRenamed;
-}
-// Resolve the newest available stable/GA feature (major) release.
-//
-// Some distributions (e.g. Oracle, GraalVM) construct their download URLs from a
-// concrete major version and don't expose an endpoint to list every available
-// release, so a bare `latest` alias can't be resolved from their own metadata.
-// The Adoptium (Temurin) API is used as a proxy for "what is the newest GA major
-// version out there", which those distributions typically publish at the same time.
-async function getLatestMajorVersion(http) {
-    const availableReleasesUrl = 'https://api.adoptium.net/v3/info/available_releases';
-    const response = await http.getJson(availableReleasesUrl);
-    const mostRecent = response.result?.most_recent_feature_release;
-    if (!mostRecent || Number.isNaN(Number(mostRecent))) {
-        throw new Error(`Could not determine the latest available Java major version from ${availableReleasesUrl}`);
-    }
-    return Number(mostRecent);
-}
-
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 7 modules
+var cleanup_java_core = __nccwpck_require__(3838);
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __nccwpck_require__(9896);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(6928);
+// EXTERNAL MODULE: ./node_modules/@actions/io/lib/io.js
+var lib_io = __nccwpck_require__(8701);
+// EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js + 2 modules
+var lib_exec = __nccwpck_require__(5260);
+// EXTERNAL MODULE: ./node_modules/@actions/tool-cache/lib/tool-cache.js + 2 modules
+var tool_cache = __nccwpck_require__(9805);
+// EXTERNAL MODULE: ./src/util.ts
+var src_util = __nccwpck_require__(4527);
 ;// CONCATENATED MODULE: ./src/gpg.ts
 
 
@@ -35502,7 +35561,7 @@ async function getLatestMajorVersion(http) {
 
 
 
-const PRIVATE_KEY_FILE = external_path_.join(getTempDir(), 'private-key.asc');
+const PRIVATE_KEY_FILE = external_path_.join(src_util/* getTempDir */.G4(), 'private-key.asc');
 const PRIVATE_KEY_FINGERPRINT_REGEX = /\w{40}/;
 // Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
 // The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
@@ -35586,6 +35645,8 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
     }
 }
 
+// EXTERNAL MODULE: ./src/constants.ts
+var constants = __nccwpck_require__(7242);
 // EXTERNAL MODULE: external "url"
 var external_url_ = __nccwpck_require__(7016);
 ;// CONCATENATED MODULE: ./src/cleanup-java.ts
@@ -35595,14 +35656,14 @@ var external_url_ = __nccwpck_require__(7016);
 
 
 async function removePrivateKeyFromKeychain() {
-    if (lib_core/* getInput */.V4(INPUT_GPG_PRIVATE_KEY, { required: false })) {
-        lib_core/* info */.pq('Removing private key from keychain');
+    if (cleanup_java_core/* getInput */.V4(constants/* INPUT_GPG_PRIVATE_KEY */.wz, { required: false })) {
+        cleanup_java_core/* info */.pq('Removing private key from keychain');
         try {
-            const keyFingerprint = lib_core/* getState */.Gu(STATE_GPG_PRIVATE_KEY_FINGERPRINT);
+            const keyFingerprint = cleanup_java_core/* getState */.Gu(constants/* STATE_GPG_PRIVATE_KEY_FINGERPRINT */.wm);
             await deleteKey(keyFingerprint);
         }
         catch (error) {
-            lib_core/* setFailed */.C1(`Failed to remove private key due to: ${error.message}`);
+            cleanup_java_core/* setFailed */.C1(`Failed to remove private key due to: ${error.message}`);
         }
     }
 }
@@ -35610,18 +35671,27 @@ async function removePrivateKeyFromKeychain() {
  * Check given input and run a save process for the specified package manager
  * @returns Promise that will be resolved when the save process finishes
  */
-async function saveCache() {
-    const jobStatus = isJobStatusSuccess();
-    const cache = lib_core/* getInput */.V4(INPUT_CACHE);
-    if (!jobStatus || !cache) {
+async function saveCaches() {
+    const jobStatus = (0,src_util/* isJobStatusSuccess */.TX)();
+    const cache = cleanup_java_core/* getInput */.V4(constants/* INPUT_CACHE */.gk);
+    const cacheJdk = (0,src_util/* getBooleanInput */.Vt)(constants/* INPUT_CACHE_JDK */.GL, true);
+    if (!jobStatus || (!cache && !cacheJdk)) {
         return;
     }
-    if (getBooleanInput(INPUT_CACHE_READ_ONLY, false)) {
-        lib_core/* info */.pq('Cache saving is skipped because cache-read-only is enabled.');
+    if ((0,src_util/* getBooleanInput */.Vt)(constants/* INPUT_CACHE_READ_ONLY */.Ch, false)) {
+        cleanup_java_core/* info */.pq('Cache saving is skipped because cache-read-only is enabled.');
         return;
     }
-    const { save } = await Promise.all(/* import() */[__nccwpck_require__.e(767), __nccwpck_require__.e(377)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7377));
-    await save(cache);
+    const saves = [];
+    if (cache) {
+        const { save } = await Promise.all(/* import() */[__nccwpck_require__.e(767), __nccwpck_require__.e(377)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7377));
+        saves.push(save(cache));
+    }
+    if (cacheJdk) {
+        const { saveJdkCaches } = await Promise.all(/* import() */[__nccwpck_require__.e(767), __nccwpck_require__.e(314)]).then(__nccwpck_require__.bind(__nccwpck_require__, 2314));
+        saves.push(saveJdkCaches());
+    }
+    await Promise.all(saves);
 }
 /**
  * The save process is best-effort, and it should not make the workflow fail
@@ -35633,7 +35703,7 @@ async function ignoreError(promise) {
     return new Promise(resolve => {
         promise
             .catch(error => {
-            lib_core/* warning */.$e(error);
+            cleanup_java_core/* warning */.$e(error);
             resolve(void 0);
         })
             .then(resolve);
@@ -35641,14 +35711,14 @@ async function ignoreError(promise) {
 }
 async function run() {
     await removePrivateKeyFromKeychain();
-    await ignoreError(saveCache());
+    await ignoreError(saveCaches());
 }
 if (process.argv[1] === (0,external_url_.fileURLToPath)(import.meta.url)) {
     run();
 }
 else {
     // https://nodejs.org/api/modules.html#modules_accessing_the_main_module
-    lib_core/* info */.pq('the script is loaded as a module, so skipping the execution');
+    cleanup_java_core/* info */.pq('the script is loaded as a module, so skipping the execution');
 }
 
 var __webpack_exports__run = __webpack_exports__.e;

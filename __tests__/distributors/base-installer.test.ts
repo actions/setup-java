@@ -70,6 +70,10 @@ jest.unstable_mockModule('@actions/tool-cache', () => ({
   }
 }));
 
+jest.unstable_mockModule('../../src/jdk-cache.js', () => ({
+  restoreJdk: jest.fn()
+}));
+
 const real_util_module = await import('../../src/util.js');
 jest.unstable_mockModule('../../src/util.js', () => ({
   ...real_util_module,
@@ -86,6 +90,7 @@ jest.unstable_mockModule('../../src/util.js', () => ({
 const core = await import('@actions/core');
 const tc = await import('@actions/tool-cache');
 const util = await import('../../src/util.js');
+const jdkCache = await import('../../src/jdk-cache.js');
 const {JavaBase} = await import('../../src/distributions/base-installer.js');
 
 class EmptyJavaBase extends JavaBase {
@@ -465,6 +470,7 @@ describe('setupJava', () => {
       checkLatest: false,
       forceDownload: true
     });
+
     const findInToolcache = jest.fn(() => ({
       version: actualJavaVersion,
       path: javaPathInstalled
@@ -484,6 +490,37 @@ describe('setupJava', () => {
     expect(spyCoreInfo).not.toHaveBeenCalledWith(
       `Resolved Java ${actualJavaVersion} from tool-cache`
     );
+  });
+
+  it('restores the exact resolved JDK before downloading', async () => {
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: true,
+      cacheJdk: true
+    });
+    const downloadTool = jest.spyOn(mockJavaBase as any, 'downloadTool');
+    (jdkCache.restoreJdk as jest.Mock).mockResolvedValue(true);
+    jest
+      .spyOn(mockJavaBase as any, 'getRestoredJdkPath')
+      .mockReturnValue(javaPathInstalled);
+
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: actualJavaVersion,
+      path: javaPathInstalled
+    });
+
+    expect(jdkCache.restoreJdk).toHaveBeenCalledWith({
+      distribution: 'Empty',
+      packageType: 'jdk',
+      architecture: 'x86',
+      version: actualJavaVersion,
+      source: `some/random_url/java/${actualJavaVersion}`,
+      path: path.join('Java_Empty_jdk', actualJavaVersion)
+    });
+    expect(downloadTool).not.toHaveBeenCalled();
+    expect(spyCoreInfo).not.toHaveBeenCalledWith('Trying to download...');
   });
 
   it.each([

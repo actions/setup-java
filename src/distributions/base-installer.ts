@@ -31,6 +31,7 @@ export abstract class JavaBase {
   protected latest: boolean;
   protected checkLatest: boolean;
   protected forceDownload: boolean;
+  protected cacheJdk: boolean;
   protected setDefault: boolean;
   protected verifySignature: boolean;
   protected verifySignaturePublicKey: string | undefined;
@@ -52,6 +53,7 @@ export abstract class JavaBase {
     this.packageType = installerOptions.packageType;
     this.checkLatest = installerOptions.checkLatest;
     this.forceDownload = installerOptions.forceDownload ?? false;
+    this.cacheJdk = installerOptions.cacheJdk ?? false;
     this.setDefault =
       installerOptions.setDefault !== undefined
         ? installerOptions.setDefault
@@ -180,9 +182,31 @@ export abstract class JavaBase {
         if (!this.forceDownload && foundJava?.version === javaRelease.version) {
           core.info(`Resolved Java ${foundJava.version} from tool-cache`);
         } else {
-          core.info('Trying to download...');
-          foundJava = await this.downloadTool(javaRelease);
-          core.info(`Java ${foundJava.version} was downloaded`);
+          if (!this.forceDownload && this.cacheJdk) {
+            const {restoreJdk} = await import('../jdk-cache.js');
+            const restored = await restoreJdk({
+              distribution: this.distribution,
+              packageType: this.packageType,
+              architecture: this.architecture,
+              version: javaRelease.version,
+              source: this.getJdkReleaseIdentity(javaRelease),
+              path: this.getJdkCachePath(javaRelease.version)
+            });
+            if (restored) {
+              const restoredPath = this.getRestoredJdkPath(javaRelease.version);
+              if (restoredPath) {
+                foundJava = {
+                  version: javaRelease.version,
+                  path: restoredPath
+                };
+              }
+            }
+          }
+          if (!foundJava || foundJava.version !== javaRelease.version) {
+            core.info('Trying to download...');
+            foundJava = await this.downloadTool(javaRelease);
+            core.info(`Java ${foundJava.version} was downloaded`);
+          }
         }
       } catch (error: any) {
         this.logSetupError(error);
@@ -297,6 +321,37 @@ export abstract class JavaBase {
     // so replace "/hostedtoolcache/Java/11.0.3+4/x64" to "/hostedtoolcache/Java/11.0.3-4/x64" when saves to cache
     // related issue: https://github.com/actions/virtual-environments/issues/3014
     return version.replace('+', '-');
+  }
+
+  protected getJdkCachePath(version: string): string {
+    return path.join(
+      process.env['RUNNER_TOOL_CACHE'] ?? '',
+      this.toolcacheFolderName,
+      this.getToolcacheVersionName(version)
+    );
+  }
+
+  protected getRestoredJdkPath(version: string): string | null {
+    const architecturePath = path.join(
+      this.getJdkCachePath(version),
+      this.architecture
+    );
+    return fs.existsSync(architecturePath) &&
+      fs.existsSync(`${architecturePath}.complete`)
+      ? architecturePath
+      : null;
+  }
+
+  private getJdkReleaseIdentity(javaRelease: JavaDownloadRelease): string {
+    if (javaRelease.checksum) {
+      return `${javaRelease.checksum.algorithm}:${javaRelease.checksum.value}`;
+    }
+    try {
+      const url = new URL(javaRelease.url);
+      return `${url.origin}${url.pathname}`;
+    } catch {
+      return javaRelease.url;
+    }
   }
 
   protected findInToolcache(): JavaInstallerResults | null {

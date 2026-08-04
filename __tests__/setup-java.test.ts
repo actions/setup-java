@@ -217,6 +217,7 @@ describe('setup action orchestration', () => {
         packageType: 'jdk',
         checkLatest: true,
         forceDownload: true,
+        cacheJdk: true,
         setDefault: false,
         verifySignature: true,
         verifySignaturePublicKey: 'public-key'
@@ -457,6 +458,7 @@ describe('setup action orchestration', () => {
   it('does not initialize cache modules when cache input is absent', async () => {
     inputs.set('distribution', 'temurin');
     multilineInputs.set('java-version', ['21']);
+    booleanInputs.set('cache-jdk', false);
     (factory.getJavaDistribution as jest.Mock).mockReturnValue({
       setupJava: jest.fn(async () => ({
         version: '21.0.4+7',
@@ -468,6 +470,11 @@ describe('setup action orchestration', () => {
 
     expect(cacheFeature.isCacheFeatureAvailable).not.toHaveBeenCalled();
     expect(cache.restore).not.toHaveBeenCalled();
+    expect(factory.getJavaDistribution).toHaveBeenCalledWith(
+      'temurin',
+      expect.objectContaining({cacheJdk: false}),
+      ''
+    );
   });
 
   it('reports unsupported distributions through core.setFailed', async () => {

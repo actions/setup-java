@@ -217,6 +217,7 @@ class JavaBase {
     latest;
     checkLatest;
     forceDownload;
+    cacheJdk;
     setDefault;
     verifySignature;
     verifySignaturePublicKey;
@@ -232,6 +233,7 @@ class JavaBase {
         this.packageType = installerOptions.packageType;
         this.checkLatest = installerOptions.checkLatest;
         this.forceDownload = installerOptions.forceDownload ?? false;
+        this.cacheJdk = installerOptions.cacheJdk ?? false;
         this.setDefault =
             installerOptions.setDefault !== undefined
                 ? installerOptions.setDefault
@@ -326,9 +328,31 @@ class JavaBase {
                     core/* info */.pq(`Resolved Java ${foundJava.version} from tool-cache`);
                 }
                 else {
-                    core/* info */.pq('Trying to download...');
-                    foundJava = await this.downloadTool(javaRelease);
-                    core/* info */.pq(`Java ${foundJava.version} was downloaded`);
+                    if (!this.forceDownload && this.cacheJdk) {
+                        const { restoreJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                        const restored = await restoreJdk({
+                            distribution: this.distribution,
+                            packageType: this.packageType,
+                            architecture: this.architecture,
+                            version: javaRelease.version,
+                            source: this.getJdkReleaseIdentity(javaRelease),
+                            path: this.getJdkCachePath(javaRelease.version)
+                        });
+                        if (restored) {
+                            const restoredPath = this.getRestoredJdkPath(javaRelease.version);
+                            if (restoredPath) {
+                                foundJava = {
+                                    version: javaRelease.version,
+                                    path: restoredPath
+                                };
+                            }
+                        }
+                    }
+                    if (!foundJava || foundJava.version !== javaRelease.version) {
+                        core/* info */.pq('Trying to download...');
+                        foundJava = await this.downloadTool(javaRelease);
+                        core/* info */.pq(`Java ${foundJava.version} was downloaded`);
+                    }
                 }
             }
             catch (error) {
@@ -434,6 +458,28 @@ class JavaBase {
         // so replace "/hostedtoolcache/Java/11.0.3+4/x64" to "/hostedtoolcache/Java/11.0.3-4/x64" when saves to cache
         // related issue: https://github.com/actions/virtual-environments/issues/3014
         return version.replace('+', '-');
+    }
+    getJdkCachePath(version) {
+        return external_path_default().join(process.env['RUNNER_TOOL_CACHE'] ?? '', this.toolcacheFolderName, this.getToolcacheVersionName(version));
+    }
+    getRestoredJdkPath(version) {
+        const architecturePath = external_path_default().join(this.getJdkCachePath(version), this.architecture);
+        return external_fs_.existsSync(architecturePath) &&
+            external_fs_.existsSync(`${architecturePath}.complete`)
+            ? architecturePath
+            : null;
+    }
+    getJdkReleaseIdentity(javaRelease) {
+        if (javaRelease.checksum) {
+            return `${javaRelease.checksum.algorithm}:${javaRelease.checksum.value}`;
+        }
+        try {
+            const url = new URL(javaRelease.url);
+            return `${url.origin}${url.pathname}`;
+        }
+        catch {
+            return javaRelease.url;
+        }
     }
     findInToolcache() {
         // we can't use tc.find directly because firstly, we need to filter versions by stability flag

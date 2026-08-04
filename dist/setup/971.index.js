@@ -6853,11 +6853,13 @@ module.exports = { version: packageJson.version }
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
+  Zh: () => (/* binding */ ReserveCacheError),
   w3: () => (/* binding */ isFeatureAvailable),
-  P3: () => (/* binding */ restoreCache)
+  P3: () => (/* binding */ restoreCache),
+  Io: () => (/* binding */ cache_saveCache)
 });
 
-// UNUSED EXPORTS: CACHE_READ_DENIED_PREFIX, CACHE_WRITE_DENIED_PREFIX, CacheReadDeniedError, CacheWriteDeniedError, FinalizeCacheError, ReserveCacheError, ValidationError, saveCache
+// UNUSED EXPORTS: CACHE_READ_DENIED_PREFIX, CACHE_WRITE_DENIED_PREFIX, CacheReadDeniedError, CacheWriteDeniedError, FinalizeCacheError, ValidationError
 
 // NAMESPACE OBJECT: ./node_modules/@azure/storage-blob/dist/esm/generated/src/models/mappers.js
 var mappers_namespaceObject = {};
@@ -7045,13 +7047,13 @@ __webpack_require__.d(mappers_namespaceObject, {
 });
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 7 modules
-var lib_core = __webpack_require__(3838);
+var core = __webpack_require__(3838);
 // EXTERNAL MODULE: external "path"
 var external_path_ = __webpack_require__(6928);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js + 2 modules
 var exec = __webpack_require__(5260);
 // EXTERNAL MODULE: ./node_modules/@actions/glob/lib/glob.js + 17 modules
-var lib_glob = __webpack_require__(2377);
+var glob = __webpack_require__(2377);
 // EXTERNAL MODULE: ./node_modules/@actions/io/lib/io.js
 var io = __webpack_require__(8701);
 // EXTERNAL MODULE: external "crypto"
@@ -7094,7 +7096,7 @@ const GnuTarPathOnWindows = `${process.env['PROGRAMFILES']}\\Git\\usr\\bin\\tar.
 // The default path of BSDtar on hosted Windows runners
 const SystemTarPathOnWindows = `${process.env['SYSTEMDRIVE']}\\Windows\\System32\\tar.exe`;
 const TarFilename = 'cache.tar';
-const constants_ManifestFilename = 'manifest.txt';
+const ManifestFilename = 'manifest.txt';
 const CacheFileSizeLimit = 10 * Math.pow(1024, 3); // 10GiB per repository
 // Prefix the cache backend embeds in a read-denial message (v2 twirp
 // GetCacheEntryDownloadURL error or the GHES v1 `_apis/artifactcache` 403 body).
@@ -7164,7 +7166,7 @@ function resolvePaths(patterns) {
         var _d;
         const paths = [];
         const workspace = (_d = process.env['GITHUB_WORKSPACE']) !== null && _d !== void 0 ? _d : process.cwd();
-        const globber = yield glob.create(patterns.join('\n'), {
+        const globber = yield glob/* create */.v(patterns.join('\n'), {
             implicitDescendants: false
         });
         try {
@@ -7172,10 +7174,9 @@ function resolvePaths(patterns) {
                 _c = _g.value;
                 _e = false;
                 const file = _c;
-                const relativeFile = path
-                    .relative(workspace, file)
-                    .replace(new RegExp(`\\${path.sep}`, 'g'), '/');
-                core.debug(`Matched: ${relativeFile}`);
+                const relativeFile = external_path_.relative(workspace, file)
+                    .replace(new RegExp(`\\${external_path_.sep}`, 'g'), '/');
+                core/* debug */.Yz(`Matched: ${relativeFile}`);
                 // Paths are made relative so the tar entries are all relative to the root of the workspace.
                 if (relativeFile === '') {
                     // path.relative returns empty string if workspace and file are equal
@@ -7205,7 +7206,7 @@ function getVersion(app_1) {
     return __awaiter(this, arguments, void 0, function* (app, additionalArgs = []) {
         let versionOutput = '';
         additionalArgs.push('--version');
-        lib_core/* debug */.Yz(`Checking ${app} ${additionalArgs.join(' ')}`);
+        core/* debug */.Yz(`Checking ${app} ${additionalArgs.join(' ')}`);
         try {
             yield exec/* exec */.m(`${app}`, additionalArgs, {
                 ignoreReturnCode: true,
@@ -7217,10 +7218,10 @@ function getVersion(app_1) {
             });
         }
         catch (err) {
-            lib_core/* debug */.Yz(err.message);
+            core/* debug */.Yz(err.message);
         }
         versionOutput = versionOutput.trim();
-        lib_core/* debug */.Yz(versionOutput);
+        core/* debug */.Yz(versionOutput);
         return versionOutput;
     });
 }
@@ -7229,7 +7230,7 @@ function getCompressionMethod() {
     return __awaiter(this, void 0, void 0, function* () {
         const versionOutput = yield getVersion('zstd', ['--quiet']);
         const version = semver.clean(versionOutput);
-        lib_core/* debug */.Yz(`zstd version: ${version}`);
+        core/* debug */.Yz(`zstd version: ${version}`);
         if (versionOutput === '') {
             return CompressionMethod.Gzip;
         }
@@ -43242,7 +43243,7 @@ const fsCreateReadStream = external_node_fs_.createReadStream;
  * A BlobClient represents a URL to an Azure Storage blob; the blob may be a block blob,
  * append blob, or page blob.
  */
-class Clients_BlobClient extends StorageClient_StorageClient {
+class BlobClient extends StorageClient_StorageClient {
     /**
      * blobContext provided by protocol layer.
      */
@@ -43349,7 +43350,7 @@ class Clients_BlobClient extends StorageClient_StorageClient {
      * @returns A new BlobClient object identical to the source but with the specified snapshot timestamp
      */
     withSnapshot(snapshot) {
-        return new Clients_BlobClient(utils_common_setURLParameter(this.url, utils_constants_URLConstants.Parameters.SNAPSHOT, snapshot.length === 0 ? undefined : snapshot), this.pipeline, this.blobClientConfig);
+        return new BlobClient(utils_common_setURLParameter(this.url, utils_constants_URLConstants.Parameters.SNAPSHOT, snapshot.length === 0 ? undefined : snapshot), this.pipeline, this.blobClientConfig);
     }
     /**
      * Creates a new BlobClient object pointing to a version of this blob.
@@ -43359,7 +43360,7 @@ class Clients_BlobClient extends StorageClient_StorageClient {
      * @returns A new BlobClient object pointing to the version of this blob.
      */
     withVersion(versionId) {
-        return new Clients_BlobClient(utils_common_setURLParameter(this.url, utils_constants_URLConstants.Parameters.VERSIONID, versionId.length === 0 ? undefined : versionId), this.pipeline, this.blobClientConfig);
+        return new BlobClient(utils_common_setURLParameter(this.url, utils_constants_URLConstants.Parameters.VERSIONID, versionId.length === 0 ? undefined : versionId), this.pipeline, this.blobClientConfig);
     }
     /**
      * Creates a AppendBlobClient object.
@@ -44385,7 +44386,7 @@ class Clients_BlobClient extends StorageClient_StorageClient {
 /**
  * AppendBlobClient defines a set of operations applicable to append blobs.
  */
-class AppendBlobClient extends Clients_BlobClient {
+class AppendBlobClient extends BlobClient {
     /**
      * appendBlobsContext provided by protocol layer.
      */
@@ -44687,7 +44688,7 @@ class AppendBlobClient extends Clients_BlobClient {
 /**
  * BlockBlobClient defines a set of operations applicable to block blobs.
  */
-class BlockBlobClient extends Clients_BlobClient {
+class BlockBlobClient extends BlobClient {
     /**
      * blobContext provided by protocol layer.
      *
@@ -45341,7 +45342,7 @@ class BlockBlobClient extends Clients_BlobClient {
 /**
  * PageBlobClient defines a set of operations applicable to page blobs.
  */
-class PageBlobClient extends Clients_BlobClient {
+class PageBlobClient extends BlobClient {
     /**
      * pageBlobsContext provided by protocol layer.
      */
@@ -46409,7 +46410,7 @@ class BlobBatch {
             url = urlOrBlobClient;
             credential = credentialOrOptions;
         }
-        else if (urlOrBlobClient instanceof Clients_BlobClient) {
+        else if (urlOrBlobClient instanceof BlobClient) {
             // Second overload
             url = urlOrBlobClient.url;
             credential = urlOrBlobClient.credential;
@@ -46427,7 +46428,7 @@ class BlobBatch {
                 url: url,
                 credential: credential,
             }, async () => {
-                await new Clients_BlobClient(url, this.batchRequest.createPipeline(credential)).delete(updatedOptions);
+                await new BlobClient(url, this.batchRequest.createPipeline(credential)).delete(updatedOptions);
             });
         });
     }
@@ -46444,7 +46445,7 @@ class BlobBatch {
             credential = credentialOrTier;
             tier = tierOrOptions;
         }
-        else if (urlOrBlobClient instanceof Clients_BlobClient) {
+        else if (urlOrBlobClient instanceof BlobClient) {
             // Second overload
             url = urlOrBlobClient.url;
             credential = urlOrBlobClient.credential;
@@ -46463,7 +46464,7 @@ class BlobBatch {
                 url: url,
                 credential: credential,
             }, async () => {
-                await new Clients_BlobClient(url, this.batchRequest.createPipeline(credential)).setAccessTier(tier, updatedOptions);
+                await new BlobClient(url, this.batchRequest.createPipeline(credential)).setAccessTier(tier, updatedOptions);
             });
         });
     }
@@ -46969,7 +46970,7 @@ class ContainerClient extends StorageClient_StorageClient {
      * @returns A new BlobClient object for the given blob name.
      */
     getBlobClient(blobName) {
-        return new Clients_BlobClient(utils_common_appendToURLPath(this.url, utils_common_EscapePath(blobName)), this.pipeline, this.blobClientConfig);
+        return new BlobClient(utils_common_appendToURLPath(this.url, utils_common_EscapePath(blobName)), this.pipeline, this.blobClientConfig);
     }
     /**
      * Creates an {@link AppendBlobClient}
@@ -49314,7 +49315,7 @@ class FilesNotFoundError extends Error {
         this.name = 'FilesNotFoundError';
     }
 }
-class errors_InvalidResponseError extends Error {
+class InvalidResponseError extends Error {
     constructor(message) {
         super(message);
         this.name = 'InvalidResponseError';
@@ -49427,7 +49428,7 @@ class UploadProgress {
         const uploadSpeed = (transferredBytes /
             (1024 * 1024) /
             (elapsedTime / 1000)).toFixed(1);
-        core.info(`Sent ${transferredBytes} of ${this.contentLength} (${percentage}%), ${uploadSpeed} MBs/sec`);
+        core/* info */.pq(`Sent ${transferredBytes} of ${this.contentLength} (${percentage}%), ${uploadSpeed} MBs/sec`);
         if (this.isDone()) {
             this.displayedComplete = true;
         }
@@ -49477,7 +49478,7 @@ class UploadProgress {
  * @param options
  * @returns
  */
-function uploadUtils_uploadCacheArchiveSDK(signedUploadURL, archivePath, options) {
+function uploadCacheArchiveSDK(signedUploadURL, archivePath, options) {
     return uploadUtils_awaiter(this, void 0, void 0, function* () {
         var _a;
         const blobClient = new BlobClient(signedUploadURL);
@@ -49492,7 +49493,7 @@ function uploadUtils_uploadCacheArchiveSDK(signedUploadURL, archivePath, options
         };
         try {
             uploadProgress.startDisplayTimer();
-            core.debug(`BlobClient: ${blobClient.name}:${blobClient.accountName}:${blobClient.containerName}`);
+            core/* debug */.Yz(`BlobClient: ${blobClient.name}:${blobClient.accountName}:${blobClient.containerName}`);
             const response = yield blockBlobClient.uploadFile(archivePath, uploadOptions);
             // TODO: better management of non-retryable errors
             if (response._response.status >= 400) {
@@ -49501,7 +49502,7 @@ function uploadUtils_uploadCacheArchiveSDK(signedUploadURL, archivePath, options
             return response;
         }
         catch (error) {
-            core.warning(`uploadCacheArchiveSDK: internal error uploading cache archive: ${error.message}`);
+            core/* warning */.$e(`uploadCacheArchiveSDK: internal error uploading cache archive: ${error.message}`);
             throw error;
         }
         finally {
@@ -49523,7 +49524,7 @@ var requestUtils_awaiter = (undefined && undefined.__awaiter) || function (thisA
 
 
 
-function requestUtils_isSuccessStatusCode(statusCode) {
+function isSuccessStatusCode(statusCode) {
     if (!statusCode) {
         return false;
     }
@@ -49579,9 +49580,9 @@ function retry(name_1, method_1, getStatusCode_1) {
                 isRetryable = isRetryableStatusCode(statusCode);
                 errorMessage = `Cache service responded with ${statusCode}`;
             }
-            lib_core/* debug */.Yz(`${name} - Attempt ${attempt} of ${maxAttempts} failed with error: ${errorMessage}`);
+            core/* debug */.Yz(`${name} - Attempt ${attempt} of ${maxAttempts} failed with error: ${errorMessage}`);
             if (!isRetryable) {
-                lib_core/* debug */.Yz(`${name} - Error is not retryable`);
+                core/* debug */.Yz(`${name} - Error is not retryable`);
                 break;
             }
             yield sleep(delay);
@@ -49590,7 +49591,7 @@ function retry(name_1, method_1, getStatusCode_1) {
         throw Error(`${name} failed: ${errorMessage}`);
     });
 }
-function requestUtils_retryTypedResponse(name_1, method_1) {
+function retryTypedResponse(name_1, method_1) {
     return requestUtils_awaiter(this, arguments, void 0, function* (name, method, maxAttempts = DefaultRetryAttempts, delay = DefaultRetryDelay) {
         return yield retry(name, method, (response) => response.statusCode, maxAttempts, delay, 
         // If the error object contains the statusCode property, extract it and return
@@ -49610,7 +49611,7 @@ function requestUtils_retryTypedResponse(name_1, method_1) {
         });
     });
 }
-function requestUtils_retryHttpClientResponse(name_1, method_1) {
+function retryHttpClientResponse(name_1, method_1) {
     return requestUtils_awaiter(this, arguments, void 0, function* (name, method, maxAttempts = DefaultRetryAttempts, delay = DefaultRetryDelay) {
         return yield retry(name, method, (response) => response.message.statusCode, maxAttempts, delay);
     });
@@ -49672,7 +49673,7 @@ class DownloadProgress {
         this.segmentIndex = this.segmentIndex + 1;
         this.segmentSize = segmentSize;
         this.receivedBytes = 0;
-        lib_core/* debug */.Yz(`Downloading segment at offset ${this.segmentOffset} with length ${this.segmentSize}...`);
+        core/* debug */.Yz(`Downloading segment at offset ${this.segmentOffset} with length ${this.segmentSize}...`);
     }
     /**
      * Sets the number of bytes received for the current segment.
@@ -49708,7 +49709,7 @@ class DownloadProgress {
         const downloadSpeed = (transferredBytes /
             (1024 * 1024) /
             (elapsedTime / 1000)).toFixed(1);
-        lib_core/* info */.pq(`Received ${transferredBytes} of ${this.contentLength} (${percentage}%), ${downloadSpeed} MBs/sec`);
+        core/* info */.pq(`Received ${transferredBytes} of ${this.contentLength} (${percentage}%), ${downloadSpeed} MBs/sec`);
         if (this.isDone()) {
             this.displayedComplete = true;
         }
@@ -49758,11 +49759,11 @@ function downloadCacheHttpClient(archiveLocation, archivePath) {
     return downloadUtils_awaiter(this, void 0, void 0, function* () {
         const writeStream = external_fs_.createWriteStream(archivePath);
         const httpClient = new lib/* HttpClient */.Qq('actions/cache');
-        const downloadResponse = yield requestUtils_retryHttpClientResponse('downloadCache', () => downloadUtils_awaiter(this, void 0, void 0, function* () { return httpClient.get(archiveLocation); }));
+        const downloadResponse = yield retryHttpClientResponse('downloadCache', () => downloadUtils_awaiter(this, void 0, void 0, function* () { return httpClient.get(archiveLocation); }));
         // Abort download if no traffic received over the socket.
         downloadResponse.message.socket.setTimeout(SocketTimeout, () => {
             downloadResponse.message.destroy();
-            lib_core/* debug */.Yz(`Aborting download, socket timed out after ${SocketTimeout} ms`);
+            core/* debug */.Yz(`Aborting download, socket timed out after ${SocketTimeout} ms`);
         });
         yield pipeResponseToStream(downloadResponse, writeStream);
         // Validate download size.
@@ -49775,7 +49776,7 @@ function downloadCacheHttpClient(archiveLocation, archivePath) {
             }
         }
         else {
-            lib_core/* debug */.Yz('Unable to validate download, no Content-Length header');
+            core/* debug */.Yz('Unable to validate download, no Content-Length header');
         }
     });
 }
@@ -49794,7 +49795,7 @@ function downloadCacheHttpClientConcurrent(archiveLocation, archivePath, options
             keepAlive: true
         });
         try {
-            const res = yield requestUtils_retryHttpClientResponse('downloadCacheMetadata', () => downloadUtils_awaiter(this, void 0, void 0, function* () { return yield httpClient.request('HEAD', archiveLocation, null, {}); }));
+            const res = yield retryHttpClientResponse('downloadCacheMetadata', () => downloadUtils_awaiter(this, void 0, void 0, function* () { return yield httpClient.request('HEAD', archiveLocation, null, {}); }));
             const lengthHeader = res.message.headers['content-length'];
             if (lengthHeader === undefined || lengthHeader === null) {
                 throw new Error('Content-Length not found on blob response');
@@ -49872,7 +49873,7 @@ function downloadSegmentRetry(httpClient, archiveLocation, offset, count) {
 }
 function downloadSegment(httpClient, archiveLocation, offset, count) {
     return downloadUtils_awaiter(this, void 0, void 0, function* () {
-        const partRes = yield requestUtils_retryHttpClientResponse('downloadCachePart', () => downloadUtils_awaiter(this, void 0, void 0, function* () {
+        const partRes = yield retryHttpClientResponse('downloadCachePart', () => downloadUtils_awaiter(this, void 0, void 0, function* () {
             return yield httpClient.get(archiveLocation, {
                 Range: `bytes=${offset}-${offset + count - 1}`
             });
@@ -49910,7 +49911,7 @@ function downloadCacheStorageSDK(archiveLocation, archivePath, options) {
         if (contentLength < 0) {
             // We should never hit this condition, but just in case fall back to downloading the
             // file as one large stream
-            lib_core/* debug */.Yz('Unable to determine content length, downloading file with http-client...');
+            core/* debug */.Yz('Unable to determine content length, downloading file with http-client...');
             yield downloadCacheHttpClient(archiveLocation, archivePath);
         }
         else {
@@ -49971,7 +49972,7 @@ const promiseWithTimeout = (timeoutMs, promise) => downloadUtils_awaiter(void 0,
  *
  * @param copy the original upload options
  */
-function options_getUploadOptions(copy) {
+function getUploadOptions(copy) {
     // Defaults if not overriden
     const result = {
         useAzureSdk: false,
@@ -50000,9 +50001,9 @@ function options_getUploadOptions(copy) {
     result.uploadChunkSize = !isNaN(Number(process.env['CACHE_UPLOAD_CHUNK_SIZE']))
         ? Math.min(128 * 1024 * 1024, Number(process.env['CACHE_UPLOAD_CHUNK_SIZE']) * 1024 * 1024)
         : result.uploadChunkSize;
-    core.debug(`Use Azure SDK: ${result.useAzureSdk}`);
-    core.debug(`Upload concurrency: ${result.uploadConcurrency}`);
-    core.debug(`Upload chunk size: ${result.uploadChunkSize}`);
+    core/* debug */.Yz(`Use Azure SDK: ${result.useAzureSdk}`);
+    core/* debug */.Yz(`Upload concurrency: ${result.uploadConcurrency}`);
+    core/* debug */.Yz(`Upload chunk size: ${result.uploadChunkSize}`);
     return result;
 }
 /**
@@ -50045,17 +50046,17 @@ function getDownloadOptions(copy) {
         isFinite(Number(segmentDownloadTimeoutMins))) {
         result.segmentTimeoutInMs = Number(segmentDownloadTimeoutMins) * 60 * 1000;
     }
-    lib_core/* debug */.Yz(`Use Azure SDK: ${result.useAzureSdk}`);
-    lib_core/* debug */.Yz(`Download concurrency: ${result.downloadConcurrency}`);
-    lib_core/* debug */.Yz(`Request timeout (ms): ${result.timeoutInMs}`);
-    lib_core/* debug */.Yz(`Cache segment download timeout mins env var: ${process.env['SEGMENT_DOWNLOAD_TIMEOUT_MINS']}`);
-    lib_core/* debug */.Yz(`Segment download timeout (ms): ${result.segmentTimeoutInMs}`);
-    lib_core/* debug */.Yz(`Lookup only: ${result.lookupOnly}`);
+    core/* debug */.Yz(`Use Azure SDK: ${result.useAzureSdk}`);
+    core/* debug */.Yz(`Download concurrency: ${result.downloadConcurrency}`);
+    core/* debug */.Yz(`Request timeout (ms): ${result.timeoutInMs}`);
+    core/* debug */.Yz(`Cache segment download timeout mins env var: ${process.env['SEGMENT_DOWNLOAD_TIMEOUT_MINS']}`);
+    core/* debug */.Yz(`Segment download timeout (ms): ${result.segmentTimeoutInMs}`);
+    core/* debug */.Yz(`Lookup only: ${result.lookupOnly}`);
     return result;
 }
 //# sourceMappingURL=options.js.map
 ;// CONCATENATED MODULE: ./node_modules/@actions/cache/lib/internal/config.js
-function config_isGhes() {
+function isGhes() {
     const ghUrl = new URL(process.env['GITHUB_SERVER_URL'] || 'https://github.com');
     const hostname = ghUrl.hostname.trimEnd().toUpperCase();
     const isGitHubHost = hostname === 'GITHUB.COM';
@@ -50063,10 +50064,10 @@ function config_isGhes() {
     const isLocalHost = hostname.endsWith('.LOCALHOST');
     return !isGitHubHost && !isGheHost && !isLocalHost;
 }
-function config_getCacheServiceVersion() {
+function getCacheServiceVersion() {
     // Cache service v2 is not supported on GHES. We will default to
     // cache service v1 even if the feature flag was enabled by user.
-    if (config_isGhes())
+    if (isGhes())
         return 'v1';
     return process.env['ACTIONS_CACHE_SERVICE_V2'] ? 'v2' : 'v1';
 }
@@ -50074,7 +50075,7 @@ function config_getCacheServiceVersion() {
 // write-only}, none = neither.
 const KNOWN_CACHE_MODES = ['none', 'read', 'write', 'write-only'];
 // The effective cache-mode exported by the runner, or '' when not set.
-function config_getCacheMode() {
+function getCacheMode() {
     return (process.env['ACTIONS_CACHE_MODE'] || '').trim().toLowerCase();
 }
 // Unset or unrecognized modes are permissive so behavior matches today.
@@ -50083,13 +50084,13 @@ function isCacheReadable(mode) {
         return true;
     return mode === 'read' || mode === 'write';
 }
-function config_isCacheWritable(mode) {
+function isCacheWritable(mode) {
     if (!KNOWN_CACHE_MODES.includes(mode))
         return true;
     return mode === 'write' || mode === 'write-only';
 }
 function getCacheServiceURL() {
-    const version = config_getCacheServiceVersion();
+    const version = getCacheServiceVersion();
     // Based on the version of the cache service, we will determine which
     // URL to use.
     switch (version) {
@@ -50144,7 +50145,7 @@ function getCacheApiUrl(resource) {
         throw new Error('Cache Service Url not found, unable to restore cache.');
     }
     const url = `${baseUrl}_apis/artifactcache/${resource}`;
-    lib_core/* debug */.Yz(`Resource Url: ${url}`);
+    core/* debug */.Yz(`Resource Url: ${url}`);
     return url;
 }
 function createAcceptHeader(type, apiVersion) {
@@ -50169,16 +50170,16 @@ function getCacheEntry(keys, paths, options) {
         const httpClient = createHttpClient();
         const version = getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod, options === null || options === void 0 ? void 0 : options.enableCrossOsArchive);
         const resource = `cache?keys=${encodeURIComponent(keys.join(','))}&version=${version}`;
-        const response = yield requestUtils_retryTypedResponse('getCacheEntry', () => cacheHttpClient_awaiter(this, void 0, void 0, function* () { return httpClient.getJson(getCacheApiUrl(resource)); }));
+        const response = yield retryTypedResponse('getCacheEntry', () => cacheHttpClient_awaiter(this, void 0, void 0, function* () { return httpClient.getJson(getCacheApiUrl(resource)); }));
         // Cache not found
         if (response.statusCode === 204) {
             // List cache for primary key only if cache miss occurs
-            if (lib_core/* isDebug */._o()) {
+            if (core/* isDebug */._o()) {
                 yield printCachesListForDiagnostics(keys[0], httpClient, version);
             }
             return null;
         }
-        if (!requestUtils_isSuccessStatusCode(response.statusCode)) {
+        if (!isSuccessStatusCode(response.statusCode)) {
             // Only surface the receiver's body for a `cache read denied:` policy denial
             // so callers can dispatch on it; keep the generic message otherwise.
             const errorMessage = (_a = response.error) === null || _a === void 0 ? void 0 : _a.message;
@@ -50193,23 +50194,23 @@ function getCacheEntry(keys, paths, options) {
             // Cache achiveLocation not found. This should never happen, and hence bail out.
             throw new Error('Cache not found.');
         }
-        lib_core/* setSecret */.Pq(cacheDownloadUrl);
-        lib_core/* debug */.Yz(`Cache Result:`);
-        lib_core/* debug */.Yz(JSON.stringify(cacheResult));
+        core/* setSecret */.Pq(cacheDownloadUrl);
+        core/* debug */.Yz(`Cache Result:`);
+        core/* debug */.Yz(JSON.stringify(cacheResult));
         return cacheResult;
     });
 }
 function printCachesListForDiagnostics(key, httpClient, version) {
     return cacheHttpClient_awaiter(this, void 0, void 0, function* () {
         const resource = `caches?key=${encodeURIComponent(key)}`;
-        const response = yield requestUtils_retryTypedResponse('listCache', () => cacheHttpClient_awaiter(this, void 0, void 0, function* () { return httpClient.getJson(getCacheApiUrl(resource)); }));
+        const response = yield retryTypedResponse('listCache', () => cacheHttpClient_awaiter(this, void 0, void 0, function* () { return httpClient.getJson(getCacheApiUrl(resource)); }));
         if (response.statusCode === 200) {
             const cacheListResult = response.result;
             const totalCount = cacheListResult === null || cacheListResult === void 0 ? void 0 : cacheListResult.totalCount;
             if (totalCount && totalCount > 0) {
-                lib_core/* debug */.Yz(`No matching cache found for cache key '${key}', version '${version} and scope ${process.env['GITHUB_REF']}. There exist one or more cache(s) with similar key but they have different version or scope. See more info on cache matching here: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#matching-a-cache-key \nOther caches with similar key:`);
+                core/* debug */.Yz(`No matching cache found for cache key '${key}', version '${version} and scope ${process.env['GITHUB_REF']}. There exist one or more cache(s) with similar key but they have different version or scope. See more info on cache matching here: https://docs.github.com/en/actions/using-workflows/caching-dependencies-to-speed-up-workflows#matching-a-cache-key \nOther caches with similar key:`);
                 for (const cacheEntry of (cacheListResult === null || cacheListResult === void 0 ? void 0 : cacheListResult.artifactCaches) || []) {
-                    lib_core/* debug */.Yz(`Cache Key: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheKey}, Cache Version: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheVersion}, Cache Scope: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.scope}, Cache Created: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.creationTime}`);
+                    core/* debug */.Yz(`Cache Key: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheKey}, Cache Version: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.cacheVersion}, Cache Scope: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.scope}, Cache Created: ${cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.creationTime}`);
                 }
             }
         }
@@ -50242,7 +50243,7 @@ function downloadCache(archiveLocation, archivePath, options) {
 function reserveCache(key, paths, options) {
     return cacheHttpClient_awaiter(this, void 0, void 0, function* () {
         const httpClient = createHttpClient();
-        const version = utils.getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod, options === null || options === void 0 ? void 0 : options.enableCrossOsArchive);
+        const version = getCacheVersion(paths, options === null || options === void 0 ? void 0 : options.compressionMethod, options === null || options === void 0 ? void 0 : options.enableCrossOsArchive);
         const reserveCacheRequest = {
             key,
             version,
@@ -50264,7 +50265,7 @@ function getContentRange(start, end) {
 }
 function uploadChunk(httpClient, resourceUrl, openStream, start, end) {
     return cacheHttpClient_awaiter(this, void 0, void 0, function* () {
-        core.debug(`Uploading chunk of size ${end - start + 1} bytes at offset ${start} with content range: ${getContentRange(start, end)}`);
+        core/* debug */.Yz(`Uploading chunk of size ${end - start + 1} bytes at offset ${start} with content range: ${getContentRange(start, end)}`);
         const additionalHeaders = {
             'Content-Type': 'application/octet-stream',
             'Content-Range': getContentRange(start, end)
@@ -50280,14 +50281,14 @@ function uploadChunk(httpClient, resourceUrl, openStream, start, end) {
 function uploadFile(httpClient, cacheId, archivePath, options) {
     return cacheHttpClient_awaiter(this, void 0, void 0, function* () {
         // Upload Chunks
-        const fileSize = utils.getArchiveFileSizeInBytes(archivePath);
+        const fileSize = getArchiveFileSizeInBytes(archivePath);
         const resourceUrl = getCacheApiUrl(`caches/${cacheId.toString()}`);
-        const fd = fs.openSync(archivePath, 'r');
+        const fd = external_fs_.openSync(archivePath, 'r');
         const uploadOptions = getUploadOptions(options);
-        const concurrency = utils.assertDefined('uploadConcurrency', uploadOptions.uploadConcurrency);
-        const maxChunkSize = utils.assertDefined('uploadChunkSize', uploadOptions.uploadChunkSize);
+        const concurrency = assertDefined('uploadConcurrency', uploadOptions.uploadConcurrency);
+        const maxChunkSize = assertDefined('uploadChunkSize', uploadOptions.uploadChunkSize);
         const parallelUploads = [...new Array(concurrency).keys()];
-        core.debug('Awaiting all uploads');
+        core/* debug */.Yz('Awaiting all uploads');
         let offset = 0;
         try {
             yield Promise.all(parallelUploads.map(() => cacheHttpClient_awaiter(this, void 0, void 0, function* () {
@@ -50296,8 +50297,7 @@ function uploadFile(httpClient, cacheId, archivePath, options) {
                     const start = offset;
                     const end = offset + chunkSize - 1;
                     offset += maxChunkSize;
-                    yield uploadChunk(httpClient, resourceUrl, () => fs
-                        .createReadStream(archivePath, {
+                    yield uploadChunk(httpClient, resourceUrl, () => external_fs_.createReadStream(archivePath, {
                         fd,
                         start,
                         end,
@@ -50310,7 +50310,7 @@ function uploadFile(httpClient, cacheId, archivePath, options) {
             })));
         }
         finally {
-            fs.closeSync(fd);
+            external_fs_.closeSync(fd);
         }
         return;
     });
@@ -50335,17 +50335,17 @@ function saveCache(cacheId, archivePath, signedUploadURL, options) {
         }
         else {
             const httpClient = createHttpClient();
-            core.debug('Upload cache');
+            core/* debug */.Yz('Upload cache');
             yield uploadFile(httpClient, cacheId, archivePath, options);
             // Commit Cache
-            core.debug('Commiting cache');
-            const cacheSize = utils.getArchiveFileSizeInBytes(archivePath);
-            core.info(`Cache Size: ~${Math.round(cacheSize / (1024 * 1024))} MB (${cacheSize} B)`);
+            core/* debug */.Yz('Commiting cache');
+            const cacheSize = getArchiveFileSizeInBytes(archivePath);
+            core/* info */.pq(`Cache Size: ~${Math.round(cacheSize / (1024 * 1024))} MB (${cacheSize} B)`);
             const commitCacheResponse = yield commitCache(httpClient, cacheId, cacheSize);
             if (!isSuccessStatusCode(commitCacheResponse.statusCode)) {
                 throw new Error(`Cache service responded with ${commitCacheResponse.statusCode} during commit cache.`);
             }
-            core.info('Cache saved successfully');
+            core/* info */.pq('Cache saved successfully');
         }
     });
 }
@@ -50967,12 +50967,12 @@ function maskSigUrl(url) {
         const parsedUrl = new URL(url);
         const signature = parsedUrl.searchParams.get('sig');
         if (signature) {
-            (0,lib_core/* setSecret */.Pq)(signature);
-            (0,lib_core/* setSecret */.Pq)(encodeURIComponent(signature));
+            (0,core/* setSecret */.Pq)(signature);
+            (0,core/* setSecret */.Pq)(encodeURIComponent(signature));
         }
     }
     catch (error) {
-        (0,lib_core/* debug */.Yz)(`Failed to parse URL: ${url} ${error instanceof Error ? error.message : String(error)}`);
+        (0,core/* debug */.Yz)(`Failed to parse URL: ${url} ${error instanceof Error ? error.message : String(error)}`);
     }
 }
 /**
@@ -50998,7 +50998,7 @@ function maskSigUrl(url) {
  */
 function maskSecretUrls(body) {
     if (typeof body !== 'object' || body === null) {
-        (0,lib_core/* debug */.Yz)('body is not an object or is null');
+        (0,core/* debug */.Yz)('body is not an object or is null');
         return;
     }
     if ('signed_upload_url' in body &&
@@ -51062,7 +51062,7 @@ class CacheServiceClient {
     request(service, method, contentType, data) {
         return cacheTwirpClient_awaiter(this, void 0, void 0, function* () {
             const url = new URL(`/twirp/${service}/${method}`, this.baseUrl).href;
-            (0,lib_core/* debug */.Yz)(`[Request] ${method} ${url}`);
+            (0,core/* debug */.Yz)(`[Request] ${method} ${url}`);
             const headers = {
                 'Content-Type': contentType
             };
@@ -51086,11 +51086,11 @@ class CacheServiceClient {
                     const response = yield operation();
                     const statusCode = response.message.statusCode;
                     rawBody = yield response.readBody();
-                    (0,lib_core/* debug */.Yz)(`[Response] - ${response.message.statusCode}`);
-                    (0,lib_core/* debug */.Yz)(`Headers: ${JSON.stringify(response.message.headers, null, 2)}`);
+                    (0,core/* debug */.Yz)(`[Response] - ${response.message.statusCode}`);
+                    (0,core/* debug */.Yz)(`Headers: ${JSON.stringify(response.message.headers, null, 2)}`);
                     const body = JSON.parse(rawBody);
                     maskSecretUrls(body);
-                    (0,lib_core/* debug */.Yz)(`Body: ${JSON.stringify(body, null, 2)}`);
+                    (0,core/* debug */.Yz)(`Body: ${JSON.stringify(body, null, 2)}`);
                     if (this.isSuccessStatusCode(statusCode)) {
                         return { response, body };
                     }
@@ -51109,7 +51109,7 @@ class CacheServiceClient {
                         if (retryAfterHeader) {
                             const parsedSeconds = parseInt(retryAfterHeader, 10);
                             if (!isNaN(parsedSeconds) && parsedSeconds > 0) {
-                                (0,lib_core/* warning */.$e)(`You've hit a rate limit, your rate limit will reset in ${parsedSeconds} seconds`);
+                                (0,core/* warning */.$e)(`You've hit a rate limit, your rate limit will reset in ${parsedSeconds} seconds`);
                             }
                         }
                         throw new RateLimitError(`Rate limited: ${errorMessage}`);
@@ -51117,7 +51117,7 @@ class CacheServiceClient {
                 }
                 catch (error) {
                     if (error instanceof SyntaxError) {
-                        (0,lib_core/* debug */.Yz)(`Raw Body: ${rawBody}`);
+                        (0,core/* debug */.Yz)(`Raw Body: ${rawBody}`);
                     }
                     if (error instanceof UsageError) {
                         throw error;
@@ -51138,7 +51138,7 @@ class CacheServiceClient {
                     throw new Error(`Failed to make request after ${this.maxAttempts} attempts: ${errorMessage}`);
                 }
                 const retryTimeMilliseconds = this.getExponentialRetryTimeMilliseconds(attempt);
-                (0,lib_core/* info */.pq)(`Attempt ${attempt + 1} of ${this.maxAttempts} failed with error: ${errorMessage}. Retrying request in ${retryTimeMilliseconds} ms...`);
+                (0,core/* info */.pq)(`Attempt ${attempt + 1} of ${this.maxAttempts} failed with error: ${errorMessage}. Retrying request in ${retryTimeMilliseconds} ms...`);
                 yield this.sleep(retryTimeMilliseconds);
                 attempt++;
             }
@@ -51258,7 +51258,7 @@ function getTarArgs(tarPath_1, compressionMethod_1, type_1) {
                     ? tarFile
                     : cacheFileName.replace(new RegExp(`\\${external_path_.sep}`, 'g'), '/'), '--exclude', BSD_TAR_ZSTD
                     ? tarFile
-                    : cacheFileName.replace(new RegExp(`\\${external_path_.sep}`, 'g'), '/'), '-P', '-C', workingDirectory.replace(new RegExp(`\\${external_path_.sep}`, 'g'), '/'), '--files-from', constants_ManifestFilename);
+                    : cacheFileName.replace(new RegExp(`\\${external_path_.sep}`, 'g'), '/'), '-P', '-C', workingDirectory.replace(new RegExp(`\\${external_path_.sep}`, 'g'), '/'), '--files-from', ManifestFilename);
                 break;
             case 'extract':
                 args.push('-xf', BSD_TAR_ZSTD
@@ -51402,7 +51402,7 @@ function execCommands(commands, cwd) {
     });
 }
 // List the contents of a tar
-function tar_listTar(archivePath, compressionMethod) {
+function listTar(archivePath, compressionMethod) {
     return tar_awaiter(this, void 0, void 0, function* () {
         const commands = yield getCommands(compressionMethod, 'list', archivePath);
         yield execCommands(commands);
@@ -51419,10 +51419,10 @@ function extractTar(archivePath, compressionMethod) {
     });
 }
 // Create a tar
-function tar_createTar(archiveFolder, sourceDirectories, compressionMethod) {
+function createTar(archiveFolder, sourceDirectories, compressionMethod) {
     return tar_awaiter(this, void 0, void 0, function* () {
         // Write source directories to manifest.txt to avoid command length limits
-        writeFileSync(path.join(archiveFolder, ManifestFilename), sourceDirectories.join('\n'));
+        (0,external_fs_.writeFileSync)(external_path_.join(archiveFolder, ManifestFilename), sourceDirectories.join('\n'));
         const commands = yield getCommands(compressionMethod, 'create');
         yield execCommands(commands, archiveFolder);
     });
@@ -51531,7 +51531,7 @@ function checkKey(key) {
  * @returns boolean return true if Actions cache service feature is available, otherwise false
  */
 function isFeatureAvailable() {
-    const cacheServiceVersion = config_getCacheServiceVersion();
+    const cacheServiceVersion = getCacheServiceVersion();
     // Check availability based on cache service version
     switch (cacheServiceVersion) {
         case 'v2':
@@ -51555,13 +51555,13 @@ function isFeatureAvailable() {
  */
 function restoreCache(paths_1, primaryKey_1, restoreKeys_1, options_1) {
     return cache_awaiter(this, arguments, void 0, function* (paths, primaryKey, restoreKeys, options, enableCrossOsArchive = false) {
-        const cacheServiceVersion = config_getCacheServiceVersion();
-        lib_core/* debug */.Yz(`Cache service version: ${cacheServiceVersion}`);
+        const cacheServiceVersion = getCacheServiceVersion();
+        core/* debug */.Yz(`Cache service version: ${cacheServiceVersion}`);
         checkPaths(paths);
-        const cacheMode = config_getCacheMode();
+        const cacheMode = getCacheMode();
         if (!isCacheReadable(cacheMode)) {
-            lib_core/* info */.pq(`Cache restore skipped: the effective cache-mode '${cacheMode}' does not permit reads.`);
-            lib_core/* debug */.Yz(`Skipped restore for paths [${paths.join(', ')}] with primary key '${primaryKey}'.`);
+            core/* info */.pq(`Cache restore skipped: the effective cache-mode '${cacheMode}' does not permit reads.`);
+            core/* debug */.Yz(`Skipped restore for paths [${paths.join(', ')}] with primary key '${primaryKey}'.`);
             return undefined;
         }
         switch (cacheServiceVersion) {
@@ -51588,8 +51588,8 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
         var _a;
         restoreKeys = restoreKeys || [];
         const keys = [primaryKey, ...restoreKeys];
-        lib_core/* debug */.Yz('Resolved Keys:');
-        lib_core/* debug */.Yz(JSON.stringify(keys));
+        core/* debug */.Yz('Resolved Keys:');
+        core/* debug */.Yz(JSON.stringify(keys));
         if (keys.length > 10) {
             throw new ValidationError(`Key Validation Error: Keys are limited to a maximum of 10.`);
         }
@@ -51625,20 +51625,20 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 return undefined;
             }
             if (options === null || options === void 0 ? void 0 : options.lookupOnly) {
-                lib_core/* info */.pq('Lookup only - skipping download');
+                core/* info */.pq('Lookup only - skipping download');
                 return cacheEntry.cacheKey;
             }
             archivePath = external_path_.join(yield createTempDirectory(), getCacheFileName(compressionMethod));
-            lib_core/* debug */.Yz(`Archive Path: ${archivePath}`);
+            core/* debug */.Yz(`Archive Path: ${archivePath}`);
             // Download the cache from the cache entry
             yield downloadCache(cacheEntry.archiveLocation, archivePath, options);
-            if (lib_core/* isDebug */._o()) {
-                yield tar_listTar(archivePath, compressionMethod);
+            if (core/* isDebug */._o()) {
+                yield listTar(archivePath, compressionMethod);
             }
             const archiveFileSize = getArchiveFileSizeInBytes(archivePath);
-            lib_core/* info */.pq(`Cache Size: ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B)`);
+            core/* info */.pq(`Cache Size: ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B)`);
             yield extractTar(archivePath, compressionMethod);
-            lib_core/* info */.pq('Cache restored successfully');
+            core/* info */.pq('Cache restored successfully');
             return cacheEntry.cacheKey;
         }
         catch (error) {
@@ -51654,10 +51654,10 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 if (typedError instanceof lib/* HttpClientError */.Kg &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
-                    lib_core/* error */.z3(`Failed to restore: ${error.message}`);
+                    core/* error */.z3(`Failed to restore: ${error.message}`);
                 }
                 else {
-                    lib_core/* warning */.$e(`Failed to restore: ${error.message}`);
+                    core/* warning */.$e(`Failed to restore: ${error.message}`);
                 }
             }
         }
@@ -51667,7 +51667,7 @@ function restoreCacheV1(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 yield unlinkFile(archivePath);
             }
             catch (error) {
-                lib_core/* debug */.Yz(`Failed to delete archive: ${error}`);
+                core/* debug */.Yz(`Failed to delete archive: ${error}`);
             }
         }
         return undefined;
@@ -51690,8 +51690,8 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
         options = Object.assign(Object.assign({}, options), { useAzureSdk: true });
         restoreKeys = restoreKeys || [];
         const keys = [primaryKey, ...restoreKeys];
-        lib_core/* debug */.Yz('Resolved Keys:');
-        lib_core/* debug */.Yz(JSON.stringify(keys));
+        core/* debug */.Yz('Resolved Keys:');
+        core/* debug */.Yz(JSON.stringify(keys));
         if (keys.length > 10) {
             throw new ValidationError(`Key Validation Error: Keys are limited to a maximum of 10.`);
         }
@@ -51722,31 +51722,31 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 throw error;
             }
             if (!response.ok) {
-                lib_core/* debug */.Yz(`Cache not found for version ${request.version} of keys: ${keys.join(', ')}`);
+                core/* debug */.Yz(`Cache not found for version ${request.version} of keys: ${keys.join(', ')}`);
                 return undefined;
             }
             const isRestoreKeyMatch = request.key !== response.matchedKey;
             if (isRestoreKeyMatch) {
-                lib_core/* info */.pq(`Cache hit for restore-key: ${response.matchedKey}`);
+                core/* info */.pq(`Cache hit for restore-key: ${response.matchedKey}`);
             }
             else {
-                lib_core/* info */.pq(`Cache hit for: ${response.matchedKey}`);
+                core/* info */.pq(`Cache hit for: ${response.matchedKey}`);
             }
             if (options === null || options === void 0 ? void 0 : options.lookupOnly) {
-                lib_core/* info */.pq('Lookup only - skipping download');
+                core/* info */.pq('Lookup only - skipping download');
                 return response.matchedKey;
             }
             archivePath = external_path_.join(yield createTempDirectory(), getCacheFileName(compressionMethod));
-            lib_core/* debug */.Yz(`Archive path: ${archivePath}`);
-            lib_core/* debug */.Yz(`Starting download of archive to: ${archivePath}`);
+            core/* debug */.Yz(`Archive path: ${archivePath}`);
+            core/* debug */.Yz(`Starting download of archive to: ${archivePath}`);
             yield downloadCache(response.signedDownloadUrl, archivePath, options);
             const archiveFileSize = getArchiveFileSizeInBytes(archivePath);
-            lib_core/* info */.pq(`Cache Size: ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B)`);
-            if (lib_core/* isDebug */._o()) {
-                yield tar_listTar(archivePath, compressionMethod);
+            core/* info */.pq(`Cache Size: ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B)`);
+            if (core/* isDebug */._o()) {
+                yield listTar(archivePath, compressionMethod);
             }
             yield extractTar(archivePath, compressionMethod);
-            lib_core/* info */.pq('Cache restored successfully');
+            core/* info */.pq('Cache restored successfully');
             return response.matchedKey;
         }
         catch (error) {
@@ -51762,10 +51762,10 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 if (typedError instanceof lib/* HttpClientError */.Kg &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
-                    lib_core/* error */.z3(`Failed to restore: ${error.message}`);
+                    core/* error */.z3(`Failed to restore: ${error.message}`);
                 }
                 else {
-                    lib_core/* warning */.$e(`Failed to restore: ${error.message}`);
+                    core/* warning */.$e(`Failed to restore: ${error.message}`);
                 }
             }
         }
@@ -51776,7 +51776,7 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
                 }
             }
             catch (error) {
-                lib_core/* debug */.Yz(`Failed to delete archive: ${error}`);
+                core/* debug */.Yz(`Failed to delete archive: ${error}`);
             }
         }
         return undefined;
@@ -51794,13 +51794,13 @@ function restoreCacheV2(paths_1, primaryKey_1, restoreKeys_1, options_1) {
 function cache_saveCache(paths_1, key_1, options_1) {
     return cache_awaiter(this, arguments, void 0, function* (paths, key, options, enableCrossOsArchive = false) {
         const cacheServiceVersion = getCacheServiceVersion();
-        core.debug(`Cache service version: ${cacheServiceVersion}`);
+        core/* debug */.Yz(`Cache service version: ${cacheServiceVersion}`);
         checkPaths(paths);
         checkKey(key);
         const cacheMode = getCacheMode();
         if (!isCacheWritable(cacheMode)) {
-            core.info(`Cache save skipped: the effective cache-mode '${cacheMode}' does not permit writes.`);
-            core.debug(`Skipped save for paths [${paths.join(', ')}] with key '${key}'.`);
+            core/* info */.pq(`Cache save skipped: the effective cache-mode '${cacheMode}' does not permit writes.`);
+            core/* debug */.Yz(`Skipped save for paths [${paths.join(', ')}] with key '${key}'.`);
             return -1;
         }
         switch (cacheServiceVersion) {
@@ -51824,31 +51824,31 @@ function cache_saveCache(paths_1, key_1, options_1) {
 function saveCacheV1(paths_1, key_1, options_1) {
     return cache_awaiter(this, arguments, void 0, function* (paths, key, options, enableCrossOsArchive = false) {
         var _a, _b, _c, _d, _e, _f;
-        const compressionMethod = yield utils.getCompressionMethod();
+        const compressionMethod = yield getCompressionMethod();
         let cacheId = -1;
-        const cachePaths = yield utils.resolvePaths(paths);
-        core.debug('Cache Paths:');
-        core.debug(`${JSON.stringify(cachePaths)}`);
+        const cachePaths = yield resolvePaths(paths);
+        core/* debug */.Yz('Cache Paths:');
+        core/* debug */.Yz(`${JSON.stringify(cachePaths)}`);
         if (cachePaths.length === 0) {
             throw new Error(`Path Validation Error: Path(s) specified in the action for caching do(es) not exist, hence no cache is being saved.`);
         }
-        const archiveFolder = yield utils.createTempDirectory();
-        const archivePath = path.join(archiveFolder, utils.getCacheFileName(compressionMethod));
-        core.debug(`Archive Path: ${archivePath}`);
+        const archiveFolder = yield createTempDirectory();
+        const archivePath = external_path_.join(archiveFolder, getCacheFileName(compressionMethod));
+        core/* debug */.Yz(`Archive Path: ${archivePath}`);
         try {
             yield createTar(archiveFolder, cachePaths, compressionMethod);
-            if (core.isDebug()) {
+            if (core/* isDebug */._o()) {
                 yield listTar(archivePath, compressionMethod);
             }
             const fileSizeLimit = 10 * 1024 * 1024 * 1024; // 10GB per repo limit
-            const archiveFileSize = utils.getArchiveFileSizeInBytes(archivePath);
-            core.debug(`File Size: ${archiveFileSize}`);
+            const archiveFileSize = getArchiveFileSizeInBytes(archivePath);
+            core/* debug */.Yz(`File Size: ${archiveFileSize}`);
             // For GHES, this check will take place in ReserveCache API with enterprise file size limit
             if (archiveFileSize > fileSizeLimit && !isGhes()) {
                 throw new Error(`Cache size of ~${Math.round(archiveFileSize / (1024 * 1024))} MB (${archiveFileSize} B) is over the 10GB limit, not saving cache.`);
             }
-            core.debug('Reserving Cache');
-            const reserveCacheResponse = yield cacheHttpClient.reserveCache(key, paths, {
+            core/* debug */.Yz('Reserving Cache');
+            const reserveCacheResponse = yield reserveCache(key, paths, {
                 compressionMethod,
                 enableCrossOsArchive,
                 cacheSize: archiveFileSize
@@ -51872,8 +51872,8 @@ function saveCacheV1(paths_1, key_1, options_1) {
                 }
                 throw new ReserveCacheError(`Unable to reserve cache with key ${key}, another job may be creating this cache. More details: ${(_f = reserveCacheResponse === null || reserveCacheResponse === void 0 ? void 0 : reserveCacheResponse.error) === null || _f === void 0 ? void 0 : _f.message}`);
             }
-            core.debug(`Saving Cache (ID: ${cacheId})`);
-            yield cacheHttpClient.saveCache(cacheId, archivePath, '', options);
+            core/* debug */.Yz(`Saving Cache (ID: ${cacheId})`);
+            yield saveCache(cacheId, archivePath, '', options);
         }
         catch (error) {
             const typedError = error;
@@ -51881,30 +51881,30 @@ function saveCacheV1(paths_1, key_1, options_1) {
                 throw error;
             }
             else if (typedError.name === ReserveCacheError.name) {
-                core.info(`Failed to save: ${typedError.message}`);
+                core/* info */.pq(`Failed to save: ${typedError.message}`);
             }
             else {
                 // Log server errors (5xx) as errors, all other errors as warnings.
                 // A write denied by policy (CacheWriteDeniedError) is not an
                 // HttpClientError and its name does not match the ReserveCacheError arm,
                 // so it falls here and is warned without failing the run.
-                if (typedError instanceof HttpClientError &&
+                if (typedError instanceof lib/* HttpClientError */.Kg &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
-                    core.error(`Failed to save: ${typedError.message}`);
+                    core/* error */.z3(`Failed to save: ${typedError.message}`);
                 }
                 else {
-                    core.warning(`Failed to save: ${typedError.message}`);
+                    core/* warning */.$e(`Failed to save: ${typedError.message}`);
                 }
             }
         }
         finally {
             // Try to delete the archive to save space
             try {
-                yield utils.unlinkFile(archivePath);
+                yield unlinkFile(archivePath);
             }
             catch (error) {
-                core.debug(`Failed to delete archive: ${error}`);
+                core/* debug */.Yz(`Failed to delete archive: ${error}`);
             }
         }
         return cacheId;
@@ -51926,29 +51926,29 @@ function saveCacheV2(paths_1, key_1, options_1) {
         // ...options goes first because we want to override the default values
         // set in UploadOptions with these specific figures
         options = Object.assign(Object.assign({}, options), { uploadChunkSize: 64 * 1024 * 1024, uploadConcurrency: 8, useAzureSdk: true });
-        const compressionMethod = yield utils.getCompressionMethod();
-        const twirpClient = cacheTwirpClient.internalCacheTwirpClient();
+        const compressionMethod = yield getCompressionMethod();
+        const twirpClient = internalCacheTwirpClient();
         let cacheId = -1;
-        const cachePaths = yield utils.resolvePaths(paths);
-        core.debug('Cache Paths:');
-        core.debug(`${JSON.stringify(cachePaths)}`);
+        const cachePaths = yield resolvePaths(paths);
+        core/* debug */.Yz('Cache Paths:');
+        core/* debug */.Yz(`${JSON.stringify(cachePaths)}`);
         if (cachePaths.length === 0) {
             throw new Error(`Path Validation Error: Path(s) specified in the action for caching do(es) not exist, hence no cache is being saved.`);
         }
-        const archiveFolder = yield utils.createTempDirectory();
-        const archivePath = path.join(archiveFolder, utils.getCacheFileName(compressionMethod));
-        core.debug(`Archive Path: ${archivePath}`);
+        const archiveFolder = yield createTempDirectory();
+        const archivePath = external_path_.join(archiveFolder, getCacheFileName(compressionMethod));
+        core/* debug */.Yz(`Archive Path: ${archivePath}`);
         try {
             yield createTar(archiveFolder, cachePaths, compressionMethod);
-            if (core.isDebug()) {
+            if (core/* isDebug */._o()) {
                 yield listTar(archivePath, compressionMethod);
             }
-            const archiveFileSize = utils.getArchiveFileSizeInBytes(archivePath);
-            core.debug(`File Size: ${archiveFileSize}`);
+            const archiveFileSize = getArchiveFileSizeInBytes(archivePath);
+            core/* debug */.Yz(`File Size: ${archiveFileSize}`);
             // Set the archive size in the options, will be used to display the upload progress
             options.archiveSizeBytes = archiveFileSize;
-            core.debug('Reserving Cache');
-            const version = utils.getCacheVersion(paths, compressionMethod, enableCrossOsArchive);
+            core/* debug */.Yz('Reserving Cache');
+            const version = getCacheVersion(paths, compressionMethod, enableCrossOsArchive);
             const request = {
                 key,
                 version
@@ -51962,29 +51962,29 @@ function saveCacheV2(paths_1, key_1, options_1) {
                     // customer-facing warning.
                     if (response.message &&
                         !response.message.startsWith(CACHE_WRITE_DENIED_PREFIX)) {
-                        core.warning(`Cache reservation failed: ${response.message}`);
+                        core/* warning */.$e(`Cache reservation failed: ${response.message}`);
                     }
                     throw new Error(response.message || 'Response was not ok');
                 }
                 signedUploadUrl = response.signedUploadUrl;
             }
             catch (error) {
-                core.debug(`Failed to reserve cache: ${error}`);
+                core/* debug */.Yz(`Failed to reserve cache: ${error}`);
                 const errorMessage = (_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : '';
                 if (errorMessage.startsWith(CACHE_WRITE_DENIED_PREFIX)) {
                     throw new CacheWriteDeniedError(`Unable to reserve cache with key ${key}. More details: ${errorMessage}`);
                 }
                 throw new ReserveCacheError(`Unable to reserve cache with key ${key}, another job may be creating this cache.`);
             }
-            core.debug(`Attempting to upload cache located at: ${archivePath}`);
-            yield cacheHttpClient.saveCache(cacheId, archivePath, signedUploadUrl, options);
+            core/* debug */.Yz(`Attempting to upload cache located at: ${archivePath}`);
+            yield saveCache(cacheId, archivePath, signedUploadUrl, options);
             const finalizeRequest = {
                 key,
                 version,
                 sizeBytes: `${archiveFileSize}`
             };
             const finalizeResponse = yield twirpClient.FinalizeCacheEntryUpload(finalizeRequest);
-            core.debug(`FinalizeCacheEntryUploadResponse: ${finalizeResponse.ok}`);
+            core/* debug */.Yz(`FinalizeCacheEntryUploadResponse: ${finalizeResponse.ok}`);
             if (!finalizeResponse.ok) {
                 if (finalizeResponse.message) {
                     throw new FinalizeCacheError(finalizeResponse.message);
@@ -51999,33 +51999,33 @@ function saveCacheV2(paths_1, key_1, options_1) {
                 throw error;
             }
             else if (typedError.name === ReserveCacheError.name) {
-                core.info(`Failed to save: ${typedError.message}`);
+                core/* info */.pq(`Failed to save: ${typedError.message}`);
             }
             else if (typedError.name === FinalizeCacheError.name) {
-                core.warning(typedError.message);
+                core/* warning */.$e(typedError.message);
             }
             else {
                 // Log server errors (5xx) as errors, all other errors as warnings.
                 // A write denied by policy (CacheWriteDeniedError) is not an
                 // HttpClientError and its name does not match the ReserveCacheError arm,
                 // so it falls here and is warned without failing the run.
-                if (typedError instanceof HttpClientError &&
+                if (typedError instanceof lib/* HttpClientError */.Kg &&
                     typeof typedError.statusCode === 'number' &&
                     typedError.statusCode >= 500) {
-                    core.error(`Failed to save: ${typedError.message}`);
+                    core/* error */.z3(`Failed to save: ${typedError.message}`);
                 }
                 else {
-                    core.warning(`Failed to save: ${typedError.message}`);
+                    core/* warning */.$e(`Failed to save: ${typedError.message}`);
                 }
             }
         }
         finally {
             // Try to delete the archive to save space
             try {
-                yield utils.unlinkFile(archivePath);
+                yield unlinkFile(archivePath);
             }
             catch (error) {
-                core.debug(`Failed to delete archive: ${error}`);
+                core/* debug */.Yz(`Failed to delete archive: ${error}`);
             }
         }
         return cacheId;
@@ -52041,10 +52041,9 @@ function saveCacheV2(paths_1, key_1, options_1) {
 
 // EXPORTS
 __webpack_require__.d(__webpack_exports__, {
+  v: () => (/* binding */ create),
   y: () => (/* binding */ glob_hashFiles)
 });
-
-// UNUSED EXPORTS: create
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 7 modules
 var core = __webpack_require__(3838);
