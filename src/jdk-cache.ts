@@ -99,18 +99,20 @@ export async function saveJdkCaches(): Promise<void> {
 }
 
 export function buildJdkCacheKey(jdk: JdkCache): string {
+  const runnerOs = process.env['RUNNER_OS'] ?? process.platform;
+  const normalizedArchitecture = jdk.architecture.toLowerCase();
   const identity = JSON.stringify({
     keyVersion: JDK_CACHE_KEY_VERSION,
-    runnerOs: process.env['RUNNER_OS'] ?? process.platform,
+    runnerOs,
     platform: process.platform,
     distribution: jdk.distribution.toLowerCase(),
     packageType: jdk.packageType.toLowerCase(),
-    architecture: jdk.architecture.toLowerCase(),
+    architecture: normalizedArchitecture,
     version: jdk.version,
     source: jdk.source
   });
   const digest = createHash('sha256').update(identity).digest('hex');
-  return `setup-java-jdk-v${JDK_CACHE_KEY_VERSION}-${process.env['RUNNER_OS'] ?? process.platform}-${jdk.architecture}-${digest}`;
+  return `setup-java-jdk-v${JDK_CACHE_KEY_VERSION}-${runnerOs}-${normalizedArchitecture}-${digest}`;
 }
 
 function parseJdkCacheState(state: string): JdkCacheState[] {

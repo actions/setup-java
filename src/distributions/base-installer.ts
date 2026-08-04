@@ -324,18 +324,23 @@ export abstract class JavaBase {
   }
 
   protected getJdkCachePath(version: string): string {
+    const toolCache = process.env['RUNNER_TOOL_CACHE'];
+    if (!toolCache) {
+      return '';
+    }
     return path.join(
-      process.env['RUNNER_TOOL_CACHE'] ?? '',
+      toolCache,
       this.toolcacheFolderName,
       this.getToolcacheVersionName(version)
     );
   }
 
   protected getRestoredJdkPath(version: string): string | null {
-    const architecturePath = path.join(
-      this.getJdkCachePath(version),
-      this.architecture
-    );
+    const basePath = this.getJdkCachePath(version);
+    if (!basePath) {
+      return null;
+    }
+    const architecturePath = path.join(basePath, this.architecture);
     return fs.existsSync(architecturePath) &&
       fs.existsSync(`${architecturePath}.complete`)
       ? architecturePath
