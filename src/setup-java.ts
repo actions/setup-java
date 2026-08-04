@@ -7,8 +7,13 @@ import * as path from 'path';
 import { getJavaDistribution } from './distributions/distribution-factory';
 import { JavaInstallerOptions } from './distributions/base-models';
 
+const DEPRECATION_WARNING =
+  'setup-java v2 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.';
+
 async function run() {
   try {
+    core.warning(DEPRECATION_WARNING);
+
     const version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });
     const distributionName = core.getInput(constants.INPUT_DISTRIBUTION, { required: true });
     const architecture = core.getInput(constants.INPUT_ARCHITECTURE);
