@@ -68,7 +68,12 @@ steps:
 
 - Upgraded the action runtime from Node 20 to Node 24.
 - Requires runner version `v2.327.1` or later. See the [runner release notes](https://github.com/actions/runner/releases/tag/v2.327.1).
-- See the full [v5.0.0 release notes](https://github.com/actions/setup-java/releases/tag/v5.0.0).
+- See the [complete V5 release history](https://github.com/actions/setup-java/releases?q=v5&expanded=true) for enhancements and fixes across all V5 releases.
+
+### Older versions
+
+> [!WARNING]
+> `actions/setup-java` versions `v1` through `v4` are deprecated. Upgrade workflows to `actions/setup-java@v5`, the latest stable release.
 
 ## Usage
 
