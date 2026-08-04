@@ -66,8 +66,14 @@ steps:
 
 ### V5
 
-- Upgraded the action runtime from Node 20 to Node 24.
-- Requires runner version `v2.327.1` or later. See the [runner release notes](https://github.com/actions/runner/releases/tag/v2.327.1).
+- Upgraded the action runtime from Node 20 to Node 24. Self-hosted runners must use version `v2.327.1` or later. See the [runner release notes](https://github.com/actions/runner/releases/tag/v2.327.1).
+- Added support for [GraalVM Community](#supported-distributions) and [Tencent Kona](#supported-distributions).
+- Expanded `java-version-file` support with `.sdkmanrc` files and automatic distribution detection from SDKMAN and asdf vendor identifiers.
+- Added optional package-signature verification for Eclipse Temurin and Microsoft Build of OpenJDK downloads.
+- Added `set-default: false` for installing a JDK without changing `JAVA_HOME` or `PATH`.
+- Improved dependency caching with separate Maven and Gradle wrapper caches, Maven extension-aware cache keys, and the `cache-primary-key` output.
+- Improved Maven and Java build behavior by preserving toolchain entries across repeated action invocations, suppressing transfer progress by default, generating non-interactive Maven settings, and matching `javac` compiler errors.
+- Renamed the `jdkFile` input to `jdk-file`; the old name remains available as a deprecated alias.
 - See the [complete V5 release history](https://github.com/actions/setup-java/releases?q=v5&expanded=true) for enhancements and fixes across all V5 releases.
 
 ### Older versions
