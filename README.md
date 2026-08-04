@@ -9,7 +9,7 @@ Set up Java for GitHub Actions workflows. `setup-java` installs a requested Java
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
+  - uses: actions/setup-java@v5
     with:
       distribution: temurin
       java-version: '25'
@@ -82,7 +82,7 @@ steps:
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
+  - uses: actions/setup-java@v5
     with:
       distribution: temurin
       java-version: '25'
@@ -94,7 +94,7 @@ steps:
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
+  - uses: actions/setup-java@v5
     with:
       distribution: microsoft
       java-version: '25'
@@ -106,7 +106,7 @@ steps:
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
+  - uses: actions/setup-java@v5
     with:
       distribution: temurin
       java-version-file: .java-version
@@ -120,7 +120,7 @@ Supported version files are `.java-version`, `.tool-versions`, and `.sdkmanrc`. 
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
+  - uses: actions/setup-java@v5
     with:
       distribution: temurin
       java-version: latest
@@ -235,7 +235,7 @@ Set `cache` to `maven`, `gradle`, or `sbt` to cache dependencies with minimal co
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
+  - uses: actions/setup-java@v5
     with:
       distribution: temurin
       java-version: '25'
@@ -254,7 +254,7 @@ The primary dependency cache key is `setup-java-<runner-os>-<node-arch>-<package
 Use `cache-dependency-path` to override the files used for key hashing, especially in monorepos:
 
 ```yaml
-- uses: actions/setup-java@v6
+- uses: actions/setup-java@v5
   with:
     distribution: temurin
     java-version: '25'
@@ -267,7 +267,7 @@ Use `cache-dependency-path` to override the files used for key hashing, especial
 Use `cache-path` when the build tool stores dependencies outside the default location:
 
 ```yaml
-- uses: actions/setup-java@v6
+- uses: actions/setup-java@v5
   with:
     distribution: temurin
     java-version: '25'
@@ -285,7 +285,7 @@ Use `cache-path` when the build tool stores dependencies outside the default loc
 Set `cache-read-only: true` to restore dependency caches without saving changes in the post action. This is useful for pull requests, merge queues, short-lived branches, and matrix fan-out jobs that should only consume caches produced elsewhere.
 
 ```yaml
-- uses: actions/setup-java@v6
+- uses: actions/setup-java@v5
   with:
     distribution: temurin
     java-version: '25'
@@ -301,7 +301,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v6
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '25'
@@ -316,7 +316,7 @@ jobs:
         goal: [test, verify, package]
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v6
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '25'
@@ -347,7 +347,7 @@ env:
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
+  - uses: actions/setup-java@v5
     with:
       distribution: temurin
       java-version: '25'
@@ -361,7 +361,7 @@ Install multiple Java versions by providing a multiline `java-version` value. Al
 
 ```yaml
 steps:
-  - uses: actions/setup-java@v6
+  - uses: actions/setup-java@v5
     with:
       distribution: temurin
       java-version: |
@@ -388,7 +388,7 @@ jobs:
     name: Java ${{ matrix.java }}
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v6
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
@@ -405,7 +405,7 @@ jobs:
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
+  - uses: actions/setup-java@v5
     with:
       distribution: temurin
       java-version: '25'
@@ -422,7 +422,7 @@ steps:
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
+  - uses: actions/setup-java@v5
     with:
       distribution: temurin
       java-version: '25'
