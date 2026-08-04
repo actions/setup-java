@@ -460,10 +460,18 @@ class JavaBase {
         return version.replace('+', '-');
     }
     getJdkCachePath(version) {
-        return external_path_default().join(process.env['RUNNER_TOOL_CACHE'] ?? '', this.toolcacheFolderName, this.getToolcacheVersionName(version));
+        const toolCache = process.env['RUNNER_TOOL_CACHE'];
+        if (!toolCache) {
+            return '';
+        }
+        return external_path_default().join(toolCache, this.toolcacheFolderName, this.getToolcacheVersionName(version));
     }
     getRestoredJdkPath(version) {
-        const architecturePath = external_path_default().join(this.getJdkCachePath(version), this.architecture);
+        const basePath = this.getJdkCachePath(version);
+        if (!basePath) {
+            return null;
+        }
+        const architecturePath = external_path_default().join(basePath, this.architecture);
         return external_fs_.existsSync(architecturePath) &&
             external_fs_.existsSync(`${architecturePath}.complete`)
             ? architecturePath

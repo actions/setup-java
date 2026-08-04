@@ -168,6 +168,8 @@ steps:
 | `mvn-toolchain-vendor` | Maven Toolchain vendor value. | `${distribution}` |
 | `show-download-progress` | Keep Maven artifact download and transfer progress in logs. When `false`, the action adds `-ntp` to `MAVEN_ARGS`. | `false` |
 
+- `java-package`: Supported package types are `jdk`, `jre`, `jdk+fx`, `jre+fx`, `jdk+crac`, `jre+crac`, `jdk+jmods`, `jdk+jcef`, `jre+jcef`, `jdk+ft`, and `jre+ft`. Availability varies by distribution.
+
 Deprecated aliases `jdkFile`, `server-username`, `server-password`, and `gpg-passphrase` remain accepted for compatibility, but should be replaced with the current input names.
 
 ## Outputs

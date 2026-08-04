@@ -493,6 +493,11 @@ describe('setupJava', () => {
   });
 
   it('restores the exact resolved JDK before downloading', async () => {
+    const toolCachePath = path.join('toolcache');
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      RUNNER_TOOL_CACHE: toolCachePath
+    });
     mockJavaBase = new EmptyJavaBase({
       version: '11',
       architecture: 'x86',
@@ -517,7 +522,7 @@ describe('setupJava', () => {
       architecture: 'x86',
       version: actualJavaVersion,
       source: `some/random_url/java/${actualJavaVersion}`,
-      path: path.join('Java_Empty_jdk', actualJavaVersion)
+      path: path.join(toolCachePath, 'Java_Empty_jdk', actualJavaVersion)
     });
     expect(downloadTool).not.toHaveBeenCalled();
     expect(spyCoreInfo).not.toHaveBeenCalledWith('Trying to download...');
