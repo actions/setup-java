@@ -56,8 +56,9 @@ steps:
 ### V6 (in development)
 
 - Migrated the action implementation to ESM to support the latest `@actions/*` packages.
-- Added the `oracle-openjdk` distribution and `java-version: latest` for resolving the newest stable GA release.
-- JDK downloads now automatically verify vendor-published checksums.
+- Added the `oracle-openjdk` distribution for OpenJDK builds from Oracle.
+- Added `java-version: latest` to resolve the newest stable GA release from the distribution's remote metadata.
+- JDK downloads now automatically verify authoritative checksums for [supported distributions](#download-integrity-and-signatures).
 - Added `force-download: true` to bypass the tool cache and perform a reproducible fresh install.
 - Dependency caching now supports custom paths with `cache-path` and restore-only operation with `cache-read-only: true`.
 - Set `problem-matcher: false` to disable Java compiler and uncaught-exception annotations.
