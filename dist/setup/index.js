@@ -30603,9 +30603,11 @@ const auth = __importStar(__webpack_require__(331));
 const gpg = __importStar(__webpack_require__(884));
 const constants = __importStar(__webpack_require__(694));
 const path = __importStar(__webpack_require__(622));
+const DEPRECATION_WARNING = 'setup-java v1 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.';
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            core.warning(DEPRECATION_WARNING);
             let version = core.getInput(constants.INPUT_VERSION);
             if (!version) {
                 version = core.getInput(constants.INPUT_JAVA_VERSION, { required: true });

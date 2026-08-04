@@ -5,8 +5,13 @@ import * as gpg from './gpg';
 import * as constants from './constants';
 import * as path from 'path';
 
+const DEPRECATION_WARNING =
+  'setup-java v1 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.';
+
 async function run() {
   try {
+    core.warning(DEPRECATION_WARNING);
+
     let version = core.getInput(constants.INPUT_VERSION);
     if (!version) {
       version = core.getInput(constants.INPUT_JAVA_VERSION, {required: true});
