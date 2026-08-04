@@ -56,6 +56,12 @@ steps:
 ### V6 (in development)
 
 - Migrated the action implementation to ESM to support the latest `@actions/*` packages.
+- Added the `oracle-openjdk` distribution and `java-version: latest` for resolving the newest stable GA release.
+- JDK downloads now automatically verify vendor-published checksums. Use `force-download: true` to bypass the tool cache and perform a reproducible fresh install.
+- Dependency caching now supports custom paths with `cache-path` and restore-only operation with `cache-read-only: true`.
+- Set `problem-matcher: false` to disable Java compiler and uncaught-exception annotations.
+- GraalVM distributions now set `GRAALVM_HOME` in addition to `JAVA_HOME`.
+- Invalid boolean values, unsupported distribution/package/platform combinations, and mismatched Maven toolchain ID counts now fail with targeted errors.
 - Renamed environment-variable-name inputs so they are not mistaken for secret values:
   - `server-username` -> `server-username-env-var`
   - `server-password` -> `server-password-env-var`
