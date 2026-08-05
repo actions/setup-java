@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import {
   getJavaPlatformIdentity,
+  isAlpineLinux,
   JAVA_PLATFORM_CAPABILITIES,
   normalizeArchitecture,
   validateJavaPlatform
@@ -33,13 +34,31 @@ describe('Java platform capabilities', () => {
     ['linux', false, 'linux-glibc'],
     ['linux', true, 'linux-musl'],
     ['darwin', false, 'macos'],
-    ['win32', false, 'windows']
+    ['win32', false, 'windows'],
+    // Exercises the normalizePlatform alias path and the `?? platform`
+    // fallback for a platform that has no Java alias.
+    ['sunos', false, 'solaris'],
+    ['aix', false, 'aix']
   ] as const)(
     'identifies %s with Alpine release %s as %s',
     (platform, alpineReleaseExists, expected) => {
       expect(getJavaPlatformIdentity(platform, alpineReleaseExists)).toBe(
         expected
       );
+    }
+  );
+
+  // The platform check has to short-circuit before the filesystem probe, so a
+  // stray /etc/alpine-release can never make a non-Linux runner look like musl.
+  it.each([
+    ['linux', true, true],
+    ['linux', false, false],
+    ['darwin', true, false],
+    ['win32', true, false]
+  ] as const)(
+    'treats %s with Alpine release %s as Alpine: %s',
+    (platform, alpineReleaseExists, expected) => {
+      expect(isAlpineLinux(platform, alpineReleaseExists)).toBe(expected);
     }
   );
 
