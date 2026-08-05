@@ -263,7 +263,8 @@ describe('JDK resolution cache', () => {
           algorithm: 'sha512',
           value: 'def456',
           source: 'https://example.com/a.sha512'
-        }
+        },
+        floating: true
       };
       restoreWith(JSON.stringify(full), 'setup-java-jdkres-v2-old');
 
@@ -319,6 +320,19 @@ describe('JDK resolution cache', () => {
       createRunnerTemp();
       registerJdkResolution(request, release);
       registerJdkResolution({...request, distribution: 'zulu'}, release);
+
+      const state = JSON.parse(
+        jest.mocked(core.saveState).mock.calls.at(-1)![1] as string
+      );
+      expect(new Set(state.map((item: {key: string}) => item.key)).size).toBe(
+        state.length
+      );
+    });
+
+    it('uses different keys for different floating artifact identities', () => {
+      createRunnerTemp();
+      registerJdkResolution({...request, source: 'sha256:first'}, release);
+      registerJdkResolution({...request, source: 'sha256:second'}, release);
 
       const state = JSON.parse(
         jest.mocked(core.saveState).mock.calls.at(-1)![1] as string

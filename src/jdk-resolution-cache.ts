@@ -26,6 +26,12 @@ export interface JdkResolutionRequest {
   architecture: string;
   versionSpec: string;
   stable: boolean;
+  /**
+   * Immutable identity of a remotely resolved artifact. When present, even an
+   * older cache bucket is safe to reuse because changed bytes produce a
+   * different request identity.
+   */
+  source?: string;
 }
 
 export interface RestoredJdkResolution {
@@ -212,7 +218,8 @@ function getResolutionIdentity(request: JdkResolutionRequest): string {
     platform: request.platform.toLowerCase(),
     architecture: request.architecture.toLowerCase(),
     versionSpec: request.versionSpec,
-    stable: request.stable
+    stable: request.stable,
+    source: request.source
   });
   return createHash('sha256').update(identity).digest('hex');
 }
@@ -259,6 +266,7 @@ function parseResolvedRelease(contents: string): JavaDownloadRelease {
   const version = candidate['version'];
   const url = candidate['url'];
   const signatureUrl = candidate['signatureUrl'];
+  const floating = candidate['floating'];
 
   if (typeof version !== 'string' || !version) {
     throw new Error('The cached resolution has no version.');
@@ -267,6 +275,9 @@ function parseResolvedRelease(contents: string): JavaDownloadRelease {
   if (signatureUrl !== undefined) {
     assertHttpsUrl(signatureUrl, 'signatureUrl');
   }
+  if (floating !== undefined && typeof floating !== 'boolean') {
+    throw new Error('The cached resolution has an invalid floating flag.');
+  }
 
   const release: JavaDownloadRelease = {
     version,
@@ -274,6 +285,9 @@ function parseResolvedRelease(contents: string): JavaDownloadRelease {
   };
   if (signatureUrl !== undefined) {
     release.signatureUrl = signatureUrl as string;
+  }
+  if (floating !== undefined) {
+    release.floating = floating as boolean;
   }
 
   const checksum = candidate['checksum'];
