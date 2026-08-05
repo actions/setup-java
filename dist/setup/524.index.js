@@ -13,10 +13,12 @@ export const modules = {
 /* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4527);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(3838);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(9896);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6928);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _platform_types_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7444);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(9896);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(6928);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_6__);
+
 
 
 
@@ -38,8 +40,8 @@ class LibericaNikDistributions extends _base_installer_js__WEBPACK_IMPORTED_MODU
             javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_2__/* .renameWinArchive */ .n2)(javaArchivePath);
         }
         const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_2__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
-        const archiveName = fs__WEBPACK_IMPORTED_MODULE_4___default().readdirSync(extractedJavaPath)[0];
-        const archivePath = path__WEBPACK_IMPORTED_MODULE_5___default().join(extractedJavaPath, archiveName);
+        const archiveName = fs__WEBPACK_IMPORTED_MODULE_5___default().readdirSync(extractedJavaPath)[0];
+        const archivePath = path__WEBPACK_IMPORTED_MODULE_6___default().join(extractedJavaPath, archiveName);
         const javaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_2__/* .cacheJdkDir */ .Vj)(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaRelease.version), this.architecture);
         return { version: javaRelease.version, path: javaPath };
     }
@@ -118,7 +120,7 @@ class LibericaNikDistributions extends _base_installer_js__WEBPACK_IMPORTED_MODU
             case 'cygwin':
                 return 'windows';
             case 'linux':
-                return 'linux';
+                return (0,_platform_types_js__WEBPACK_IMPORTED_MODULE_4__/* .isAlpineLinux */ .G6)(platform) ? 'linux-musl' : 'linux';
             default:
                 throw new Error(`Platform '${platform}' is not supported. Supported platforms: ${supportedPlatform}`);
         }

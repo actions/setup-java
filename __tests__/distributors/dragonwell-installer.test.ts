@@ -8,6 +8,7 @@ import {
   beforeAll,
   afterAll
 } from '@jest/globals';
+import fs from 'fs';
 import {HttpClient} from '@actions/http-client';
 
 import manifestData from '../data/dragonwell.json' with {type: 'json'};
@@ -305,5 +306,52 @@ describe('getAvailableVersions', () => {
         distribution['findPackageForDownload'](jdkVersion)
       ).rejects.toThrow('Dragonwell provides only the `jdk` package type');
     });
+  });
+});
+
+describe('Dragonwell getPlatformOption libc selection', () => {
+  const originalPlatform = Object.getOwnPropertyDescriptor(
+    process,
+    'platform'
+  ) as PropertyDescriptor;
+
+  const setPlatform = (platform: NodeJS.Platform) =>
+    Object.defineProperty(process, 'platform', {
+      ...originalPlatform,
+      value: platform
+    });
+
+  const distribution = new DragonwellDistribution({
+    version: '21',
+    architecture: 'x64',
+    packageType: 'jdk',
+    checkLatest: false
+  });
+
+  afterEach(() => {
+    Object.defineProperty(process, 'platform', originalPlatform);
+    jest.restoreAllMocks();
+  });
+
+  it('selects the musl artifacts on Alpine', () => {
+    setPlatform('linux');
+    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+
+    expect(distribution['getPlatformOption']()).toBe('alpine-linux');
+  });
+
+  it('selects the glibc artifacts on other Linux runners', () => {
+    setPlatform('linux');
+    jest.spyOn(fs, 'existsSync').mockReturnValue(false);
+
+    expect(distribution['getPlatformOption']()).toBe('linux');
+  });
+
+  it('does not probe for Alpine off Linux', () => {
+    setPlatform('win32');
+    const existsSync = jest.spyOn(fs, 'existsSync');
+
+    expect(distribution['getPlatformOption']()).toBe('windows');
+    expect(existsSync).not.toHaveBeenCalled();
   });
 });
