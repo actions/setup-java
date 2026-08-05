@@ -8,19 +8,19 @@ import {
 } from './util.js';
 import {fileURLToPath} from 'url';
 
-async function removePrivateKeyFromKeychain() {
-  if (core.getInput(constants.INPUT_GPG_PRIVATE_KEY, {required: false})) {
-    core.info('Removing private key from keychain');
-    try {
-      const keyFingerprint = core.getState(
-        constants.STATE_GPG_PRIVATE_KEY_FINGERPRINT
-      );
-      await gpg.deleteKey(keyFingerprint);
-    } catch (error) {
-      core.setFailed(
-        `Failed to remove private key due to: ${(error as Error).message}`
-      );
-    }
+async function removeGpgHome() {
+  const gpgHome = core.getState(constants.STATE_GPG_HOME);
+  if (!gpgHome) {
+    return;
+  }
+
+  core.info('Removing private key from isolated GPG home');
+  try {
+    await gpg.removeGpgHome(gpgHome);
+  } catch (error) {
+    core.setFailed(
+      `Failed to remove isolated GPG home due to: ${(error as Error).message}`
+    );
   }
 }
 
@@ -73,7 +73,7 @@ async function ignoreError(promise: Promise<void>) {
 }
 
 export async function run() {
-  await removePrivateKeyFromKeychain();
+  await removeGpgHome();
   await ignoreError(saveCaches());
 }
 

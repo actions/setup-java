@@ -60,14 +60,22 @@ class GraalVMDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4_
                 throw new Error('Extraction failed: no files found in extracted directory');
             }
             const archivePath = path__WEBPACK_IMPORTED_MODULE_2___default().join(extractedJavaPath, dirContents[0]);
-            const version = this.getToolcacheVersionName(javaRelease.version);
+            const installedVersion = javaRelease.floating
+                ? (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getJavaVersionFromReleaseFile */ .C4)(archivePath)
+                : javaRelease.version;
+            const version = this.getToolcacheVersionName(installedVersion);
             const javaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .cacheJdkDir */ .Vj)(archivePath, this.toolcacheFolderName, version, this.architecture);
-            return { version: javaRelease.version, path: javaPath };
+            return { version: installedVersion, path: javaPath };
         }
         catch (error) {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(`Failed to download and extract GraalVM: ${error}`);
             throw error;
         }
+    }
+    requiresRemoteResolution() {
+        return (this.distribution === 'GraalVM' &&
+            this.stable &&
+            !this.version.includes('.'));
     }
     setJavaDefault(version, toolPath) {
         super.setJavaDefault(version, toolPath);
@@ -89,13 +97,17 @@ class GraalVMDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4_
         const fileUrl = this.constructFileUrl(range, major, platform, arch, extension);
         const response = await this.http.head(fileUrl);
         this.handleHttpResponse(response, range);
+        // A major-only range resolves to the vendor's `/latest/` path, whose
+        // contents change when a new build is published.
+        const floating = !range.includes('.');
         return {
             url: fileUrl,
             version: range,
             checksum: await this.fetchChecksum(`${fileUrl}.sha256`, 'sha256'),
-            // A major-only range resolves to the vendor's `/latest/` path, whose
-            // contents change when a new build is published.
-            floating: !range.includes('.')
+            floating,
+            fingerprint: floating
+                ? (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getArtifactFingerprint */ .VX)(response.message.headers)
+                : undefined
         };
     }
     validateVersionRange(range) {

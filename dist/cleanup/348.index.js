@@ -148,7 +148,8 @@ function getResolutionIdentity(request) {
         packageType: request.packageType.toLowerCase(),
         architecture: request.architecture.toLowerCase(),
         versionSpec: request.versionSpec,
-        stable: request.stable
+        stable: request.stable,
+        source: request.source
     });
     return createHash('sha256').update(identity).digest('hex');
 }
@@ -190,6 +191,7 @@ function parseResolvedRelease(contents) {
     const version = candidate['version'];
     const url = candidate['url'];
     const signatureUrl = candidate['signatureUrl'];
+    const floating = candidate['floating'];
     if (typeof version !== 'string' || !version) {
         throw new Error('The cached resolution has no version.');
     }
@@ -197,12 +199,18 @@ function parseResolvedRelease(contents) {
     if (signatureUrl !== undefined) {
         assertHttpsUrl(signatureUrl, 'signatureUrl');
     }
+    if (floating !== undefined && typeof floating !== 'boolean') {
+        throw new Error('The cached resolution has an invalid floating flag.');
+    }
     const release = {
         version,
         url: url
     };
     if (signatureUrl !== undefined) {
         release.signatureUrl = signatureUrl;
+    }
+    if (floating !== undefined) {
+        release.floating = floating;
     }
     const checksum = candidate['checksum'];
     if (checksum !== undefined) {

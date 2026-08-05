@@ -172,7 +172,7 @@ steps:
 | `server-password-env-var` | Environment variable name for Maven repository password or token. | `GITHUB_TOKEN` |
 | `settings-path` | Directory where `settings.xml` is written. | `~/.m2` |
 | `overwrite-settings` | Overwrite an existing `settings.xml`. | `true` |
-| `gpg-private-key` | GPG private key to import. | |
+| `gpg-private-key` | GPG private key to import into an isolated temporary keyring. | |
 | `gpg-passphrase-env-var` | Environment variable name for the GPG private key passphrase. | `GPG_PASSPHRASE` when a key is set |
 | `mvn-toolchain-id` | Maven Toolchain ID. When multiple Java versions are installed, the number of IDs must match the number of versions. | `${mvn-toolchain-vendor}_${java-version}` |
 | `mvn-toolchain-vendor` | Maven Toolchain vendor value. | `${distribution}` |

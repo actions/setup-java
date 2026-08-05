@@ -12,6 +12,8 @@ fi
 
 EXPECTED_JAVA_VERSION=$1
 EXPECTED_PATH=$2
+SETUP_JAVA_VERSION=$3
+REQUIRE_CONCRETE_VERSION=$4
 
 EXPECTED_JAVA_VERSION=$(echo $EXPECTED_JAVA_VERSION | cut -d'+' -f1)
 if [[ $EXPECTED_JAVA_VERSION == 8 ]] || [[ $EXPECTED_JAVA_VERSION == 8.* ]]; then
@@ -29,6 +31,21 @@ if [ -z "$GREP_RESULT" ]; then
   echo "::error::Unexpected version"
   echo "Expected version: $EXPECTED_JAVA_VERSION"
   exit 1
+fi
+
+if [ -n "$SETUP_JAVA_VERSION" ]; then
+  OUTPUT_JAVA_VERSION=$(echo "$SETUP_JAVA_VERSION" | cut -d'+' -f1)
+  OUTPUT_GREP_RESULT=$(echo "$ACTUAL_JAVA_VERSION" | grep -E "^(openjdk|java) version \"$OUTPUT_JAVA_VERSION")
+  if [ -z "$OUTPUT_GREP_RESULT" ]; then
+    echo "::error::The version output does not match the installed Java version"
+    echo "Version output: $SETUP_JAVA_VERSION"
+    exit 1
+  fi
+  if [ "$REQUIRE_CONCRETE_VERSION" = "true" ] && [ "$OUTPUT_JAVA_VERSION" = "$EXPECTED_JAVA_VERSION" ]; then
+    echo "::error::Expected a concrete version output for a floating JDK"
+    echo "Version output: $SETUP_JAVA_VERSION"
+    exit 1
+  fi
 fi
 
 if [ "$EXPECTED_PATH" != "$JAVA_HOME" ]; then

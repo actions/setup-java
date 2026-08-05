@@ -72,6 +72,7 @@ jest.unstable_mockModule('../../src/util.js', () => ({
   ...realUtil,
   extractJdkFile: jest.fn(),
   getDownloadArchiveExtension: jest.fn(),
+  getJavaVersionFromReleaseFile: jest.fn(),
   renameWinArchive: jest.fn(),
   getGitHubHttpHeaders: jest.fn().mockReturnValue({Accept: 'application/json'})
 }));
@@ -363,6 +364,30 @@ describe('GraalVMDistribution', () => {
         path: '/cached/java/path'
       });
     });
+
+    it('caches Oracle GraalVM floating artifacts under their installed version', async () => {
+      (util.getJavaVersionFromReleaseFile as jest.Mock<any>).mockReturnValue(
+        '21.0.9+7'
+      );
+      const floatingRelease = {
+        version: '21',
+        url: 'https://example.com/graalvm/latest/graalvm-jdk-21.tar.gz',
+        floating: true
+      };
+
+      const result = await (distribution as any).downloadTool(floatingRelease);
+
+      expect(tc.cacheDir).toHaveBeenCalledWith(
+        path.join('/tmp/extracted', 'graalvm-jdk-17.0.5'),
+        'Java_GraalVM_jdk',
+        '21.0.9+7',
+        'x64'
+      );
+      expect(result).toEqual({
+        version: '21.0.9+7',
+        path: '/cached/java/path'
+      });
+    });
   });
 
   describe('findPackageForDownload', () => {
@@ -449,6 +474,33 @@ describe('GraalVMDistribution', () => {
           // release must not be reused by a later job.
           floating: true
         });
+      });
+
+      it.each([
+        ['21', 'etag:"graalvm-latest"'],
+        ['17.0.5', undefined]
+      ])(
+        'fingerprints only the floating artifact for version %s',
+        async (input, expected) => {
+          mockHttpClient.head.mockResolvedValue({
+            message: {statusCode: 200, headers: {etag: '"graalvm-latest"'}}
+          } as any);
+
+          const result = await (distribution as any).findPackageForDownload(
+            input
+          );
+
+          // Without a fingerprint the constant `/latest/` URL would key a cache
+          // entry that never invalidates when Oracle republishes the artifact.
+          expect(result.fingerprint).toBe(expected);
+        }
+      );
+
+      it('always resolves Oracle GraalVM major-only requests remotely', () => {
+        expect((distribution as any).requiresRemoteResolution()).toBe(true);
+        expect((communityDistribution as any).requiresRemoteResolution()).toBe(
+          false
+        );
       });
 
       it('should throw error for unsupported architecture', async () => {

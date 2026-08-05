@@ -35,4 +35,12 @@ export interface JavaDownloadRelease {
    * be reused by a later job.
    */
   floating?: boolean;
+  /**
+   * Validator identifying the exact bytes a mutable `url` currently serves,
+   * derived from the response headers of the HEAD request that resolved it.
+   * Used as the cache identity for a floating release when the vendor
+   * publishes no checksum, so that a republished artifact produces a different
+   * identity instead of being masked by the constant URL.
+   */
+  fingerprint?: string;
 }
