@@ -14,6 +14,7 @@ import {
   cacheJdkDir,
   convertVersionToSemver,
   extractJdkFile,
+  getArtifactFingerprint,
   getDownloadArchiveExtension,
   getGitHubHttpHeaders,
   getJavaVersionFromReleaseFile,
@@ -158,13 +159,18 @@ export class GraalVMDistribution extends JavaBase {
     const response = await this.http.head(fileUrl);
     this.handleHttpResponse(response, range);
 
+    // A major-only range resolves to the vendor's `/latest/` path, whose
+    // contents change when a new build is published.
+    const floating = !range.includes('.');
+
     return {
       url: fileUrl,
       version: range,
       checksum: await this.fetchChecksum(`${fileUrl}.sha256`, 'sha256'),
-      // A major-only range resolves to the vendor's `/latest/` path, whose
-      // contents change when a new build is published.
-      floating: !range.includes('.')
+      floating,
+      fingerprint: floating
+        ? getArtifactFingerprint(response.message.headers)
+        : undefined
     };
   }
 

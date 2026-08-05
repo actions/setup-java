@@ -339,7 +339,8 @@ class JavaBase {
                 else {
                     let jdkCache = this.cacheJdk &&
                         (!javaRelease.floating ||
-                            (javaRelease.checksum && semver_default().valid(javaRelease.version)))
+                            (this.hasStableReleaseIdentity(javaRelease) &&
+                                semver_default().valid(javaRelease.version)))
                         ? await this.createJdkCache(javaRelease)
                         : undefined;
                     if (!this.forceDownload && jdkCache) {
@@ -367,7 +368,7 @@ class JavaBase {
                             javaRelease = { ...javaRelease, version: foundJava.version };
                             await this.registerFloatingResolution(javaRelease);
                             jdkCache =
-                                this.cacheJdk && javaRelease.checksum
+                                this.cacheJdk && this.hasStableReleaseIdentity(javaRelease)
                                     ? await this.createJdkCache(javaRelease)
                                     : undefined;
                         }
@@ -472,7 +473,7 @@ class JavaBase {
     }
     async restoreFloatingResolution(javaRelease) {
         if (!javaRelease.floating ||
-            !javaRelease.checksum ||
+            !this.hasStableReleaseIdentity(javaRelease) ||
             !this.cacheJdk ||
             this.forceDownload) {
             return javaRelease;
@@ -491,7 +492,9 @@ class JavaBase {
         return { ...javaRelease, version: restored.release.version };
     }
     async registerFloatingResolution(javaRelease) {
-        if (!javaRelease.checksum || !this.cacheJdk || this.forceDownload) {
+        if (!this.hasStableReleaseIdentity(javaRelease) ||
+            !this.cacheJdk ||
+            this.forceDownload) {
             return;
         }
         const { registerJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
@@ -610,6 +613,9 @@ class JavaBase {
         if (javaRelease.checksum) {
             return `${javaRelease.checksum.algorithm}:${javaRelease.checksum.value}`;
         }
+        if (javaRelease.fingerprint) {
+            return javaRelease.fingerprint;
+        }
         try {
             const url = new URL(javaRelease.url);
             return `${url.origin}${url.pathname}`;
@@ -617,6 +623,15 @@ class JavaBase {
         catch {
             return javaRelease.url;
         }
+    }
+    /**
+     * Whether the release identity pins the exact bytes behind `url`. A floating
+     * URL is a constant string, so it only becomes a safe cache identity once a
+     * checksum or a response validator distinguishes one published build from the
+     * next.
+     */
+    hasStableReleaseIdentity(javaRelease) {
+        return Boolean(javaRelease.checksum ?? javaRelease.fingerprint);
     }
     findInToolcache() {
         // we can't use tc.find directly because firstly, we need to filter versions by stability flag

@@ -476,6 +476,26 @@ describe('GraalVMDistribution', () => {
         });
       });
 
+      it.each([
+        ['21', 'etag:"graalvm-latest"'],
+        ['17.0.5', undefined]
+      ])(
+        'fingerprints only the floating artifact for version %s',
+        async (input, expected) => {
+          mockHttpClient.head.mockResolvedValue({
+            message: {statusCode: 200, headers: {etag: '"graalvm-latest"'}}
+          } as any);
+
+          const result = await (distribution as any).findPackageForDownload(
+            input
+          );
+
+          // Without a fingerprint the constant `/latest/` URL would key a cache
+          // entry that never invalidates when Oracle republishes the artifact.
+          expect(result.fingerprint).toBe(expected);
+        }
+      );
+
       it('always resolves Oracle GraalVM major-only requests remotely', () => {
         expect((distribution as any).requiresRemoteResolution()).toBe(true);
         expect((communityDistribution as any).requiresRemoteResolution()).toBe(

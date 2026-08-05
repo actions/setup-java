@@ -151,6 +151,7 @@ class EmptyJavaBase extends JavaBase {
 class FloatingJavaBase extends JavaBase {
   static actualVersion = '21.0.8+9';
   static checksum: string | undefined = 'artifact-one';
+  static fingerprint: string | undefined = undefined;
 
   constructor(installerOptions: JavaInstallerOptions) {
     super('Floating', installerOptions);
@@ -178,7 +179,8 @@ class FloatingJavaBase extends JavaBase {
             value: FloatingJavaBase.checksum
           }
         : undefined,
-      floating: true
+      floating: true,
+      fingerprint: FloatingJavaBase.fingerprint
     };
   }
 
@@ -436,6 +438,7 @@ describe('setupJava', () => {
     spyCoreError.mockImplementation(() => undefined);
 
     jest.spyOn(os, 'arch').mockReturnValue('x86' as ReturnType<typeof os.arch>);
+    FloatingJavaBase.fingerprint = undefined;
   });
 
   afterEach(() => {
@@ -609,13 +612,14 @@ describe('setupJava', () => {
     expect(downloadTool).toHaveBeenCalled();
   });
 
-  it('does not cache a floating artifact without an authoritative checksum', async () => {
+  it('does not cache a floating artifact with no way to identify its bytes', async () => {
     spyTcFindAllVersions.mockReturnValue(['21.0.8-9']);
     spyGetToolcachePath.mockReturnValue(
       path.join('toolcache', 'Java_Floating_jdk', '21.0.8-9', 'x64')
     );
     FloatingJavaBase.actualVersion = '21.0.8+9';
     FloatingJavaBase.checksum = undefined;
+    FloatingJavaBase.fingerprint = undefined;
     const distribution = new FloatingJavaBase({
       version: '21',
       architecture: 'x64',
@@ -630,6 +634,61 @@ describe('setupJava', () => {
     expect(jdkResolutionCache.registerJdkResolution).not.toHaveBeenCalled();
     expect(jdkCache.restoreJdk).not.toHaveBeenCalled();
     expect(jdkCache.registerJdk).not.toHaveBeenCalled();
+  });
+
+  it('caches a checksum-less floating artifact identified by its response fingerprint', async () => {
+    spyTcFindAllVersions.mockReturnValue([]);
+    spyGetToolcachePath.mockReturnValue(
+      path.join('toolcache', 'Java_Floating_jdk', '21.0.8-9', 'x64')
+    );
+    FloatingJavaBase.actualVersion = '21.0.8+9';
+    FloatingJavaBase.checksum = undefined;
+    FloatingJavaBase.fingerprint = 'etag:"artifact-one"';
+    const distribution = new FloatingJavaBase({
+      version: '21',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false,
+      cacheJdk: true
+    });
+
+    await distribution.setupJava();
+
+    // The fingerprint changes when the vendor republishes, so it is a safe
+    // identity even though no checksum is available.
+    expect(jdkResolutionCache.registerJdkResolution).toHaveBeenCalledWith(
+      expect.objectContaining({source: 'etag:"artifact-one"'}),
+      expect.objectContaining({version: '21.0.8+9'})
+    );
+    expect(jdkCache.registerJdk).toHaveBeenCalledWith(
+      expect.objectContaining({source: 'etag:"artifact-one"'})
+    );
+  });
+
+  it('separates the cache identities of two builds served by the same floating URL', async () => {
+    const sources: string[] = [];
+    (jdkCache.registerJdk as jest.Mock).mockImplementation((entry: any) => {
+      sources.push(entry.source);
+    });
+    spyTcFindAllVersions.mockReturnValue([]);
+    spyGetToolcachePath.mockReturnValue(
+      path.join('toolcache', 'Java_Floating_jdk', '21.0.8-9', 'x64')
+    );
+    FloatingJavaBase.actualVersion = '21.0.8+9';
+    FloatingJavaBase.checksum = undefined;
+
+    for (const fingerprint of ['etag:"before"', 'etag:"after"']) {
+      FloatingJavaBase.fingerprint = fingerprint;
+      await new FloatingJavaBase({
+        version: '21',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false,
+        cacheJdk: true
+      }).setupJava();
+    }
+
+    expect(sources).toEqual(['etag:"before"', 'etag:"after"']);
   });
 
   it('should download java when force-download is enabled, even if the version is cached', async () => {

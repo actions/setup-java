@@ -12,6 +12,7 @@ import {
 import {
   cacheJdkDir,
   extractJdkFile,
+  getArtifactFingerprint,
   getDownloadArchiveExtension,
   getJavaVersionFromReleaseFile,
   getLatestMajorVersion,
@@ -121,11 +122,15 @@ export class OracleDistribution extends JavaBase {
       const response = await this.http.head(url);
 
       if (response.message.statusCode === HttpCodes.OK) {
+        const floating = url === floatingUrl;
         return {
           url,
           version: range,
           checksum: await this.fetchChecksum(`${url}.sha256`, 'sha256'),
-          floating: url === floatingUrl
+          floating,
+          fingerprint: floating
+            ? getArtifactFingerprint(response.message.headers)
+            : undefined
         };
       }
 

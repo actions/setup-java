@@ -197,7 +197,8 @@ export abstract class JavaBase {
           let jdkCache =
             this.cacheJdk &&
             (!javaRelease.floating ||
-              (javaRelease.checksum && semver.valid(javaRelease.version)))
+              (this.hasStableReleaseIdentity(javaRelease) &&
+                semver.valid(javaRelease.version)))
               ? await this.createJdkCache(javaRelease)
               : undefined;
           if (!this.forceDownload && jdkCache) {
@@ -229,7 +230,7 @@ export abstract class JavaBase {
               javaRelease = {...javaRelease, version: foundJava.version};
               await this.registerFloatingResolution(javaRelease);
               jdkCache =
-                this.cacheJdk && javaRelease.checksum
+                this.cacheJdk && this.hasStableReleaseIdentity(javaRelease)
                   ? await this.createJdkCache(javaRelease)
                   : undefined;
             }
@@ -362,7 +363,7 @@ export abstract class JavaBase {
   ): Promise<JavaDownloadRelease> {
     if (
       !javaRelease.floating ||
-      !javaRelease.checksum ||
+      !this.hasStableReleaseIdentity(javaRelease) ||
       !this.cacheJdk ||
       this.forceDownload
     ) {
@@ -395,7 +396,11 @@ export abstract class JavaBase {
   private async registerFloatingResolution(
     javaRelease: JavaDownloadRelease
   ): Promise<void> {
-    if (!javaRelease.checksum || !this.cacheJdk || this.forceDownload) {
+    if (
+      !this.hasStableReleaseIdentity(javaRelease) ||
+      !this.cacheJdk ||
+      this.forceDownload
+    ) {
       return;
     }
 
@@ -530,12 +535,25 @@ export abstract class JavaBase {
     if (javaRelease.checksum) {
       return `${javaRelease.checksum.algorithm}:${javaRelease.checksum.value}`;
     }
+    if (javaRelease.fingerprint) {
+      return javaRelease.fingerprint;
+    }
     try {
       const url = new URL(javaRelease.url);
       return `${url.origin}${url.pathname}`;
     } catch {
       return javaRelease.url;
     }
+  }
+
+  /**
+   * Whether the release identity pins the exact bytes behind `url`. A floating
+   * URL is a constant string, so it only becomes a safe cache identity once a
+   * checksum or a response validator distinguishes one published build from the
+   * next.
+   */
+  private hasStableReleaseIdentity(javaRelease: JavaDownloadRelease): boolean {
+    return Boolean(javaRelease.checksum ?? javaRelease.fingerprint);
   }
 
   protected findInToolcache(): JavaInstallerResults | null {

@@ -31242,6 +31242,7 @@ function validateToolchainIds(versions, versionFile, toolchainIds) {
 /* harmony export */   SA: () => (/* binding */ validatePaginationUrl),
 /* harmony export */   Tp: () => (/* binding */ MAX_PAGINATION_PAGES),
 /* harmony export */   U_: () => (/* binding */ getGitHubHttpHeaders),
+/* harmony export */   VX: () => (/* binding */ getArtifactFingerprint),
 /* harmony export */   Vj: () => (/* binding */ cacheJdkDir),
 /* harmony export */   Vt: () => (/* binding */ getBooleanInput),
 /* harmony export */   ZY: () => (/* binding */ convertVersionToSemver),
@@ -31648,6 +31649,38 @@ function convertVersionToSemver(version) {
         return `${mainVersion}+${versionArray.slice(3).join('.')}`;
     }
     return mainVersion;
+}
+/**
+ * Builds a validator for the bytes currently served by a URL from the response
+ * headers of a HEAD request. A vendor's `/latest/` URL never changes, so this
+ * is what lets a republished artifact be told apart from the previous one when
+ * no checksum is published alongside it.
+ *
+ * Returns `undefined` when the response carries no usable validator, in which
+ * case the caller must not treat the URL as a stable identity.
+ */
+function getArtifactFingerprint(headers) {
+    const readHeader = (name) => {
+        const value = headers?.[name];
+        const resolved = Array.isArray(value) ? value[0] : value;
+        return typeof resolved === 'string' && resolved.trim()
+            ? resolved.trim()
+            : undefined;
+    };
+    // A strong or weak ETag already identifies a specific representation.
+    const etag = readHeader('etag');
+    if (etag) {
+        return `etag:${etag}`;
+    }
+    // Otherwise combine the two validators a static file server reliably sends.
+    // Neither alone is sufficient: `last-modified` has one-second granularity and
+    // `content-length` is unchanged by a same-size rebuild.
+    const lastModified = readHeader('last-modified');
+    const contentLength = readHeader('content-length');
+    if (lastModified && contentLength) {
+        return `mtime:${lastModified};length:${contentLength}`;
+    }
+    return undefined;
 }
 function getGitHubHttpHeaders() {
     const resolvedToken = _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getInput */ .V4('token') || process.env.GITHUB_TOKEN;

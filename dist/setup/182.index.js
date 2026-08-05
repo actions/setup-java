@@ -89,11 +89,15 @@ class OracleDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_3__
         for (const url of possibleUrls) {
             const response = await this.http.head(url);
             if (response.message.statusCode === _actions_http_client__WEBPACK_IMPORTED_MODULE_5__/* .HttpCodes */ .Hv.OK) {
+                const floating = url === floatingUrl;
                 return {
                     url,
                     version: range,
                     checksum: await this.fetchChecksum(`${url}.sha256`, 'sha256'),
-                    floating: url === floatingUrl
+                    floating,
+                    fingerprint: floating
+                        ? (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .getArtifactFingerprint */ .VX)(response.message.headers)
+                        : undefined
                 };
             }
             if (response.message.statusCode !== _actions_http_client__WEBPACK_IMPORTED_MODULE_5__/* .HttpCodes */ .Hv.NotFound) {

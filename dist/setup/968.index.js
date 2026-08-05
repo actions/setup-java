@@ -97,13 +97,17 @@ class GraalVMDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4_
         const fileUrl = this.constructFileUrl(range, major, platform, arch, extension);
         const response = await this.http.head(fileUrl);
         this.handleHttpResponse(response, range);
+        // A major-only range resolves to the vendor's `/latest/` path, whose
+        // contents change when a new build is published.
+        const floating = !range.includes('.');
         return {
             url: fileUrl,
             version: range,
             checksum: await this.fetchChecksum(`${fileUrl}.sha256`, 'sha256'),
-            // A major-only range resolves to the vendor's `/latest/` path, whose
-            // contents change when a new build is published.
-            floating: !range.includes('.')
+            floating,
+            fingerprint: floating
+                ? (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getArtifactFingerprint */ .VX)(response.message.headers)
+                : undefined
         };
     }
     validateVersionRange(range) {
