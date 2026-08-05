@@ -1,0 +1,73 @@
+{
+  "25": {
+    "lts": "false",
+    "updates": {
+      "25.0.2": {
+        "sapmachine-25.0.2": {
+          "release_url": "https://example.test/releases/25.0.2",
+          "ea": false,
+          "assets": {
+            "jdk": {
+              "linux-x64": {
+                "tar.gz": {
+                  "name": "sapmachine-jdk-25.0.2_linux-x64_bin.tar.gz",
+                  "checksum": "stable-boolean",
+                  "url": "https://example.test/sapmachine-25.0.2-ga.tar.gz"
+                }
+              }
+            }
+          }
+        }
+      },
+      "25.0.1": {
+        "sapmachine-25.0.1": {
+          "release_url": "https://example.test/releases/25.0.1",
+          "ea": "false",
+          "assets": {
+            "jdk": {
+              "linux-x64": {
+                "tar.gz": {
+                  "name": "sapmachine-jdk-25.0.1_linux-x64_bin.tar.gz",
+                  "checksum": "stable-string",
+                  "url": "https://example.test/sapmachine-25.0.1-ga.tar.gz"
+                }
+              }
+            }
+          }
+        }
+      },
+      "25": {
+        "sapmachine-25+11": {
+          "release_url": "https://example.test/releases/25+11",
+          "ea": true,
+          "assets": {
+            "jdk": {
+              "linux-x64": {
+                "tar.gz": {
+                  "name": "sapmachine-jdk-25-ea.11_linux-x64_bin.tar.gz",
+                  "checksum": "ea-boolean",
+                  "url": "https://example.test/sapmachine-25-ea.11.tar.gz"
+                }
+              }
+            }
+          }
+        },
+        "sapmachine-25+10": {
+          "release_url": "https://example.test/releases/25+10",
+          "ea": "true",
+          "assets": {
+            "jdk": {
+              "linux-x64": {
+                "tar.gz": {
+                  "name": "sapmachine-jdk-25-ea.10_linux-x64_bin.tar.gz",
+                  "checksum": "ea-string",
+                  "url": "https://example.test/sapmachine-25-ea.10.tar.gz"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

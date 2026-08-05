@@ -5,7 +5,7 @@ export interface ISapMachineAllVersions {
       [full_version: string]: {
         [sapmachineBuild: string]: {
           release_url: string;
-          ea: string;
+          ea: boolean | string;
           assets: {
             [packageType: string]: {
               [arch: string]: {
