@@ -160,6 +160,17 @@ describe('findPackageForDownload', () => {
       value: ORACLE_CHECKSUM,
       source: `${result.url}.sha256`
     });
+
+    it('always resolves major-only requests remotely', () => {
+      expect(distribution['requiresRemoteResolution']()).toBe(true);
+      const exactDistribution = new OracleDistribution({
+        version: '21.0.8',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      expect(exactDistribution['requiresRemoteResolution']()).toBe(false);
+    });
     expect(spyHttpClientGet).toHaveBeenCalledWith(`${result.url}.sha256`);
     expect(spyHttpClientGet).toHaveBeenCalledTimes(1);
   });

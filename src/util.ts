@@ -192,6 +192,56 @@ export async function cacheJdkDir(
   return await tc.cacheDir(sourceDir, toolName, version, architecture);
 }
 
+export function getJavaVersionFromReleaseFile(javaHome: string): string {
+  const releasePaths = [
+    path.join(javaHome, 'release'),
+    path.join(javaHome, 'Contents', 'Home', 'release')
+  ];
+  const releasePath = releasePaths.find(candidate => fs.existsSync(candidate));
+  if (!releasePath) {
+    throw new Error(
+      `Unable to determine the installed Java version: no release file found under '${javaHome}'.`
+    );
+  }
+
+  const properties = new Map<string, string>();
+  for (const line of fs.readFileSync(releasePath, 'utf8').split(/\r?\n/)) {
+    const match = line.match(/^([A-Z0-9_]+)="(.*)"$/);
+    if (match) {
+      properties.set(match[1], match[2]);
+    }
+  }
+
+  const runtimeVersion = properties.get('JAVA_RUNTIME_VERSION');
+  const runtimeMatch = runtimeVersion?.match(
+    /^(\d+(?:\.\d+)*(?:\+\d+(?:\.\d+)*)?)/
+  );
+  if (runtimeMatch) {
+    return normalizeJavaReleaseVersion(runtimeMatch[1]);
+  }
+
+  const javaVersion = properties.get('JAVA_VERSION');
+  if (javaVersion && /^\d+(?:\.\d+)*$/.test(javaVersion)) {
+    return normalizeJavaReleaseVersion(javaVersion);
+  }
+
+  throw new Error(
+    `Unable to determine the installed Java version from '${releasePath}'.`
+  );
+}
+
+function normalizeJavaReleaseVersion(version: string): string {
+  const [numericVersion, buildVersion] = version.split('+', 2);
+  const components = numericVersion.split('.');
+  while (components.length < 3) {
+    components.push('0');
+  }
+
+  const mainVersion = components.slice(0, 3).join('.');
+  const build = [...components.slice(3), ...(buildVersion ? [buildVersion] : [])];
+  return build.length > 0 ? `${mainVersion}+${build.join('.')}` : mainVersion;
+}
+
 function getToolcacheDestination(
   toolName: string,
   version: string,

@@ -13,6 +13,7 @@ import {
   cacheJdkDir,
   extractJdkFile,
   getDownloadArchiveExtension,
+  getJavaVersionFromReleaseFile,
   getLatestMajorVersion,
   renameWinArchive
 } from '../../util.js';
@@ -43,7 +44,10 @@ export class OracleDistribution extends JavaBase {
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
-    const version = this.getToolcacheVersionName(javaRelease.version);
+    const installedVersion = javaRelease.floating
+      ? getJavaVersionFromReleaseFile(archivePath)
+      : javaRelease.version;
+    const version = this.getToolcacheVersionName(installedVersion);
 
     const javaPath = await cacheJdkDir(
       archivePath,
@@ -52,7 +56,11 @@ export class OracleDistribution extends JavaBase {
       this.architecture
     );
 
-    return {version: javaRelease.version, path: javaPath};
+    return {version: installedVersion, path: javaPath};
+  }
+
+  protected requiresRemoteResolution(): boolean {
+    return this.stable && !this.version.includes('.');
   }
 
   protected async findPackageForDownload(

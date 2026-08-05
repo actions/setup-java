@@ -148,6 +148,43 @@ class EmptyJavaBase extends JavaBase {
   }
 }
 
+class FloatingJavaBase extends JavaBase {
+  static actualVersion = '21.0.8+9';
+  static checksum = 'artifact-one';
+
+  constructor(installerOptions: JavaInstallerOptions) {
+    super('Floating', installerOptions);
+  }
+
+  protected async downloadTool(): Promise<JavaInstallerResults> {
+    return {
+      version: FloatingJavaBase.actualVersion,
+      path: path.join(
+        'toolcache',
+        this.toolcacheFolderName,
+        FloatingJavaBase.actualVersion.replace('+', '-'),
+        this.architecture
+      )
+    };
+  }
+
+  protected async findPackageForDownload(): Promise<JavaDownloadRelease> {
+    return {
+      version: '21',
+      url: 'https://example.com/java/21/latest/jdk-21.tar.gz',
+      checksum: {
+        algorithm: 'sha256',
+        value: FloatingJavaBase.checksum
+      },
+      floating: true
+    };
+  }
+
+  protected requiresRemoteResolution(): boolean {
+    return true;
+  }
+}
+
 describe('findInToolcache', () => {
   const actualJavaVersion = '11.0.8';
   const javaPath = path.join('Java_Empty_jdk', actualJavaVersion, 'x64');
@@ -473,6 +510,78 @@ describe('setupJava', () => {
     expect(spyCoreInfo).toHaveBeenCalledWith('Trying to download...');
     expect(spyCoreInfo).not.toHaveBeenCalledWith(
       `Resolved Java ${installedJavaVersion} from tool-cache`
+    );
+  });
+
+  it('uses the concrete versions of two different floating artifacts under the same major', async () => {
+    spyTcFindAllVersions.mockReturnValue(['21.0.8-9']);
+    spyGetToolcachePath.mockImplementation(
+      (_toolname: string, version: string, architecture: string) =>
+        path.join('toolcache', 'Java_Floating_jdk', version, architecture)
+    );
+    (jdkResolutionCache.restoreJdkResolution as jest.Mock).mockResolvedValue(
+      undefined
+    );
+    (jdkCache.restoreJdk as jest.Mock).mockResolvedValue(false);
+
+    FloatingJavaBase.actualVersion = '21.0.8+9';
+    FloatingJavaBase.checksum = 'artifact-one';
+    const first = new FloatingJavaBase({
+      version: '21',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false,
+      cacheJdk: true
+    });
+    await expect(first.setupJava()).resolves.toEqual({
+      version: '21.0.8+9',
+      path: path.join(
+        'toolcache',
+        'Java_Floating_jdk',
+        '21.0.8-9',
+        'x64'
+      )
+    });
+
+    FloatingJavaBase.actualVersion = '21.0.9+7';
+    FloatingJavaBase.checksum = 'artifact-two';
+    const second = new FloatingJavaBase({
+      version: '21',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false,
+      cacheJdk: true
+    });
+    await expect(second.setupJava()).resolves.toEqual({
+      version: '21.0.9+7',
+      path: path.join(
+        'toolcache',
+        'Java_Floating_jdk',
+        '21.0.9-7',
+        'x64'
+      )
+    });
+
+    expect(spyCoreSetOutput).toHaveBeenNthCalledWith(3, 'version', '21.0.8+9');
+    expect(spyCoreSetOutput).toHaveBeenNthCalledWith(6, 'version', '21.0.9+7');
+    expect(jdkCache.registerJdk).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        version: '21.0.8+9',
+        source: 'sha256:artifact-one'
+      })
+    );
+    expect(jdkCache.registerJdk).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        version: '21.0.9+7',
+        source: 'sha256:artifact-two'
+      })
+    );
+    expect(jdkResolutionCache.registerJdkResolution).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({source: 'sha256:artifact-two'}),
+      expect.objectContaining({version: '21.0.9+7', floating: true})
     );
   });
 

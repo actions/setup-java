@@ -16,6 +16,7 @@ import {
   extractJdkFile,
   getDownloadArchiveExtension,
   getGitHubHttpHeaders,
+  getJavaVersionFromReleaseFile,
   getLatestMajorVersion,
   getNextPageUrlFromLinkHeader,
   isVersionSatisfies,
@@ -95,7 +96,10 @@ export class GraalVMDistribution extends JavaBase {
       }
 
       const archivePath = path.join(extractedJavaPath, dirContents[0]);
-      const version = this.getToolcacheVersionName(javaRelease.version);
+      const installedVersion = javaRelease.floating
+        ? getJavaVersionFromReleaseFile(archivePath)
+        : javaRelease.version;
+      const version = this.getToolcacheVersionName(installedVersion);
 
       const javaPath = await cacheJdkDir(
         archivePath,
@@ -104,11 +108,19 @@ export class GraalVMDistribution extends JavaBase {
         this.architecture
       );
 
-      return {version: javaRelease.version, path: javaPath};
+      return {version: installedVersion, path: javaPath};
     } catch (error) {
       core.error(`Failed to download and extract GraalVM: ${error}`);
       throw error;
     }
+  }
+
+  protected requiresRemoteResolution(): boolean {
+    return (
+      this.distribution === 'GraalVM' &&
+      this.stable &&
+      !this.version.includes('.')
+    );
   }
 
   protected setJavaDefault(version: string, toolPath: string): void {
