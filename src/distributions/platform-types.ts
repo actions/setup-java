@@ -192,11 +192,6 @@ export function normalizePlatform(
   return PLATFORM_ALIASES[platform];
 }
 
-/**
- * Alpine ships musl instead of glibc, and a glibc JDK cannot run there. The
- * platform check short-circuits the filesystem probe so a stray
- * /etc/alpine-release can never make a non-Linux runner look like musl.
- */
 export function isAlpineLinux(
   platform: NodeJS.Platform = process.platform,
   alpineReleaseExists?: boolean
@@ -205,6 +200,18 @@ export function isAlpineLinux(
     platform === 'linux' &&
     (alpineReleaseExists ?? fs.existsSync('/etc/alpine-release'))
   );
+}
+
+export function getJavaPlatformIdentity(
+  platform: NodeJS.Platform = process.platform,
+  alpineReleaseExists?: boolean
+): string {
+  if (platform === 'linux') {
+    return isAlpineLinux(platform, alpineReleaseExists)
+      ? 'linux-musl'
+      : 'linux-glibc';
+  }
+  return normalizePlatform(platform) ?? platform;
 }
 
 export function validateJavaPlatform(

@@ -30989,6 +30989,7 @@ function createUnsupportedPackageError(distributionName, packageType, supportedP
 
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
 /* harmony export */   G6: () => (/* binding */ isAlpineLinux),
+/* harmony export */   U: () => (/* binding */ getJavaPlatformIdentity),
 /* harmony export */   dV: () => (/* binding */ normalizeArchitecture),
 /* harmony export */   sZ: () => (/* binding */ validateJavaPlatform)
 /* harmony export */ });
@@ -31150,14 +31151,17 @@ function normalizeArchitecture(architecture) {
 function normalizePlatform(platform) {
     return PLATFORM_ALIASES[platform];
 }
-/**
- * Alpine ships musl instead of glibc, and a glibc JDK cannot run there. The
- * platform check short-circuits the filesystem probe so a stray
- * /etc/alpine-release can never make a non-Linux runner look like musl.
- */
 function isAlpineLinux(platform = process.platform, alpineReleaseExists) {
     return (platform === 'linux' &&
         (alpineReleaseExists ?? fs__WEBPACK_IMPORTED_MODULE_0___default().existsSync('/etc/alpine-release')));
+}
+function getJavaPlatformIdentity(platform = process.platform, alpineReleaseExists) {
+    if (platform === 'linux') {
+        return isAlpineLinux(platform, alpineReleaseExists)
+            ? 'linux-musl'
+            : 'linux-glibc';
+    }
+    return normalizePlatform(platform) ?? platform;
 }
 function validateJavaPlatform(distributionName, platform, architecture, version) {
     const normalizedArchitecture = normalizeArchitecture(architecture);

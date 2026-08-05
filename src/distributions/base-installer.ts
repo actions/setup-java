@@ -20,7 +20,10 @@ import {MACOS_JAVA_CONTENT_POSTFIX} from '../constants.js';
 import {RetryingHttpClient} from '../retrying-http-client.js';
 import os from 'os';
 import {expectedDigestLength, verifyChecksum} from '../checksum.js';
-import {normalizeArchitecture} from './platform-types.js';
+import {
+  getJavaPlatformIdentity,
+  normalizeArchitecture
+} from './platform-types.js';
 import type {JdkCache} from '../jdk-cache.js';
 
 export abstract class JavaBase {
@@ -313,6 +316,7 @@ export abstract class JavaBase {
     const request = {
       distribution: this.distribution,
       packageType: this.packageType,
+      platform: getJavaPlatformIdentity(),
       architecture: this.architecture,
       versionSpec: this.version,
       stable: this.stable
@@ -428,6 +432,7 @@ export abstract class JavaBase {
     return {
       distribution: this.distribution,
       packageType: this.packageType,
+      platform: getJavaPlatformIdentity(),
       architecture: this.architecture,
       versionSpec: this.version,
       stable: this.stable,
