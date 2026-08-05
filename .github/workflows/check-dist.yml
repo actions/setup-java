@@ -15,37 +15,6 @@ permissions:
   contents: read
 
 jobs:
-  format-artifact:
-    name: Format artifact
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - name: Setup Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '24.x'
-          cache: npm
-      - name: Install dependencies
-        run: npm ci --ignore-scripts
-      - name: Format
-        run: npm run format
-      - name: Upload formatted files
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: formatted-files
-          path: |
-            __tests__/distributors/base-installer.test.ts
-            __tests__/distributors/graalvm-installer.test.ts
-            src/distributions/base-installer.ts
-            src/util.ts
-
-  call-basic-validation:
-    name: Basic validation
-    uses: actions/reusable-workflows/.github/workflows/basic-validation.yml@main
-    with:
-      node-version: '24.x'
-
   call-check-dist:
     name: Check dist/
     uses: actions/reusable-workflows/.github/workflows/check-dist.yml@main

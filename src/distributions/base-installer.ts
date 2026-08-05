@@ -228,9 +228,10 @@ export abstract class JavaBase {
               }
               javaRelease = {...javaRelease, version: foundJava.version};
               await this.registerFloatingResolution(javaRelease);
-              jdkCache = this.cacheJdk && javaRelease.checksum
-                ? await this.createJdkCache(javaRelease)
-                : undefined;
+              jdkCache =
+                this.cacheJdk && javaRelease.checksum
+                  ? await this.createJdkCache(javaRelease)
+                  : undefined;
             }
             if (jdkCache) {
               // Register after the installation exists so its identity is

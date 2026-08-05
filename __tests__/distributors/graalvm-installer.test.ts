@@ -366,9 +366,9 @@ describe('GraalVMDistribution', () => {
     });
 
     it('caches Oracle GraalVM floating artifacts under their installed version', async () => {
-      (
-        util.getJavaVersionFromReleaseFile as jest.Mock<any>
-      ).mockReturnValue('21.0.9+7');
+      (util.getJavaVersionFromReleaseFile as jest.Mock<any>).mockReturnValue(
+        '21.0.9+7'
+      );
       const floatingRelease = {
         version: '21',
         url: 'https://example.com/graalvm/latest/graalvm-jdk-21.tar.gz',
@@ -478,9 +478,9 @@ describe('GraalVMDistribution', () => {
 
       it('always resolves Oracle GraalVM major-only requests remotely', () => {
         expect((distribution as any).requiresRemoteResolution()).toBe(true);
-        expect(
-          (communityDistribution as any).requiresRemoteResolution()
-        ).toBe(false);
+        expect((communityDistribution as any).requiresRemoteResolution()).toBe(
+          false
+        );
       });
 
       it('should throw error for unsupported architecture', async () => {

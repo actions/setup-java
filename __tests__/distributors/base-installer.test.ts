@@ -592,12 +592,7 @@ describe('setupJava', () => {
     });
     await expect(first.setupJava()).resolves.toEqual({
       version: '21.0.8+9',
-      path: path.join(
-        'toolcache',
-        'Java_Floating_jdk',
-        '21.0.8-9',
-        'x64'
-      )
+      path: path.join('toolcache', 'Java_Floating_jdk', '21.0.8-9', 'x64')
     });
 
     FloatingJavaBase.actualVersion = '21.0.9+7';
@@ -611,12 +606,7 @@ describe('setupJava', () => {
     });
     await expect(second.setupJava()).resolves.toEqual({
       version: '21.0.9+7',
-      path: path.join(
-        'toolcache',
-        'Java_Floating_jdk',
-        '21.0.9-7',
-        'x64'
-      )
+      path: path.join('toolcache', 'Java_Floating_jdk', '21.0.9-7', 'x64')
     });
 
     expect(spyCoreSetOutput).toHaveBeenNthCalledWith(3, 'version', '21.0.8+9');
