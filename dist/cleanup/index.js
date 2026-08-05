@@ -30839,7 +30839,7 @@ const DISTRIBUTIONS_ONLY_MAJOR_VERSION = (/* unused pure expression or super */ 
 /* harmony export */   Vt: () => (/* binding */ getBooleanInput),
 /* harmony export */   lN: () => (/* binding */ isJdkCacheEnabled)
 /* harmony export */ });
-/* unused harmony exports getVersionFromToolcachePath, extractJdkFile, cacheJdkDir, getDownloadArchiveExtension, isVersionSatisfies, getToolcachePath, isGhes, getVersionFromFileContent, convertVersionToSemver, getGitHubHttpHeaders, MAX_PAGINATION_PAGES, getNextPageUrlFromLinkHeader, validatePaginationUrl, renameWinArchive, getLatestMajorVersion */
+/* unused harmony exports getVersionFromToolcachePath, extractJdkFile, cacheJdkDir, getJavaVersionFromReleaseFile, getDownloadArchiveExtension, isVersionSatisfies, getToolcachePath, isGhes, getVersionFromFileContent, convertVersionToSemver, getArtifactFingerprint, getGitHubHttpHeaders, MAX_PAGINATION_PAGES, getNextPageUrlFromLinkHeader, validatePaginationUrl, renameWinArchive, getLatestMajorVersion */
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(857);
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(os__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(6928);
@@ -31003,6 +31003,46 @@ async function cacheJdkDir(sourceDir, toolName, version, architecture) {
         }
     }
     return await tc.cacheDir(sourceDir, toolName, version, architecture);
+}
+function getJavaVersionFromReleaseFile(javaHome) {
+    const releasePaths = [
+        path.join(javaHome, 'release'),
+        path.join(javaHome, 'Contents', 'Home', 'release')
+    ];
+    const releasePath = releasePaths.find(candidate => fs.existsSync(candidate));
+    if (!releasePath) {
+        throw new Error(`Unable to determine the installed Java version: no release file found under '${javaHome}'.`);
+    }
+    const properties = new Map();
+    for (const line of fs.readFileSync(releasePath, 'utf8').split(/\r?\n/)) {
+        const match = line.match(/^([A-Z0-9_]+)="(.*)"$/);
+        if (match) {
+            properties.set(match[1], match[2]);
+        }
+    }
+    const runtimeVersion = properties.get('JAVA_RUNTIME_VERSION');
+    const runtimeMatch = runtimeVersion?.match(/^(\d+(?:\.\d+)*(?:\+\d+(?:\.\d+)*)?)/);
+    if (runtimeMatch) {
+        return normalizeJavaReleaseVersion(runtimeMatch[1]);
+    }
+    const javaVersion = properties.get('JAVA_VERSION');
+    if (javaVersion && /^\d+(?:\.\d+)*$/.test(javaVersion)) {
+        return normalizeJavaReleaseVersion(javaVersion);
+    }
+    throw new Error(`Unable to determine the installed Java version from '${releasePath}'.`);
+}
+function normalizeJavaReleaseVersion(version) {
+    const [numericVersion, buildVersion] = version.split('+', 2);
+    const components = numericVersion.split('.');
+    while (components.length < 3) {
+        components.push('0');
+    }
+    const mainVersion = components.slice(0, 3).join('.');
+    const build = [
+        ...components.slice(3),
+        ...(buildVersion ? [buildVersion] : [])
+    ];
+    return build.length > 0 ? `${mainVersion}+${build.join('.')}` : mainVersion;
 }
 function getToolcacheDestination(toolName, version, architecture) {
     const toolcacheRoot = process.env['RUNNER_TOOL_CACHE'];
@@ -31193,6 +31233,38 @@ function convertVersionToSemver(version) {
         return `${mainVersion}+${versionArray.slice(3).join('.')}`;
     }
     return mainVersion;
+}
+/**
+ * Builds a validator for the bytes currently served by a URL from the response
+ * headers of a HEAD request. A vendor's `/latest/` URL never changes, so this
+ * is what lets a republished artifact be told apart from the previous one when
+ * no checksum is published alongside it.
+ *
+ * Returns `undefined` when the response carries no usable validator, in which
+ * case the caller must not treat the URL as a stable identity.
+ */
+function getArtifactFingerprint(headers) {
+    const readHeader = (name) => {
+        const value = headers?.[name];
+        const resolved = Array.isArray(value) ? value[0] : value;
+        return typeof resolved === 'string' && resolved.trim()
+            ? resolved.trim()
+            : undefined;
+    };
+    // A strong or weak ETag already identifies a specific representation.
+    const etag = readHeader('etag');
+    if (etag) {
+        return `etag:${etag}`;
+    }
+    // Otherwise combine the two validators a static file server reliably sends.
+    // Neither alone is sufficient: `last-modified` has one-second granularity and
+    // `content-length` is unchanged by a same-size rebuild.
+    const lastModified = readHeader('last-modified');
+    const contentLength = readHeader('content-length');
+    if (lastModified && contentLength) {
+        return `mtime:${lastModified};length:${contentLength}`;
+    }
+    return undefined;
 }
 function getGitHubHttpHeaders() {
     const resolvedToken = core.getInput('token') || process.env.GITHUB_TOKEN;

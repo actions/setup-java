@@ -44,7 +44,12 @@ jest.unstable_mockModule('@actions/http-client', () => ({
 const tc = await import('@actions/tool-cache');
 const exec = await import('@actions/exec');
 const io = await import('@actions/io');
-const {cacheJdkDir, extractJdkFile} = await import('../src/util.js');
+const {
+  cacheJdkDir,
+  extractJdkFile,
+  getArtifactFingerprint,
+  getJavaVersionFromReleaseFile
+} = await import('../src/util.js');
 
 const originalToolCache = process.env['RUNNER_TOOL_CACHE'];
 const originalTemp = process.env['RUNNER_TEMP'];
@@ -298,6 +303,41 @@ describe('cacheJdkDir', () => {
   });
 });
 
+describe('getJavaVersionFromReleaseFile', () => {
+  it.each([
+    ['JAVA_RUNTIME_VERSION="21.0.9+7-LTS-123"', '21.0.9+7'],
+    ['JAVA_RUNTIME_VERSION="17.0.12+8-jvmci-23.1-b52"', '17.0.12+8'],
+    ['JAVA_RUNTIME_VERSION="25+36-LTS"', '25.0.0+36'],
+    ['JAVA_VERSION="25.0.1"', '25.0.1'],
+    ['JAVA_VERSION="25"', '25.0.0']
+  ])('reads a concrete version from %s', (contents, expected) => {
+    const javaHome = createJdkDir();
+    fs.writeFileSync(path.join(javaHome, 'release'), contents);
+
+    expect(getJavaVersionFromReleaseFile(javaHome)).toBe(expected);
+  });
+
+  it('reads the macOS Contents/Home release file', () => {
+    const javaHome = path.join(workDir, 'macos-jdk');
+    fs.mkdirSync(path.join(javaHome, 'Contents', 'Home'), {recursive: true});
+    fs.writeFileSync(
+      path.join(javaHome, 'Contents', 'Home', 'release'),
+      'JAVA_RUNTIME_VERSION="21.0.9+7-LTS"'
+    );
+
+    expect(getJavaVersionFromReleaseFile(javaHome)).toBe('21.0.9+7');
+  });
+
+  it('fails when the JDK release metadata has no usable version', () => {
+    const javaHome = createJdkDir();
+    fs.writeFileSync(path.join(javaHome, 'release'), 'IMPLEMENTOR="Oracle"');
+
+    expect(() => getJavaVersionFromReleaseFile(javaHome)).toThrow(
+      /Unable to determine the installed Java version/
+    );
+  });
+});
+
 describe('extractJdkFile', () => {
   it('uses pigz for tarballs when it is available', async () => {
     (io.which as jest.Mock).mockResolvedValue('/usr/bin/pigz' as never);
@@ -408,5 +448,61 @@ describe('extractJdkFile', () => {
 
     await expect(extractJdkFile('/tmp/jdk.zip')).resolves.toBe('/extracted');
     expect(exec.exec).not.toHaveBeenCalled();
+  });
+});
+
+describe('getArtifactFingerprint', () => {
+  it('prefers the ETag over the other validators', () => {
+    expect(
+      getArtifactFingerprint({
+        etag: '"abc123"',
+        'last-modified': 'Wed, 21 Oct 2026 07:28:00 GMT',
+        'content-length': '195000000'
+      })
+    ).toBe('etag:"abc123"');
+  });
+
+  it('combines the last-modified date and the content length without an ETag', () => {
+    expect(
+      getArtifactFingerprint({
+        'last-modified': 'Wed, 21 Oct 2026 07:28:00 GMT',
+        'content-length': '195000000'
+      })
+    ).toBe('mtime:Wed, 21 Oct 2026 07:28:00 GMT;length:195000000');
+  });
+
+  it.each([
+    ['no validators', {}],
+    [
+      'only a last-modified date',
+      {'last-modified': 'Wed, 21 Oct 2026 07:28:00 GMT'}
+    ],
+    ['only a content length', {'content-length': '195000000'}],
+    [
+      'blank validators',
+      {etag: '   ', 'last-modified': '', 'content-length': ''}
+    ],
+    ['missing headers', undefined]
+  ])('returns undefined for %s', (_label, headers) => {
+    expect(getArtifactFingerprint(headers)).toBeUndefined();
+  });
+
+  it('uses the first value of a repeated header', () => {
+    expect(getArtifactFingerprint({etag: ['"first"', '"second"'] as any})).toBe(
+      'etag:"first"'
+    );
+  });
+
+  it('distinguishes a republished artifact from the previous one', () => {
+    const before = getArtifactFingerprint({
+      'last-modified': 'Wed, 21 Oct 2026 07:28:00 GMT',
+      'content-length': '195000000'
+    });
+    const after = getArtifactFingerprint({
+      'last-modified': 'Thu, 22 Oct 2026 09:03:00 GMT',
+      'content-length': '195400000'
+    });
+
+    expect(before).not.toBe(after);
   });
 });

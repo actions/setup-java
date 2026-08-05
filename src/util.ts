@@ -14,7 +14,7 @@ import {
   DISTRIBUTIONS_ONLY_MAJOR_VERSION,
   INPUT_CACHE_JDK
 } from './constants.js';
-import {OutgoingHttpHeaders} from 'http';
+import {IncomingHttpHeaders, OutgoingHttpHeaders} from 'http';
 
 export function getTempDir() {
   const tempDirectory = process.env['RUNNER_TEMP'] || os.tmpdir();
@@ -190,6 +190,59 @@ export async function cacheJdkDir(
   }
 
   return await tc.cacheDir(sourceDir, toolName, version, architecture);
+}
+
+export function getJavaVersionFromReleaseFile(javaHome: string): string {
+  const releasePaths = [
+    path.join(javaHome, 'release'),
+    path.join(javaHome, 'Contents', 'Home', 'release')
+  ];
+  const releasePath = releasePaths.find(candidate => fs.existsSync(candidate));
+  if (!releasePath) {
+    throw new Error(
+      `Unable to determine the installed Java version: no release file found under '${javaHome}'.`
+    );
+  }
+
+  const properties = new Map<string, string>();
+  for (const line of fs.readFileSync(releasePath, 'utf8').split(/\r?\n/)) {
+    const match = line.match(/^([A-Z0-9_]+)="(.*)"$/);
+    if (match) {
+      properties.set(match[1], match[2]);
+    }
+  }
+
+  const runtimeVersion = properties.get('JAVA_RUNTIME_VERSION');
+  const runtimeMatch = runtimeVersion?.match(
+    /^(\d+(?:\.\d+)*(?:\+\d+(?:\.\d+)*)?)/
+  );
+  if (runtimeMatch) {
+    return normalizeJavaReleaseVersion(runtimeMatch[1]);
+  }
+
+  const javaVersion = properties.get('JAVA_VERSION');
+  if (javaVersion && /^\d+(?:\.\d+)*$/.test(javaVersion)) {
+    return normalizeJavaReleaseVersion(javaVersion);
+  }
+
+  throw new Error(
+    `Unable to determine the installed Java version from '${releasePath}'.`
+  );
+}
+
+function normalizeJavaReleaseVersion(version: string): string {
+  const [numericVersion, buildVersion] = version.split('+', 2);
+  const components = numericVersion.split('.');
+  while (components.length < 3) {
+    components.push('0');
+  }
+
+  const mainVersion = components.slice(0, 3).join('.');
+  const build = [
+    ...components.slice(3),
+    ...(buildVersion ? [buildVersion] : [])
+  ];
+  return build.length > 0 ? `${mainVersion}+${build.join('.')}` : mainVersion;
 }
 
 function getToolcacheDestination(
@@ -451,6 +504,44 @@ export function convertVersionToSemver(version: number[] | string) {
     return `${mainVersion}+${versionArray.slice(3).join('.')}`;
   }
   return mainVersion;
+}
+
+/**
+ * Builds a validator for the bytes currently served by a URL from the response
+ * headers of a HEAD request. A vendor's `/latest/` URL never changes, so this
+ * is what lets a republished artifact be told apart from the previous one when
+ * no checksum is published alongside it.
+ *
+ * Returns `undefined` when the response carries no usable validator, in which
+ * case the caller must not treat the URL as a stable identity.
+ */
+export function getArtifactFingerprint(
+  headers: IncomingHttpHeaders | undefined
+): string | undefined {
+  const readHeader = (name: string): string | undefined => {
+    const value = headers?.[name];
+    const resolved = Array.isArray(value) ? value[0] : value;
+    return typeof resolved === 'string' && resolved.trim()
+      ? resolved.trim()
+      : undefined;
+  };
+
+  // A strong or weak ETag already identifies a specific representation.
+  const etag = readHeader('etag');
+  if (etag) {
+    return `etag:${etag}`;
+  }
+
+  // Otherwise combine the two validators a static file server reliably sends.
+  // Neither alone is sufficient: `last-modified` has one-second granularity and
+  // `content-length` is unchanged by a same-size rebuild.
+  const lastModified = readHeader('last-modified');
+  const contentLength = readHeader('content-length');
+  if (lastModified && contentLength) {
+    return `mtime:${lastModified};length:${contentLength}`;
+  }
+
+  return undefined;
 }
 
 export function getGitHubHttpHeaders(): OutgoingHttpHeaders {
