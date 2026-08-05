@@ -1,5 +1,4 @@
 import * as core from '@actions/core';
-import * as tc from '@actions/tool-cache';
 import semver from 'semver';
 
 import fs from 'fs';
@@ -7,6 +6,7 @@ import path from 'path';
 
 import {JavaBase} from '../base-installer.js';
 import {
+  cacheJdkDir,
   convertVersionToSemver,
   extractJdkFile,
   getDownloadArchiveExtension,
@@ -121,7 +121,7 @@ export class DragonwellDistribution extends JavaBase {
     const archivePath = path.join(extractedJavaPath, archiveName);
     const version = this.getToolcacheVersionName(javaRelease.version);
 
-    const javaPath = await tc.cacheDir(
+    const javaPath = await cacheJdkDir(
       archivePath,
       this.toolcacheFolderName,
       version,

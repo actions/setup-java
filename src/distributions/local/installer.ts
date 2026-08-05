@@ -1,4 +1,3 @@
-import * as tc from '@actions/tool-cache';
 import * as core from '@actions/core';
 
 import fs from 'fs';
@@ -10,7 +9,7 @@ import {
   JavaDownloadRelease,
   JavaInstallerResults
 } from '../base-models.js';
-import {extractJdkFile} from '../../util.js';
+import {cacheJdkDir, extractJdkFile} from '../../util.js';
 import {MACOS_JAVA_CONTENT_POSTFIX} from '../../constants.js';
 import {createReadStream} from 'fs';
 import {createHash} from 'crypto';
@@ -92,7 +91,7 @@ export class LocalDistribution extends JavaBase {
         const archivePath = path.join(extractedJavaPath, archiveName);
         const javaVersion = this.version;
 
-        const javaPath = await tc.cacheDir(
+        const javaPath = await cacheJdkDir(
           archivePath,
           this.toolcacheFolderName,
           this.getToolcacheVersionName(javaVersion),

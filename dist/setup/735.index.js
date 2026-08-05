@@ -9,16 +9,14 @@ export const modules = {
 /* harmony export */   OpenJdkDistribution: () => (/* binding */ OpenJdkDistribution)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3838);
-/* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9805);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9896);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6928);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(2088);
-/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6242);
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(4527);
-
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9896);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6928);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(2088);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6242);
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4527);
 
 
 
@@ -26,7 +24,7 @@ export const modules = {
 
 
 const OPENJDK_BASE_URL = 'https://jdk.java.net';
-class OpenJdkDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5__/* .JavaBase */ .O {
+class OpenJdkDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/* .JavaBase */ .O {
     constructor(installerOptions) {
         super('Oracle OpenJDK', installerOptions);
     }
@@ -41,8 +39,8 @@ class OpenJdkDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5_
         const platform = this.getPlatform();
         const releases = await this.getAvailableVersions(platform, arch);
         const matchingReleases = releases
-            .filter(release => (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .isVersionSatisfies */ .y)(range, release.version))
-            .sort((left, right) => -semver__WEBPACK_IMPORTED_MODULE_4___default().compareBuild(left.version, right.version));
+            .filter(release => (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .isVersionSatisfies */ .y)(range, release.version))
+            .sort((left, right) => -semver__WEBPACK_IMPORTED_MODULE_3___default().compareBuild(left.version, right.version));
         if (!matchingReleases.length) {
             throw this.createVersionNotFoundError(range, releases.map(release => release.version), `Platform: ${platform}`);
         }
@@ -58,12 +56,12 @@ class OpenJdkDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5_
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Extracting Java archive...`);
         const extension = javaRelease.url.endsWith('.zip') ? 'zip' : 'tar.gz';
         if (extension === 'zip') {
-            javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .renameWinArchive */ .n2)(javaArchivePath);
+            javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .renameWinArchive */ .n2)(javaArchivePath);
         }
-        const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
-        const archiveName = fs__WEBPACK_IMPORTED_MODULE_2___default().readdirSync(extractedJavaPath)[0];
-        const archivePath = path__WEBPACK_IMPORTED_MODULE_3___default().join(extractedJavaPath, archiveName);
-        const javaPath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_1__/* .cacheDir */ .e8(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaRelease.version), this.architecture);
+        const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
+        const archiveName = fs__WEBPACK_IMPORTED_MODULE_1___default().readdirSync(extractedJavaPath)[0];
+        const archivePath = path__WEBPACK_IMPORTED_MODULE_2___default().join(extractedJavaPath, archiveName);
+        const javaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .cacheJdkDir */ .Vj)(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaRelease.version), this.architecture);
         return { version: javaRelease.version, path: javaPath };
     }
     async getAvailableVersions(platform, arch) {
@@ -106,7 +104,7 @@ class OpenJdkDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5_
     toSemver(version, urlBuild) {
         const [javaVersion, filenameBuild] = version.replace('-ea', '').split('+');
         const versionParts = javaVersion.split('.');
-        const normalizedVersion = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .convertVersionToSemver */ .ZY)(versionParts.length === 1 ? `${javaVersion}.0.0` : javaVersion);
+        const normalizedVersion = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .convertVersionToSemver */ .ZY)(versionParts.length === 1 ? `${javaVersion}.0.0` : javaVersion);
         const build = filenameBuild ?? (versionParts.length <= 3 ? urlBuild : undefined);
         return build ? `${normalizedVersion}+${build}` : normalizedVersion;
     }

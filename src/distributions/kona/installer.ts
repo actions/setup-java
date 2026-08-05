@@ -1,5 +1,4 @@
 import * as core from '@actions/core';
-import * as tc from '@actions/tool-cache';
 import semver from 'semver';
 
 import fs from 'fs';
@@ -13,6 +12,7 @@ import {
   JavaInstallerResults
 } from '../base-models.js';
 import {
+  cacheJdkDir,
   extractJdkFile,
   getDownloadArchiveExtension,
   isVersionSatisfies,
@@ -48,7 +48,7 @@ export class KonaDistribution extends JavaBase {
     const jdkDirectory = path.join(extractedJavaPath, archiveName);
     const version = this.getToolcacheVersionName(javaRelease.version);
 
-    const javaPath = await tc.cacheDir(
+    const javaPath = await cacheJdkDir(
       jdkDirectory,
       this.toolcacheFolderName,
       version,

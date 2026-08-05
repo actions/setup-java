@@ -9,23 +9,21 @@ export const modules = {
 /* harmony export */   SapMachineDistribution: () => (/* binding */ SapMachineDistribution)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3838);
-/* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9805);
-/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(2088);
-/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(9896);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6928);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4527);
-/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(6242);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2088);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9896);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6928);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(4527);
+/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6242);
 
 
 
 
 
 
-
-class SapMachineDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_6__/* .JavaBase */ .O {
+class SapMachineDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5__/* .JavaBase */ .O {
     constructor(installerOptions) {
         super('SapMachine', installerOptions);
     }
@@ -37,7 +35,7 @@ class SapMachineDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE
         const availableVersions = await this.getAvailableVersions();
         const matchedVersions = availableVersions
             .filter(item => {
-            return (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .isVersionSatisfies */ .y)(version, item.version);
+            return (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .isVersionSatisfies */ .y)(version, item.version);
         })
             .map(item => {
             return {
@@ -79,15 +77,15 @@ class SapMachineDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
         let javaArchivePath = await this.downloadAndVerify(javaRelease);
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Extracting Java archive...`);
-        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .getDownloadArchiveExtension */ .ag)();
+        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .getDownloadArchiveExtension */ .ag)();
         if (process.platform === 'win32') {
-            javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .renameWinArchive */ .n2)(javaArchivePath);
+            javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .renameWinArchive */ .n2)(javaArchivePath);
         }
-        const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
-        const archiveName = fs__WEBPACK_IMPORTED_MODULE_3___default().readdirSync(extractedJavaPath)[0];
-        const archivePath = path__WEBPACK_IMPORTED_MODULE_4___default().join(extractedJavaPath, archiveName);
+        const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
+        const archiveName = fs__WEBPACK_IMPORTED_MODULE_2___default().readdirSync(extractedJavaPath)[0];
+        const archivePath = path__WEBPACK_IMPORTED_MODULE_3___default().join(extractedJavaPath, archiveName);
         const version = this.getToolcacheVersionName(javaRelease.version);
-        const javaPath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_1__/* .cacheDir */ .e8(archivePath, this.toolcacheFolderName, version, this.architecture);
+        const javaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .cacheJdkDir */ .Vj)(archivePath, this.toolcacheFolderName, version, this.architecture);
         return { version: javaRelease.version, path: javaPath };
     }
     parseVersions(platform, arch, versions) {
@@ -104,9 +102,9 @@ class SapMachineDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE
                     if (buildVersionWithoutPrefix.split('.').length > 3) {
                         buildVersionWithoutPrefix = buildVersionWithoutPrefix.replace('+', '.');
                     }
-                    buildVersionWithoutPrefix = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .convertVersionToSemver */ .ZY)(buildVersionWithoutPrefix);
+                    buildVersionWithoutPrefix = (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .convertVersionToSemver */ .ZY)(buildVersionWithoutPrefix);
                     // ignore invalid version
-                    if (!semver__WEBPACK_IMPORTED_MODULE_2___default().valid(buildVersionWithoutPrefix)) {
+                    if (!semver__WEBPACK_IMPORTED_MODULE_1___default().valid(buildVersionWithoutPrefix)) {
                         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .debug */ .Yz(`Invalid version: ${buildVersionWithoutPrefix}`);
                         continue;
                     }
@@ -153,7 +151,7 @@ class SapMachineDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE
         const sortedVersions = eligibleVersions.sort((versionObj1, versionObj2) => {
             const version1 = versionObj1.version;
             const version2 = versionObj2.version;
-            return semver__WEBPACK_IMPORTED_MODULE_2___default().compareBuild(version1, version2);
+            return semver__WEBPACK_IMPORTED_MODULE_1___default().compareBuild(version1, version2);
         });
         return sortedVersions.reverse();
     }
@@ -165,7 +163,7 @@ class SapMachineDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE
                 return 'macos';
             case 'linux':
                 // figure out if alpine/musl
-                if (fs__WEBPACK_IMPORTED_MODULE_3___default().existsSync('/etc/alpine-release')) {
+                if (fs__WEBPACK_IMPORTED_MODULE_2___default().existsSync('/etc/alpine-release')) {
                     return 'linux-musl';
                 }
                 return 'linux';

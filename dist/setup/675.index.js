@@ -9,23 +9,21 @@ export const modules = {
 /* harmony export */   DragonwellDistribution: () => (/* binding */ DragonwellDistribution)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3838);
-/* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9805);
-/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(2088);
-/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(9896);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6928);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6242);
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(4527);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2088);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9896);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6928);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6242);
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4527);
 
 
 
 
 
 
-
-class DragonwellDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5__/* .JavaBase */ .O {
+class DragonwellDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/* .JavaBase */ .O {
     constructor(installerOptions) {
         super('Dragonwell', installerOptions);
     }
@@ -39,7 +37,7 @@ class DragonwellDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE
         const availableVersions = await this.getAvailableVersions();
         const matchedVersions = availableVersions
             .filter(item => {
-            return (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .isVersionSatisfies */ .y)(version, item.jdk_version);
+            return (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .isVersionSatisfies */ .y)(version, item.jdk_version);
         })
             .map(item => {
             return {
@@ -83,15 +81,15 @@ class DragonwellDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
         let javaArchivePath = await this.downloadAndVerify(javaRelease);
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Extracting Java archive...`);
-        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getDownloadArchiveExtension */ .ag)();
+        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .getDownloadArchiveExtension */ .ag)();
         if (process.platform === 'win32') {
-            javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .renameWinArchive */ .n2)(javaArchivePath);
+            javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .renameWinArchive */ .n2)(javaArchivePath);
         }
-        const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
-        const archiveName = fs__WEBPACK_IMPORTED_MODULE_3___default().readdirSync(extractedJavaPath)[0];
-        const archivePath = path__WEBPACK_IMPORTED_MODULE_4___default().join(extractedJavaPath, archiveName);
+        const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
+        const archiveName = fs__WEBPACK_IMPORTED_MODULE_2___default().readdirSync(extractedJavaPath)[0];
+        const archivePath = path__WEBPACK_IMPORTED_MODULE_3___default().join(extractedJavaPath, archiveName);
         const version = this.getToolcacheVersionName(javaRelease.version);
-        const javaPath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_1__/* .cacheDir */ .e8(archivePath, this.toolcacheFolderName, version, this.architecture);
+        const javaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .cacheJdkDir */ .Vj)(archivePath, this.toolcacheFolderName, version, this.architecture);
         return { version: javaRelease.version, path: javaPath };
     }
     parseVersions(platform, arch, dragonwellVersions) {
@@ -116,7 +114,7 @@ class DragonwellDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE
                 const jdkVersionNums = jdkVersion
                     .replace('+', '.')
                     .split('.');
-                jdkVersion = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .convertVersionToSemver */ .ZY)(`${jdkVersionNums.slice(0, 3).join('.')}.${jdkVersionNums[jdkVersionNums.length - 1]}`);
+                jdkVersion = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .convertVersionToSemver */ .ZY)(`${jdkVersionNums.slice(0, 3).join('.')}.${jdkVersionNums[jdkVersionNums.length - 1]}`);
                 for (const edition in archMap) {
                     eligibleVersions.push({
                         os: platform,
@@ -139,7 +137,7 @@ class DragonwellDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE
         const sortedVersions = eligibleVersions.sort((versionObj1, versionObj2) => {
             const version1 = versionObj1.jdk_version;
             const version2 = versionObj2.jdk_version;
-            return semver__WEBPACK_IMPORTED_MODULE_2___default().compareBuild(version1, version2);
+            return semver__WEBPACK_IMPORTED_MODULE_1___default().compareBuild(version1, version2);
         });
         return sortedVersions.reverse();
     }
@@ -169,7 +167,7 @@ class DragonwellDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE
         const branch = 'main';
         const filePath = 'releases.json';
         const backupUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
-        const headers = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getGitHubHttpHeaders */ .U_)();
+        const headers = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .getGitHubHttpHeaders */ .U_)();
         try {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .debug */ .Yz(`Trying to fetch available Dragonwell versions info from the backup url: ${backupUrl}`);
             const fetchedDragonwellJson = (await this.http.getJson(backupUrl, headers)).result;

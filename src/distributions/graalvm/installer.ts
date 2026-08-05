@@ -1,5 +1,4 @@
 import * as core from '@actions/core';
-import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 import semver from 'semver';
@@ -12,6 +11,7 @@ import {
   JavaInstallerResults
 } from '../base-models.js';
 import {
+  cacheJdkDir,
   convertVersionToSemver,
   extractJdkFile,
   getDownloadArchiveExtension,
@@ -97,7 +97,7 @@ export class GraalVMDistribution extends JavaBase {
       const archivePath = path.join(extractedJavaPath, dirContents[0]);
       const version = this.getToolcacheVersionName(javaRelease.version);
 
-      const javaPath = await tc.cacheDir(
+      const javaPath = await cacheJdkDir(
         archivePath,
         this.toolcacheFolderName,
         version,

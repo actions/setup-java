@@ -16,8 +16,6 @@ __webpack_require__.d(__webpack_exports__, {
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 7 modules
 var core = __webpack_require__(3838);
-// EXTERNAL MODULE: ./node_modules/@actions/tool-cache/lib/tool-cache.js + 2 modules
-var tool_cache = __webpack_require__(9805);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __webpack_require__(9896);
 var external_fs_default = /*#__PURE__*/__webpack_require__.n(external_fs_);
@@ -71,7 +69,6 @@ var constants = __webpack_require__(7242);
 // EXTERNAL MODULE: ./src/util.ts
 var util = __webpack_require__(4527);
 ;// CONCATENATED MODULE: ./src/distributions/temurin/installer.ts
-
 
 
 
@@ -150,7 +147,7 @@ class TemurinDistribution extends base_installer/* JavaBase */.O {
             await this.installJmods(javaRelease.version, javaHome);
         }
         const version = this.getToolcacheVersionName(javaRelease.version);
-        const javaPath = await tool_cache/* cacheDir */.e8(archivePath, this.toolcacheFolderName, version, this.architecture);
+        const javaPath = await (0,util/* cacheJdkDir */.Vj)(archivePath, this.toolcacheFolderName, version, this.architecture);
         return { version: javaRelease.version, path: javaPath };
     }
     supportsSignatureVerification() {

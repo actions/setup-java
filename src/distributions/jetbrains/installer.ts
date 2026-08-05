@@ -1,5 +1,4 @@
 import * as core from '@actions/core';
-import * as tc from '@actions/tool-cache';
 
 import fs from 'fs';
 import path from 'path';
@@ -12,7 +11,7 @@ import {
   JavaInstallerOptions,
   JavaInstallerResults
 } from '../base-models.js';
-import {extractJdkFile, isVersionSatisfies} from '../../util.js';
+import {cacheJdkDir, extractJdkFile, isVersionSatisfies} from '../../util.js';
 import {OutgoingHttpHeaders} from 'http';
 import {HttpCodes} from '@actions/http-client';
 
@@ -79,7 +78,7 @@ export class JetBrainsDistribution extends JavaBase {
     const archivePath = path.join(extractedJavaPath, archiveName);
     const version = this.getToolcacheVersionName(javaRelease.version);
 
-    const javaPath = await tc.cacheDir(
+    const javaPath = await cacheJdkDir(
       archivePath,
       this.toolcacheFolderName,
       version,

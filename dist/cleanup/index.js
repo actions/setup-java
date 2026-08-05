@@ -30840,7 +30840,7 @@ const DISTRIBUTIONS_ONLY_MAJOR_VERSION = (/* unused pure expression or super */ 
 /* harmony export */   Vt: () => (/* binding */ getBooleanInput),
 /* harmony export */   lN: () => (/* binding */ isJdkCacheEnabled)
 /* harmony export */ });
-/* unused harmony exports getVersionFromToolcachePath, extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies, getToolcachePath, isGhes, getVersionFromFileContent, convertVersionToSemver, getGitHubHttpHeaders, MAX_PAGINATION_PAGES, getNextPageUrlFromLinkHeader, validatePaginationUrl, renameWinArchive, getLatestMajorVersion */
+/* unused harmony exports getVersionFromToolcachePath, extractJdkFile, cacheJdkDir, getDownloadArchiveExtension, isVersionSatisfies, getToolcachePath, isGhes, getVersionFromFileContent, convertVersionToSemver, getGitHubHttpHeaders, MAX_PAGINATION_PAGES, getNextPageUrlFromLinkHeader, validatePaginationUrl, renameWinArchive, getLatestMajorVersion */
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(857);
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(os__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(6928);
@@ -30851,7 +30851,14 @@ const DISTRIBUTIONS_ONLY_MAJOR_VERSION = (/* unused pure expression or super */ 
 /* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(semver__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(3838);
 /* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(9805);
-/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(7242);
+/* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(5260);
+/* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_7__ = __nccwpck_require__(8701);
+/* harmony import */ var crypto__WEBPACK_IMPORTED_MODULE_8__ = __nccwpck_require__(6982);
+/* harmony import */ var crypto__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__nccwpck_require__.n(crypto__WEBPACK_IMPORTED_MODULE_8__);
+/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_9__ = __nccwpck_require__(7242);
+
+
+
 
 
 
@@ -30878,8 +30885,8 @@ function getBooleanInput(inputName, defaultValue = false) {
     throw new Error(`Invalid value '${inputValue}' for boolean input '${inputName}'. Expected 'true' or 'false'.`);
 }
 function isJdkCacheEnabled(cache) {
-    return _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_6__/* .INPUT_CACHE_JDK */ .GL).trim()
-        ? getBooleanInput(_constants_js__WEBPACK_IMPORTED_MODULE_6__/* .INPUT_CACHE_JDK */ .GL)
+    return _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_9__/* .INPUT_CACHE_JDK */ .GL).trim()
+        ? getBooleanInput(_constants_js__WEBPACK_IMPORTED_MODULE_9__/* .INPUT_CACHE_JDK */ .GL)
         : Boolean(cache.trim());
 }
 function getVersionFromToolcachePath(toolPath) {
@@ -30899,13 +30906,115 @@ async function extractJdkFile(toolPath, extension) {
     }
     switch (extension) {
         case 'tar.gz':
+            return await extractTarGz(toolPath);
         case 'tar':
             return await tc.extractTar(toolPath);
         case 'zip':
-            return await tc.extractZip(toolPath);
+            return await extractZipArchive(toolPath);
         default:
             return await tc.extract7z(toolPath);
     }
+}
+async function createExtractFolder() {
+    const dest = path.join(getTempDir(), randomUUID());
+    await io.mkdirP(dest);
+    return dest;
+}
+/**
+ * Decompressing a JDK tarball with the default single-threaded gzip is one of the
+ * slowest parts of the install, so hand the decompression to `pigz` when the runner
+ * provides it. Any failure falls back to the stock extraction.
+ */
+async function extractTarGz(toolPath) {
+    const pigzPath = await io.which('pigz');
+    // tar splits --use-compress-program on whitespace, so a path containing a
+    // space would be word-split into a bogus command.
+    if (pigzPath && !/\s/.test(pigzPath)) {
+        const dest = await createExtractFolder();
+        try {
+            return await tc.extractTar(toolPath, dest, [
+                '--use-compress-program',
+                `${pigzPath} -d`,
+                '-x'
+            ]);
+        }
+        catch (error) {
+            await io.rmRF(dest);
+            core.debug(`Failed to extract '${toolPath}' with pigz, falling back to gzip: ${getErrorMessage(error)}`);
+        }
+    }
+    return await tc.extractTar(toolPath);
+}
+/**
+ * `tc.extractZip` shells out to PowerShell's `Expand-Archive` on Windows, which is
+ * several times slower than the bundled bsdtar. Prefer `tar.exe` and fall back to
+ * the stock extraction when it is unavailable or fails.
+ */
+async function extractZipArchive(toolPath) {
+    if (process.platform === 'win32') {
+        const systemTar = path.join(process.env['SystemRoot'] || 'C:\\Windows', 'System32', 'tar.exe');
+        if (fs.existsSync(systemTar)) {
+            const dest = await createExtractFolder();
+            try {
+                await exec.exec(`"${systemTar}"`, ['-xf', toolPath, '-C', dest], {
+                    silent: true
+                });
+                return dest;
+            }
+            catch (error) {
+                await io.rmRF(dest);
+                core.debug(`Failed to extract '${toolPath}' with tar.exe, falling back to Expand-Archive: ${getErrorMessage(error)}`);
+            }
+        }
+    }
+    return await tc.extractZip(toolPath);
+}
+/**
+ * Equivalent of `tc.cacheDir`, but moves the extracted JDK into the tool-cache
+ * instead of copying it. `tc.cacheDir` recursively copies the whole tree, which
+ * means a several hundred megabyte JDK is written to disk twice. The extraction
+ * directory and the tool-cache normally live on the same filesystem, so a rename
+ * is effectively free. Anything unexpected (a different filesystem, or a file
+ * handle held open by anti-virus software on Windows) falls back to the copy.
+ */
+async function cacheJdkDir(sourceDir, toolName, version, architecture) {
+    const destPath = getToolcacheDestination(toolName, version, architecture);
+    if (destPath) {
+        let moved = false;
+        try {
+            // lstat, not stat: renaming a symlinked source would put the link itself
+            // in the tool-cache, leaving a dangling JAVA_HOME once RUNNER_TEMP is
+            // cleaned. tc.cacheDir dereferences it, so let it handle that case.
+            if (fs.lstatSync(sourceDir).isDirectory()) {
+                await io.rmRF(destPath);
+                await io.rmRF(`${destPath}.complete`);
+                await io.mkdirP(path.dirname(destPath));
+                // Renaming is atomic, so a failure here leaves sourceDir untouched and
+                // the copy-based fallback below can still run.
+                fs.renameSync(sourceDir, destPath);
+                moved = true;
+            }
+        }
+        catch (error) {
+            core.debug(`Failed to move '${sourceDir}' into the tool-cache, falling back to a copy: ${getErrorMessage(error)}`);
+        }
+        if (moved) {
+            fs.writeFileSync(`${destPath}.complete`, '');
+            return destPath;
+        }
+    }
+    return await tc.cacheDir(sourceDir, toolName, version, architecture);
+}
+function getToolcacheDestination(toolName, version, architecture) {
+    const toolcacheRoot = process.env['RUNNER_TOOL_CACHE'];
+    if (!toolcacheRoot) {
+        return null;
+    }
+    // Mirrors the destination layout used by `tc.cacheDir`.
+    return path.join(toolcacheRoot, toolName, semver.clean(version) || version, architecture || os.arch());
+}
+function getErrorMessage(error) {
+    return error instanceof Error ? error.message : String(error);
 }
 function getDownloadArchiveExtension() {
     return process.platform === 'win32' ? 'zip' : 'tar.gz';
@@ -30938,7 +31047,7 @@ function getToolcachePath(toolName, version, architecture) {
     return null;
 }
 function isJobStatusSuccess() {
-    const jobStatus = _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_6__/* .INPUT_JOB_STATUS */ .wG);
+    const jobStatus = _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_9__/* .INPUT_JOB_STATUS */ .wG);
     return jobStatus === 'success';
 }
 function isGhes() {

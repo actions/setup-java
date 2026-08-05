@@ -89,7 +89,7 @@ class MicrosoftDistributions extends base_installer/* JavaBase */.O {
         const extractedJavaPath = await (0,util/* extractJdkFile */.PE)(javaArchivePath, extension);
         const archiveName = external_fs_default().readdirSync(extractedJavaPath)[0];
         const archivePath = external_path_default().join(extractedJavaPath, archiveName);
-        const javaPath = await tool_cache/* cacheDir */.e8(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaRelease.version), this.architecture);
+        const javaPath = await (0,util/* cacheJdkDir */.Vj)(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaRelease.version), this.architecture);
         return { version: javaRelease.version, path: javaPath };
     }
     async findPackageForDownload(range) {
