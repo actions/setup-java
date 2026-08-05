@@ -327,12 +327,19 @@ class JavaBase {
             try {
                 let javaRelease = await this.resolveJavaRelease();
                 core/* info */.pq(`Resolved latest version as ${javaRelease.version}`);
+                if (javaRelease.floating) {
+                    // A tool-cache entry has no source identity. Even when its concrete
+                    // version matches, only the checksum-bound JDK cache can prove that
+                    // it contains the bytes currently served by the mutable URL.
+                    foundJava = null;
+                }
                 if (!this.forceDownload && foundJava?.version === javaRelease.version) {
                     core/* info */.pq(`Resolved Java ${foundJava.version} from tool-cache`);
                 }
                 else {
                     let jdkCache = this.cacheJdk &&
-                        (!javaRelease.floating || semver_default().valid(javaRelease.version))
+                        (!javaRelease.floating ||
+                            (javaRelease.checksum && semver_default().valid(javaRelease.version)))
                         ? await this.createJdkCache(javaRelease)
                         : undefined;
                     if (!this.forceDownload && jdkCache) {
@@ -359,7 +366,7 @@ class JavaBase {
                             }
                             javaRelease = { ...javaRelease, version: foundJava.version };
                             await this.registerFloatingResolution(javaRelease);
-                            jdkCache = this.cacheJdk
+                            jdkCache = this.cacheJdk && javaRelease.checksum
                                 ? await this.createJdkCache(javaRelease)
                                 : undefined;
                         }
@@ -463,7 +470,10 @@ class JavaBase {
         };
     }
     async restoreFloatingResolution(javaRelease) {
-        if (!javaRelease.floating || !this.cacheJdk || this.forceDownload) {
+        if (!javaRelease.floating ||
+            !javaRelease.checksum ||
+            !this.cacheJdk ||
+            this.forceDownload) {
             return javaRelease;
         }
         const { restoreJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
@@ -480,7 +490,7 @@ class JavaBase {
         return { ...javaRelease, version: restored.release.version };
     }
     async registerFloatingResolution(javaRelease) {
-        if (!this.cacheJdk || this.forceDownload) {
+        if (!javaRelease.checksum || !this.cacheJdk || this.forceDownload) {
             return;
         }
         const { registerJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
