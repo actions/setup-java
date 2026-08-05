@@ -75,6 +75,7 @@ class OracleDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_3__
         if (isOnlyMajorProvided) {
             possibleUrls.push(`${ORACLE_DL_BASE}/${major}/latest/jdk-${major}_${platform}-${arch}_bin.${extension}`);
         }
+        const floatingUrl = isOnlyMajorProvided ? possibleUrls[0] : undefined;
         possibleUrls.push(`${ORACLE_DL_BASE}/${major}/archive/jdk-${range}_${platform}-${arch}_bin.${extension}`);
         if (parseInt(major) < 17) {
             throw new Error('Oracle JDK is only supported for JDK 17 and later');
@@ -85,7 +86,8 @@ class OracleDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_3__
                 return {
                     url,
                     version: range,
-                    checksum: await this.fetchChecksum(`${url}.sha256`, 'sha256')
+                    checksum: await this.fetchChecksum(`${url}.sha256`, 'sha256'),
+                    floating: url === floatingUrl
                 };
             }
             if (response.message.statusCode !== _actions_http_client__WEBPACK_IMPORTED_MODULE_5__/* .HttpCodes */ .Hv.NotFound) {

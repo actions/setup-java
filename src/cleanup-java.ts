@@ -48,7 +48,9 @@ async function saveCaches() {
   }
   if (cacheJdk) {
     const {saveJdkCaches} = await import('./jdk-cache.js');
+    const {saveJdkResolutionCaches} = await import('./jdk-resolution-cache.js');
     saves.push(saveJdkCaches());
+    saves.push(saveJdkResolutionCaches());
   }
   await Promise.all(saves);
 }

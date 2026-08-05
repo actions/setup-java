@@ -142,6 +142,9 @@ describe('findPackageForDownload', () => {
       .replace('{{OS_TYPE}}', osType)
       .replace('{{ARCHIVE_TYPE}}', archiveType);
     expect(result.url).toBe(url);
+    // Only the `/latest/` path serves changing contents, so only it must be
+    // excluded from the resolution cache.
+    expect(result.floating).toBe(url.includes('/latest/'));
   });
 
   it('fetches the authoritative sha256 checksum for the resolved archive', async () => {

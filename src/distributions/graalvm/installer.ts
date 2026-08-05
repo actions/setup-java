@@ -149,7 +149,10 @@ export class GraalVMDistribution extends JavaBase {
     return {
       url: fileUrl,
       version: range,
-      checksum: await this.fetchChecksum(`${fileUrl}.sha256`, 'sha256')
+      checksum: await this.fetchChecksum(`${fileUrl}.sha256`, 'sha256'),
+      // A major-only range resolves to the vendor's `/latest/` path, whose
+      // contents change when a new build is published.
+      floating: !range.includes('.')
     };
   }
 

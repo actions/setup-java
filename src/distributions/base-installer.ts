@@ -178,7 +178,7 @@ export abstract class JavaBase {
     } else {
       core.info('Trying to resolve the latest version from remote');
       try {
-        const javaRelease = await this.findPackageForDownload(this.version);
+        const javaRelease = await this.resolveJavaRelease();
         core.info(`Resolved latest version as ${javaRelease.version}`);
         if (!this.forceDownload && foundJava?.version === javaRelease.version) {
           core.info(`Resolved Java ${foundJava.version} from tool-cache`);
@@ -254,6 +254,67 @@ export abstract class JavaBase {
     }
 
     return foundJava;
+  }
+
+  /**
+   * Resolves the release to install, preferring a cached resolution over the
+   * distribution's metadata API.
+   *
+   * Only Temurin is preinstalled on hosted runners, so for every other
+   * distribution the tool-cache lookup misses and the vendor API becomes a
+   * per-job dependency even when the JDK itself is already in the GitHub
+   * Actions cache. A cached resolution removes that dependency, and because it
+   * carries the download URL and checksum it also keeps a job working when the
+   * vendor API is unavailable but the JDK still has to be downloaded.
+   */
+  private async resolveJavaRelease(): Promise<JavaDownloadRelease> {
+    if (
+      !this.cacheJdk ||
+      this.checkLatest ||
+      this.latest ||
+      this.forceDownload
+    ) {
+      return this.findPackageForDownload(this.version);
+    }
+
+    const {restoreJdkResolution, registerJdkResolution} =
+      await import('../jdk-resolution-cache.js');
+    const request = {
+      distribution: this.distribution,
+      packageType: this.packageType,
+      architecture: this.architecture,
+      versionSpec: this.version,
+      stable: this.stable
+    };
+
+    const restored = await restoreJdkResolution(request);
+    if (restored?.fresh) {
+      core.info(
+        `Resolved ${this.distribution} ${restored.release.version} from the resolution cache`
+      );
+      return restored.release;
+    }
+
+    try {
+      const javaRelease = await this.findPackageForDownload(this.version);
+      if (!javaRelease.floating) {
+        registerJdkResolution(request, javaRelease);
+      }
+      return javaRelease;
+    } catch (error) {
+      if (!restored) {
+        throw error;
+      }
+      // The cached resolution is older than the current bucket, but falling
+      // back to it is strictly better than failing the job because the vendor
+      // metadata API is down.
+      core.warning(
+        `Failed to resolve ${this.distribution} ${this.version} from remote (${
+          (error as Error).message
+        }); falling back to the cached resolution for ${restored.release.version}.`
+      );
+      return restored.release;
+    }
   }
 
   private logSetupError(error: any): void {
