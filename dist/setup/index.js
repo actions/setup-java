@@ -30770,6 +30770,7 @@ module.exports = {
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
 /* harmony export */   At: () => (/* binding */ INPUT_CACHE_DEPENDENCY_PATH),
 /* harmony export */   E8: () => (/* binding */ INPUT_SET_DEFAULT),
+/* harmony export */   Fi: () => (/* binding */ STATE_GPG_HOME),
 /* harmony export */   GL: () => (/* binding */ INPUT_CACHE_JDK),
 /* harmony export */   I9: () => (/* binding */ INPUT_FORCE_DOWNLOAD),
 /* harmony export */   K$: () => (/* binding */ GPG_PASSPHRASE_PROFILE_ID),
@@ -30810,7 +30811,6 @@ module.exports = {
 /* harmony export */   vO: () => (/* binding */ MVN_SETTINGS_FILE),
 /* harmony export */   wX: () => (/* binding */ INPUT_SHOW_DOWNLOAD_PROGRESS),
 /* harmony export */   wc: () => (/* binding */ INPUT_JDK_FILE_DEPRECATED),
-/* harmony export */   wm: () => (/* binding */ STATE_GPG_PRIVATE_KEY_FINGERPRINT),
 /* harmony export */   wz: () => (/* binding */ INPUT_GPG_PRIVATE_KEY),
 /* harmony export */   xp: () => (/* binding */ INPUT_DEFAULT_SERVER_PASSWORD)
 /* harmony export */ });
@@ -30855,7 +30855,7 @@ const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
 const INPUT_CACHE_PATH = 'cache-path';
 const INPUT_CACHE_READ_ONLY = 'cache-read-only';
 const INPUT_JOB_STATUS = 'job-status';
-const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
+const STATE_GPG_HOME = 'gpg-home';
 const M2_DIR = '.m2';
 const MVN_SETTINGS_FILE = 'settings.xml';
 const MVN_TOOLCHAINS_FILE = 'toolchains.xml';
