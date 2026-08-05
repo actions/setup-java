@@ -574,6 +574,50 @@ step and skips the save with a warning, so a key is never saved with content
 other than the installation it identifies. This guarantee holds without
 rehashing hundreds of megabytes of JDK content on every job.
 
+### Caching release resolution
+
+Only Temurin is preinstalled in the runner tool cache, so for every other
+distribution setup-java has to ask the distribution's metadata API which release
+satisfies `java-version` before it can look up a JDK cache entry. That makes the
+vendor API a dependency of every job, even one whose JDK is already cached.
+
+When JDK caching is enabled, setup-java also stores the resolved release itself
+in a small companion cache entry, keyed on the runner operating system,
+architecture, distribution, package type, requested version, and stability. A job
+that finds a current entry installs the JDK without contacting the distribution's
+metadata API at all.
+
+Entries carry the seven-day window they were resolved in. An entry from an
+earlier window is not used directly: setup-java still queries the metadata API,
+so a floating request such as `java-version: 21` keeps picking up new releases.
+The older entry is used only when that query fails, which keeps a job working
+through a vendor outage or rate limit. Because the entry also holds the download
+URL and checksum, this fallback works even when the JDK itself is not cached and
+still has to be downloaded. When the fallback is used, setup-java reports it with
+a warning.
+
+Seven days is deliberate. GitHub removes cache entries that have not been
+accessed for seven days, so a longer window would mean the previous entry is
+already evicted by the time the window rolls over, leaving no fallback at the
+moment one is most likely to be needed. It also comfortably covers JDK release
+cadence, which is monthly at its fastest and usually quarterly, and it means a
+repository whose workflows run infrequently still benefits. Use
+`check-latest: true` for a workflow that must resolve the newest release on every
+run.
+
+Restored entries are validated before use: the download URL and any signature URL
+must be well-formed HTTPS URLs and the checksum must use a supported algorithm.
+An entry that fails validation is ignored and the metadata API is queried
+instead. `check-latest: true`, `java-version: latest`, and `force-download: true`
+always query the metadata API and never read or write these entries.
+
+Releases whose download URL is not content-addressed are never stored. Oracle JDK
+and Oracle GraalVM build a `/latest/` URL when `java-version` names only a major
+version, and the bytes behind that URL change whenever a new build is published,
+so its URL and checksum are only consistent with each other at the moment they
+are resolved. Requesting a more specific version, such as `java-version: 21.0.2`,
+resolves an archived URL that is stored normally.
+
 JDK caching trades cache storage and cold-run save work for faster warm setup.
 A warm run restores the installed JDK instead of downloading, verifying, and
 extracting it, while the first run pays to upload it and every cached identity

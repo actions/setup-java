@@ -421,7 +421,8 @@ describe('GraalVMDistribution', () => {
             value: 'a'.repeat(64),
             source:
               'https://download.oracle.com/graalvm/17/archive/graalvm-jdk-17.0.5_linux-x64_bin.tar.gz.sha256'
-          }
+          },
+          floating: false
         });
         expect(mockHttpClient.head).toHaveBeenCalledWith(result.url);
         expect(mockHttpClient.get).toHaveBeenCalledWith(`${result.url}.sha256`);
@@ -443,7 +444,10 @@ describe('GraalVMDistribution', () => {
             value: 'a'.repeat(64),
             source:
               'https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz.sha256'
-          }
+          },
+          // A major-only range resolves to the floating `/latest/` URL, so the
+          // release must not be reused by a later job.
+          floating: true
         });
       });
 
@@ -492,7 +496,8 @@ describe('GraalVMDistribution', () => {
               value: 'a'.repeat(64),
               source:
                 'https://download.oracle.com/graalvm/25/latest/graalvm-jdk-25_linux-x64_bin.tar.gz.sha256'
-            }
+            },
+            floating: true
           });
         });
 

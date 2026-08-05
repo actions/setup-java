@@ -78,6 +78,11 @@ jest.unstable_mockModule('../../src/jdk-cache.js', () => ({
   restoreJdk: jest.fn()
 }));
 
+jest.unstable_mockModule('../../src/jdk-resolution-cache.js', () => ({
+  registerJdkResolution: jest.fn(),
+  restoreJdkResolution: jest.fn()
+}));
+
 const real_util_module = await import('../../src/util.js');
 jest.unstable_mockModule('../../src/util.js', () => ({
   ...real_util_module,
@@ -95,6 +100,7 @@ const core = await import('@actions/core');
 const tc = await import('@actions/tool-cache');
 const util = await import('../../src/util.js');
 const jdkCache = await import('../../src/jdk-cache.js');
+const jdkResolutionCache = await import('../../src/jdk-resolution-cache.js');
 const {JavaBase} = await import('../../src/distributions/base-installer.js');
 
 class EmptyJavaBase extends JavaBase {
@@ -948,6 +954,155 @@ describe('setupJava', () => {
     expect(spyCoreInfo).toHaveBeenCalledWith(
       'Installing Java 11.0.9 (not setting as default)'
     );
+  });
+
+  describe('resolution cache', () => {
+    // 11.0.9 is not in the mocked tool-cache, so the tool-cache short-circuit
+    // misses and the release has to be resolved, exactly as it does for every
+    // distribution that is not preinstalled on hosted runners.
+    const options: JavaInstallerOptions = {
+      version: '11.0.9',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: false,
+      cacheJdk: true
+    };
+    const cachedRelease = {
+      version: '11.0.9',
+      url: 'https://example.com/java/11.0.9'
+    };
+
+    const expectedRequest = {
+      distribution: 'Empty',
+      packageType: 'jdk',
+      architecture: 'x86',
+      versionSpec: '11.0.9',
+      stable: true
+    };
+
+    beforeEach(() => {
+      (jdkCache.restoreJdk as jest.Mock).mockResolvedValue(false);
+      (jdkResolutionCache.restoreJdkResolution as jest.Mock).mockResolvedValue(
+        undefined
+      );
+    });
+
+    it('skips the metadata API on a fresh cached resolution', async () => {
+      mockJavaBase = new EmptyJavaBase(options);
+      const findPackageForDownload = jest.spyOn(
+        mockJavaBase as any,
+        'findPackageForDownload'
+      );
+      (jdkResolutionCache.restoreJdkResolution as jest.Mock).mockResolvedValue({
+        release: cachedRelease,
+        fresh: true
+      });
+
+      await mockJavaBase.setupJava();
+
+      expect(jdkResolutionCache.restoreJdkResolution).toHaveBeenCalledWith(
+        expectedRequest
+      );
+      expect(findPackageForDownload).not.toHaveBeenCalled();
+      expect(jdkResolutionCache.registerJdkResolution).not.toHaveBeenCalled();
+      expect(spyCoreInfo).toHaveBeenCalledWith(
+        'Resolved Empty 11.0.9 from the resolution cache'
+      );
+    });
+
+    it('re-resolves and records the release on a miss', async () => {
+      mockJavaBase = new EmptyJavaBase(options);
+
+      await mockJavaBase.setupJava();
+
+      expect(jdkResolutionCache.registerJdkResolution).toHaveBeenCalledWith(
+        expectedRequest,
+        {version: '11.0.9', url: 'some/random_url/java/11.0.9'}
+      );
+    });
+
+    it('re-resolves when the cached resolution is stale', async () => {
+      mockJavaBase = new EmptyJavaBase(options);
+      const findPackageForDownload = jest.spyOn(
+        mockJavaBase as any,
+        'findPackageForDownload'
+      );
+      (jdkResolutionCache.restoreJdkResolution as jest.Mock).mockResolvedValue({
+        release: cachedRelease,
+        fresh: false
+      });
+
+      await mockJavaBase.setupJava();
+
+      expect(findPackageForDownload).toHaveBeenCalled();
+      expect(jdkResolutionCache.registerJdkResolution).toHaveBeenCalled();
+    });
+
+    it('falls back to a stale resolution when the metadata API fails', async () => {
+      mockJavaBase = new EmptyJavaBase(options);
+      const downloadTool = jest
+        .spyOn(mockJavaBase as any, 'downloadTool')
+        .mockResolvedValue({version: '11.0.9', path: javaPathInstalled});
+      jest
+        .spyOn(mockJavaBase as any, 'findPackageForDownload')
+        .mockRejectedValue(new Error('503 Service Unavailable'));
+      (jdkResolutionCache.restoreJdkResolution as jest.Mock).mockResolvedValue({
+        release: cachedRelease,
+        fresh: false
+      });
+
+      await expect(mockJavaBase.setupJava()).resolves.toEqual({
+        version: '11.0.9',
+        path: javaPathInstalled
+      });
+
+      expect(downloadTool).toHaveBeenCalledWith(cachedRelease);
+      expect(jdkResolutionCache.registerJdkResolution).not.toHaveBeenCalled();
+      expect(core.warning).toHaveBeenCalledWith(
+        expect.stringContaining('falling back to the cached resolution')
+      );
+    });
+
+    it('fails when the metadata API fails and nothing was cached', async () => {
+      mockJavaBase = new EmptyJavaBase(options);
+      jest
+        .spyOn(mockJavaBase as any, 'findPackageForDownload')
+        .mockRejectedValue(new Error('503 Service Unavailable'));
+
+      await expect(mockJavaBase.setupJava()).rejects.toThrow(
+        '503 Service Unavailable'
+      );
+    });
+
+    it('does not record a floating release', async () => {
+      mockJavaBase = new EmptyJavaBase(options);
+      jest
+        .spyOn(mockJavaBase as any, 'findPackageForDownload')
+        .mockResolvedValue({
+          version: '11.0.9',
+          url: 'https://example.com/java/11/latest/jdk-11.tar.gz',
+          checksum: {algorithm: 'sha256', value: 'abc'},
+          floating: true
+        });
+
+      await mockJavaBase.setupJava();
+
+      expect(jdkResolutionCache.registerJdkResolution).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['cache-jdk is disabled', {cacheJdk: false}],
+      ['check-latest is enabled', {checkLatest: true}],
+      ['force-download is enabled', {forceDownload: true}],
+      ['java-version is "latest"', {version: 'latest'}]
+    ])('is bypassed when %s', async (_name, overrides) => {
+      mockJavaBase = new EmptyJavaBase({...options, ...overrides});
+
+      await mockJavaBase.setupJava();
+
+      expect(jdkResolutionCache.restoreJdkResolution).not.toHaveBeenCalled();
+      expect(jdkResolutionCache.registerJdkResolution).not.toHaveBeenCalled();
+    });
   });
 });
 

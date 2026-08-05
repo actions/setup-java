@@ -28,4 +28,11 @@ export interface JavaDownloadRelease {
   url: string;
   signatureUrl?: string;
   checksum?: ChecksumMetadata;
+  /**
+   * Whether `url` points at a location whose contents change over time, such as
+   * a vendor's `/latest/` path. The URL and its checksum are only consistent
+   * with each other at the moment they are resolved, so such a release must not
+   * be reused by a later job.
+   */
+  floating?: boolean;
 }
