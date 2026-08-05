@@ -31039,7 +31039,10 @@ function normalizeJavaReleaseVersion(version) {
         components.push('0');
     }
     const mainVersion = components.slice(0, 3).join('.');
-    const build = [...components.slice(3), ...(buildVersion ? [buildVersion] : [])];
+    const build = [
+        ...components.slice(3),
+        ...(buildVersion ? [buildVersion] : [])
+    ];
     return build.length > 0 ? `${mainVersion}+${build.join('.')}` : mainVersion;
 }
 function getToolcacheDestination(toolName, version, architecture) {

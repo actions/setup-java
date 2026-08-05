@@ -380,7 +380,7 @@ describe('GraalVMDistribution', () => {
       expect(tc.cacheDir).toHaveBeenCalledWith(
         path.join('/tmp/extracted', 'graalvm-jdk-17.0.5'),
         'Java_GraalVM_jdk',
-        '21.0.9-7',
+        '21.0.9+7',
         'x64'
       );
       expect(result).toEqual({
