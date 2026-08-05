@@ -248,34 +248,13 @@ Use `verify-signature: true` to verify package signatures for distributions that
 ## Caching dependencies
 
 Downloaded JDK installations can be cached independently of dependency caching.
-When `cache-jdk` is omitted, setting `cache` implicitly enables JDK caching;
-with neither input set, JDK caching is disabled. Set `cache-jdk: true` to cache
-only the JDK, or `cache-jdk: false` to cache dependencies without caching the
-JDK.
+When `cache-jdk` is omitted, dependency `cache` implicitly enables it. Set
+`cache-jdk: true` to enable JDK caching independently, or `cache-jdk: false` to
+opt out while retaining dependency caching.
 
-The JDK cache key includes the runner OS and platform, normalized architecture,
-distribution, package type, exact resolved version, and release identity.
-Multiple Java versions therefore create distinct cache entries. Local
-`jdk-file` archives are additionally keyed by a SHA-256 hash of the archive
-contents, so changing the file creates a new entry.
-
-Signature verification is also part of the JDK cache identity. Unverified
-entries cannot satisfy `verify-signature: true`. Entries verified with a
-distribution's bundled key are separate from unverified entries, and a custom
-key is represented by a non-secret SHA-256 fingerprint of normalized key
-material. Distinct custom keys cannot share an entry, and raw key material is
-never included in cache keys or state. A verified-cache hit reuses content that
-was signature-verified when it was first downloaded; it does not download and
-verify the archive again.
-
-`check-latest: true` and `java-version: latest` resolve remote metadata before
-restoring the exact resolved JDK cache entry. `force-download: true` bypasses
-both the runner tool cache and JDK cache restoration. If JDK caching is enabled,
-the newly downloaded exact JDK is still registered for a post-job save.
-
-Cache service restore failures fall back to downloading the JDK. Cache saves
-are best-effort: immutable-key collisions and concurrent save races do not fail
-the job.
+> [!IMPORTANT]
+> Review [Caching JDK installations](docs/advanced-usage.md#caching-jdk-installations)
+> for the full behavior, cache identity and storage impact before enabling it.
 
 Set `cache` to `maven`, `gradle`, or `sbt` to cache dependencies with minimal configuration.
 

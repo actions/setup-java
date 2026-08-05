@@ -17,6 +17,7 @@
   - [Package compatibility](#Package-compatibility)
   - [JavaFX Maven project](#JavaFX-Maven-project)
 - [Ensuring the Maven cache is complete (plugin dependencies)](#ensuring-the-maven-cache-is-complete-plugin-dependencies)
+- [Caching JDK installations](#caching-jdk-installations)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing JDK without setting as default](#Installing-JDK-without-setting-as-default)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -467,6 +468,61 @@ jobs:
 > [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle),
 > which provides purpose-built caching (see the
 > [setup-gradle documentation](https://github.com/gradle/actions/blob/main/docs/setup-gradle.md)).
+
+## Caching JDK installations
+
+`cache-jdk` controls caching for downloaded JDK installations. It is independent
+of the dependency and build-tool wrapper caches selected by `cache`; each cache
+is restored and saved as a separate entry.
+
+| `cache` | `cache-jdk` | Dependency and wrapper caches | JDK cache |
+| --- | --- | --- | --- |
+| Omitted | Omitted | Disabled | Disabled |
+| Omitted | `true` | Disabled | Enabled |
+| Omitted | `false` | Disabled | Disabled |
+| Set | Omitted | Enabled | Enabled |
+| Set | `true` | Enabled | Enabled |
+| Set | `false` | Enabled | Disabled |
+
+The JDK v2 cache identity includes the runner OS, Node.js platform, normalized
+architecture, distribution, package type, exact resolved Java version, release
+source, and signature-verification mode. The release source is the authoritative
+checksum when available and otherwise the download URL without its query string.
+These dimensions prevent incompatible JDKs from sharing an entry. They also mean
+that a matrix or workflow using multiple JDK versions, distributions, package
+types, architectures, or operating systems stores a separate JDK entry for each
+identity and consumes cache storage for each one.
+
+For `distribution: jdkfile`, the release source is a SHA-256 hash of the local
+`jdk-file` contents. Changing the archive therefore creates a different entry,
+even when its path and requested version are unchanged.
+
+The v2 identity also separates unverified downloads from packages verified with
+the distribution's bundled signing key and from packages verified with each
+custom key. Custom public keys are represented by a SHA-256 fingerprint of
+normalized key material; the key itself is not placed in the cache key or action
+state. A verified exact-key hit reuses the content that was signature-verified
+when first downloaded instead of downloading and verifying it again.
+
+`check-latest: true` and `java-version: latest` resolve remote metadata before
+looking up the exact resolved JDK entry. `force-download: true` bypasses both the
+runner tool cache and JDK cache restore, but an enabled JDK cache still records
+the downloaded installation for a post-job save. `cache-read-only: true` allows
+restores but suppresses post-job saves for JDK, dependency, and wrapper caches.
+
+If the cache service fails to restore an entry, or the restored entry lacks the
+expected completed tool-cache path, setup continues by downloading the JDK.
+Post-job saves are best-effort and do not fail the job: cache keys are immutable,
+so an existing key or a concurrent job winning the save race is left unchanged.
+
+JDK caching trades cache storage and cold-run save work for faster warm setup.
+In a five-run Ubuntu benchmark using Microsoft OpenJDK 17.0.19, the median warm
+`setup-java` time fell from 7 seconds to 3 seconds and median warm job time fell
+from 24 seconds to 18 seconds. The JDK entry added 175.3 MiB for that single
+identity. Results vary by runner, distribution, JDK size, network, and cache
+eviction pressure; short jobs may improve latency without changing billed
+minutes. See the [benchmark results and methodology](https://github.com/actions/setup-java/pull/1201#issuecomment-5185673670)
+and [reusable benchmark harness](https://github.com/actions/setup-java-benchmarks/pull/10).
 
 ## Platform and architecture compatibility
 
