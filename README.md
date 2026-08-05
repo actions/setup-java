@@ -46,6 +46,7 @@ steps:
 - Configures Maven `settings.xml`, Maven Toolchains, Maven GPG signing inputs, and environment-variable based credentials for publishing workflows.
 - Registers Java problem matchers for compiler diagnostics and uncaught exceptions.
 - Caches dependencies for Maven, Gradle, and sbt.
+- Caches downloaded JDK installations between jobs.
 - Verifies downloaded archive checksums when a distribution publishes authoritative checksums.
 - Optionally verifies package signatures for supported distributions.
 
@@ -142,7 +143,7 @@ steps:
   - run: java --version
 ```
 
-`latest` always resolves from the distribution's remote metadata and uses the newest stable GA release. It is not supported with `java-version-file`, early-access versions, or `distribution: jdkfile`.
+`latest` resolves the newest stable GA release from remote metadata rather than from the runner tool cache. Distributions that do not publish a release listing (such as `oracle` and `graalvm`) resolve the newest GA feature version from the Adoptium available-releases API and then request that version from their own catalog. `latest` is not supported with `java-version-file`, early-access versions, or `distribution: jdkfile`.
 
 ## Inputs
 
@@ -173,7 +174,7 @@ steps:
 | `overwrite-settings` | Overwrite an existing `settings.xml`. | `true` |
 | `gpg-private-key` | GPG private key to import. | |
 | `gpg-passphrase-env-var` | Environment variable name for the GPG private key passphrase. | `GPG_PASSPHRASE` when a key is set |
-| `mvn-toolchain-id` | Maven Toolchain ID. When multiple Java versions are installed, the number of IDs must match the number of versions. | `${distribution}_${java-version}` |
+| `mvn-toolchain-id` | Maven Toolchain ID. When multiple Java versions are installed, the number of IDs must match the number of versions. | `${vendor}_${java-version}` |
 | `mvn-toolchain-vendor` | Maven Toolchain vendor value. | `${distribution}` |
 | `show-download-progress` | Keep Maven artifact download and transfer progress in logs. When `false`, the action adds `-ntp` to `MAVEN_ARGS`. | `false` |
 
@@ -488,13 +489,17 @@ See [advanced usage](docs/advanced-usage.md) for detailed examples:
 - [Installing custom Java package types](docs/advanced-usage.md#installing-custom-java-package-type)
 - [Package compatibility](docs/advanced-usage.md#package-compatibility)
 - [Ensuring the Maven cache is complete](docs/advanced-usage.md#ensuring-the-maven-cache-is-complete-plugin-dependencies)
+- [Caching JDK installations](docs/advanced-usage.md#caching-jdk-installations)
+- [Platform and architecture compatibility](docs/advanced-usage.md#platform-and-architecture-compatibility)
 - [Installing custom Java architecture](docs/advanced-usage.md#installing-custom-java-architecture)
 - [Installing a JDK without setting it as default](docs/advanced-usage.md#installing-jdk-without-setting-as-default)
 - [Installing Java from a local file](docs/advanced-usage.md#installing-java-from-local-file)
 - [Testing against different Java distributions](docs/advanced-usage.md#testing-against-different-java-distributions)
 - [Testing against different platforms](docs/advanced-usage.md#testing-against-different-platforms)
 - [Publishing using Apache Maven](docs/advanced-usage.md#publishing-using-apache-maven)
+- [Apache Maven with a settings path](docs/advanced-usage.md#apache-maven-with-a-settings-path)
 - [Maven transfer progress](docs/advanced-usage.md#maven-transfer-progress-download-logs)
+- [Java problem matcher](docs/advanced-usage.md#java-problem-matcher-compiler-annotations)
 - [Publishing using Gradle](docs/advanced-usage.md#publishing-using-gradle)
 - [Hosted tool cache](docs/advanced-usage.md#hosted-tool-cache)
 - [Modifying Maven Toolchains](docs/advanced-usage.md#modifying-maven-toolchains)

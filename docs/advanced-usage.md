@@ -5,8 +5,10 @@
   - [Liberica](#Liberica)
   - [Liberica Native Image Kit](#Liberica-Native-Image-Kit)
   - [Microsoft](#Microsoft)
+  - [IBM Semeru](#IBM-Semeru)
   - [Amazon Corretto](#Amazon-Corretto)
   - [Oracle](#Oracle)
+  - [Oracle OpenJDK](#Oracle-OpenJDK)
   - [Alibaba Dragonwell](#Alibaba-Dragonwell)
   - [SapMachine](#SapMachine)
   - [GraalVM](#GraalVM)
@@ -18,13 +20,16 @@
   - [JavaFX Maven project](#JavaFX-Maven-project)
 - [Ensuring the Maven cache is complete (plugin dependencies)](#ensuring-the-maven-cache-is-complete-plugin-dependencies)
 - [Caching JDK installations](#caching-jdk-installations)
+- [Platform and architecture compatibility](#platform-and-architecture-compatibility)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing JDK without setting as default](#Installing-JDK-without-setting-as-default)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
 - [Testing against different Java distributions](#Testing-against-different-Java-distributions)
 - [Testing against different platforms](#Testing-against-different-platforms)
 - [Publishing using Apache Maven](#Publishing-using-Apache-Maven)
+- [Apache Maven with a settings path](#apache-maven-with-a-settings-path)
 - [Maven transfer progress (download logs)](#Maven-transfer-progress-download-logs)
+- [Java problem matcher (compiler annotations)](#java-problem-matcher-compiler-annotations)
 - [Publishing using Gradle](#Publishing-using-Gradle)
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](#Modifying-Maven-Toolchains)
@@ -33,8 +38,17 @@
 
 See [action.yml](../action.yml) for more details on task inputs.
 
+> [!NOTE]
+> The examples on this page reference `actions/setup-java@v6`, which is still in
+> development on the `main` branch and is not yet published as a release tag. To
+> try the V6 features documented here (`cache-jdk`, `force-download`,
+> `problem-matcher`, `cache-path`, `cache-read-only`, `java-version: latest`,
+> `oracle-openjdk`, and the `*-env-var` input names), reference
+> `actions/setup-java@main`. For production workflows use the latest stable
+> release, `actions/setup-java@v5`, as shown in the [README](../README.md).
+
 ## Selecting a Java distribution
-Inputs `java-version` and `distribution` are mandatory and needs to be provided. See [Supported distributions](../README.md#Supported-distributions) for a list of available options.
+`java-version` and `distribution` select what gets installed. `java-version` may be replaced by `java-version-file`, and `distribution` is optional only when `java-version-file` points to a `.sdkmanrc` or `.tool-versions` file that carries a recognized vendor identifier. In every other case both inputs must be provided. See [Supported distributions](../README.md#Supported-distributions) for a list of available options.
 
 ### Eclipse Temurin
 
@@ -116,6 +130,20 @@ with:
 ```
 
 If the runner is not able to access github.com, any Java versions requested during a workflow run must come from the runner's tool cache. See "[Setting up the tool cache on self-hosted runners without internet access](https://docs.github.com/en/enterprise-server@3.2/admin/github-actions/managing-access-to-actions-from-githubcom/setting-up-the-tool-cache-on-self-hosted-runners-without-internet-access)" for more information.
+
+### IBM Semeru
+**NOTE:** IBM Semeru Runtime Open Edition provides OpenJ9-based builds. Stable releases only; `jdk` and `jre` packages are available.
+
+```yaml
+steps:
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'semeru'
+      java-version: '21'
+      java-package: jdk # optional (jdk or jre) - defaults to jdk
+  - run: java --version
+```
 
 ### Amazon Corretto
 **NOTE:** Amazon Corretto only supports the major version specification.
@@ -294,7 +322,7 @@ The package types have these meanings:
 | `temurin` | `jdk`, `jre`, `jdk+jmods` | `jdk` and `jre` follow the Adoptium catalog. `jdk+jmods` is available for Java 24 and later and resolves both artifacts at the exact same Java version. |
 | `zulu` | `jdk`, `jre`, `jdk+fx`, `jre+fx`, `jdk+crac`, `jre+crac` | Standard JDK builds go back to Java 6; JRE and JavaFX bundles start at Java 8. The vendor catalog has gaps among older non-LTS releases. CRaC bundles start at Java 17 and have more limited OS and architecture availability. |
 | `liberica` | `jdk`, `jre`, `jdk+fx`, `jre+fx` | Standard JDK builds go back to Java 8 in the supported action catalog; JRE and JavaFX "full" bundles also start at Java 8. Exact versions follow BellSoft's catalog for the requested platform. |
-| `liberica-nik` | `jdk`, `jdk+fx` | `java-version` selects the embedded JDK version, not the NIK/GraalVM release number. BellSoft currently publishes matching standard and JavaFX "full" bundles for JDK 11 and later, with gaps between feature releases. Other values are not meaningful: they resolve to the standard bundle. |
+| `liberica-nik` | `jdk`, `jdk+fx` | `java-version` selects the embedded JDK version, not the NIK/GraalVM release number. BellSoft currently publishes matching standard and JavaFX "full" bundles for JDK 11 and later, with gaps between feature releases. Any other `java-package` value is rejected. |
 | `microsoft` | `jdk` | Stable builds only. The bundled manifest contains Java 11, 16, 17, 21, and 25 releases; platform availability varies by release. |
 | `semeru` | `jdk`, `jre` | Stable OpenJ9 builds only. IBM publishes both image types for the supported release lines (currently 8, 11, 17, 21, and 25), subject to platform availability. |
 | `corretto` | `jdk`, `jre` | Accepts major versions only. JDK availability follows Amazon's platform catalog. For the operating systems directly selected by `setup-java`, JRE downloads are limited to Java 8 on Windows; Linux and macOS use `jdk`. |
@@ -678,7 +706,7 @@ steps:
 ```yaml
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         distribution: [ 'zulu', 'temurin' ]
@@ -694,7 +722,7 @@ jobs:
       - run: java --version
 ```
 
-#### Testing against different platforms
+## Testing against different platforms
 ```yaml
 jobs:
   build:
@@ -1033,7 +1061,7 @@ The result is a Toolchain with entries for JDKs 8, 11 and 15. You can even combi
     architecture: x64
 ```
 
-This will generate a Toolchains entry with the following values: `version: 1.6`, `vendor: jdkfile`, `id: Oracle_1.6`.
+This will generate a Toolchains entry with the following values: `version: 1.6`, `vendor: jdkfile`, `id: jdkfile_1.6`.
 
 ### Modifying The Toolchain Vendor For JDKs
 Each JDK provider will receive a default `vendor` using the `distribution` input value but this can be overridden with the `mvn-toolchain-vendor` parameter as follows.
@@ -1067,7 +1095,7 @@ steps:
 ```
 
 ### Modifying The Toolchain ID For JDKs
-Each JDK provider will receive a default `id` based on the combination of `distribution` and `java-version` in the format of `distribution_java-version` (e.g. `temurin_11`) but this can be overridden with the `mvn-toolchain-id` parameter as follows.
+Each JDK provider will receive a default `id` based on the combination of the toolchain vendor and `java-version` in the format of `vendor_java-version` (e.g. `temurin_11`). The vendor defaults to the `distribution` input, so overriding `mvn-toolchain-vendor` also changes the generated default `id`. Set `mvn-toolchain-id` to override the `id` directly.
 
 ```yaml
 steps:
@@ -1232,7 +1260,7 @@ On **GitHub Enterprise Server**, traffic from your runners frequently passes thr
 
 ### Security warning: do not disable certificate verification
 
-Do **not** work around this error by disabling TLS verification (for example, by setting `NODE_TLS_REJECT_UNAUTHORIZED=0`). `setup-java` does not verify a pinned checksum or signature of the downloaded archive, so **TLS is effectively the only integrity guarantee** on the JDK download. Disabling verification would expose your workflow to a man-in-the-middle attacker who could serve a tampered JDK — which then becomes the `java` used by the rest of your pipeline, with access to your secrets and credentials. Always extend trust to your CA instead of turning verification off.
+Do **not** work around this error by disabling TLS verification (for example, by setting `NODE_TLS_REJECT_UNAUTHORIZED=0`). Disabling verification would expose your workflow to a man-in-the-middle attacker who could serve a tampered JDK — which then becomes the `java` used by the rest of your pipeline, with access to your secrets and credentials. It also weakens the version metadata requests, which are not checksum-verified at all: a tampered manifest can redirect setup-java to an attacker-controlled download URL. `setup-java` does verify authoritative checksums for [supported distributions](../README.md#download-integrity-and-signatures), and can verify package signatures with `verify-signature: true`, but those checks are not a substitute for a trusted TLS chain. Always extend trust to your CA instead of turning verification off.
 
 ### Trusting an internal CA inside the installed JDK
 
