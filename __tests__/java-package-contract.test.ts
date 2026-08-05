@@ -22,7 +22,7 @@ describe('java-package published contract', () => {
           ? content.match(/ {2}java-package:\n(?: {4}.+\n)+/)?.[0]
           : content
               .split('\n')
-              .find(line => line.includes('- `java-package`:'));
+              .find(line => line.includes('| `java-package` |'));
 
       expect(contractLine).toBeDefined();
       for (const packageType of allPackageTypes) {
