@@ -316,31 +316,25 @@ class JavaBase {
             throw new Error(`Input 'verify-signature' is not supported for distribution '${this.distribution}'.`);
         }
         let foundJava = this.forceDownload ? null : this.findInToolcache();
-        if (foundJava && !this.checkLatest && !this.latest) {
+        if (foundJava &&
+            !this.checkLatest &&
+            !this.latest &&
+            !this.requiresRemoteResolution()) {
             core/* info */.pq(`Resolved Java ${foundJava.version} from tool-cache`);
         }
         else {
             core/* info */.pq('Trying to resolve the latest version from remote');
             try {
-                const javaRelease = await this.resolveJavaRelease();
+                let javaRelease = await this.resolveJavaRelease();
                 core/* info */.pq(`Resolved latest version as ${javaRelease.version}`);
                 if (!this.forceDownload && foundJava?.version === javaRelease.version) {
                     core/* info */.pq(`Resolved Java ${foundJava.version} from tool-cache`);
                 }
                 else {
-                    let jdkCache;
-                    if (this.cacheJdk) {
-                        const { getJdkVerificationIdentity } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
-                        jdkCache = {
-                            distribution: this.distribution,
-                            packageType: this.packageType,
-                            architecture: this.architecture,
-                            version: javaRelease.version,
-                            source: this.getJdkReleaseIdentity(javaRelease),
-                            verification: getJdkVerificationIdentity(this.verifySignature, this.verifySignaturePublicKey),
-                            path: this.getJdkCachePath(javaRelease.version)
-                        };
-                    }
+                    let jdkCache = this.cacheJdk &&
+                        (!javaRelease.floating || semver_default().valid(javaRelease.version))
+                        ? await this.createJdkCache(javaRelease)
+                        : undefined;
                     if (!this.forceDownload && jdkCache) {
                         const { restoreJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
                         const restored = await restoreJdk(jdkCache);
@@ -358,6 +352,17 @@ class JavaBase {
                         core/* info */.pq('Trying to download...');
                         foundJava = await this.downloadTool(javaRelease);
                         core/* info */.pq(`Java ${foundJava.version} was downloaded`);
+                        if (javaRelease.floating) {
+                            if (!semver_default().valid(foundJava.version) ||
+                                !(0,util/* isVersionSatisfies */.y)(this.version, foundJava.version)) {
+                                throw new Error(`The downloaded ${this.distribution} artifact reported Java ${foundJava.version}, which does not satisfy '${this.version}'.`);
+                            }
+                            javaRelease = { ...javaRelease, version: foundJava.version };
+                            await this.registerFloatingResolution(javaRelease);
+                            jdkCache = this.cacheJdk
+                                ? await this.createJdkCache(javaRelease)
+                                : undefined;
+                        }
                         if (jdkCache) {
                             // Register after the installation exists so its identity is
                             // captured; the post-job save refuses to upload a path whose
@@ -406,8 +411,10 @@ class JavaBase {
         if (!this.cacheJdk ||
             this.checkLatest ||
             this.latest ||
-            this.forceDownload) {
-            return this.findPackageForDownload(this.version);
+            this.forceDownload ||
+            this.requiresRemoteResolution()) {
+            const release = await this.findPackageForDownload(this.version);
+            return this.restoreFloatingResolution(release);
         }
         const { restoreJdkResolution, registerJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
         const request = {
@@ -427,7 +434,7 @@ class JavaBase {
             if (!javaRelease.floating) {
                 registerJdkResolution(request, javaRelease);
             }
-            return javaRelease;
+            return this.restoreFloatingResolution(javaRelease);
         }
         catch (error) {
             if (!restored) {
@@ -439,6 +446,55 @@ class JavaBase {
             core/* warning */.$e(`Failed to resolve ${this.distribution} ${this.version} from remote (${error instanceof Error ? error.message : String(error)}); falling back to the cached resolution for ${restored.release.version}.`);
             return restored.release;
         }
+    }
+    requiresRemoteResolution() {
+        return false;
+    }
+    async createJdkCache(javaRelease) {
+        const { getJdkVerificationIdentity } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+        return {
+            distribution: this.distribution,
+            packageType: this.packageType,
+            architecture: this.architecture,
+            version: javaRelease.version,
+            source: this.getJdkReleaseIdentity(javaRelease),
+            verification: getJdkVerificationIdentity(this.verifySignature, this.verifySignaturePublicKey),
+            path: this.getJdkCachePath(javaRelease.version)
+        };
+    }
+    async restoreFloatingResolution(javaRelease) {
+        if (!javaRelease.floating || !this.cacheJdk || this.forceDownload) {
+            return javaRelease;
+        }
+        const { restoreJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
+        const restored = await restoreJdkResolution(this.getFloatingResolutionRequest(javaRelease));
+        if (!restored) {
+            return javaRelease;
+        }
+        if (!semver_default().valid(restored.release.version) ||
+            !(0,util/* isVersionSatisfies */.y)(this.version, restored.release.version)) {
+            core/* debug */.Yz(`Ignoring the cached concrete version '${restored.release.version}' for ${this.distribution} ${this.version}.`);
+            return javaRelease;
+        }
+        core/* info */.pq(`Resolved ${this.distribution} ${restored.release.version} for the current floating artifact`);
+        return { ...javaRelease, version: restored.release.version };
+    }
+    async registerFloatingResolution(javaRelease) {
+        if (!this.cacheJdk || this.forceDownload) {
+            return;
+        }
+        const { registerJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
+        registerJdkResolution(this.getFloatingResolutionRequest(javaRelease), javaRelease);
+    }
+    getFloatingResolutionRequest(javaRelease) {
+        return {
+            distribution: this.distribution,
+            packageType: this.packageType,
+            architecture: this.architecture,
+            versionSpec: this.version,
+            stable: this.stable,
+            source: this.getJdkReleaseIdentity(javaRelease)
+        };
     }
     logSetupError(error) {
         const httpStatusCode = error instanceof tool_cache/* HTTPError */.Hl

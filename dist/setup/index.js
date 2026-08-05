@@ -31235,6 +31235,7 @@ function validateToolchainIds(versions, versionFile, toolchainIds) {
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   C4: () => (/* binding */ getJavaVersionFromReleaseFile),
 /* harmony export */   G4: () => (/* binding */ getTempDir),
 /* harmony export */   OS: () => (/* binding */ getVersionFromFileContent),
 /* harmony export */   PE: () => (/* binding */ extractJdkFile),
@@ -31417,6 +31418,43 @@ async function cacheJdkDir(sourceDir, toolName, version, architecture) {
         }
     }
     return await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_5__/* .cacheDir */ .e8(sourceDir, toolName, version, architecture);
+}
+function getJavaVersionFromReleaseFile(javaHome) {
+    const releasePaths = [
+        path__WEBPACK_IMPORTED_MODULE_1___default().join(javaHome, 'release'),
+        path__WEBPACK_IMPORTED_MODULE_1___default().join(javaHome, 'Contents', 'Home', 'release')
+    ];
+    const releasePath = releasePaths.find(candidate => fs__WEBPACK_IMPORTED_MODULE_2__.existsSync(candidate));
+    if (!releasePath) {
+        throw new Error(`Unable to determine the installed Java version: no release file found under '${javaHome}'.`);
+    }
+    const properties = new Map();
+    for (const line of fs__WEBPACK_IMPORTED_MODULE_2__.readFileSync(releasePath, 'utf8').split(/\r?\n/)) {
+        const match = line.match(/^([A-Z0-9_]+)="(.*)"$/);
+        if (match) {
+            properties.set(match[1], match[2]);
+        }
+    }
+    const runtimeVersion = properties.get('JAVA_RUNTIME_VERSION');
+    const runtimeMatch = runtimeVersion?.match(/^(\d+(?:\.\d+)*(?:\+\d+(?:\.\d+)*)?)/);
+    if (runtimeMatch) {
+        return normalizeJavaReleaseVersion(runtimeMatch[1]);
+    }
+    const javaVersion = properties.get('JAVA_VERSION');
+    if (javaVersion && /^\d+(?:\.\d+)*$/.test(javaVersion)) {
+        return normalizeJavaReleaseVersion(javaVersion);
+    }
+    throw new Error(`Unable to determine the installed Java version from '${releasePath}'.`);
+}
+function normalizeJavaReleaseVersion(version) {
+    const [numericVersion, buildVersion] = version.split('+', 2);
+    const components = numericVersion.split('.');
+    while (components.length < 3) {
+        components.push('0');
+    }
+    const mainVersion = components.slice(0, 3).join('.');
+    const build = [...components.slice(3), ...(buildVersion ? [buildVersion] : [])];
+    return build.length > 0 ? `${mainVersion}+${build.join('.')}` : mainVersion;
 }
 function getToolcacheDestination(toolName, version, architecture) {
     const toolcacheRoot = process.env['RUNNER_TOOL_CACHE'];

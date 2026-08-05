@@ -60,14 +60,22 @@ class GraalVMDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4_
                 throw new Error('Extraction failed: no files found in extracted directory');
             }
             const archivePath = path__WEBPACK_IMPORTED_MODULE_2___default().join(extractedJavaPath, dirContents[0]);
-            const version = this.getToolcacheVersionName(javaRelease.version);
+            const installedVersion = javaRelease.floating
+                ? (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getJavaVersionFromReleaseFile */ .C4)(archivePath)
+                : javaRelease.version;
+            const version = this.getToolcacheVersionName(installedVersion);
             const javaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .cacheJdkDir */ .Vj)(archivePath, this.toolcacheFolderName, version, this.architecture);
-            return { version: javaRelease.version, path: javaPath };
+            return { version: installedVersion, path: javaPath };
         }
         catch (error) {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .error */ .z3(`Failed to download and extract GraalVM: ${error}`);
             throw error;
         }
+    }
+    requiresRemoteResolution() {
+        return (this.distribution === 'GraalVM' &&
+            this.stable &&
+            !this.version.includes('.'));
     }
     setJavaDefault(version, toolPath) {
         super.setJavaDefault(version, toolPath);

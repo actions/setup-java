@@ -38,9 +38,15 @@ class OracleDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_3__
         const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
         const archiveName = fs__WEBPACK_IMPORTED_MODULE_1___default().readdirSync(extractedJavaPath)[0];
         const archivePath = path__WEBPACK_IMPORTED_MODULE_2___default().join(extractedJavaPath, archiveName);
-        const version = this.getToolcacheVersionName(javaRelease.version);
+        const installedVersion = javaRelease.floating
+            ? (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .getJavaVersionFromReleaseFile */ .C4)(archivePath)
+            : javaRelease.version;
+        const version = this.getToolcacheVersionName(installedVersion);
         const javaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .cacheJdkDir */ .Vj)(archivePath, this.toolcacheFolderName, version, this.architecture);
-        return { version: javaRelease.version, path: javaPath };
+        return { version: installedVersion, path: javaPath };
+    }
+    requiresRemoteResolution() {
+        return this.stable && !this.version.includes('.');
     }
     async findPackageForDownload(range) {
         const arch = this.distributionArchitecture();
