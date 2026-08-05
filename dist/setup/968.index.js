@@ -10,17 +10,15 @@ export const modules = {
 /* harmony export */   GraalVMDistribution: () => (/* binding */ GraalVMDistribution)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3838);
-/* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9805);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9896);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6928);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(2088);
-/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6242);
-/* harmony import */ var _actions_http_client__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(4942);
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(4527);
-
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9896);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6928);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(2088);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6242);
+/* harmony import */ var _actions_http_client__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4942);
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(4527);
 
 
 
@@ -39,7 +37,7 @@ const IS_WINDOWS = process.platform === 'win32';
 const GRAALVM_PLATFORM = IS_WINDOWS ? 'windows' : process.platform;
 const GRAALVM_MIN_VERSION = 17;
 const SUPPORTED_ARCHITECTURES = ['x64', 'aarch64'];
-class GraalVMDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5__/* .JavaBase */ .O {
+class GraalVMDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/* .JavaBase */ .O {
     constructor(installerOptions, distributionName = 'GraalVM') {
         super(distributionName, installerOptions);
     }
@@ -48,22 +46,22 @@ class GraalVMDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5_
             _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
             let javaArchivePath = await this.downloadAndVerify(javaRelease);
             _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Extracting Java archive...`);
-            const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_7__/* .getDownloadArchiveExtension */ .ag)();
+            const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getDownloadArchiveExtension */ .ag)();
             if (IS_WINDOWS) {
-                javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_7__/* .renameWinArchive */ .n2)(javaArchivePath);
+                javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .renameWinArchive */ .n2)(javaArchivePath);
             }
-            const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_7__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
+            const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
             // Add validation for extracted path
-            if (!fs__WEBPACK_IMPORTED_MODULE_2___default().existsSync(extractedJavaPath)) {
+            if (!fs__WEBPACK_IMPORTED_MODULE_1___default().existsSync(extractedJavaPath)) {
                 throw new Error(`Extraction failed: path ${extractedJavaPath} does not exist`);
             }
-            const dirContents = fs__WEBPACK_IMPORTED_MODULE_2___default().readdirSync(extractedJavaPath);
+            const dirContents = fs__WEBPACK_IMPORTED_MODULE_1___default().readdirSync(extractedJavaPath);
             if (dirContents.length === 0) {
                 throw new Error('Extraction failed: no files found in extracted directory');
             }
-            const archivePath = path__WEBPACK_IMPORTED_MODULE_3___default().join(extractedJavaPath, dirContents[0]);
+            const archivePath = path__WEBPACK_IMPORTED_MODULE_2___default().join(extractedJavaPath, dirContents[0]);
             const version = this.getToolcacheVersionName(javaRelease.version);
-            const javaPath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_1__/* .cacheDir */ .e8(archivePath, this.toolcacheFolderName, version, this.architecture);
+            const javaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .cacheJdkDir */ .Vj)(archivePath, this.toolcacheFolderName, version, this.architecture);
             return { version: javaRelease.version, path: javaPath };
         }
         catch (error) {
@@ -85,7 +83,7 @@ class GraalVMDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5_
         // builds its download URLs from a concrete major and has no endpoint to list
         // releases, so resolve the newest available GA major from the Adoptium API.
         if (this.latest) {
-            range = (await (0,_util_js__WEBPACK_IMPORTED_MODULE_7__/* .getLatestMajorVersion */ .ri)(this.http)).toString();
+            range = (await (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getLatestMajorVersion */ .ri)(this.http)).toString();
         }
         const { platform, extension, major } = this.validateStableBuildRequest(range);
         const fileUrl = this.constructFileUrl(range, major, platform, arch, extension);
@@ -114,7 +112,7 @@ class GraalVMDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5_
             throw new Error(`${this.distribution} provides only the \`jdk\` package type`);
         }
         const platform = this.getPlatform();
-        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_7__/* .getDownloadArchiveExtension */ .ag)();
+        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getDownloadArchiveExtension */ .ag)();
         const major = range.includes('.') ? range.split('.')[0] : range;
         const majorVersion = parseInt(major);
         if (isNaN(majorVersion)) {
@@ -136,7 +134,7 @@ class GraalVMDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5_
     }
     handleHttpResponse(response, range) {
         const statusCode = response.message.statusCode;
-        if (statusCode === _actions_http_client__WEBPACK_IMPORTED_MODULE_6__/* .HttpCodes */ .Hv.NotFound) {
+        if (statusCode === _actions_http_client__WEBPACK_IMPORTED_MODULE_5__/* .HttpCodes */ .Hv.NotFound) {
             // Create the standard error with additional hint about checking the download URL
             const error = this.createVersionNotFoundError(range);
             if (this.latest) {
@@ -145,11 +143,11 @@ class GraalVMDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5_
             error.message += `\nPlease check if this version is available at ${GRAALVM_DOWNLOAD_URL} . Pick a version from the list.`;
             throw error;
         }
-        if (statusCode === _actions_http_client__WEBPACK_IMPORTED_MODULE_6__/* .HttpCodes */ .Hv.Unauthorized ||
-            statusCode === _actions_http_client__WEBPACK_IMPORTED_MODULE_6__/* .HttpCodes */ .Hv.Forbidden) {
+        if (statusCode === _actions_http_client__WEBPACK_IMPORTED_MODULE_5__/* .HttpCodes */ .Hv.Unauthorized ||
+            statusCode === _actions_http_client__WEBPACK_IMPORTED_MODULE_5__/* .HttpCodes */ .Hv.Forbidden) {
             throw new Error(`Access denied when downloading GraalVM. Status code: ${statusCode}. Please check your credentials or permissions.`);
         }
-        if (statusCode !== _actions_http_client__WEBPACK_IMPORTED_MODULE_6__/* .HttpCodes */ .Hv.OK) {
+        if (statusCode !== _actions_http_client__WEBPACK_IMPORTED_MODULE_5__/* .HttpCodes */ .Hv.OK) {
             throw new Error(`HTTP request for GraalVM failed with status code: ${statusCode} (${response.message.statusMessage || 'Unknown error'})`);
         }
     }
@@ -182,7 +180,7 @@ class GraalVMDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5_
     }
     async fetchEAJson(javaEaVersion) {
         const url = `https://api.github.com/repos/graalvm/oracle-graalvm-ea-builds/contents/versions/${javaEaVersion}.json?ref=main`;
-        const headers = (0,_util_js__WEBPACK_IMPORTED_MODULE_7__/* .getGitHubHttpHeaders */ .U_)();
+        const headers = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getGitHubHttpHeaders */ .U_)();
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .debug */ .Yz(`Trying to fetch available version info for GraalVM EA builds from '${url}'`);
         try {
             const response = await this.http.getJson(url, headers);
@@ -243,7 +241,7 @@ class GraalVMCommunityDistribution extends GraalVMDistribution {
                 throw new Error(`${this.distribution} provides only the \`jdk\` package type`);
             }
             platform = this.getPlatform();
-            extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_7__/* .getDownloadArchiveExtension */ .ag)();
+            extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getDownloadArchiveExtension */ .ag)();
         }
         else {
             ({ platform, extension } = this.validateStableBuildRequest(range));
@@ -253,8 +251,8 @@ class GraalVMCommunityDistribution extends GraalVMDistribution {
         const assetSuffix = `_${platform}-${arch}_bin.${extension}`;
         const availableVersions = await this.getAvailableVersions(assetSuffix);
         const satisfiedVersion = availableVersions
-            .filter(item => (0,_util_js__WEBPACK_IMPORTED_MODULE_7__/* .isVersionSatisfies */ .y)(range, item.version))
-            .sort((a, b) => -semver__WEBPACK_IMPORTED_MODULE_4___default().compareBuild(a.version, b.version))[0];
+            .filter(item => (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .isVersionSatisfies */ .y)(range, item.version))
+            .sort((a, b) => -semver__WEBPACK_IMPORTED_MODULE_3___default().compareBuild(a.version, b.version))[0];
         if (!satisfiedVersion) {
             const error = this.createVersionNotFoundError(range, availableVersions.map(item => item.version), `Platform: ${platform}`);
             error.message += `\nPlease check if this version is available at ${GRAALVM_COMMUNITY_DOWNLOAD_URL}.`;
@@ -263,10 +261,10 @@ class GraalVMCommunityDistribution extends GraalVMDistribution {
         return satisfiedVersion;
     }
     async getAvailableVersions(assetSuffix) {
-        const headers = (0,_util_js__WEBPACK_IMPORTED_MODULE_7__/* .getGitHubHttpHeaders */ .U_)();
+        const headers = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getGitHubHttpHeaders */ .U_)();
         const versions = new Map();
         let releasesUrl = GRAALVM_COMMUNITY_RELEASES_URL;
-        for (let pageIndex = 0; releasesUrl && pageIndex < _util_js__WEBPACK_IMPORTED_MODULE_7__/* .MAX_PAGINATION_PAGES */ .Tp; pageIndex++) {
+        for (let pageIndex = 0; releasesUrl && pageIndex < _util_js__WEBPACK_IMPORTED_MODULE_6__/* .MAX_PAGINATION_PAGES */ .Tp; pageIndex++) {
             const response = await this.http.getJson(releasesUrl, headers);
             // A successful GitHub releases listing is always a JSON array (possibly
             // empty). Anything else indicates an unexpected/error payload (rate
@@ -322,12 +320,12 @@ class GraalVMCommunityDistribution extends GraalVMDistribution {
         if (!GRAALVM_COMMUNITY_VERSION_PATTERN.test(rawVersion)) {
             return null;
         }
-        return (0,_util_js__WEBPACK_IMPORTED_MODULE_7__/* .convertVersionToSemver */ .ZY)(rawVersion);
+        return (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .convertVersionToSemver */ .ZY)(rawVersion);
     }
     getNextReleasesUrl(headers) {
-        const nextUrl = (0,_util_js__WEBPACK_IMPORTED_MODULE_7__/* .getNextPageUrlFromLinkHeader */ .rC)(headers);
+        const nextUrl = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getNextPageUrlFromLinkHeader */ .rC)(headers);
         if (nextUrl &&
-            !(0,_util_js__WEBPACK_IMPORTED_MODULE_7__/* .validatePaginationUrl */ .SA)(nextUrl, GRAALVM_COMMUNITY_RELEASES_PAGE_ORIGIN)) {
+            !(0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .validatePaginationUrl */ .SA)(nextUrl, GRAALVM_COMMUNITY_RELEASES_PAGE_ORIGIN)) {
             _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .warning */ .$e(`Ignoring pagination link with unexpected origin: ${nextUrl}`);
             return null;
         }

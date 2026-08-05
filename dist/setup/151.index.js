@@ -9,16 +9,14 @@ export const modules = {
 /* harmony export */   KonaDistribution: () => (/* binding */ KonaDistribution)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3838);
-/* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9805);
-/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(2088);
-/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(9896);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6928);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6242);
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(4527);
-
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2088);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9896);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6928);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6242);
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4527);
 
 
 
@@ -26,7 +24,7 @@ export const modules = {
 
 
 const KONA_RELEASES_URL = 'https://tencent.github.io/konajdk/releases/kona-v1.json';
-class KonaDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5__/* .JavaBase */ .O {
+class KonaDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/* .JavaBase */ .O {
     constructor(installerOptions) {
         super('Kona', installerOptions);
     }
@@ -34,15 +32,15 @@ class KonaDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5__/*
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Downloading Kona JDK ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
         const javaArchivePath = await this.downloadAndVerify(javaRelease);
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Extracting Java archive...`);
-        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getDownloadArchiveExtension */ .ag)();
+        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .getDownloadArchiveExtension */ .ag)();
         const archivePath = process.platform === 'win32'
-            ? (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .renameWinArchive */ .n2)(javaArchivePath)
+            ? (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .renameWinArchive */ .n2)(javaArchivePath)
             : javaArchivePath;
-        const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .extractJdkFile */ .PE)(archivePath, extension);
-        const archiveName = fs__WEBPACK_IMPORTED_MODULE_3___default().readdirSync(extractedJavaPath)[0];
-        const jdkDirectory = path__WEBPACK_IMPORTED_MODULE_4___default().join(extractedJavaPath, archiveName);
+        const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .extractJdkFile */ .PE)(archivePath, extension);
+        const archiveName = fs__WEBPACK_IMPORTED_MODULE_2___default().readdirSync(extractedJavaPath)[0];
+        const jdkDirectory = path__WEBPACK_IMPORTED_MODULE_3___default().join(extractedJavaPath, archiveName);
         const version = this.getToolcacheVersionName(javaRelease.version);
-        const javaPath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_1__/* .cacheDir */ .e8(jdkDirectory, this.toolcacheFolderName, version, this.architecture);
+        const javaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .cacheJdkDir */ .Vj)(jdkDirectory, this.toolcacheFolderName, version, this.architecture);
         return { version: javaRelease.version, path: javaPath };
     }
     async findPackageForDownload(version) {
@@ -55,7 +53,7 @@ class KonaDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5__/*
         const availableReleases = await this.getAvailableReleases();
         const releases = availableReleases
             .filter(item => {
-            return (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .isVersionSatisfies */ .y)(version, item.version);
+            return (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .isVersionSatisfies */ .y)(version, item.version);
         })
             .map(item => {
             return {
@@ -70,7 +68,7 @@ class KonaDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5__/*
                     : undefined
             };
         })
-            .sort((a, b) => -semver__WEBPACK_IMPORTED_MODULE_2___default().compareBuild(a.version, b.version));
+            .sort((a, b) => -semver__WEBPACK_IMPORTED_MODULE_1___default().compareBuild(a.version, b.version));
         if (!releases.length) {
             throw new Error(`No Kona release for the specified version "${version}" on OS "${this.getOs()}" and arch "${this.getArch()}".`);
         }

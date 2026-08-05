@@ -6,6 +6,7 @@ import {
 } from '../base-models.js';
 import semver from 'semver';
 import {
+  cacheJdkDir,
   extractJdkFile,
   getDownloadArchiveExtension,
   isVersionSatisfies,
@@ -13,7 +14,6 @@ import {
 } from '../../util.js';
 import * as core from '@actions/core';
 import {ArchitectureOptions, LibericaVersion, OsVersions} from './models.js';
-import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 
@@ -44,7 +44,7 @@ export class LibericaDistributions extends JavaBase {
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
 
-    const javaPath = await tc.cacheDir(
+    const javaPath = await cacheJdkDir(
       archivePath,
       this.toolcacheFolderName,
       this.getToolcacheVersionName(javaRelease.version),
