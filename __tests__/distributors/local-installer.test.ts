@@ -245,7 +245,7 @@ describe('setupJava', () => {
   });
 
   it.each([
-    [false, true, false],
+    [false, true, true],
     [true, false, true]
   ])(
     'handles jdkfile caching with force-download=%s',

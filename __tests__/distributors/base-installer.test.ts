@@ -510,7 +510,7 @@ describe('setupJava', () => {
 
   it.each([
     [false, false, false, false],
-    [false, true, true, false],
+    [false, true, true, true],
     [true, false, false, false],
     [true, true, false, true]
   ])(
@@ -568,6 +568,42 @@ describe('setupJava', () => {
     });
     expect(downloadTool).not.toHaveBeenCalled();
     expect(spyCoreInfo).not.toHaveBeenCalledWith('Trying to download...');
+    // A restored entry is already stored under its key; it must not be
+    // re-registered for a post-job save.
+    expect(jdkCache.registerJdk).not.toHaveBeenCalled();
+  });
+
+  it('registers the downloaded JDK identity after a JDK cache miss', async () => {
+    const toolCachePath = path.join('toolcache');
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      RUNNER_TOOL_CACHE: toolCachePath
+    });
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: true,
+      cacheJdk: true
+    });
+    (jdkCache.restoreJdk as jest.Mock).mockResolvedValue(false);
+
+    await mockJavaBase.setupJava();
+
+    const expectedIdentity = {
+      distribution: 'Empty',
+      packageType: 'jdk',
+      architecture: 'x86',
+      version: actualJavaVersion,
+      source: `some/random_url/java/${actualJavaVersion}`,
+      verification: 'unverified',
+      path: path.join(toolCachePath, 'Java_Empty_jdk', actualJavaVersion)
+    };
+    expect(jdkCache.restoreJdk).toHaveBeenCalledWith(expectedIdentity);
+    // Registration happens after the installation exists, so the post-job save
+    // can detect a later step replacing it.
+    expect(jdkCache.registerJdk).toHaveBeenCalledWith(expectedIdentity);
+    expect(spyCoreInfo).toHaveBeenCalledWith('Trying to download...');
   });
 
   it.each([

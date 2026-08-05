@@ -217,7 +217,10 @@ export abstract class JavaBase {
             core.info('Trying to download...');
             foundJava = await this.downloadTool(javaRelease);
             core.info(`Java ${foundJava.version} was downloaded`);
-            if (this.forceDownload && jdkCache) {
+            if (jdkCache) {
+              // Register after the installation exists so its identity is
+              // captured; the post-job save refuses to upload a path whose
+              // installation was replaced afterwards.
               const {registerJdk} = await import('../jdk-cache.js');
               registerJdk(jdkCache);
             }

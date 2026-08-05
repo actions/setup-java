@@ -103,7 +103,7 @@ export class LocalDistribution extends JavaBase {
           version: javaVersion,
           path: javaPath
         };
-        if (this.forceDownload && jdkCache) {
+        if (jdkCache) {
           const {registerJdk} = await import('../../jdk-cache.js');
           registerJdk(jdkCache);
         }

@@ -1,11 +1,17 @@
 import {jest, describe, it, expect, beforeEach, afterEach} from '@jest/globals';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 jest.unstable_mockModule('@actions/cache', () => ({
   restoreCache: jest.fn(),
   saveCache: jest.fn(),
-  ReserveCacheError: class ReserveCacheError extends Error {}
+  ReserveCacheError: class ReserveCacheError extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = 'ReserveCacheError';
+    }
+  }
 }));
 
 jest.unstable_mockModule('@actions/core', () => ({
@@ -42,6 +48,28 @@ const jdk = {
 };
 
 describe('JDK cache', () => {
+  const tempRoots: string[] = [];
+
+  const createInstallation = (marker = 'a'): string => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'setup-java-jdk-'));
+    tempRoots.push(root);
+    const jdkPath = path.join(root, 'Java_temurin_jdk', '21.0.8-9');
+    writeInstallation(jdkPath, marker);
+    return jdkPath;
+  };
+
+  const writeInstallation = (jdkPath: string, marker: string): void => {
+    const architecturePath = path.join(jdkPath, 'x64');
+    fs.rmSync(architecturePath, {recursive: true, force: true});
+    fs.rmSync(`${architecturePath}.complete`, {force: true});
+    fs.mkdirSync(path.join(architecturePath, 'bin'), {recursive: true});
+    fs.writeFileSync(path.join(architecturePath, 'bin', 'java'), marker);
+    fs.writeFileSync(`${architecturePath}.complete`, marker);
+  };
+
+  const lastState = (): string =>
+    ((core.saveState as jest.Mock).mock.calls.at(-1) as string[])[1];
+
   beforeEach(() => {
     jest.resetAllMocks();
     (cacheFeature.isCacheFeatureAvailable as jest.Mock).mockReturnValue(true);
@@ -51,6 +79,9 @@ describe('JDK cache', () => {
   afterEach(() => {
     jest.restoreAllMocks();
     delete process.env['RUNNER_OS'];
+    while (tempRoots.length) {
+      fs.rmSync(tempRoots.pop()!, {recursive: true, force: true});
+    }
   });
 
   it('builds distinct keys for incompatible JDK identities', () => {
@@ -144,33 +175,147 @@ describe('JDK cache', () => {
     );
   });
 
-  it('saves a downloaded JDK recorded during restore', async () => {
-    const key = buildJdkCacheKey(jdk);
-    (core.getState as jest.Mock).mockReturnValue(
-      JSON.stringify([{key, path: jdk.path}])
-    );
-    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+  it('saves a downloaded JDK registered after installation', async () => {
+    const jdkPath = createInstallation();
+    const installed = {...jdk, path: jdkPath};
+    const key = buildJdkCacheKey(installed);
+    (cache.restoreCache as jest.Mock).mockResolvedValue(undefined);
+
+    await restoreJdk(installed);
+    registerJdk(installed);
+    (core.getState as jest.Mock).mockReturnValue(lastState());
     (cache.saveCache as jest.Mock).mockResolvedValue(1);
 
     await saveJdkCaches();
 
-    expect(cache.saveCache).toHaveBeenCalledWith([jdk.path], key);
+    expect(cache.saveCache).toHaveBeenCalledWith([jdkPath], key);
+  });
+
+  it('does not save an installation that was replaced after registration', async () => {
+    const jdkPath = createInstallation();
+    const installed = {...jdk, path: jdkPath};
+    const key = buildJdkCacheKey(installed);
+
+    registerJdk(installed);
+    (core.getState as jest.Mock).mockReturnValue(lastState());
+    writeInstallation(jdkPath, 'replaced-by-a-later-step');
+
+    await saveJdkCaches();
+
+    expect(cache.saveCache).not.toHaveBeenCalledWith([jdkPath], key);
+    expect(core.warning).toHaveBeenCalledWith(
+      expect.stringContaining('was replaced after it was registered')
+    );
+  });
+
+  it('saves only the key matching the installation that occupies the path', async () => {
+    const jdkPath = createInstallation();
+    const verified = {...jdk, path: jdkPath, verification: 'verified:bundled'};
+    const unverified = {...jdk, path: jdkPath};
+
+    registerJdk(verified);
+    writeInstallation(jdkPath, 'force-downloaded-without-verification');
+    registerJdk(unverified);
+    (core.getState as jest.Mock).mockReturnValue(lastState());
+    (cache.saveCache as jest.Mock).mockResolvedValue(1);
+
+    await saveJdkCaches();
+
+    expect(cache.saveCache).not.toHaveBeenCalledWith(
+      [jdkPath],
+      buildJdkCacheKey(verified)
+    );
+    expect(cache.saveCache).toHaveBeenCalledWith(
+      [jdkPath],
+      buildJdkCacheKey(unverified)
+    );
+  });
+
+  it('does not save a path that was never registered as installed', async () => {
+    const jdkPath = createInstallation();
+    const installed = {...jdk, path: jdkPath};
+    (cache.restoreCache as jest.Mock).mockResolvedValue(undefined);
+
+    await restoreJdk(installed);
+    (core.getState as jest.Mock).mockReturnValue(lastState());
+
+    await saveJdkCaches();
+
+    expect(cache.saveCache).not.toHaveBeenCalledWith(
+      [jdkPath],
+      buildJdkCacheKey(installed)
+    );
+  });
+
+  it('keeps saving the remaining JDK caches when one save fails', async () => {
+    const failingPath = createInstallation();
+    const succeedingPath = createInstallation();
+    const failing = {...jdk, path: failingPath};
+    const succeeding = {...jdk, path: succeedingPath, version: '17.0.19+9'};
+
+    registerJdk(failing);
+    registerJdk(succeeding);
+    (core.getState as jest.Mock).mockReturnValue(lastState());
+    (cache.saveCache as jest.Mock).mockImplementation(
+      async (paths: unknown) => {
+        if ((paths as string[])[0] === failingPath) {
+          throw new Error('cache service unavailable');
+        }
+        return 1;
+      }
+    );
+
+    await expect(saveJdkCaches()).resolves.toBeUndefined();
+
+    expect(cache.saveCache).toHaveBeenCalledWith(
+      [succeedingPath],
+      buildJdkCacheKey(succeeding)
+    );
+    expect(core.warning).toHaveBeenCalledWith(
+      expect.stringContaining('cache service unavailable')
+    );
+    expect(core.info).toHaveBeenCalledWith(
+      `JDK cache saved with the key: ${buildJdkCacheKey(succeeding)}`
+    );
+  });
+
+  it('reports a reserved cache key without failing the remaining saves', async () => {
+    const reservedPath = createInstallation();
+    const reserved = {...jdk, path: reservedPath};
+
+    registerJdk(reserved);
+    (core.getState as jest.Mock).mockReturnValue(lastState());
+    (cache.saveCache as jest.Mock).mockRejectedValue(
+      new cache.ReserveCacheError('Unable to reserve cache')
+    );
+
+    await expect(saveJdkCaches()).resolves.toBeUndefined();
+
+    expect(core.info).toHaveBeenCalledWith('Unable to reserve cache');
   });
 
   it('registers a force-downloaded JDK without restoring it', () => {
-    registerJdk(jdk);
+    const jdkPath = createInstallation();
+    registerJdk({...jdk, path: jdkPath});
 
     expect(cache.restoreCache).not.toHaveBeenCalled();
     expect(core.saveState).toHaveBeenCalledWith(
       'jdk-caches',
-      expect.stringContaining(buildJdkCacheKey(jdk))
+      expect.stringContaining(buildJdkCacheKey({...jdk, path: jdkPath}))
     );
   });
 
   it('does not save an exact JDK cache hit again', async () => {
     const key = buildJdkCacheKey(jdk);
     (core.getState as jest.Mock).mockReturnValue(
-      JSON.stringify([{key, path: jdk.path, matchedKey: key}])
+      JSON.stringify([
+        {
+          key,
+          path: jdk.path,
+          architecture: jdk.architecture,
+          matchedKey: key
+        }
+      ])
     );
 
     await saveJdkCaches();

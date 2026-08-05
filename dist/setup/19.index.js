@@ -95,7 +95,7 @@ class LocalDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/
                     version: javaVersion,
                     path: javaPath
                 };
-                if (this.forceDownload && jdkCache) {
+                if (jdkCache) {
                     const { registerJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
                     registerJdk(jdkCache);
                 }

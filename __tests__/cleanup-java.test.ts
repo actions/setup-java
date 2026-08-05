@@ -9,6 +9,8 @@ import {
   afterAll
 } from '@jest/globals';
 import fs from 'fs';
+import os from 'os';
+import path from 'path';
 
 // Mock @actions/cache before importing source modules
 const real_cache_module = await import('@actions/cache');
@@ -61,6 +63,9 @@ const core = await import('@actions/core');
 const cache = await import('@actions/cache');
 const {run: cleanup} = await import('../src/cleanup-java.js');
 const util = await import('../src/util.js');
+const {registerJdk, buildJdkCacheKey} = await import('../src/jdk-cache.js');
+
+const jdkTempRoots: string[] = [];
 
 describe('cleanup', () => {
   let spyWarning: any;
@@ -89,6 +94,9 @@ describe('cleanup', () => {
   });
 
   afterEach(() => {
+    while (jdkTempRoots.length) {
+      fs.rmSync(jdkTempRoots.pop()!, {recursive: true, force: true});
+    }
     resetState();
     jest.resetAllMocks();
     jest.clearAllMocks();
@@ -166,21 +174,18 @@ describe('cleanup', () => {
   });
 
   it('saves the JDK cache without dependency caching', async () => {
-    const key = 'setup-java-jdk-v1-Linux-x64-key';
+    const {key, path: jdkPath, state} = createRegisteredJdk();
     (core.getInput as jest.Mock<any>).mockImplementation((name: string) =>
       name === 'cache-jdk' ? 'true' : ''
     );
     (core.getState as jest.Mock<any>).mockImplementation((name: string) =>
-      name === 'jdk-caches'
-        ? JSON.stringify([{key, path: '/toolcache/java'}])
-        : ''
+      name === 'jdk-caches' ? state : ''
     );
-    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
     spyCacheSave.mockResolvedValue(1);
 
     await cleanup();
 
-    expect(spyCacheSave).toHaveBeenCalledWith(['/toolcache/java'], key);
+    expect(spyCacheSave).toHaveBeenCalledWith([jdkPath], key);
   });
 
   it('does not save a JDK cache when cache-jdk is disabled', async () => {
@@ -203,18 +208,15 @@ describe('cleanup', () => {
   ])(
     'uses effective JDK caching for cache=%j and cache-jdk=%j',
     async (cacheInput, cacheJdkInput, expectedJdkSave) => {
-      const jdkKey = 'setup-java-jdk-v1-Linux-x64-key';
+      const {key: jdkKey, path: jdkPath, state} = createRegisteredJdk();
       (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
         if (name === 'cache') return cacheInput;
         if (name === 'cache-jdk') return cacheJdkInput;
         return '';
       });
       (core.getState as jest.Mock<any>).mockImplementation((name: string) =>
-        name === 'jdk-caches'
-          ? JSON.stringify([{key: jdkKey, path: '/toolcache/java'}])
-          : ''
+        name === 'jdk-caches' ? state : ''
       );
-      jest.spyOn(fs, 'existsSync').mockReturnValue(true);
       spyCacheSave.mockResolvedValue(1);
 
       await cleanup();
@@ -224,10 +226,49 @@ describe('cleanup', () => {
       );
       expect(jdkSaveCalls).toHaveLength(expectedJdkSave ? 1 : 0);
       if (expectedJdkSave) {
-        expect(spyCacheSave).toHaveBeenCalledWith(['/toolcache/java'], jdkKey);
+        expect(spyCacheSave).toHaveBeenCalledWith([jdkPath], jdkKey);
       }
     }
   );
+
+  it('keeps saving the remaining JDK caches when one save fails', async () => {
+    const first = createRegisteredJdk();
+    const second = createRegisteredJdk('17.0.19+9');
+    (core.getInput as jest.Mock<any>).mockImplementation((name: string) =>
+      name === 'cache-jdk' ? 'true' : ''
+    );
+    (core.getState as jest.Mock<any>).mockImplementation((name: string) =>
+      name === 'jdk-caches' ? second.state : ''
+    );
+    spyCacheSave.mockImplementation(async (paths: string[]) => {
+      if (paths[0] === first.path) {
+        throw new Error('Unexpected save failure');
+      }
+      return 1;
+    });
+
+    await cleanup();
+
+    expect(spyCacheSave).toHaveBeenCalledWith([first.path], first.key);
+    expect(spyCacheSave).toHaveBeenCalledWith([second.path], second.key);
+    expect(spyCoreError).not.toHaveBeenCalled();
+  });
+
+  it('does not save a JDK installation that was replaced after registration', async () => {
+    const {key, path: jdkPath, state, replace} = createRegisteredJdk();
+    (core.getInput as jest.Mock<any>).mockImplementation((name: string) =>
+      name === 'cache-jdk' ? 'true' : ''
+    );
+    (core.getState as jest.Mock<any>).mockImplementation((name: string) =>
+      name === 'jdk-caches' ? state : ''
+    );
+    spyCacheSave.mockResolvedValue(1);
+    replace();
+
+    await cleanup();
+
+    expect(spyCacheSave).not.toHaveBeenCalledWith([jdkPath], key);
+  });
 });
 
 function resetState() {
@@ -263,4 +304,50 @@ function createStateForSuccessfulRestoreWithWrapper(packageManager: string) {
         return '';
     }
   });
+}
+
+/**
+ * Register a real JDK installation in a temporary tool cache so the post-job
+ * save sees the same installation identity that setup recorded.
+ */
+function createRegisteredJdk(version = '21.0.8+9') {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'setup-java-cleanup-jdk-')
+  );
+  jdkTempRoots.push(root);
+  const jdkPath = path.join(
+    root,
+    'Java_temurin_jdk',
+    version.replace('+', '-')
+  );
+  const write = (marker: string) => {
+    const architecturePath = path.join(jdkPath, 'x64');
+    fs.rmSync(architecturePath, {recursive: true, force: true});
+    fs.rmSync(`${architecturePath}.complete`, {force: true});
+    fs.mkdirSync(architecturePath, {recursive: true});
+    fs.writeFileSync(path.join(architecturePath, 'release'), marker);
+    fs.writeFileSync(`${architecturePath}.complete`, marker);
+  };
+  write('installed');
+
+  const jdk = {
+    distribution: 'temurin',
+    packageType: 'jdk',
+    architecture: 'x64',
+    version,
+    source: `sha256:${path.basename(root)}`,
+    verification: 'unverified',
+    path: jdkPath
+  };
+  registerJdk(jdk);
+  const state = (
+    (core.saveState as jest.Mock).mock.calls.at(-1) as string[]
+  )[1];
+
+  return {
+    key: buildJdkCacheKey(jdk),
+    path: jdkPath,
+    state,
+    replace: () => write('replaced-by-a-later-step')
+  };
 }

@@ -358,7 +358,10 @@ class JavaBase {
                         core/* info */.pq('Trying to download...');
                         foundJava = await this.downloadTool(javaRelease);
                         core/* info */.pq(`Java ${foundJava.version} was downloaded`);
-                        if (this.forceDownload && jdkCache) {
+                        if (jdkCache) {
+                            // Register after the installation exists so its identity is
+                            // captured; the post-job save refuses to upload a path whose
+                            // installation was replaced afterwards.
                             const { registerJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
                             registerJdk(jdkCache);
                         }

@@ -21,7 +21,14 @@ export interface JdkCache {
 interface JdkCacheState {
   key: string;
   path: string;
+  architecture: string;
   matchedKey?: string;
+  // Cheap identity of the installation that occupied `path` when the entry was
+  // registered. The tool-cache path is shared per version/architecture, so a
+  // later step (e.g. one using `force-download`) can replace those bytes; the
+  // post-job save must not upload content that does not match the identity the
+  // key was computed for.
+  installation?: string;
 }
 
 const restoredCaches: JdkCacheState[] = [];
@@ -51,7 +58,12 @@ export async function restoreJdk(jdk: JdkCache): Promise<boolean> {
     matchedKey = undefined;
   }
 
-  recordJdkCache({key, path: jdk.path, matchedKey});
+  recordJdkCache({
+    key,
+    path: jdk.path,
+    architecture: jdk.architecture,
+    matchedKey
+  });
 
   if (matchedKey) {
     core.info(`JDK cache restored from key: ${matchedKey}`);
@@ -66,7 +78,41 @@ export function registerJdk(jdk: JdkCache): void {
   if (!jdk.path) {
     return;
   }
-  recordJdkCache({key: buildJdkCacheKey(jdk), path: jdk.path});
+  recordJdkCache({
+    key: buildJdkCacheKey(jdk),
+    path: jdk.path,
+    architecture: jdk.architecture,
+    installation: getInstallationIdentity(jdk.path, jdk.architecture)
+  });
+}
+
+/**
+ * Cheap fingerprint of the installation stored at a tool-cache path. The
+ * `<architecture>.complete` marker is (re)created by `tc.cacheDir` every time an
+ * installation is written, so its inode and timestamps change whenever the
+ * installation is replaced. This avoids rehashing a multi-hundred-megabyte JDK
+ * directory while still detecting that the bytes behind a key were swapped.
+ */
+function getInstallationIdentity(
+  jdkPath: string,
+  architecture: string
+): string | undefined {
+  const architecturePath = path.join(jdkPath, architecture);
+  try {
+    const marker = fs.statSync(`${architecturePath}.complete`);
+    const installation = fs.statSync(architecturePath);
+    return [
+      marker.ino,
+      marker.mtimeMs,
+      marker.ctimeMs,
+      marker.size,
+      installation.ino,
+      installation.mtimeMs,
+      installation.ctimeMs
+    ].join(':');
+  } catch {
+    return undefined;
+  }
 }
 
 export function getJdkVerificationIdentity(
@@ -105,6 +151,22 @@ export async function saveJdkCaches(): Promise<void> {
       continue;
     }
 
+    if (!jdk.installation) {
+      core.debug(
+        `No JDK installation was registered for the key ${jdk.key}, not saving cache.`
+      );
+      continue;
+    }
+
+    if (
+      getInstallationIdentity(jdk.path, jdk.architecture) !== jdk.installation
+    ) {
+      core.warning(
+        `The JDK installation in ${jdk.path} was replaced after it was registered for the key ${jdk.key}; not saving cache.`
+      );
+      continue;
+    }
+
     try {
       const cacheId = await cache.saveCache([jdk.path], jdk.key);
       if (cacheId !== -1) {
@@ -115,7 +177,11 @@ export async function saveJdkCaches(): Promise<void> {
       if (err.name === cache.ReserveCacheError.name) {
         core.info(err.message);
       } else {
-        throw error;
+        // Saving is best-effort and per entry: one failure must not suppress
+        // the remaining JDK caches.
+        core.warning(
+          `Failed to save the JDK cache with the key ${jdk.key}: ${err.message}`
+        );
       }
     }
   }
@@ -145,7 +211,7 @@ function recordJdkCache(jdk: JdkCacheState): void {
   if (existing === -1) {
     restoredCaches.push(jdk);
   } else {
-    restoredCaches[existing] = jdk;
+    restoredCaches[existing] = {...restoredCaches[existing], ...jdk};
   }
   core.saveState(STATE_JDK_CACHES, JSON.stringify(restoredCaches));
 }
@@ -160,8 +226,11 @@ function parseJdkCacheState(state: string): JdkCacheState[] {
         item !== null &&
         typeof (item as JdkCacheState).key === 'string' &&
         typeof (item as JdkCacheState).path === 'string' &&
+        typeof (item as JdkCacheState).architecture === 'string' &&
         ((item as JdkCacheState).matchedKey === undefined ||
-          typeof (item as JdkCacheState).matchedKey === 'string')
+          typeof (item as JdkCacheState).matchedKey === 'string') &&
+        ((item as JdkCacheState).installation === undefined ||
+          typeof (item as JdkCacheState).installation === 'string')
     )
   ) {
     throw new Error('Invalid JDK cache information retrieved from state.');

@@ -241,7 +241,7 @@ GitHub-hosted runners primarily pre-cache Eclipse Temurin JDKs. See the installe
 
 `setup-java` automatically verifies downloaded archive checksums when a selected distribution publishes an authoritative checksum. Automatic checksum verification currently applies to `temurin`, `semeru`, `corretto`, `dragonwell`, `kona`, `sapmachine`, `graalvm`, `graalvm-community`, `zulu`, `oracle`, `oracle-openjdk`, `microsoft`, and `jetbrains`.
 
-Distributions or individual releases without an authoritative checksum continue to install normally, with the omission reported in debug logs. Archives resolved directly from the runner tool cache are not downloaded again and are not reverified.
+Distributions or individual releases without an authoritative checksum continue to install normally, with the omission reported in debug logs. Installations resolved directly from the runner tool cache — including JDKs preinstalled on the runner image and JDKs installed by an earlier step of the same job — are not downloaded again and are not reverified, even when `verify-signature: true` is set. Use `force-download: true` to always download and verify the archive.
 
 Use `verify-signature: true` to verify package signatures for distributions that support it. Currently supported distributions are `temurin` and `microsoft`; setting it for an unsupported distribution fails the workflow.
 

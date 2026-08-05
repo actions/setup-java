@@ -77,7 +77,12 @@ async function restoreJdk(jdk) {
         _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .warning */ .$e(`JDK cache key ${matchedKey} was restored without the expected tool-cache path; downloading the JDK instead.`);
         matchedKey = undefined;
     }
-    recordJdkCache({ key, path: jdk.path, matchedKey });
+    recordJdkCache({
+        key,
+        path: jdk.path,
+        architecture: jdk.architecture,
+        matchedKey
+    });
     if (matchedKey) {
         _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .info */ .pq(`JDK cache restored from key: ${matchedKey}`);
         return true;
@@ -89,7 +94,38 @@ function registerJdk(jdk) {
     if (!jdk.path) {
         return;
     }
-    recordJdkCache({ key: buildJdkCacheKey(jdk), path: jdk.path });
+    recordJdkCache({
+        key: buildJdkCacheKey(jdk),
+        path: jdk.path,
+        architecture: jdk.architecture,
+        installation: getInstallationIdentity(jdk.path, jdk.architecture)
+    });
+}
+/**
+ * Cheap fingerprint of the installation stored at a tool-cache path. The
+ * `<architecture>.complete` marker is (re)created by `tc.cacheDir` every time an
+ * installation is written, so its inode and timestamps change whenever the
+ * installation is replaced. This avoids rehashing a multi-hundred-megabyte JDK
+ * directory while still detecting that the bytes behind a key were swapped.
+ */
+function getInstallationIdentity(jdkPath, architecture) {
+    const architecturePath = path__WEBPACK_IMPORTED_MODULE_2___default().join(jdkPath, architecture);
+    try {
+        const marker = fs__WEBPACK_IMPORTED_MODULE_1___default().statSync(`${architecturePath}.complete`);
+        const installation = fs__WEBPACK_IMPORTED_MODULE_1___default().statSync(architecturePath);
+        return [
+            marker.ino,
+            marker.mtimeMs,
+            marker.ctimeMs,
+            marker.size,
+            installation.ino,
+            installation.mtimeMs,
+            installation.ctimeMs
+        ].join(':');
+    }
+    catch {
+        return undefined;
+    }
 }
 function getJdkVerificationIdentity(verifySignature, publicKey) {
     if (!verifySignature) {
@@ -117,6 +153,14 @@ async function saveJdkCaches() {
             _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .debug */ .Yz(`JDK cache path does not exist, not saving: ${jdk.path}`);
             continue;
         }
+        if (!jdk.installation) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .debug */ .Yz(`No JDK installation was registered for the key ${jdk.key}, not saving cache.`);
+            continue;
+        }
+        if (getInstallationIdentity(jdk.path, jdk.architecture) !== jdk.installation) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .warning */ .$e(`The JDK installation in ${jdk.path} was replaced after it was registered for the key ${jdk.key}; not saving cache.`);
+            continue;
+        }
         try {
             const cacheId = await _actions_cache__WEBPACK_IMPORTED_MODULE_3__/* .saveCache */ .Io([jdk.path], jdk.key);
             if (cacheId !== -1) {
@@ -129,7 +173,9 @@ async function saveJdkCaches() {
                 _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .info */ .pq(err.message);
             }
             else {
-                throw error;
+                // Saving is best-effort and per entry: one failure must not suppress
+                // the remaining JDK caches.
+                _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .warning */ .$e(`Failed to save the JDK cache with the key ${jdk.key}: ${err.message}`);
             }
         }
     }
@@ -156,7 +202,7 @@ function recordJdkCache(jdk) {
         restoredCaches.push(jdk);
     }
     else {
-        restoredCaches[existing] = jdk;
+        restoredCaches[existing] = { ...restoredCaches[existing], ...jdk };
     }
     _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .saveState */ .LZ(STATE_JDK_CACHES, JSON.stringify(restoredCaches));
 }
@@ -167,8 +213,11 @@ function parseJdkCacheState(state) {
             item !== null &&
             typeof item.key === 'string' &&
             typeof item.path === 'string' &&
+            typeof item.architecture === 'string' &&
             (item.matchedKey === undefined ||
-                typeof item.matchedKey === 'string'))) {
+                typeof item.matchedKey === 'string') &&
+            (item.installation === undefined ||
+                typeof item.installation === 'string'))) {
         throw new Error('Invalid JDK cache information retrieved from state.');
     }
     return value;
