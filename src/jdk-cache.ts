@@ -6,7 +6,7 @@ import * as core from '@actions/core';
 import {isCacheFeatureAvailable} from './cache-feature.js';
 
 const STATE_JDK_CACHES = 'jdk-caches';
-const JDK_CACHE_KEY_VERSION = 2;
+const JDK_CACHE_KEY_VERSION = 1;
 
 export interface JdkCache {
   distribution: string;
@@ -122,12 +122,13 @@ export async function saveJdkCaches(): Promise<void> {
 }
 
 export function buildJdkCacheKey(jdk: JdkCache): string {
-  const runnerOs = process.env['RUNNER_OS'] ?? process.platform;
+  const runnerOs = normalizeRunnerOs(
+    process.env['RUNNER_OS'] ?? process.platform
+  );
   const normalizedArchitecture = jdk.architecture.toLowerCase();
   const identity = JSON.stringify({
     keyVersion: JDK_CACHE_KEY_VERSION,
     runnerOs,
-    platform: process.platform,
     distribution: jdk.distribution.toLowerCase(),
     packageType: jdk.packageType.toLowerCase(),
     architecture: normalizedArchitecture,
@@ -137,6 +138,17 @@ export function buildJdkCacheKey(jdk: JdkCache): string {
   });
   const digest = createHash('sha256').update(identity).digest('hex');
   return `setup-java-jdk-v${JDK_CACHE_KEY_VERSION}-${runnerOs}-${normalizedArchitecture}-${digest}`;
+}
+
+function normalizeRunnerOs(runnerOs: string): string {
+  switch (runnerOs.toLowerCase()) {
+    case 'win32':
+      return 'windows';
+    case 'darwin':
+      return 'macos';
+    default:
+      return runnerOs.toLowerCase();
+  }
 }
 
 function recordJdkCache(jdk: JdkCacheState): void {

@@ -484,21 +484,22 @@ is restored and saved as a separate entry.
 | Set | `true` | Enabled | Enabled |
 | Set | `false` | Enabled | Disabled |
 
-The JDK v2 cache identity includes the runner OS, Node.js platform, normalized
-architecture, distribution, package type, exact resolved Java version, release
-source, and signature-verification mode. The release source is the authoritative
-checksum when available and otherwise the download URL without its query string.
-These dimensions prevent incompatible JDKs from sharing an entry. They also mean
-that a matrix or workflow using multiple JDK versions, distributions, package
-types, architectures, or operating systems stores a separate JDK entry for each
-identity and consumes cache storage for each one.
+JDK entries are specific to the runner operating system and normalized
+architecture. They are additionally separated by distribution, package type,
+exact resolved Java version, release identity, and signature-verification
+identity. The release identity is the authoritative checksum when available and
+otherwise the download URL without its query string. These dimensions prevent
+incompatible JDKs from sharing an entry. They also mean that a matrix or workflow
+using multiple JDK versions, distributions, package types, architectures, or
+operating systems stores a separate JDK entry for each identity and consumes
+cache storage for each one.
 
 For `distribution: jdkfile`, the release source is a SHA-256 hash of the local
 `jdk-file` contents. Changing the archive therefore creates a different entry,
 even when its path and requested version are unchanged.
 
-The v2 identity also separates unverified downloads from packages verified with
-the distribution's bundled signing key and from packages verified with each
+The verification identity separates unverified downloads from packages verified
+with the distribution's bundled signing key and from packages verified with each
 custom key. Custom public keys are represented by a SHA-256 fingerprint of
 normalized key material; the key itself is not placed in the cache key or action
 state. A verified exact-key hit reuses the content that was signature-verified

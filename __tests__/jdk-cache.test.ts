@@ -56,12 +56,48 @@ describe('JDK cache', () => {
   it('builds distinct keys for incompatible JDK identities', () => {
     const key = buildJdkCacheKey(jdk);
 
-    expect(key).toMatch(/^setup-java-jdk-v2-Linux-x64-[a-f0-9]{64}$/);
+    expect(key).toMatch(/^setup-java-jdk-v1-linux-x64-[a-f0-9]{64}$/);
     expect(buildJdkCacheKey({...jdk, architecture: 'aarch64'})).not.toBe(key);
     expect(buildJdkCacheKey({...jdk, distribution: 'zulu'})).not.toBe(key);
     expect(buildJdkCacheKey({...jdk, packageType: 'jre'})).not.toBe(key);
     expect(buildJdkCacheKey({...jdk, version: '21.0.7+6'})).not.toBe(key);
     expect(buildJdkCacheKey({...jdk, source: 'sha256:def456'})).not.toBe(key);
+  });
+
+  it('normalizes runner OS casing and separates operating systems', () => {
+    process.env['RUNNER_OS'] = 'LINUX';
+    const upperCaseLinux = buildJdkCacheKey(jdk);
+    process.env['RUNNER_OS'] = 'linux';
+    const lowerCaseLinux = buildJdkCacheKey(jdk);
+    process.env['RUNNER_OS'] = 'Windows';
+    const windows = buildJdkCacheKey(jdk);
+    process.env['RUNNER_OS'] = 'win32';
+    const windowsAlias = buildJdkCacheKey(jdk);
+    process.env['RUNNER_OS'] = 'macOS';
+    const macos = buildJdkCacheKey(jdk);
+    process.env['RUNNER_OS'] = 'darwin';
+    const macosAlias = buildJdkCacheKey(jdk);
+
+    expect(upperCaseLinux).toBe(lowerCaseLinux);
+    expect(windowsAlias).toBe(windows);
+    expect(macosAlias).toBe(macos);
+    expect(new Set([lowerCaseLinux, windows, macos])).toHaveProperty('size', 3);
+    expect(windows).toMatch(/^setup-java-jdk-v1-windows-x64-/);
+    expect(macos).toMatch(/^setup-java-jdk-v1-macos-x64-/);
+  });
+
+  it('falls back to the normalized process platform without RUNNER_OS', () => {
+    delete process.env['RUNNER_OS'];
+    const expectedOs =
+      process.platform === 'win32'
+        ? 'windows'
+        : process.platform === 'darwin'
+          ? 'macos'
+          : process.platform.toLowerCase();
+
+    expect(buildJdkCacheKey(jdk)).toMatch(
+      new RegExp(`^setup-java-jdk-v1-${expectedOs}-x64-`)
+    );
   });
 
   it('separates unverified, bundled-key, and custom-key caches', () => {
