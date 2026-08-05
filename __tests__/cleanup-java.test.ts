@@ -201,7 +201,8 @@ describe('cleanup', () => {
       await cleanup();
 
       expect(spyCacheSave).not.toHaveBeenCalled();
-      expect(core.getState).not.toHaveBeenCalled();
+      expect(core.getState).toHaveBeenCalledTimes(1);
+      expect(core.getState).toHaveBeenCalledWith(constants.STATE_GPG_HOME);
       expect(spyInfo).toHaveBeenCalledWith(
         'Cache saving is skipped because cache-read-only is enabled.'
       );
