@@ -1,3 +1,4 @@
+import fs from 'fs';
 import semver from 'semver';
 import {JavaDistribution} from './package-types.js';
 
@@ -189,6 +190,21 @@ export function normalizePlatform(
   platform: NodeJS.Platform
 ): JavaPlatform | undefined {
   return PLATFORM_ALIASES[platform];
+}
+
+/**
+ * Alpine ships musl instead of glibc, and a glibc JDK cannot run there. The
+ * platform check short-circuits the filesystem probe so a stray
+ * /etc/alpine-release can never make a non-Linux runner look like musl.
+ */
+export function isAlpineLinux(
+  platform: NodeJS.Platform = process.platform,
+  alpineReleaseExists?: boolean
+): boolean {
+  return (
+    platform === 'linux' &&
+    (alpineReleaseExists ?? fs.existsSync('/etc/alpine-release'))
+  );
 }
 
 export function validateJavaPlatform(

@@ -18,6 +18,7 @@ import {
   ICorrettoAllAvailableVersions,
   ICorrettoAvailableVersions
 } from './models.js';
+import {isAlpineLinux} from '../platform-types.js';
 
 const CORRETTO_VERSIONS_URL =
   'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
@@ -189,6 +190,8 @@ export class CorrettoDistribution extends JavaBase {
         return 'macos';
       case 'win32':
         return 'windows';
+      case 'linux':
+        return isAlpineLinux() ? 'alpine' : 'linux';
       default:
         return process.platform;
     }

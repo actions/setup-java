@@ -14,6 +14,7 @@ import {
 } from '../../util.js';
 import * as core from '@actions/core';
 import {ArchitectureOptions, LibericaVersion, OsVersions} from './models.js';
+import {isAlpineLinux} from '../platform-types.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -154,7 +155,7 @@ export class LibericaDistributions extends JavaBase {
       case 'cygwin':
         return 'windows';
       case 'linux':
-        return 'linux';
+        return isAlpineLinux(platform) ? 'linux-musl' : 'linux';
       case 'sunos':
         return 'solaris';
       default:

@@ -15,6 +15,7 @@ import {
   renameWinArchive
 } from '../../util.js';
 import {IDragonwellVersions, IDragonwellAllVersions} from './models.js';
+import {isAlpineLinux} from '../platform-types.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
@@ -202,6 +203,8 @@ export class DragonwellDistribution extends JavaBase {
     switch (process.platform) {
       case 'win32':
         return 'windows';
+      case 'linux':
+        return isAlpineLinux() ? 'alpine-linux' : 'linux';
       default:
         return process.platform;
     }

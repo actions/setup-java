@@ -16,7 +16,9 @@ export const modules = {
 /* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(2088);
 /* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6242);
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4527);
+/* harmony import */ var _platform_types_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(7444);
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(4527);
+
 
 
 
@@ -37,14 +39,14 @@ class ZuluDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/*
                 ? [...item.java_version, item.openjdk_build_number]
                 : item.java_version;
             return {
-                version: (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .convertVersionToSemver */ .ZY)(javaVersion),
+                version: (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .convertVersionToSemver */ .ZY)(javaVersion),
                 url: item.download_url,
-                zuluVersion: (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .convertVersionToSemver */ .ZY)(item.distro_version),
+                zuluVersion: (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .convertVersionToSemver */ .ZY)(item.distro_version),
                 packageUuid: item.package_uuid
             };
         });
         const satisfiedVersions = availableVersions
-            .filter(item => (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .isVersionSatisfies */ .y)(version, item.version))
+            .filter(item => (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .isVersionSatisfies */ .y)(version, item.version))
             .sort((a, b) => {
             // Azul provides two versions: java_version and distro_version
             // we should sort by both fields by descending
@@ -83,21 +85,21 @@ class ZuluDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/*
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
         let javaArchivePath = await this.downloadAndVerify(javaRelease);
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Extracting Java archive...`);
-        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .getDownloadArchiveExtension */ .ag)();
+        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getDownloadArchiveExtension */ .ag)();
         if (process.platform === 'win32') {
-            javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .renameWinArchive */ .n2)(javaArchivePath);
+            javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .renameWinArchive */ .n2)(javaArchivePath);
         }
-        const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
+        const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
         const archiveName = fs__WEBPACK_IMPORTED_MODULE_2___default().readdirSync(extractedJavaPath)[0];
         const archivePath = path__WEBPACK_IMPORTED_MODULE_1___default().join(extractedJavaPath, archiveName);
-        const javaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .cacheJdkDir */ .Vj)(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaRelease.version), this.architecture);
+        const javaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .cacheJdkDir */ .Vj)(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaRelease.version), this.architecture);
         return { version: javaRelease.version, path: javaPath };
     }
     async getAvailableVersions() {
         const arch = this.getArchitectureOptions();
         const [bundleType, features] = this.packageType.split('+');
         const platform = this.getPlatformOption();
-        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .getDownloadArchiveExtension */ .ag)();
+        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getDownloadArchiveExtension */ .ag)();
         const javafx = features?.includes('fx') ?? false;
         const crac = features?.includes('crac') ?? false;
         const releaseStatus = this.stable ? 'ga' : 'ea';
@@ -180,9 +182,10 @@ class ZuluDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/*
             case 'win32':
                 return 'windows';
             case 'linux':
-                // The new Metadata API's "linux" value returns both glibc and musl packages;
-                // use "linux_glibc" to target only glibc, which is what standard runners use.
-                return 'linux_glibc';
+                // The new Metadata API's "linux" value returns both glibc and musl
+                // packages, so target the libc the runner actually has. A glibc JDK
+                // cannot run on Alpine.
+                return (0,_platform_types_js__WEBPACK_IMPORTED_MODULE_5__/* .isAlpineLinux */ .G6)() ? 'linux_musl' : 'linux_glibc';
             default:
                 return process.platform;
         }

@@ -30988,33 +30988,37 @@ function createUnsupportedPackageError(distributionName, packageType, supportedP
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   G6: () => (/* binding */ isAlpineLinux),
 /* harmony export */   dV: () => (/* binding */ normalizeArchitecture),
 /* harmony export */   sZ: () => (/* binding */ validateJavaPlatform)
 /* harmony export */ });
 /* unused harmony exports JAVA_PLATFORM_CAPABILITIES, normalizePlatform */
-/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(2088);
-/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(semver__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _package_types_js__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(7835);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(9896);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(2088);
+/* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(semver__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _package_types_js__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(7835);
+
 
 
 const X64_ARM64 = ['x64', 'aarch64'];
 const STANDARD_LINUX = ['x64', 'x86', 'aarch64', 'ppc64le', 's390x'];
 const JAVA_PLATFORM_CAPABILITIES = {
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.Temurin]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Temurin]: {
         platforms: {
             linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<18' }],
             macos: X64_ARM64,
             windows: ['x64', 'x86', 'aarch64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.Zulu]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Zulu]: {
         platforms: {
             linux: ['x64', 'x86', 'armv7', 'aarch64'],
             macos: X64_ARM64,
             windows: ['x64', 'x86', 'aarch64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.Liberica]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Liberica]: {
         platforms: {
             linux: ['x64', 'x86', 'armv7', 'aarch64', 'ppc64le'],
             macos: X64_ARM64,
@@ -31022,31 +31026,31 @@ const JAVA_PLATFORM_CAPABILITIES = {
             solaris: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.LibericaNik]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.LibericaNik]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: X64_ARM64
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.JdkFile]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.JdkFile]: {
         unrestricted: true
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.Microsoft]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Microsoft]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: X64_ARM64
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.Semeru]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Semeru]: {
         platforms: {
             linux: ['x64', 'x86', 'ppc64le', 'ppc64', 's390x', 'aarch64'],
             macos: X64_ARM64,
             windows: ['x64', 'aarch64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.Corretto]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Corretto]: {
         platforms: {
             linux: [
                 'x64',
@@ -31058,55 +31062,55 @@ const JAVA_PLATFORM_CAPABILITIES = {
             windows: ['x64', { architecture: 'x86', versionRange: '<12' }]
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.Oracle]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Oracle]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.Dragonwell]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Dragonwell]: {
         platforms: {
             linux: X64_ARM64,
             windows: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.SapMachine]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.SapMachine]: {
         platforms: {
             linux: ['x64', 'aarch64', 'ppc64le'],
             macos: X64_ARM64,
             windows: X64_ARM64
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.GraalVM]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.GraalVM]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.GraalVMCommunity]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.GraalVMCommunity]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.JetBrains]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.JetBrains]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: X64_ARM64
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.Kona]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Kona]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_1__/* .JavaDistribution */ .zS.OracleOpenJdk]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.OracleOpenJdk]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
@@ -31146,6 +31150,15 @@ function normalizeArchitecture(architecture) {
 function normalizePlatform(platform) {
     return PLATFORM_ALIASES[platform];
 }
+/**
+ * Alpine ships musl instead of glibc, and a glibc JDK cannot run there. The
+ * platform check short-circuits the filesystem probe so a stray
+ * /etc/alpine-release can never make a non-Linux runner look like musl.
+ */
+function isAlpineLinux(platform = process.platform, alpineReleaseExists) {
+    return (platform === 'linux' &&
+        (alpineReleaseExists ?? fs__WEBPACK_IMPORTED_MODULE_0___default().existsSync('/etc/alpine-release')));
+}
 function validateJavaPlatform(distributionName, platform, architecture, version) {
     const normalizedArchitecture = normalizeArchitecture(architecture);
     if (!isJavaDistribution(distributionName)) {
@@ -31181,8 +31194,8 @@ function isVersionCompatible(version, supportedRange) {
     if (/^\d+(\.\d+){3,}$/.test(normalizedVersion)) {
         normalizedVersion = normalizeExtendedVersionToSemver(normalizedVersion);
     }
-    const requestedRange = semver__WEBPACK_IMPORTED_MODULE_0___default().validRange(normalizedVersion.replace(/-ea$/, ''));
-    const capabilityRange = semver__WEBPACK_IMPORTED_MODULE_0___default().validRange(supportedRange);
+    const requestedRange = semver__WEBPACK_IMPORTED_MODULE_1___default().validRange(normalizedVersion.replace(/-ea$/, ''));
+    const capabilityRange = semver__WEBPACK_IMPORTED_MODULE_1___default().validRange(supportedRange);
     if (!requestedRange || !capabilityRange) {
         return true;
     }
@@ -31194,7 +31207,7 @@ function isVersionCompatible(version, supportedRange) {
         }
         return version;
     }
-    return semver__WEBPACK_IMPORTED_MODULE_0___default().intersects(requestedRange, capabilityRange, {
+    return semver__WEBPACK_IMPORTED_MODULE_1___default().intersects(requestedRange, capabilityRange, {
         includePrerelease: true
     });
 }

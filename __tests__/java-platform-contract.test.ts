@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import {
+  isAlpineLinux,
   JAVA_PLATFORM_CAPABILITIES,
   normalizeArchitecture,
   validateJavaPlatform
@@ -119,6 +120,22 @@ describe('Java platform capabilities', () => {
       for (const architecture of architectures) {
         expect(compatibilityRow).toContain(`\`${architecture}\``);
       }
+    }
+  );
+});
+
+describe('isAlpineLinux', () => {
+  // The platform check has to short-circuit before the filesystem probe, so a
+  // stray /etc/alpine-release can never make a non-Linux runner look like musl.
+  it.each([
+    ['linux', true, true],
+    ['linux', false, false],
+    ['darwin', true, false],
+    ['win32', true, false]
+  ] as const)(
+    'treats %s with Alpine release %s as Alpine: %s',
+    (platform, alpineReleaseExists, expected) => {
+      expect(isAlpineLinux(platform, alpineReleaseExists)).toBe(expected);
     }
   );
 });
