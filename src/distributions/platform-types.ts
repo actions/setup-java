@@ -1,3 +1,4 @@
+import fs from 'fs';
 import semver from 'semver';
 import {JavaDistribution} from './package-types.js';
 
@@ -189,6 +190,28 @@ export function normalizePlatform(
   platform: NodeJS.Platform
 ): JavaPlatform | undefined {
   return PLATFORM_ALIASES[platform];
+}
+
+export function isAlpineLinux(
+  platform: NodeJS.Platform = process.platform,
+  alpineReleaseExists?: boolean
+): boolean {
+  return (
+    platform === 'linux' &&
+    (alpineReleaseExists ?? fs.existsSync('/etc/alpine-release'))
+  );
+}
+
+export function getJavaPlatformIdentity(
+  platform: NodeJS.Platform = process.platform,
+  alpineReleaseExists?: boolean
+): string {
+  if (platform === 'linux') {
+    return isAlpineLinux(platform, alpineReleaseExists)
+      ? 'linux-musl'
+      : 'linux-glibc';
+  }
+  return normalizePlatform(platform) ?? platform;
 }
 
 export function validateJavaPlatform(

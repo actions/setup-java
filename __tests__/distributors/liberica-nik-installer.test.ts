@@ -1,4 +1,5 @@
 import {jest, describe, it, expect, beforeEach, afterEach} from '@jest/globals';
+import fs from 'fs';
 import type {
   ArchitectureOptions,
   NikVersion
@@ -170,6 +171,16 @@ describe('findPackageForDownload', () => {
 });
 
 describe('getPlatformOption', () => {
+  beforeEach(() => {
+    // The linux row below is glibc, so pin the Alpine probe rather than
+    // letting it depend on the machine running the suite.
+    jest.spyOn(fs, 'existsSync').mockReturnValue(false);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   const distributions = new LibericaNikDistributions({
     architecture: 'x64',
     version: '21',
@@ -215,5 +226,37 @@ describe('convertVersionToSemver', () => {
   ])('%s -> %s', (input, expected) => {
     const actual = distributions['convertVersionToSemver'](input);
     expect(actual).toEqual(expected);
+  });
+});
+
+describe('Liberica NIK getPlatformOption libc selection', () => {
+  const distributions = new LibericaNikDistributions({
+    architecture: 'x64',
+    version: '21',
+    packageType: 'jdk',
+    checkLatest: false
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('selects the musl artifacts on Alpine', () => {
+    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+
+    expect(distributions['getPlatformOption']('linux')).toBe('linux-musl');
+  });
+
+  it('selects the glibc artifacts on other Linux runners', () => {
+    jest.spyOn(fs, 'existsSync').mockReturnValue(false);
+
+    expect(distributions['getPlatformOption']('linux')).toBe('linux');
+  });
+
+  it('does not probe for Alpine off Linux', () => {
+    const existsSync = jest.spyOn(fs, 'existsSync');
+
+    expect(distributions['getPlatformOption']('darwin')).toBe('macos');
+    expect(existsSync).not.toHaveBeenCalled();
   });
 });

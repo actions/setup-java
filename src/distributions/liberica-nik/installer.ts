@@ -14,6 +14,7 @@ import {
 } from '../../util.js';
 import * as core from '@actions/core';
 import {ArchitectureOptions, NikVersion, OsVersions} from './models.js';
+import {isAlpineLinux} from '../platform-types.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -156,7 +157,7 @@ export class LibericaNikDistributions extends JavaBase {
       case 'cygwin':
         return 'windows';
       case 'linux':
-        return 'linux';
+        return isAlpineLinux(platform) ? 'linux-musl' : 'linux';
       default:
         throw new Error(
           `Platform '${platform}' is not supported. Supported platforms: ${supportedPlatform}`

@@ -17,6 +17,8 @@ export const modules = {
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6242);
 /* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4527);
+/* harmony import */ var _platform_types_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(7444);
+
 
 
 
@@ -145,6 +147,8 @@ class DragonwellDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE
         switch (process.platform) {
             case 'win32':
                 return 'windows';
+            case 'linux':
+                return (0,_platform_types_js__WEBPACK_IMPORTED_MODULE_6__/* .isAlpineLinux */ .G6)() ? 'alpine-linux' : 'linux';
             default:
                 return process.platform;
         }
