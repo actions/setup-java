@@ -174,7 +174,7 @@ steps:
 | `overwrite-settings` | Overwrite an existing `settings.xml`. | `true` |
 | `gpg-private-key` | GPG private key to import. | |
 | `gpg-passphrase-env-var` | Environment variable name for the GPG private key passphrase. | `GPG_PASSPHRASE` when a key is set |
-| `mvn-toolchain-id` | Maven Toolchain ID. When multiple Java versions are installed, the number of IDs must match the number of versions. | `${vendor}_${java-version}` |
+| `mvn-toolchain-id` | Maven Toolchain ID. When multiple Java versions are installed, the number of IDs must match the number of versions. | `${mvn-toolchain-vendor}_${java-version}` |
 | `mvn-toolchain-vendor` | Maven Toolchain vendor value. | `${distribution}` |
 | `show-download-progress` | Keep Maven artifact download and transfer progress in logs. When `false`, the action adds `-ntp` to `MAVEN_ARGS`. | `false` |
 
