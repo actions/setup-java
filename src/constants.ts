@@ -43,7 +43,7 @@ export const INPUT_CACHE_PATH = 'cache-path';
 export const INPUT_CACHE_READ_ONLY = 'cache-read-only';
 export const INPUT_JOB_STATUS = 'job-status';
 
-export const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
+export const STATE_GPG_HOME = 'gpg-home';
 
 export const M2_DIR = '.m2';
 export const MVN_SETTINGS_FILE = 'settings.xml';

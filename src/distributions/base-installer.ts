@@ -33,6 +33,12 @@ export abstract class JavaBase {
   protected checkLatest: boolean;
   protected forceDownload: boolean;
   protected cacheJdk: boolean;
+  /**
+   * Whether the concrete version of a floating release has been established
+   * from the checksum-bound resolution cache. Until then the release version is
+   * only the requested major and says nothing about the bytes behind the URL.
+   */
+  private floatingVersionVerified = false;
   protected setDefault: boolean;
   protected verifySignature: boolean;
   protected verifySignaturePublicKey: string | undefined;
@@ -173,33 +179,40 @@ export abstract class JavaBase {
     }
 
     let foundJava = this.forceDownload ? null : this.findInToolcache();
-    if (foundJava && !this.checkLatest && !this.latest) {
+    if (
+      foundJava &&
+      !this.checkLatest &&
+      !this.latest &&
+      !this.requiresRemoteResolution()
+    ) {
       core.info(`Resolved Java ${foundJava.version} from tool-cache`);
     } else {
       core.info('Trying to resolve the latest version from remote');
       try {
-        const javaRelease = await this.resolveJavaRelease();
+        let javaRelease = await this.resolveJavaRelease();
         core.info(`Resolved latest version as ${javaRelease.version}`);
+        if (javaRelease.floating) {
+          // A tool-cache entry has no source identity, and until the
+          // checksum-bound resolution cache maps the current artifact to a
+          // concrete version the release version is still just the requested
+          // major — so nothing already on the runner can be trusted. Once that
+          // mapping is known, an installation of exactly that version is the
+          // artifact we would otherwise download.
+          foundJava =
+            this.floatingVersionVerified && !this.forceDownload
+              ? this.findConcreteVersionInToolcache(javaRelease.version)
+              : null;
+        }
         if (!this.forceDownload && foundJava?.version === javaRelease.version) {
           core.info(`Resolved Java ${foundJava.version} from tool-cache`);
         } else {
-          let jdkCache: JdkCache | undefined;
-          if (this.cacheJdk) {
-            const {getJdkVerificationIdentity} =
-              await import('../jdk-cache.js');
-            jdkCache = {
-              distribution: this.distribution,
-              packageType: this.packageType,
-              architecture: this.architecture,
-              version: javaRelease.version,
-              source: this.getJdkReleaseIdentity(javaRelease),
-              verification: getJdkVerificationIdentity(
-                this.verifySignature,
-                this.verifySignaturePublicKey
-              ),
-              path: this.getJdkCachePath(javaRelease.version)
-            };
-          }
+          let jdkCache =
+            this.cacheJdk &&
+            (!javaRelease.floating ||
+              (this.hasStableReleaseIdentity(javaRelease) &&
+                semver.valid(javaRelease.version)))
+              ? await this.createJdkCache(javaRelease)
+              : undefined;
           if (!this.forceDownload && jdkCache) {
             const {restoreJdk} = await import('../jdk-cache.js');
             const restored = await restoreJdk(jdkCache);
@@ -217,6 +230,22 @@ export abstract class JavaBase {
             core.info('Trying to download...');
             foundJava = await this.downloadTool(javaRelease);
             core.info(`Java ${foundJava.version} was downloaded`);
+            if (javaRelease.floating) {
+              if (
+                !semver.valid(foundJava.version) ||
+                !isVersionSatisfies(this.version, foundJava.version)
+              ) {
+                throw new Error(
+                  `The downloaded ${this.distribution} artifact reported Java ${foundJava.version}, which does not satisfy '${this.version}'.`
+                );
+              }
+              javaRelease = {...javaRelease, version: foundJava.version};
+              await this.registerFloatingResolution(javaRelease);
+              jdkCache =
+                this.cacheJdk && this.hasStableReleaseIdentity(javaRelease)
+                  ? await this.createJdkCache(javaRelease)
+                  : undefined;
+            }
             if (jdkCache) {
               // Register after the installation exists so its identity is
               // captured; the post-job save refuses to upload a path whose
@@ -272,9 +301,11 @@ export abstract class JavaBase {
       !this.cacheJdk ||
       this.checkLatest ||
       this.latest ||
-      this.forceDownload
+      this.forceDownload ||
+      this.requiresRemoteResolution()
     ) {
-      return this.findPackageForDownload(this.version);
+      const release = await this.findPackageForDownload(this.version);
+      return this.restoreFloatingResolution(release);
     }
 
     const {restoreJdkResolution, registerJdkResolution} =
@@ -300,7 +331,7 @@ export abstract class JavaBase {
       if (!javaRelease.floating) {
         registerJdkResolution(request, javaRelease);
       }
-      return javaRelease;
+      return this.restoreFloatingResolution(javaRelease);
     } catch (error) {
       if (!restored) {
         throw error;
@@ -315,6 +346,93 @@ export abstract class JavaBase {
       );
       return restored.release;
     }
+  }
+
+  protected requiresRemoteResolution(): boolean {
+    return false;
+  }
+
+  private async createJdkCache(
+    javaRelease: JavaDownloadRelease
+  ): Promise<JdkCache> {
+    const {getJdkVerificationIdentity} = await import('../jdk-cache.js');
+    return {
+      distribution: this.distribution,
+      packageType: this.packageType,
+      architecture: this.architecture,
+      version: javaRelease.version,
+      source: this.getJdkReleaseIdentity(javaRelease),
+      verification: getJdkVerificationIdentity(
+        this.verifySignature,
+        this.verifySignaturePublicKey
+      ),
+      path: this.getJdkCachePath(javaRelease.version)
+    };
+  }
+
+  private async restoreFloatingResolution(
+    javaRelease: JavaDownloadRelease
+  ): Promise<JavaDownloadRelease> {
+    if (
+      !javaRelease.floating ||
+      !this.hasStableReleaseIdentity(javaRelease) ||
+      !this.cacheJdk ||
+      this.forceDownload
+    ) {
+      return javaRelease;
+    }
+
+    const {restoreJdkResolution} = await import('../jdk-resolution-cache.js');
+    const restored = await restoreJdkResolution(
+      this.getFloatingResolutionRequest(javaRelease)
+    );
+    if (!restored) {
+      return javaRelease;
+    }
+    if (
+      !semver.valid(restored.release.version) ||
+      !isVersionSatisfies(this.version, restored.release.version)
+    ) {
+      core.debug(
+        `Ignoring the cached concrete version '${restored.release.version}' for ${this.distribution} ${this.version}.`
+      );
+      return javaRelease;
+    }
+
+    core.info(
+      `Resolved ${this.distribution} ${restored.release.version} for the current floating artifact`
+    );
+    this.floatingVersionVerified = true;
+    return {...javaRelease, version: restored.release.version};
+  }
+
+  private async registerFloatingResolution(
+    javaRelease: JavaDownloadRelease
+  ): Promise<void> {
+    if (
+      !this.hasStableReleaseIdentity(javaRelease) ||
+      !this.cacheJdk ||
+      this.forceDownload
+    ) {
+      return;
+    }
+
+    const {registerJdkResolution} = await import('../jdk-resolution-cache.js');
+    registerJdkResolution(
+      this.getFloatingResolutionRequest(javaRelease),
+      javaRelease
+    );
+  }
+
+  private getFloatingResolutionRequest(javaRelease: JavaDownloadRelease) {
+    return {
+      distribution: this.distribution,
+      packageType: this.packageType,
+      architecture: this.architecture,
+      versionSpec: this.version,
+      stable: this.stable,
+      source: this.getJdkReleaseIdentity(javaRelease)
+    };
   }
 
   private logSetupError(error: any): void {
@@ -426,9 +544,28 @@ export abstract class JavaBase {
       : null;
   }
 
+  /**
+   * Locates an installation of an exact version in the tool cache, unlike
+   * `findInToolcache()` which returns the newest entry satisfying the requested
+   * range. Used to reuse a JDK the runner already holds instead of downloading
+   * the identical artifact again.
+   */
+  private findConcreteVersionInToolcache(
+    version: string
+  ): JavaInstallerResults | null {
+    if (!semver.valid(version)) {
+      return null;
+    }
+    const installedPath = this.getRestoredJdkPath(version);
+    return installedPath ? {version, path: installedPath} : null;
+  }
+
   private getJdkReleaseIdentity(javaRelease: JavaDownloadRelease): string {
     if (javaRelease.checksum) {
       return `${javaRelease.checksum.algorithm}:${javaRelease.checksum.value}`;
+    }
+    if (javaRelease.fingerprint) {
+      return javaRelease.fingerprint;
     }
     try {
       const url = new URL(javaRelease.url);
@@ -436,6 +573,16 @@ export abstract class JavaBase {
     } catch {
       return javaRelease.url;
     }
+  }
+
+  /**
+   * Whether the release identity pins the exact bytes behind `url`. A floating
+   * URL is a constant string, so it only becomes a safe cache identity once a
+   * checksum or a response validator distinguishes one published build from the
+   * next.
+   */
+  private hasStableReleaseIdentity(javaRelease: JavaDownloadRelease): boolean {
+    return Boolean(javaRelease.checksum ?? javaRelease.fingerprint);
   }
 
   protected findInToolcache(): JavaInstallerResults | null {

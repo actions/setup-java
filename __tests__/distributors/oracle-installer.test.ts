@@ -147,6 +147,27 @@ describe('findPackageForDownload', () => {
     expect(result.floating).toBe(url.includes('/latest/'));
   });
 
+  it.each([
+    ['21', 'etag:"oracle-latest"'],
+    ['21.0.1', undefined]
+  ])(
+    'fingerprints only the floating artifact for version %s',
+    async (input, expected) => {
+      spyHttpClient = jest.spyOn(HttpClient.prototype, 'head');
+      spyHttpClient.mockResolvedValue({
+        message: {statusCode: 200, headers: {etag: '"oracle-latest"'}}
+      });
+
+      const result = await distribution['findPackageForDownload'](input);
+
+      jest.restoreAllMocks();
+
+      // Without a fingerprint the constant `/latest/` URL would key a cache
+      // entry that never invalidates when Oracle republishes the artifact.
+      expect(result.fingerprint).toBe(expected);
+    }
+  );
+
   it('fetches the authoritative sha256 checksum for the resolved archive', async () => {
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'head');
     spyHttpClient.mockResolvedValue({message: {statusCode: 200}});
@@ -162,6 +183,17 @@ describe('findPackageForDownload', () => {
     });
     expect(spyHttpClientGet).toHaveBeenCalledWith(`${result.url}.sha256`);
     expect(spyHttpClientGet).toHaveBeenCalledTimes(1);
+  });
+
+  it('always resolves major-only requests remotely', () => {
+    expect(distribution['requiresRemoteResolution']()).toBe(true);
+    const exactDistribution = new OracleDistribution({
+      version: '21.0.8',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    expect(exactDistribution['requiresRemoteResolution']()).toBe(false);
   });
 
   it.each([

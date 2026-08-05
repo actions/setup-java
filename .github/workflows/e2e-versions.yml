@@ -117,7 +117,9 @@ jobs:
         env:
           JAVA_VERSION: ${{ matrix.version }}
           JAVA_PATH: ${{ steps.setup-java.outputs.path }}
-        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH"
+          SETUP_JAVA_VERSION: ${{ steps.setup-java.outputs.version }}
+          REQUIRE_CONCRETE_VERSION: ${{ (matrix.distribution == 'oracle' || matrix.distribution == 'graalvm') && !contains(matrix.version, '.') && !contains(matrix.version, '-ea') }}
+        run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH" "$SETUP_JAVA_VERSION" "$REQUIRE_CONCRETE_VERSION"
         shell: bash
 
   setup-java-checksum-verification:

@@ -12,7 +12,9 @@ import {
 import {
   cacheJdkDir,
   extractJdkFile,
+  getArtifactFingerprint,
   getDownloadArchiveExtension,
+  getJavaVersionFromReleaseFile,
   getLatestMajorVersion,
   renameWinArchive
 } from '../../util.js';
@@ -43,7 +45,10 @@ export class OracleDistribution extends JavaBase {
 
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
-    const version = this.getToolcacheVersionName(javaRelease.version);
+    const installedVersion = javaRelease.floating
+      ? getJavaVersionFromReleaseFile(archivePath)
+      : javaRelease.version;
+    const version = this.getToolcacheVersionName(installedVersion);
 
     const javaPath = await cacheJdkDir(
       archivePath,
@@ -52,7 +57,11 @@ export class OracleDistribution extends JavaBase {
       this.architecture
     );
 
-    return {version: javaRelease.version, path: javaPath};
+    return {version: installedVersion, path: javaPath};
+  }
+
+  protected requiresRemoteResolution(): boolean {
+    return this.stable && !this.version.includes('.');
   }
 
   protected async findPackageForDownload(
@@ -113,11 +122,15 @@ export class OracleDistribution extends JavaBase {
       const response = await this.http.head(url);
 
       if (response.message.statusCode === HttpCodes.OK) {
+        const floating = url === floatingUrl;
         return {
           url,
           version: range,
           checksum: await this.fetchChecksum(`${url}.sha256`, 'sha256'),
-          floating: url === floatingUrl
+          floating,
+          fingerprint: floating
+            ? getArtifactFingerprint(response.message.headers)
+            : undefined
         };
       }
 
