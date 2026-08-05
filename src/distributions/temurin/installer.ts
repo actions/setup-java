@@ -24,6 +24,7 @@ import {
   MAX_PAGINATION_PAGES,
   validatePaginationUrl
 } from '../../util.js';
+import {isAlpineLinux} from '../platform-types.js';
 
 export {ADOPTIUM_PUBLIC_KEY} from './adoptium-key.js';
 
@@ -274,7 +275,7 @@ export class TemurinDistribution extends JavaBase {
       case 'win32':
         return 'windows';
       case 'linux':
-        if (fs.existsSync('/etc/alpine-release')) {
+        if (isAlpineLinux()) {
           return 'alpine-linux';
         }
         return 'linux';

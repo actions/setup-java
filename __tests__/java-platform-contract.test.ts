@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import {
+  getJavaPlatformIdentity,
   JAVA_PLATFORM_CAPABILITIES,
   normalizeArchitecture,
   validateJavaPlatform
@@ -27,6 +28,20 @@ describe('Java platform capabilities', () => {
   ])('normalizes architecture %s to %s', (input, expected) => {
     expect(normalizeArchitecture(input)).toBe(expected);
   });
+
+  it.each([
+    ['linux', false, 'linux-glibc'],
+    ['linux', true, 'linux-musl'],
+    ['darwin', false, 'macos'],
+    ['win32', false, 'windows']
+  ] as const)(
+    'identifies %s with Alpine release %s as %s',
+    (platform, alpineReleaseExists, expected) => {
+      expect(getJavaPlatformIdentity(platform, alpineReleaseExists)).toBe(
+        expected
+      );
+    }
+  );
 
   it('uses the normalized architecture for validation', () => {
     expect(validateJavaPlatform('microsoft', 'linux', 'arm64', '25')).toBe(

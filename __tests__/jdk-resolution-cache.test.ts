@@ -25,6 +25,7 @@ const {restoreJdkResolution, registerJdkResolution, saveJdkResolutionCaches} =
 const request = {
   distribution: 'Temurin-Hotspot',
   packageType: 'jdk',
+  platform: 'linux-glibc',
   architecture: 'x64',
   versionSpec: '21',
   stable: true
@@ -102,8 +103,22 @@ describe('JDK resolution cache', () => {
       expect(paths[0]).not.toContain(bucket());
       expect(primaryKey).toBe(`${restoreKeys[0]}${bucket()}`);
       expect(restoreKeys[0]).toMatch(
-        /^setup-java-jdkres-v1-Linux-x64-[0-9a-f]{64}-$/
+        /^setup-java-jdkres-v2-Linux-x64-[0-9a-f]{64}-$/
       );
+    });
+
+    it('separates glibc and musl Linux resolutions', async () => {
+      createRunnerTemp();
+      await restoreJdkResolution(request);
+      const [glibcPaths, glibcKey] = jest.mocked(cache.restoreCache).mock
+        .calls[0] as [string[], string];
+
+      await restoreJdkResolution({...request, platform: 'linux-musl'});
+      const [muslPaths, muslKey] = jest.mocked(cache.restoreCache).mock
+        .calls[1] as [string[], string];
+
+      expect(muslKey).not.toBe(glibcKey);
+      expect(muslPaths).not.toEqual(glibcPaths);
     });
 
     it('holds the key steady for a week and then rolls it', async () => {
@@ -129,7 +144,7 @@ describe('JDK resolution cache', () => {
 
     it('reports a hit on the current bucket as fresh', async () => {
       createRunnerTemp();
-      const key = `setup-java-jdkres-v1-Linux-x64-${'0'.repeat(64)}-${bucket()}`;
+      const key = `setup-java-jdkres-v2-Linux-x64-${'0'.repeat(64)}-${bucket()}`;
       restoreWith(JSON.stringify(release), key);
 
       // The key the module computes is the one it passes to restoreCache, so
@@ -152,7 +167,7 @@ describe('JDK resolution cache', () => {
 
     it('reports a hit on an older bucket as stale', async () => {
       createRunnerTemp();
-      restoreWith(JSON.stringify(release), 'setup-java-jdkres-v1-old');
+      restoreWith(JSON.stringify(release), 'setup-java-jdkres-v2-old');
 
       const restored = await restoreJdkResolution(request);
       expect(restored?.fresh).toBe(false);
@@ -233,7 +248,7 @@ describe('JDK resolution cache', () => {
       ]
     ])('rejects an entry with %s', async (_name, contents) => {
       createRunnerTemp();
-      restoreWith(contents, 'setup-java-jdkres-v1-old');
+      restoreWith(contents, 'setup-java-jdkres-v2-old');
 
       await expect(restoreJdkResolution(request)).resolves.toBeUndefined();
     });
@@ -250,7 +265,7 @@ describe('JDK resolution cache', () => {
           source: 'https://example.com/a.sha512'
         }
       };
-      restoreWith(JSON.stringify(full), 'setup-java-jdkres-v1-old');
+      restoreWith(JSON.stringify(full), 'setup-java-jdkres-v2-old');
 
       const restored = await restoreJdkResolution(request);
       expect(restored?.release).toEqual(full);
@@ -260,7 +275,7 @@ describe('JDK resolution cache', () => {
       createRunnerTemp();
       restoreWith(
         JSON.stringify({...release, evil: 'payload'}),
-        'setup-java-jdkres-v1-old'
+        'setup-java-jdkres-v2-old'
       );
 
       const restored = await restoreJdkResolution(request);
@@ -318,7 +333,7 @@ describe('JDK resolution cache', () => {
     const stateFor = (cachePath: string) =>
       JSON.stringify([
         {
-          key: 'setup-java-jdkres-v1-key',
+          key: 'setup-java-jdkres-v2-key',
           path: cachePath,
           release: JSON.stringify(release)
         }
@@ -336,7 +351,7 @@ describe('JDK resolution cache', () => {
       await saveJdkResolutionCaches();
       expect(cache.saveCache).toHaveBeenCalledWith(
         [root],
-        'setup-java-jdkres-v1-key'
+        'setup-java-jdkres-v2-key'
       );
     });
 
