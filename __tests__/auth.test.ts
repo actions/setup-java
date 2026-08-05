@@ -41,10 +41,18 @@ jest.unstable_mockModule('@actions/core', () => ({
   toPosixPath: jest.fn((p: string) => p)
 }));
 
+jest.unstable_mockModule('../src/gpg.js', () => ({
+  importKey: jest.fn(),
+  removeGpgHome: jest.fn(),
+  toGpgPath: jest.fn()
+}));
+
 // Dynamic imports after mocking
 const core = await import('@actions/core');
+const gpg = await import('../src/gpg.js');
 const auth = await import('../src/auth.js');
-const {M2_DIR, MVN_SETTINGS_FILE} = await import('../src/constants.js');
+const {M2_DIR, MVN_SETTINGS_FILE, STATE_GPG_HOME} =
+  await import('../src/constants.js');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const m2Dir = path.join(__dirname, M2_DIR);
@@ -60,7 +68,16 @@ describe('auth tests', () => {
     spyOSHomedir.mockReturnValue(__dirname);
     spyInfo = core.info as jest.Mock;
     spyInfo.mockImplementation(() => null);
+    (gpg.toGpgPath as jest.Mock<any>).mockImplementation((p: string) => p);
   }, 300000);
+
+  afterEach(() => {
+    (core.getInput as jest.Mock).mockReset();
+    (core.exportVariable as jest.Mock).mockReset();
+    (gpg.importKey as jest.Mock).mockReset();
+    (gpg.removeGpgHome as jest.Mock).mockReset();
+    (gpg.toGpgPath as jest.Mock).mockReset();
+  });
 
   afterAll(async () => {
     try {
@@ -143,6 +160,52 @@ describe('auth tests', () => {
       auth.generate(id, username, password, gpgPassphrase)
     );
   }, 100000);
+
+  it('exports a GPG-compatible path and persists the native GPG home', async () => {
+    const gpgHome = 'D:\\a\\_temp\\setup-java-gpg-1';
+    const exportedGpgHome = '/d/a/_temp/setup-java-gpg-1';
+    (gpg.importKey as jest.Mock<any>).mockResolvedValue(gpgHome);
+    (gpg.toGpgPath as jest.Mock<any>).mockReturnValue(exportedGpgHome);
+    (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        'server-id': 'packages',
+        'server-username-env-var': 'USERNAME',
+        'server-password-env-var': 'PASSWORD',
+        'settings-path': m2Dir,
+        'gpg-private-key': 'KEY ONE\nKEY TWO'
+      };
+      return inputs[name] ?? '';
+    });
+
+    await auth.configureAuthentication();
+
+    expect(gpg.importKey).toHaveBeenCalledWith('KEY ONE\nKEY TWO');
+    expect(core.saveState).toHaveBeenCalledWith(STATE_GPG_HOME, gpgHome);
+    expect(gpg.toGpgPath).toHaveBeenCalledWith(gpgHome);
+    expect(core.exportVariable).toHaveBeenCalledWith(
+      'GNUPGHOME',
+      exportedGpgHome
+    );
+  });
+
+  it('removes the isolated GPG home when environment export fails', async () => {
+    const gpgHome = path.join(__dirname, 'runner', 'temp', 'setup-java-gpg-2');
+    (gpg.importKey as jest.Mock<any>).mockResolvedValue(gpgHome);
+    (core.exportVariable as jest.Mock<any>).mockImplementation(() => {
+      throw new Error('environment file unavailable');
+    });
+    (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
+      if (name === 'gpg-private-key') return 'KEY CONTENTS';
+      if (name === 'settings-path') return m2Dir;
+      return '';
+    });
+
+    await expect(auth.configureAuthentication()).rejects.toThrow(
+      'environment file unavailable'
+    );
+
+    expect(gpg.removeGpgHome).toHaveBeenCalledWith(gpgHome);
+  });
 
   it('overwrites existing settings.xml files', async () => {
     const id = 'packages';

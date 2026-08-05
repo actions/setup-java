@@ -72,7 +72,7 @@ inputs:
     required: false
     default: true
   gpg-private-key:
-    description: 'GPG private key to import. Default is empty string.'
+    description: 'GPG private key to import into an isolated temporary keyring. Default is empty string.'
     required: false
     default: ''
   gpg-passphrase-env-var:
