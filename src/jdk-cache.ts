@@ -122,9 +122,7 @@ export async function saveJdkCaches(): Promise<void> {
 }
 
 export function buildJdkCacheKey(jdk: JdkCache): string {
-  const runnerOs = normalizeRunnerOs(
-    process.env['RUNNER_OS'] ?? process.platform
-  );
+  const runnerOs = process.env['RUNNER_OS'] ?? process.platform;
   const normalizedArchitecture = jdk.architecture.toLowerCase();
   const identity = JSON.stringify({
     keyVersion: JDK_CACHE_KEY_VERSION,
@@ -138,17 +136,6 @@ export function buildJdkCacheKey(jdk: JdkCache): string {
   });
   const digest = createHash('sha256').update(identity).digest('hex');
   return `setup-java-jdk-v${JDK_CACHE_KEY_VERSION}-${runnerOs}-${normalizedArchitecture}-${digest}`;
-}
-
-function normalizeRunnerOs(runnerOs: string): string {
-  switch (runnerOs.toLowerCase()) {
-    case 'win32':
-      return 'windows';
-    case 'darwin':
-      return 'macos';
-    default:
-      return runnerOs.toLowerCase();
-  }
 }
 
 function recordJdkCache(jdk: JdkCacheState): void {

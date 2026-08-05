@@ -135,7 +135,7 @@ async function saveJdkCaches() {
     }
 }
 function buildJdkCacheKey(jdk) {
-    const runnerOs = normalizeRunnerOs(process.env['RUNNER_OS'] ?? process.platform);
+    const runnerOs = process.env['RUNNER_OS'] ?? process.platform;
     const normalizedArchitecture = jdk.architecture.toLowerCase();
     const identity = JSON.stringify({
         keyVersion: JDK_CACHE_KEY_VERSION,
@@ -149,16 +149,6 @@ function buildJdkCacheKey(jdk) {
     });
     const digest = (0,crypto__WEBPACK_IMPORTED_MODULE_0__.createHash)('sha256').update(identity).digest('hex');
     return `setup-java-jdk-v${JDK_CACHE_KEY_VERSION}-${runnerOs}-${normalizedArchitecture}-${digest}`;
-}
-function normalizeRunnerOs(runnerOs) {
-    switch (runnerOs.toLowerCase()) {
-        case 'win32':
-            return 'windows';
-        case 'darwin':
-            return 'macos';
-        default:
-            return runnerOs.toLowerCase();
-    }
 }
 function recordJdkCache(jdk) {
     const existing = restoredCaches.findIndex(item => item.key === jdk.key && item.path === jdk.path);

@@ -56,7 +56,7 @@ describe('JDK cache', () => {
   it('builds distinct keys for incompatible JDK identities', () => {
     const key = buildJdkCacheKey(jdk);
 
-    expect(key).toMatch(/^setup-java-jdk-v1-linux-x64-[a-f0-9]{64}$/);
+    expect(key).toMatch(/^setup-java-jdk-v1-Linux-x64-[a-f0-9]{64}$/);
     expect(buildJdkCacheKey({...jdk, architecture: 'aarch64'})).not.toBe(key);
     expect(buildJdkCacheKey({...jdk, distribution: 'zulu'})).not.toBe(key);
     expect(buildJdkCacheKey({...jdk, packageType: 'jre'})).not.toBe(key);
@@ -64,39 +64,25 @@ describe('JDK cache', () => {
     expect(buildJdkCacheKey({...jdk, source: 'sha256:def456'})).not.toBe(key);
   });
 
-  it('normalizes runner OS casing and separates operating systems', () => {
-    process.env['RUNNER_OS'] = 'LINUX';
-    const upperCaseLinux = buildJdkCacheKey(jdk);
-    process.env['RUNNER_OS'] = 'linux';
-    const lowerCaseLinux = buildJdkCacheKey(jdk);
+  it('preserves canonical runner OS values and separates operating systems', () => {
+    process.env['RUNNER_OS'] = 'Linux';
+    const linux = buildJdkCacheKey(jdk);
     process.env['RUNNER_OS'] = 'Windows';
     const windows = buildJdkCacheKey(jdk);
-    process.env['RUNNER_OS'] = 'win32';
-    const windowsAlias = buildJdkCacheKey(jdk);
     process.env['RUNNER_OS'] = 'macOS';
     const macos = buildJdkCacheKey(jdk);
-    process.env['RUNNER_OS'] = 'darwin';
-    const macosAlias = buildJdkCacheKey(jdk);
 
-    expect(upperCaseLinux).toBe(lowerCaseLinux);
-    expect(windowsAlias).toBe(windows);
-    expect(macosAlias).toBe(macos);
-    expect(new Set([lowerCaseLinux, windows, macos])).toHaveProperty('size', 3);
-    expect(windows).toMatch(/^setup-java-jdk-v1-windows-x64-/);
-    expect(macos).toMatch(/^setup-java-jdk-v1-macos-x64-/);
+    expect(new Set([linux, windows, macos])).toHaveProperty('size', 3);
+    expect(linux).toMatch(/^setup-java-jdk-v1-Linux-x64-/);
+    expect(windows).toMatch(/^setup-java-jdk-v1-Windows-x64-/);
+    expect(macos).toMatch(/^setup-java-jdk-v1-macOS-x64-/);
   });
 
-  it('falls back to the normalized process platform without RUNNER_OS', () => {
+  it('falls back to process.platform without RUNNER_OS', () => {
     delete process.env['RUNNER_OS'];
-    const expectedOs =
-      process.platform === 'win32'
-        ? 'windows'
-        : process.platform === 'darwin'
-          ? 'macos'
-          : process.platform.toLowerCase();
 
     expect(buildJdkCacheKey(jdk)).toMatch(
-      new RegExp(`^setup-java-jdk-v1-${expectedOs}-x64-`)
+      new RegExp(`^setup-java-jdk-v1-${process.platform}-x64-`)
     );
   });
 

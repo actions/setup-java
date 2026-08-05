@@ -203,7 +203,7 @@ describe('cleanup', () => {
   ])(
     'uses effective JDK caching for cache=%j and cache-jdk=%j',
     async (cacheInput, cacheJdkInput, expectedJdkSave) => {
-      const jdkKey = 'setup-java-jdk-v1-linux-x64-key';
+      const jdkKey = 'setup-java-jdk-v1-Linux-x64-key';
       (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
         if (name === 'cache') return cacheInput;
         if (name === 'cache-jdk') return cacheJdkInput;
