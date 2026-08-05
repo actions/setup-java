@@ -11,9 +11,7 @@ import {
 import {HttpClient} from '@actions/http-client';
 
 import manifestData from '../data/sapmachine.json' with {type: 'json'};
-import releaseClassManifestData from '../data/sapmachine-release-classes.json' with {
-  type: 'json'
-};
+import releaseClassManifestData from '../data/sapmachine-release-classes.json' with {type: 'json'};
 
 // Mock @actions/core before importing source modules that depend on it
 jest.unstable_mockModule('@actions/core', () => ({
@@ -191,12 +189,11 @@ describe('getAvailableVersions', () => {
         });
         mockPlatform(distribution, 'linux');
 
-        const availableVersions =
-          await distribution['getAvailableVersions']();
+        const availableVersions = await distribution['getAvailableVersions']();
 
-        expect(
-          availableVersions.map(item => item.downloadLink)
-        ).toStrictEqual(expectedLinks);
+        expect(availableVersions.map(item => item.downloadLink)).toStrictEqual(
+          expectedLinks
+        );
       }
     );
   });
