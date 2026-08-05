@@ -518,6 +518,106 @@ describe('setupJava', () => {
     );
   });
 
+  describe('floating tool-cache reuse', () => {
+    let toolCacheRoot: string;
+
+    const installVersion = (toolcacheVersion: string): string => {
+      const architecturePath = path.join(
+        toolCacheRoot,
+        'Java_Floating_jdk',
+        toolcacheVersion,
+        'x64'
+      );
+      fs.mkdirSync(architecturePath, {recursive: true});
+      fs.writeFileSync(`${architecturePath}.complete`, '');
+      return architecturePath;
+    };
+
+    beforeEach(() => {
+      toolCacheRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'setup-java-tc-'));
+      process.env['RUNNER_TOOL_CACHE'] = toolCacheRoot;
+      FloatingJavaBase.actualVersion = '21.0.8+9';
+      FloatingJavaBase.checksum = 'artifact-one';
+      (jdkCache.restoreJdk as jest.Mock).mockResolvedValue(false);
+      spyTcFindAllVersions.mockReturnValue([]);
+    });
+
+    afterEach(() => {
+      fs.rmSync(toolCacheRoot, {recursive: true, force: true});
+      delete process.env['RUNNER_TOOL_CACHE'];
+    });
+
+    const createDistribution = (forceDownload = false) =>
+      new FloatingJavaBase({
+        version: '21',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false,
+        cacheJdk: true,
+        forceDownload
+      });
+
+    it('reuses a tool-cache installation once the resolution cache identifies the floating version', async () => {
+      const installedPath = installVersion('21.0.8-9');
+      (jdkResolutionCache.restoreJdkResolution as jest.Mock).mockResolvedValue({
+        release: {version: '21.0.8+9'}
+      });
+      const distribution = createDistribution();
+      const downloadTool = jest.spyOn(distribution as any, 'downloadTool');
+
+      await expect(distribution.setupJava()).resolves.toEqual({
+        version: '21.0.8+9',
+        path: installedPath
+      });
+
+      // The artifact behind the mutable URL is already installed, so neither a
+      // download nor a cache round-trip is needed.
+      expect(downloadTool).not.toHaveBeenCalled();
+      expect(jdkCache.restoreJdk).not.toHaveBeenCalled();
+    });
+
+    it('ignores a tool-cache installation of a version the resolution cache did not vouch for', async () => {
+      installVersion('21.0.7-6');
+      (jdkResolutionCache.restoreJdkResolution as jest.Mock).mockResolvedValue({
+        release: {version: '21.0.8+9'}
+      });
+      const distribution = createDistribution();
+      const downloadTool = jest.spyOn(distribution as any, 'downloadTool');
+
+      await distribution.setupJava();
+
+      expect(downloadTool).toHaveBeenCalled();
+    });
+
+    it('never reuses the tool-cache for a floating artifact the resolution cache cannot identify', async () => {
+      installVersion('21.0.8-9');
+      spyTcFindAllVersions.mockReturnValue(['21.0.8-9']);
+      (jdkResolutionCache.restoreJdkResolution as jest.Mock).mockResolvedValue(
+        undefined
+      );
+      const distribution = createDistribution();
+      const downloadTool = jest.spyOn(distribution as any, 'downloadTool');
+
+      await distribution.setupJava();
+
+      // Nothing ties the installed bytes to what the URL serves right now.
+      expect(downloadTool).toHaveBeenCalled();
+    });
+
+    it('still downloads a resolution-cache-identified version when force-download is set', async () => {
+      installVersion('21.0.8-9');
+      (jdkResolutionCache.restoreJdkResolution as jest.Mock).mockResolvedValue({
+        release: {version: '21.0.8+9'}
+      });
+      const distribution = createDistribution(true);
+      const downloadTool = jest.spyOn(distribution as any, 'downloadTool');
+
+      await distribution.setupJava();
+
+      expect(downloadTool).toHaveBeenCalled();
+    });
+  });
+
   it('uses the concrete versions of two different floating artifacts under the same major', async () => {
     spyTcFindAllVersions.mockReturnValue(['21.0.8-9']);
     spyGetToolcachePath.mockImplementation(

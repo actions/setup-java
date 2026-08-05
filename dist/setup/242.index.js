@@ -218,6 +218,12 @@ class JavaBase {
     checkLatest;
     forceDownload;
     cacheJdk;
+    /**
+     * Whether the concrete version of a floating release has been established
+     * from the checksum-bound resolution cache. Until then the release version is
+     * only the requested major and says nothing about the bytes behind the URL.
+     */
+    floatingVersionVerified = false;
     setDefault;
     verifySignature;
     verifySignaturePublicKey;
@@ -328,10 +334,16 @@ class JavaBase {
                 let javaRelease = await this.resolveJavaRelease();
                 core/* info */.pq(`Resolved latest version as ${javaRelease.version}`);
                 if (javaRelease.floating) {
-                    // A tool-cache entry has no source identity. Even when its concrete
-                    // version matches, only the checksum-bound JDK cache can prove that
-                    // it contains the bytes currently served by the mutable URL.
-                    foundJava = null;
+                    // A tool-cache entry has no source identity, and until the
+                    // checksum-bound resolution cache maps the current artifact to a
+                    // concrete version the release version is still just the requested
+                    // major — so nothing already on the runner can be trusted. Once that
+                    // mapping is known, an installation of exactly that version is the
+                    // artifact we would otherwise download.
+                    foundJava =
+                        this.floatingVersionVerified && !this.forceDownload
+                            ? this.findConcreteVersionInToolcache(javaRelease.version)
+                            : null;
                 }
                 if (!this.forceDownload && foundJava?.version === javaRelease.version) {
                     core/* info */.pq(`Resolved Java ${foundJava.version} from tool-cache`);
@@ -489,6 +501,7 @@ class JavaBase {
             return javaRelease;
         }
         core/* info */.pq(`Resolved ${this.distribution} ${restored.release.version} for the current floating artifact`);
+        this.floatingVersionVerified = true;
         return { ...javaRelease, version: restored.release.version };
     }
     async registerFloatingResolution(javaRelease) {
@@ -608,6 +621,19 @@ class JavaBase {
             external_fs_.existsSync(`${architecturePath}.complete`)
             ? architecturePath
             : null;
+    }
+    /**
+     * Locates an installation of an exact version in the tool cache, unlike
+     * `findInToolcache()` which returns the newest entry satisfying the requested
+     * range. Used to reuse a JDK the runner already holds instead of downloading
+     * the identical artifact again.
+     */
+    findConcreteVersionInToolcache(version) {
+        if (!semver_default().valid(version)) {
+            return null;
+        }
+        const installedPath = this.getRestoredJdkPath(version);
+        return installedPath ? { version, path: installedPath } : null;
     }
     getJdkReleaseIdentity(javaRelease) {
         if (javaRelease.checksum) {
