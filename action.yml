@@ -106,7 +106,7 @@ inputs:
     required: false
     default: ${{ github.server_url == 'https://github.com' && github.token || '' }}
   mvn-toolchain-id:
-    description: 'Name of Maven Toolchain ID if the default name of "${distribution}_${java-version}" is not wanted. When supplied, the number of IDs must match the number of Java versions. See examples of supported syntax in Advanced Usage file'
+    description: 'Name of Maven Toolchain ID if the default name of "${mvn-toolchain-vendor}_${java-version}" is not wanted. The toolchain vendor defaults to the "distribution" input. When supplied, the number of IDs must match the number of Java versions. See examples of supported syntax in Advanced Usage file'
     required: false
   mvn-toolchain-vendor:
     description: 'Name of Maven Toolchain Vendor if the default name of "${distribution}" is not wanted. See examples of supported syntax in Advanced Usage file'
