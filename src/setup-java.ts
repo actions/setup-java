@@ -1,6 +1,10 @@
 import fs from 'fs';
 import * as core from '@actions/core';
-import {getBooleanInput, getVersionFromFileContent} from './util.js';
+import {
+  getBooleanInput,
+  getVersionFromFileContent,
+  isJdkCacheEnabled
+} from './util.js';
 import * as constants from './constants.js';
 import * as path from 'path';
 import {fileURLToPath} from 'url';
@@ -17,7 +21,7 @@ export async function run() {
   const packageType = core.getInput(constants.INPUT_JAVA_PACKAGE);
   const jdkFile = getJdkFileInput();
   const cache = core.getInput(constants.INPUT_CACHE);
-  const cacheJdk = getBooleanInput(constants.INPUT_CACHE_JDK, true);
+  const cacheJdk = isJdkCacheEnabled(cache);
   const cacheDependencyPath = core.getInput(
     constants.INPUT_CACHE_DEPENDENCY_PATH
   );

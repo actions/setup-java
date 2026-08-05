@@ -35,6 +35,8 @@ function isCacheFeatureAvailable() {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   buildJdkCacheKey: () => (/* binding */ buildJdkCacheKey),
+/* harmony export */   getJdkVerificationIdentity: () => (/* binding */ getJdkVerificationIdentity),
+/* harmony export */   registerJdk: () => (/* binding */ registerJdk),
 /* harmony export */   restoreJdk: () => (/* binding */ restoreJdk),
 /* harmony export */   saveJdkCaches: () => (/* binding */ saveJdkCaches)
 /* harmony export */ });
@@ -54,7 +56,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const STATE_JDK_CACHES = 'jdk-caches';
-const JDK_CACHE_KEY_VERSION = 1;
+const JDK_CACHE_KEY_VERSION = 2;
 const restoredCaches = [];
 async function restoreJdk(jdk) {
     if (!jdk.path || !(0,_cache_feature_js__WEBPACK_IMPORTED_MODULE_5__.isCacheFeatureAvailable)()) {
@@ -75,14 +77,30 @@ async function restoreJdk(jdk) {
         _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .warning */ .$e(`JDK cache key ${matchedKey} was restored without the expected tool-cache path; downloading the JDK instead.`);
         matchedKey = undefined;
     }
-    restoredCaches.push({ key, path: jdk.path, matchedKey });
-    _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .saveState */ .LZ(STATE_JDK_CACHES, JSON.stringify(restoredCaches));
+    recordJdkCache({ key, path: jdk.path, matchedKey });
     if (matchedKey) {
         _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .info */ .pq(`JDK cache restored from key: ${matchedKey}`);
         return true;
     }
     _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .info */ .pq(`JDK cache is not found for ${jdk.distribution} ${jdk.version}`);
     return false;
+}
+function registerJdk(jdk) {
+    if (!jdk.path) {
+        return;
+    }
+    recordJdkCache({ key: buildJdkCacheKey(jdk), path: jdk.path });
+}
+function getJdkVerificationIdentity(verifySignature, publicKey) {
+    if (!verifySignature) {
+        return 'unverified';
+    }
+    if (!publicKey) {
+        return 'verified:bundled';
+    }
+    const normalizedKey = publicKey.replace(/\r\n?/g, '\n').trim();
+    const fingerprint = (0,crypto__WEBPACK_IMPORTED_MODULE_0__.createHash)('sha256').update(normalizedKey).digest('hex');
+    return `verified:custom:sha256:${fingerprint}`;
 }
 async function saveJdkCaches() {
     const state = _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getState */ .Gu(STATE_JDK_CACHES);
@@ -127,10 +145,21 @@ function buildJdkCacheKey(jdk) {
         packageType: jdk.packageType.toLowerCase(),
         architecture: normalizedArchitecture,
         version: jdk.version,
-        source: jdk.source
+        source: jdk.source,
+        verification: jdk.verification
     });
     const digest = (0,crypto__WEBPACK_IMPORTED_MODULE_0__.createHash)('sha256').update(identity).digest('hex');
     return `setup-java-jdk-v${JDK_CACHE_KEY_VERSION}-${runnerOs}-${normalizedArchitecture}-${digest}`;
+}
+function recordJdkCache(jdk) {
+    const existing = restoredCaches.findIndex(item => item.key === jdk.key && item.path === jdk.path);
+    if (existing === -1) {
+        restoredCaches.push(jdk);
+    }
+    else {
+        restoredCaches[existing] = jdk;
+    }
+    _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .saveState */ .LZ(STATE_JDK_CACHES, JSON.stringify(restoredCaches));
 }
 function parseJdkCacheState(state) {
     const value = JSON.parse(state);

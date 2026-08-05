@@ -12,6 +12,9 @@ import fs from 'fs';
 
 import path from 'path';
 import * as semver from 'semver';
+import os from 'os';
+
+const realStatSync = fs.statSync;
 
 // Mock @actions/core before importing source modules that depend on it
 jest.unstable_mockModule('@actions/core', () => ({
@@ -54,6 +57,12 @@ jest.unstable_mockModule('@actions/tool-cache', () => ({
   evaluateVersions: jest.fn()
 }));
 
+jest.unstable_mockModule('../../src/jdk-cache.js', () => ({
+  getJdkVerificationIdentity: jest.fn(() => 'unverified'),
+  registerJdk: jest.fn(),
+  restoreJdk: jest.fn()
+}));
+
 const real_util_module = await import('../../src/util.js');
 jest.unstable_mockModule('../../src/util.js', () => ({
   ...real_util_module,
@@ -70,6 +79,7 @@ jest.unstable_mockModule('../../src/util.js', () => ({
 const core = await import('@actions/core');
 const tc = await import('@actions/tool-cache');
 const util = await import('../../src/util.js');
+const jdkCache = await import('../../src/jdk-cache.js');
 const {LocalDistribution} =
   await import('../../src/distributions/local/installer.js');
 
@@ -95,6 +105,9 @@ describe('setupJava', () => {
   const expectedJdkFile = 'JavaLocalJdkFile';
 
   beforeEach(() => {
+    (jdkCache.getJdkVerificationIdentity as jest.Mock).mockReturnValue(
+      'unverified'
+    );
     spyGetToolcachePath = util.getToolcachePath as jest.Mock;
     spyGetToolcachePath.mockImplementation(
       (toolname: string, javaVersion: string, architecture: string) => {
@@ -229,6 +242,72 @@ describe('setupJava', () => {
     expect(spyCoreInfo).not.toHaveBeenCalledWith(
       `Resolved Java ${actualJavaVersion} from tool-cache`
     );
+  });
+
+  it.each([
+    [false, true, false],
+    [true, false, true]
+  ])(
+    'handles jdkfile caching with force-download=%s',
+    async (forceDownload, restores, registers) => {
+      const temporaryDirectory = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'setup-java-local-cache-')
+      );
+      const jdkFile = path.join(temporaryDirectory, 'java.tar.gz');
+      fs.writeFileSync(jdkFile, 'jdk archive');
+      spyGetToolcachePath.mockReturnValue('');
+      spyFsStat.mockImplementation((file: string) => realStatSync(file));
+      (jdkCache.restoreJdk as jest.Mock).mockResolvedValue(false);
+
+      try {
+        mockJavaBase = new LocalDistribution(
+          {
+            version: actualJavaVersion,
+            architecture: 'x86',
+            packageType: 'jdk',
+            checkLatest: false,
+            forceDownload,
+            cacheJdk: true
+          },
+          jdkFile
+        );
+
+        await mockJavaBase.setupJava();
+
+        expect(jdkCache.restoreJdk).toHaveBeenCalledTimes(restores ? 1 : 0);
+        expect(jdkCache.registerJdk).toHaveBeenCalledTimes(registers ? 1 : 0);
+        expect(
+          (jdkCache.restoreJdk as jest.Mock).mock.calls[0]?.[0] ??
+            (jdkCache.registerJdk as jest.Mock).mock.calls[0]?.[0]
+        ).toEqual(
+          expect.objectContaining({
+            distribution: 'jdkfile',
+            version: actualJavaVersion,
+            verification: 'unverified'
+          })
+        );
+      } finally {
+        fs.rmSync(temporaryDirectory, {recursive: true});
+      }
+    }
+  );
+
+  it('rejects signature verification for jdkfile archives', async () => {
+    mockJavaBase = new LocalDistribution(
+      {
+        version: actualJavaVersion,
+        architecture: 'x86',
+        packageType: 'jdk',
+        checkLatest: false,
+        verifySignature: true
+      },
+      expectedJdkFile
+    );
+
+    await expect(mockJavaBase.setupJava()).rejects.toThrow(
+      "Input 'verify-signature' is not supported for distribution 'jdkfile'."
+    );
+    expect(spyGetToolcachePath).not.toHaveBeenCalled();
   });
 
   it("java is resolved from toolcache, jdkfile doesn't exist", async () => {

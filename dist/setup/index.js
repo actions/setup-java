@@ -31245,6 +31245,7 @@ function validateToolchainIds(versions, versionFile, toolchainIds) {
 /* harmony export */   ZY: () => (/* binding */ convertVersionToSemver),
 /* harmony export */   aT: () => (/* binding */ isGhes),
 /* harmony export */   ag: () => (/* binding */ getDownloadArchiveExtension),
+/* harmony export */   lN: () => (/* binding */ isJdkCacheEnabled),
 /* harmony export */   n2: () => (/* binding */ renameWinArchive),
 /* harmony export */   rC: () => (/* binding */ getNextPageUrlFromLinkHeader),
 /* harmony export */   ri: () => (/* binding */ getLatestMajorVersion),
@@ -31287,6 +31288,11 @@ function getBooleanInput(inputName, defaultValue = false) {
         return false;
     }
     throw new Error(`Invalid value '${inputValue}' for boolean input '${inputName}'. Expected 'true' or 'false'.`);
+}
+function isJdkCacheEnabled(cache) {
+    return _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_6__/* .INPUT_CACHE_JDK */ .GL).trim()
+        ? getBooleanInput(_constants_js__WEBPACK_IMPORTED_MODULE_6__/* .INPUT_CACHE_JDK */ .GL)
+        : Boolean(cache.trim());
 }
 function getVersionFromToolcachePath(toolPath) {
     if (toolPath) {
@@ -36122,7 +36128,7 @@ async function run() {
     const packageType = setup_java_core/* getInput */.V4(constants/* INPUT_JAVA_PACKAGE */.p1);
     const jdkFile = getJdkFileInput();
     const cache = setup_java_core/* getInput */.V4(constants/* INPUT_CACHE */.gk);
-    const cacheJdk = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_CACHE_JDK */.GL, true);
+    const cacheJdk = (0,util/* isJdkCacheEnabled */.lN)(cache);
     const cacheDependencyPath = setup_java_core/* getInput */.V4(constants/* INPUT_CACHE_DEPENDENCY_PATH */.At);
     const cachePath = setup_java_core/* getMultilineInput */.q3(constants/* INPUT_CACHE_PATH */.uW);
     const checkLatest = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_CHECK_LATEST */.YM, false);

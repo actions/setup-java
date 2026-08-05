@@ -1,7 +1,11 @@
 import * as core from '@actions/core';
 import * as gpg from './gpg.js';
 import * as constants from './constants.js';
-import {getBooleanInput, isJobStatusSuccess} from './util.js';
+import {
+  getBooleanInput,
+  isJdkCacheEnabled,
+  isJobStatusSuccess
+} from './util.js';
 import {fileURLToPath} from 'url';
 
 async function removePrivateKeyFromKeychain() {
@@ -27,7 +31,7 @@ async function removePrivateKeyFromKeychain() {
 async function saveCaches() {
   const jobStatus = isJobStatusSuccess();
   const cache = core.getInput(constants.INPUT_CACHE);
-  const cacheJdk = getBooleanInput(constants.INPUT_CACHE_JDK, true);
+  const cacheJdk = isJdkCacheEnabled(cache);
   if (!jobStatus || (!cache && !cacheJdk)) {
     return;
   }

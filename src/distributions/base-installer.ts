@@ -21,6 +21,7 @@ import {RetryingHttpClient} from '../retrying-http-client.js';
 import os from 'os';
 import {expectedDigestLength, verifyChecksum} from '../checksum.js';
 import {normalizeArchitecture} from './platform-types.js';
+import type {JdkCache} from '../jdk-cache.js';
 
 export abstract class JavaBase {
   protected http: httpm.HttpClient;
@@ -182,16 +183,26 @@ export abstract class JavaBase {
         if (!this.forceDownload && foundJava?.version === javaRelease.version) {
           core.info(`Resolved Java ${foundJava.version} from tool-cache`);
         } else {
-          if (!this.forceDownload && this.cacheJdk) {
-            const {restoreJdk} = await import('../jdk-cache.js');
-            const restored = await restoreJdk({
+          let jdkCache: JdkCache | undefined;
+          if (this.cacheJdk) {
+            const {getJdkVerificationIdentity} =
+              await import('../jdk-cache.js');
+            jdkCache = {
               distribution: this.distribution,
               packageType: this.packageType,
               architecture: this.architecture,
               version: javaRelease.version,
               source: this.getJdkReleaseIdentity(javaRelease),
+              verification: getJdkVerificationIdentity(
+                this.verifySignature,
+                this.verifySignaturePublicKey
+              ),
               path: this.getJdkCachePath(javaRelease.version)
-            });
+            };
+          }
+          if (!this.forceDownload && jdkCache) {
+            const {restoreJdk} = await import('../jdk-cache.js');
+            const restored = await restoreJdk(jdkCache);
             if (restored) {
               const restoredPath = this.getRestoredJdkPath(javaRelease.version);
               if (restoredPath) {
@@ -206,6 +217,10 @@ export abstract class JavaBase {
             core.info('Trying to download...');
             foundJava = await this.downloadTool(javaRelease);
             core.info(`Java ${foundJava.version} was downloaded`);
+            if (this.forceDownload && jdkCache) {
+              const {registerJdk} = await import('../jdk-cache.js');
+              registerJdk(jdkCache);
+            }
           }
         }
       } catch (error: any) {

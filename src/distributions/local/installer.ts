@@ -14,6 +14,7 @@ import {extractJdkFile} from '../../util.js';
 import {MACOS_JAVA_CONTENT_POSTFIX} from '../../constants.js';
 import {createReadStream} from 'fs';
 import {createHash} from 'crypto';
+import type {JdkCache} from '../../jdk-cache.js';
 
 export class LocalDistribution extends JavaBase {
   constructor(
@@ -27,6 +28,11 @@ export class LocalDistribution extends JavaBase {
     if (this.latest) {
       throw new Error(
         "The 'latest' version alias is not supported for the 'jdkfile' distribution. Please specify a concrete version."
+      );
+    }
+    if (this.verifySignature) {
+      throw new Error(
+        `Input 'verify-signature' is not supported for distribution '${this.distribution}'.`
       );
     }
 
@@ -48,19 +54,25 @@ export class LocalDistribution extends JavaBase {
         throw new Error(`JDK file was not found in path '${jdkFilePath}'`);
       }
 
-      if (!this.forceDownload && this.cacheJdk) {
-        const [{restoreJdk}, source] = await Promise.all([
+      let jdkCache: JdkCache | undefined;
+      if (this.cacheJdk) {
+        const [{getJdkVerificationIdentity}, source] = await Promise.all([
           import('../../jdk-cache.js'),
           hashFile(jdkFilePath)
         ]);
-        const restored = await restoreJdk({
+        jdkCache = {
           distribution: this.distribution,
           packageType: this.packageType,
           architecture: this.architecture,
           version: this.version,
           source,
+          verification: getJdkVerificationIdentity(false),
           path: this.getJdkCachePath(this.version)
-        });
+        };
+      }
+      if (!this.forceDownload && jdkCache) {
+        const {restoreJdk} = await import('../../jdk-cache.js');
+        const restored = await restoreJdk(jdkCache);
         const restoredPath = restored
           ? this.getRestoredJdkPath(this.version)
           : undefined;
@@ -91,6 +103,10 @@ export class LocalDistribution extends JavaBase {
           version: javaVersion,
           path: javaPath
         };
+        if (this.forceDownload && jdkCache) {
+          const {registerJdk} = await import('../../jdk-cache.js');
+          registerJdk(jdkCache);
+        }
       }
     }
 

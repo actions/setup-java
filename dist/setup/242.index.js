@@ -328,16 +328,22 @@ class JavaBase {
                     core/* info */.pq(`Resolved Java ${foundJava.version} from tool-cache`);
                 }
                 else {
-                    if (!this.forceDownload && this.cacheJdk) {
-                        const { restoreJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
-                        const restored = await restoreJdk({
+                    let jdkCache;
+                    if (this.cacheJdk) {
+                        const { getJdkVerificationIdentity } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                        jdkCache = {
                             distribution: this.distribution,
                             packageType: this.packageType,
                             architecture: this.architecture,
                             version: javaRelease.version,
                             source: this.getJdkReleaseIdentity(javaRelease),
+                            verification: getJdkVerificationIdentity(this.verifySignature, this.verifySignaturePublicKey),
                             path: this.getJdkCachePath(javaRelease.version)
-                        });
+                        };
+                    }
+                    if (!this.forceDownload && jdkCache) {
+                        const { restoreJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                        const restored = await restoreJdk(jdkCache);
                         if (restored) {
                             const restoredPath = this.getRestoredJdkPath(javaRelease.version);
                             if (restoredPath) {
@@ -352,6 +358,10 @@ class JavaBase {
                         core/* info */.pq('Trying to download...');
                         foundJava = await this.downloadTool(javaRelease);
                         core/* info */.pq(`Java ${foundJava.version} was downloaded`);
+                        if (this.forceDownload && jdkCache) {
+                            const { registerJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                            registerJdk(jdkCache);
+                        }
                     }
                 }
             }

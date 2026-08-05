@@ -167,7 +167,9 @@ describe('cleanup', () => {
 
   it('saves the JDK cache without dependency caching', async () => {
     const key = 'setup-java-jdk-v1-Linux-x64-key';
-    (core.getInput as jest.Mock).mockReturnValue('');
+    (core.getInput as jest.Mock<any>).mockImplementation((name: string) =>
+      name === 'cache-jdk' ? 'true' : ''
+    );
     (core.getState as jest.Mock<any>).mockImplementation((name: string) =>
       name === 'jdk-caches'
         ? JSON.stringify([{key, path: '/toolcache/java'}])
@@ -190,6 +192,42 @@ describe('cleanup', () => {
 
     expect(spyCacheSave).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ['', '', false],
+    ['', 'true', true],
+    ['', 'false', false],
+    ['maven', '', true],
+    ['maven', 'true', true],
+    ['maven', 'false', false]
+  ])(
+    'uses effective JDK caching for cache=%j and cache-jdk=%j',
+    async (cacheInput, cacheJdkInput, expectedJdkSave) => {
+      const jdkKey = 'setup-java-jdk-v2-Linux-x64-key';
+      (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
+        if (name === 'cache') return cacheInput;
+        if (name === 'cache-jdk') return cacheJdkInput;
+        return '';
+      });
+      (core.getState as jest.Mock<any>).mockImplementation((name: string) =>
+        name === 'jdk-caches'
+          ? JSON.stringify([{key: jdkKey, path: '/toolcache/java'}])
+          : ''
+      );
+      jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+      spyCacheSave.mockResolvedValue(1);
+
+      await cleanup();
+
+      const jdkSaveCalls = spyCacheSave.mock.calls.filter(
+        ([, key]) => key === jdkKey
+      );
+      expect(jdkSaveCalls).toHaveLength(expectedJdkSave ? 1 : 0);
+      if (expectedJdkSave) {
+        expect(spyCacheSave).toHaveBeenCalledWith(['/toolcache/java'], jdkKey);
+      }
+    }
+  );
 });
 
 function resetState() {

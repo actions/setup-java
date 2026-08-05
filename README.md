@@ -161,7 +161,7 @@ steps:
 | `verify-signature-public-key` | ASCII-armored GPG public key to use for signature verification. Overrides the bundled key. | |
 | `token` | Token for fetching GitHub.com-hosted version manifests, useful on GitHub Enterprise Server when unauthenticated requests are rate-limited. | `${{ github.token }}` on GitHub.com; empty string on GHES |
 | `cache` | Enable dependency caching for `maven`, `gradle`, or `sbt`. | |
-| `cache-jdk` | Cache downloaded JDK installations between jobs. Set to `false` to opt out. | `true` |
+| `cache-jdk` | Cache downloaded JDK installations between jobs. When omitted, JDK caching is enabled only if `cache` is set. Set explicitly to `true` or `false` to override. | Enabled when `cache` is set |
 | `cache-dependency-path` | Dependency file paths used for cache key hashing. Supports globs and multiline values. | Auto-detected by package manager |
 | `cache-path` | Cache paths to use instead of the package manager's default dependency cache path. Supports multiline values and exclusions. | |
 | `cache-read-only` | Restore dependency, wrapper, and JDK caches without saving changes in the post step. | `false` |
@@ -247,11 +247,35 @@ Use `verify-signature: true` to verify package signatures for distributions that
 
 ## Caching dependencies
 
-Downloaded JDK installations are cached by default, independently of dependency
-caching. The JDK cache key includes the runner OS and platform, normalized
-architecture, distribution, package type, exact resolved version, and release
-identity, preventing incompatible JDKs from sharing an entry. Local `jdk-file`
-archives are keyed by their content hash. Set `cache-jdk: false` to opt out.
+Downloaded JDK installations can be cached independently of dependency caching.
+When `cache-jdk` is omitted, setting `cache` implicitly enables JDK caching;
+with neither input set, JDK caching is disabled. Set `cache-jdk: true` to cache
+only the JDK, or `cache-jdk: false` to cache dependencies without caching the
+JDK.
+
+The JDK cache key includes the runner OS and platform, normalized architecture,
+distribution, package type, exact resolved version, and release identity.
+Multiple Java versions therefore create distinct cache entries. Local
+`jdk-file` archives are additionally keyed by a SHA-256 hash of the archive
+contents, so changing the file creates a new entry.
+
+Signature verification is also part of the JDK cache identity. Unverified
+entries cannot satisfy `verify-signature: true`. Entries verified with a
+distribution's bundled key are separate from unverified entries, and a custom
+key is represented by a non-secret SHA-256 fingerprint of normalized key
+material. Distinct custom keys cannot share an entry, and raw key material is
+never included in cache keys or state. A verified-cache hit reuses content that
+was signature-verified when it was first downloaded; it does not download and
+verify the archive again.
+
+`check-latest: true` and `java-version: latest` resolve remote metadata before
+restoring the exact resolved JDK cache entry. `force-download: true` bypasses
+both the runner tool cache and JDK cache restoration. If JDK caching is enabled,
+the newly downloaded exact JDK is still registered for a post-job save.
+
+Cache service restore failures fall back to downloading the JDK. Cache saves
+are best-effort: immutable-key collisions and concurrent save races do not fail
+the job.
 
 Set `cache` to `maven`, `gradle`, or `sbt` to cache dependencies with minimal configuration.
 

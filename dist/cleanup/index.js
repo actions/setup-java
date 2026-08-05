@@ -30837,7 +30837,8 @@ const DISTRIBUTIONS_ONLY_MAJOR_VERSION = (/* unused pure expression or super */ 
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
 /* harmony export */   G4: () => (/* binding */ getTempDir),
 /* harmony export */   TX: () => (/* binding */ isJobStatusSuccess),
-/* harmony export */   Vt: () => (/* binding */ getBooleanInput)
+/* harmony export */   Vt: () => (/* binding */ getBooleanInput),
+/* harmony export */   lN: () => (/* binding */ isJdkCacheEnabled)
 /* harmony export */ });
 /* unused harmony exports getVersionFromToolcachePath, extractJdkFile, getDownloadArchiveExtension, isVersionSatisfies, getToolcachePath, isGhes, getVersionFromFileContent, convertVersionToSemver, getGitHubHttpHeaders, MAX_PAGINATION_PAGES, getNextPageUrlFromLinkHeader, validatePaginationUrl, renameWinArchive, getLatestMajorVersion */
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(857);
@@ -30875,6 +30876,11 @@ function getBooleanInput(inputName, defaultValue = false) {
         return false;
     }
     throw new Error(`Invalid value '${inputValue}' for boolean input '${inputName}'. Expected 'true' or 'false'.`);
+}
+function isJdkCacheEnabled(cache) {
+    return _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_6__/* .INPUT_CACHE_JDK */ .GL).trim()
+        ? getBooleanInput(_constants_js__WEBPACK_IMPORTED_MODULE_6__/* .INPUT_CACHE_JDK */ .GL)
+        : Boolean(cache.trim());
 }
 function getVersionFromToolcachePath(toolPath) {
     if (toolPath) {
@@ -35674,7 +35680,7 @@ async function removePrivateKeyFromKeychain() {
 async function saveCaches() {
     const jobStatus = (0,src_util/* isJobStatusSuccess */.TX)();
     const cache = cleanup_java_core/* getInput */.V4(constants/* INPUT_CACHE */.gk);
-    const cacheJdk = (0,src_util/* getBooleanInput */.Vt)(constants/* INPUT_CACHE_JDK */.GL, true);
+    const cacheJdk = (0,src_util/* isJdkCacheEnabled */.lN)(cache);
     if (!jobStatus || (!cache && !cacheJdk)) {
         return;
     }

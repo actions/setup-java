@@ -38,6 +38,9 @@ class LocalDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/
         if (this.latest) {
             throw new Error("The 'latest' version alias is not supported for the 'jdkfile' distribution. Please specify a concrete version.");
         }
+        if (this.verifySignature) {
+            throw new Error(`Input 'verify-signature' is not supported for distribution '${this.distribution}'.`);
+        }
         let foundJava = this.forceDownload ? null : this.findInToolcache();
         if (foundJava) {
             _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq(`Resolved Java ${foundJava.version} from tool-cache`);
@@ -52,19 +55,25 @@ class LocalDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/
             if (!stats.isFile()) {
                 throw new Error(`JDK file was not found in path '${jdkFilePath}'`);
             }
-            if (!this.forceDownload && this.cacheJdk) {
-                const [{ restoreJdk }, source] = await Promise.all([
+            let jdkCache;
+            if (this.cacheJdk) {
+                const [{ getJdkVerificationIdentity }, source] = await Promise.all([
                     Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779)),
                     hashFile(jdkFilePath)
                 ]);
-                const restored = await restoreJdk({
+                jdkCache = {
                     distribution: this.distribution,
                     packageType: this.packageType,
                     architecture: this.architecture,
                     version: this.version,
                     source,
+                    verification: getJdkVerificationIdentity(false),
                     path: this.getJdkCachePath(this.version)
-                });
+                };
+            }
+            if (!this.forceDownload && jdkCache) {
+                const { restoreJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                const restored = await restoreJdk(jdkCache);
                 const restoredPath = restored
                     ? this.getRestoredJdkPath(this.version)
                     : undefined;
@@ -86,6 +95,10 @@ class LocalDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/
                     version: javaVersion,
                     path: javaPath
                 };
+                if (this.forceDownload && jdkCache) {
+                    const { registerJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                    registerJdk(jdkCache);
+                }
             }
         }
         // JDK folder may contain postfix "Contents/Home" on macOS

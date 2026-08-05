@@ -23,8 +23,13 @@ jest.unstable_mockModule('../src/cache-feature.js', () => ({
 const cache = await import('@actions/cache');
 const core = await import('@actions/core');
 const cacheFeature = await import('../src/cache-feature.js');
-const {buildJdkCacheKey, restoreJdk, saveJdkCaches} =
-  await import('../src/jdk-cache.js');
+const {
+  buildJdkCacheKey,
+  getJdkVerificationIdentity,
+  registerJdk,
+  restoreJdk,
+  saveJdkCaches
+} = await import('../src/jdk-cache.js');
 
 const jdk = {
   distribution: 'temurin',
@@ -32,6 +37,7 @@ const jdk = {
   architecture: 'x64',
   version: '21.0.8+9',
   source: 'sha256:abc123',
+  verification: 'unverified',
   path: '/toolcache/Java_temurin_jdk/21.0.8-9'
 };
 
@@ -50,12 +56,40 @@ describe('JDK cache', () => {
   it('builds distinct keys for incompatible JDK identities', () => {
     const key = buildJdkCacheKey(jdk);
 
-    expect(key).toMatch(/^setup-java-jdk-v1-Linux-x64-[a-f0-9]{64}$/);
+    expect(key).toMatch(/^setup-java-jdk-v2-Linux-x64-[a-f0-9]{64}$/);
     expect(buildJdkCacheKey({...jdk, architecture: 'aarch64'})).not.toBe(key);
     expect(buildJdkCacheKey({...jdk, distribution: 'zulu'})).not.toBe(key);
     expect(buildJdkCacheKey({...jdk, packageType: 'jre'})).not.toBe(key);
     expect(buildJdkCacheKey({...jdk, version: '21.0.7+6'})).not.toBe(key);
     expect(buildJdkCacheKey({...jdk, source: 'sha256:def456'})).not.toBe(key);
+  });
+
+  it('separates unverified, bundled-key, and custom-key caches', () => {
+    const unverified = getJdkVerificationIdentity(false);
+    const bundled = getJdkVerificationIdentity(true);
+    const customA = getJdkVerificationIdentity(
+      true,
+      '-----BEGIN PGP PUBLIC KEY BLOCK-----\r\nkey-a\r\n-----END PGP PUBLIC KEY BLOCK-----\r\n'
+    );
+    const customANormalized = getJdkVerificationIdentity(
+      true,
+      '-----BEGIN PGP PUBLIC KEY BLOCK-----\nkey-a\n-----END PGP PUBLIC KEY BLOCK-----'
+    );
+    const customB = getJdkVerificationIdentity(true, 'different-key');
+
+    expect(new Set([unverified, bundled, customA, customB])).toHaveProperty(
+      'size',
+      4
+    );
+    expect(customA).toBe(customANormalized);
+    expect(customA).not.toContain('key-a');
+    expect(
+      new Set(
+        [unverified, bundled, customA, customB].map(verification =>
+          buildJdkCacheKey({...jdk, verification})
+        )
+      )
+    ).toHaveProperty('size', 4);
   });
 
   it('restores and records an exact JDK cache hit', async () => {
@@ -99,6 +133,16 @@ describe('JDK cache', () => {
     await saveJdkCaches();
 
     expect(cache.saveCache).toHaveBeenCalledWith([jdk.path], key);
+  });
+
+  it('registers a force-downloaded JDK without restoring it', () => {
+    registerJdk(jdk);
+
+    expect(cache.restoreCache).not.toHaveBeenCalled();
+    expect(core.saveState).toHaveBeenCalledWith(
+      'jdk-caches',
+      expect.stringContaining(buildJdkCacheKey(jdk))
+    );
   });
 
   it('does not save an exact JDK cache hit again', async () => {
