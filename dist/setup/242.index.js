@@ -518,6 +518,7 @@ class JavaBase {
         return {
             distribution: this.distribution,
             packageType: this.packageType,
+            platform: (0,platform_types/* getJavaPlatformIdentity */.U)(),
             architecture: this.architecture,
             versionSpec: this.version,
             stable: this.stable,

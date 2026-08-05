@@ -1409,6 +1409,7 @@ describe('setupJava', () => {
         {
           distribution: 'Empty',
           packageType: 'jdk',
+          platform: getJavaPlatformIdentity(),
           architecture: 'x86',
           versionSpec: '11.0.9',
           stable: true,

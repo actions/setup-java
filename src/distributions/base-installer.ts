@@ -432,6 +432,7 @@ export abstract class JavaBase {
     return {
       distribution: this.distribution,
       packageType: this.packageType,
+      platform: getJavaPlatformIdentity(),
       architecture: this.architecture,
       versionSpec: this.version,
       stable: this.stable,
