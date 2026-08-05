@@ -23,7 +23,7 @@ export const modules = {
 
 
 const STATE_JDK_RESOLUTIONS = 'jdk-resolutions';
-const JDK_RESOLUTION_KEY_VERSION = 1;
+const JDK_RESOLUTION_KEY_VERSION = 2;
 const RESOLUTION_DIRECTORY = 'setup-java-jdk-resolution';
 const RESOLUTION_FILE_NAME = 'release.json';
 const pendingResolutions = (/* unused pure expression or super */ null && ([]));
@@ -146,6 +146,7 @@ function getResolutionIdentity(request) {
         runnerOs: getRunnerOs(),
         distribution: request.distribution.toLowerCase(),
         packageType: request.packageType.toLowerCase(),
+        platform: request.platform.toLowerCase(),
         architecture: request.architecture.toLowerCase(),
         versionSpec: request.versionSpec,
         stable: request.stable,

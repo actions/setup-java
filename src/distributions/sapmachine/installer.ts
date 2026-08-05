@@ -17,6 +17,7 @@ import {
   JavaInstallerOptions,
   JavaInstallerResults
 } from '../base-models.js';
+import {isAlpineLinux} from '../platform-types.js';
 import {ISapMachineAllVersions, ISapMachineVersions} from './models.js';
 
 export class SapMachineDistribution extends JavaBase {
@@ -242,7 +243,7 @@ export class SapMachineDistribution extends JavaBase {
         return 'macos';
       case 'linux':
         // figure out if alpine/musl
-        if (fs.existsSync('/etc/alpine-release')) {
+        if (isAlpineLinux()) {
           return 'linux-musl';
         }
         return 'linux';

@@ -101,6 +101,8 @@ const tc = await import('@actions/tool-cache');
 const util = await import('../../src/util.js');
 const jdkCache = await import('../../src/jdk-cache.js');
 const jdkResolutionCache = await import('../../src/jdk-resolution-cache.js');
+const {getJavaPlatformIdentity} =
+  await import('../../src/distributions/platform-types.js');
 const {JavaBase} = await import('../../src/distributions/base-installer.js');
 
 class EmptyJavaBase extends JavaBase {
@@ -1290,6 +1292,7 @@ describe('setupJava', () => {
     const expectedRequest = {
       distribution: 'Empty',
       packageType: 'jdk',
+      platform: getJavaPlatformIdentity(),
       architecture: 'x86',
       versionSpec: '11.0.9',
       stable: true
@@ -1406,6 +1409,7 @@ describe('setupJava', () => {
         {
           distribution: 'Empty',
           packageType: 'jdk',
+          platform: getJavaPlatformIdentity(),
           architecture: 'x86',
           versionSpec: '11.0.9',
           stable: true,
