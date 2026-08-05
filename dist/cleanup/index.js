@@ -35724,7 +35724,7 @@ async function importKey(privateKey) {
         return gpgHome;
     }
     catch (error) {
-        await io.rmRF(gpgHome);
+        await removeGpgHome(gpgHome);
         throw error;
     }
 }
@@ -35737,6 +35737,15 @@ async function removeGpgHome(gpgHome) {
     if (external_path_.dirname(resolvedGpgHome) !== resolvedTempDir ||
         !external_path_.basename(resolvedGpgHome).startsWith(GPG_HOME_PREFIX)) {
         throw new Error(`Refusing to remove unexpected GPG home: ${gpgHome}`);
+    }
+    if (!external_fs_.existsSync(resolvedGpgHome)) {
+        return;
+    }
+    try {
+        await lib_exec/* exec */.m('gpgconf', ['--homedir', toGpgPath(resolvedGpgHome), '--kill', 'gpg-agent'], { silent: true, ignoreReturnCode: true });
+    }
+    catch {
+        // gpgconf may be unavailable, but directory removal must still be attempted.
     }
     await lib_io/* rmRF */.Yz(resolvedGpgHome);
 }

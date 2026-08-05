@@ -43,7 +43,8 @@ jest.unstable_mockModule('@actions/core', () => ({
 
 jest.unstable_mockModule('../src/gpg.js', () => ({
   importKey: jest.fn(),
-  removeGpgHome: jest.fn()
+  removeGpgHome: jest.fn(),
+  toGpgPath: jest.fn()
 }));
 
 // Dynamic imports after mocking
@@ -67,6 +68,7 @@ describe('auth tests', () => {
     spyOSHomedir.mockReturnValue(__dirname);
     spyInfo = core.info as jest.Mock;
     spyInfo.mockImplementation(() => null);
+    (gpg.toGpgPath as jest.Mock<any>).mockImplementation((p: string) => p);
   }, 300000);
 
   afterEach(() => {
@@ -74,6 +76,7 @@ describe('auth tests', () => {
     (core.exportVariable as jest.Mock).mockReset();
     (gpg.importKey as jest.Mock).mockReset();
     (gpg.removeGpgHome as jest.Mock).mockReset();
+    (gpg.toGpgPath as jest.Mock).mockReset();
   });
 
   afterAll(async () => {
@@ -158,9 +161,11 @@ describe('auth tests', () => {
     );
   }, 100000);
 
-  it('exports and persists the isolated GPG home', async () => {
-    const gpgHome = path.join(__dirname, 'runner', 'temp', 'setup-java-gpg-1');
+  it('exports a GPG-compatible path and persists the native GPG home', async () => {
+    const gpgHome = 'D:\\a\\_temp\\setup-java-gpg-1';
+    const exportedGpgHome = '/d/a/_temp/setup-java-gpg-1';
     (gpg.importKey as jest.Mock<any>).mockResolvedValue(gpgHome);
+    (gpg.toGpgPath as jest.Mock<any>).mockReturnValue(exportedGpgHome);
     (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
       const inputs: Record<string, string> = {
         'server-id': 'packages',
@@ -176,7 +181,11 @@ describe('auth tests', () => {
 
     expect(gpg.importKey).toHaveBeenCalledWith('KEY ONE\nKEY TWO');
     expect(core.saveState).toHaveBeenCalledWith(STATE_GPG_HOME, gpgHome);
-    expect(core.exportVariable).toHaveBeenCalledWith('GNUPGHOME', gpgHome);
+    expect(gpg.toGpgPath).toHaveBeenCalledWith(gpgHome);
+    expect(core.exportVariable).toHaveBeenCalledWith(
+      'GNUPGHOME',
+      exportedGpgHome
+    );
   });
 
   it('removes the isolated GPG home when environment export fails', async () => {

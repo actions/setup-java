@@ -52,7 +52,7 @@ async function configureAuthentication() {
         const gpgHome = await _gpg_js__WEBPACK_IMPORTED_MODULE_5__/* .importKey */ .Fh(gpgPrivateKey);
         try {
             _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .saveState */ .LZ(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .STATE_GPG_HOME */ .Fi, gpgHome);
-            _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .exportVariable */ .dN('GNUPGHOME', gpgHome);
+            _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .exportVariable */ .dN('GNUPGHOME', _gpg_js__WEBPACK_IMPORTED_MODULE_5__/* .toGpgPath */ .nY(gpgHome));
         }
         catch (error) {
             await _gpg_js__WEBPACK_IMPORTED_MODULE_5__/* .removeGpgHome */ .mS(gpgHome);
@@ -132,9 +132,10 @@ async function write(directory, settings, overwriteSettings) {
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Fh: () => (/* binding */ importKey),
 /* harmony export */   Yi: () => (/* binding */ verifyPackageSignature),
-/* harmony export */   mS: () => (/* binding */ removeGpgHome)
+/* harmony export */   mS: () => (/* binding */ removeGpgHome),
+/* harmony export */   nY: () => (/* binding */ toGpgPath)
 /* harmony export */ });
-/* unused harmony exports GPG_HOME_PREFIX, toGpgPath */
+/* unused harmony export GPG_HOME_PREFIX */
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9896);
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6928);
@@ -196,7 +197,7 @@ async function importKey(privateKey) {
         return gpgHome;
     }
     catch (error) {
-        await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(gpgHome);
+        await removeGpgHome(gpgHome);
         throw error;
     }
 }
@@ -209,6 +210,15 @@ async function removeGpgHome(gpgHome) {
     if (path__WEBPACK_IMPORTED_MODULE_1__.dirname(resolvedGpgHome) !== resolvedTempDir ||
         !path__WEBPACK_IMPORTED_MODULE_1__.basename(resolvedGpgHome).startsWith(GPG_HOME_PREFIX)) {
         throw new Error(`Refusing to remove unexpected GPG home: ${gpgHome}`);
+    }
+    if (!fs__WEBPACK_IMPORTED_MODULE_0__.existsSync(resolvedGpgHome)) {
+        return;
+    }
+    try {
+        await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpgconf', ['--homedir', toGpgPath(resolvedGpgHome), '--kill', 'gpg-agent'], { silent: true, ignoreReturnCode: true });
+    }
+    catch {
+        // gpgconf may be unavailable, but directory removal must still be attempted.
     }
     await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(resolvedGpgHome);
 }

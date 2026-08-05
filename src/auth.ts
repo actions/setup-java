@@ -55,7 +55,7 @@ export async function configureAuthentication() {
     const gpgHome = await gpg.importKey(gpgPrivateKey);
     try {
       core.saveState(constants.STATE_GPG_HOME, gpgHome);
-      core.exportVariable('GNUPGHOME', gpgHome);
+      core.exportVariable('GNUPGHOME', gpg.toGpgPath(gpgHome));
     } catch (error) {
       await gpg.removeGpgHome(gpgHome);
       throw error;

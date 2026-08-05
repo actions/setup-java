@@ -58,7 +58,7 @@ export async function importKey(privateKey: string): Promise<string> {
 
     return gpgHome;
   } catch (error) {
-    await io.rmRF(gpgHome);
+    await removeGpgHome(gpgHome);
     throw error;
   }
 }
@@ -75,6 +75,20 @@ export async function removeGpgHome(gpgHome: string): Promise<void> {
     !path.basename(resolvedGpgHome).startsWith(GPG_HOME_PREFIX)
   ) {
     throw new Error(`Refusing to remove unexpected GPG home: ${gpgHome}`);
+  }
+
+  if (!fs.existsSync(resolvedGpgHome)) {
+    return;
+  }
+
+  try {
+    await exec.exec(
+      'gpgconf',
+      ['--homedir', toGpgPath(resolvedGpgHome), '--kill', 'gpg-agent'],
+      {silent: true, ignoreReturnCode: true}
+    );
+  } catch {
+    // gpgconf may be unavailable, but directory removal must still be attempted.
   }
 
   await io.rmRF(resolvedGpgHome);

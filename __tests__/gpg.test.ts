@@ -188,8 +188,26 @@ describe('gpg tests', () => {
       await gpg.removeGpgHome(gpgHome);
       await gpg.removeGpgHome(gpgHome);
 
+      expect(exec.exec).toHaveBeenNthCalledWith(
+        2,
+        'gpgconf',
+        ['--homedir', gpg.toGpgPath(gpgHome), '--kill', 'gpg-agent'],
+        {silent: true, ignoreReturnCode: true}
+      );
+      expect(exec.exec).toHaveBeenCalledTimes(2);
       expect(fs.existsSync(gpgHome)).toBe(false);
       expect(fs.existsSync(unrelatedGpgHome)).toBe(true);
+    });
+
+    it('removes the GPG home when gpgconf is unavailable', async () => {
+      const gpgHome = await gpg.importKey('KEY CONTENTS');
+      (exec.exec as jest.Mock<any>).mockRejectedValueOnce(
+        new Error('gpgconf not found')
+      );
+
+      await gpg.removeGpgHome(gpgHome);
+
+      expect(fs.existsSync(gpgHome)).toBe(false);
     });
 
     it('refuses to remove a GPG home it does not own', async () => {
