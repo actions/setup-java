@@ -471,9 +471,11 @@ jobs:
 
 ## Caching JDK installations
 
-`cache-jdk` controls caching for downloaded JDK installations. It is independent
-of the dependency and build-tool wrapper caches selected by `cache`; each cache
-is restored and saved as a separate entry.
+`cache-jdk` controls caching for downloaded JDK installations. The JDK cache is
+stored and restored as its own cache entry, separate from the dependency and
+build-tool wrapper caches selected by `cache`. Whether it is *enabled*, however,
+is coupled to `cache`: setting `cache` turns JDK caching on as well, unless
+`cache-jdk` is set explicitly.
 
 | `cache` | `cache-jdk` | Dependency and wrapper caches | JDK cache |
 | --- | --- | --- | --- |
@@ -498,9 +500,9 @@ For `distribution: jdkfile`, the release source is a SHA-256 hash of the local
 `jdk-file` contents, streamed so the archive is not held in memory. Changing the
 archive therefore creates a different JDK cache entry, even when its path and
 requested version are unchanged. The archive is only read when the runner tool
-cache holds no installation satisfying the requested version: as on `main`, a
-matching tool-cache installation short-circuits setup, so a changed `jdk-file` is
-not re-extracted for a version that is already installed. Use
+cache holds no installation satisfying the requested version: a matching
+tool-cache installation short-circuits setup, so a changed `jdk-file` is not
+re-extracted for a version that is already installed. Use
 `force-download: true` when the archive contents change but the version does not.
 
 The verification identity separates unverified downloads from packages verified
@@ -515,10 +517,9 @@ instead of downloading and verifying it again.
 > The JDK cache **key** is what isolates verification modes and release
 > identity: a JDK cache entry created by an unverified download can never be
 > restored for a request that sets `verify-signature: true`, and vice versa.
-> `cache-jdk` does not change how the runner tool cache is used. As on `main`,
-> setup-java first looks for an installation in the runner tool cache — a
-> preinstalled JDK, or one installed by an earlier step of the same job — and
-> uses it as-is. Such an installation is not downloaded again, and its checksum
+> `cache-jdk` does not change how the runner tool cache is used. setup-java
+> first looks for an installation in the runner tool cache — a preinstalled
+> JDK, or one installed by an earlier step of the same job — and uses it as-is. Such an installation is not downloaded again, and its checksum
 > and signature are not reverified, even when `verify-signature: true` is set,
 > because its verification history is not recorded in the tool cache. Use
 > `force-download: true` for a request that must download and verify the archive
@@ -540,11 +541,10 @@ the remaining entries from being saved.
 A key is only ever populated with the installation it was computed for. Because
 tool-cache paths are shared per version and architecture, a later step — for
 example one using `force-download: true` — can replace the installation an
-earlier step registered. setup-java records a cheap identity of the installation
-(the inode, size and timestamps of the tool-cache `.complete` marker and of the
-installation directory) when it registers a key, re-checks it in the post-job
-step, and skips saving with a warning when the installation was replaced. This
-avoids rehashing hundreds of megabytes of JDK content on every job.
+earlier step registered. setup-java detects that replacement in the post-job
+step and skips the save with a warning, so a key is never saved with content
+other than the installation it identifies. This guarantee holds without
+rehashing hundreds of megabytes of JDK content on every job.
 
 JDK caching trades cache storage and cold-run save work for faster warm setup.
 In a five-run Ubuntu benchmark using Microsoft OpenJDK 17.0.19, the median warm
@@ -552,8 +552,9 @@ In a five-run Ubuntu benchmark using Microsoft OpenJDK 17.0.19, the median warm
 from 24 seconds to 18 seconds. The JDK entry added 175.3 MiB for that single
 identity. Results vary by runner, distribution, JDK size, network, and cache
 eviction pressure; short jobs may improve latency without changing billed
-minutes. See the [benchmark results and methodology](https://github.com/actions/setup-java/pull/1201#issuecomment-5185673670)
-and [reusable benchmark harness](https://github.com/actions/setup-java-benchmarks/pull/10).
+minutes. The benchmark harness and methodology, along with results from later
+runs, live in
+[actions/setup-java-benchmarks](https://github.com/actions/setup-java-benchmarks).
 
 ## Platform and architecture compatibility
 

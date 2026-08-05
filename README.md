@@ -320,20 +320,11 @@ For advanced Gradle caching features such as build output caching, configuration
 
 ### Caching JDK installations
 
-The JDK cache stores the downloaded JDK installation so later runs skip the download. It is enabled implicitly whenever dependency `cache` is set, so most workflows that cache dependencies are already caching the JDK. Set `cache-jdk: true` to enable it without dependency caching, or `cache-jdk: false` to opt out while keeping dependency caching.
-
-| `cache` | `cache-jdk` | Dependency and wrapper caches | JDK cache |
-| --- | --- | --- | --- |
-| Omitted | Omitted | Disabled | Disabled |
-| Omitted | `true` | Disabled | Enabled |
-| Omitted | `false` | Disabled | Disabled |
-| Set | Omitted | Enabled | Enabled |
-| Set | `true` | Enabled | Enabled |
-| Set | `false` | Enabled | Disabled |
+The JDK cache stores the downloaded JDK installation so later runs skip the download. It is enabled implicitly whenever dependency `cache` is set, so most workflows that cache dependencies are already caching the JDK. Set `cache-jdk: true` to enable it without dependency caching, or `cache-jdk: false` to opt out while keeping dependency caching. With neither `cache` nor `cache-jdk` set, nothing is cached.
 
 > [!IMPORTANT]
 > Because JDK caching is on by default whenever `cache` is set, review [Caching JDK installations](docs/advanced-usage.md#caching-jdk-installations)
-> for the full behavior, cache identity and storage impact.
+> for the full `cache`/`cache-jdk` matrix, cache identity and storage impact.
 
 ### Read-only caches
 
