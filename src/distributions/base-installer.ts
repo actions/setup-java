@@ -310,7 +310,7 @@ export abstract class JavaBase {
       // metadata API is down.
       core.warning(
         `Failed to resolve ${this.distribution} ${this.version} from remote (${
-          (error as Error).message
+          error instanceof Error ? error.message : String(error)
         }); falling back to the cached resolution for ${restored.release.version}.`
       );
       return restored.release;
