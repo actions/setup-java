@@ -32,7 +32,8 @@ const pendingResolutions = [];
  * Restores a previously resolved release so a distribution can skip its vendor
  * metadata API.
  *
- * The cache path deliberately excludes the date bucket: `@actions/cache` derives
+ * The cache path deliberately excludes the freshness window: `@actions/cache`
+ * derives
  * a cache version by hashing the requested paths, so a bucket-independent path
  * is what allows the restore keys to fall back to an older bucket.
  */
@@ -48,7 +49,7 @@ async function restoreJdkResolution(request) {
         return undefined;
     }
     const keyPrefix = getResolutionKeyPrefix(request);
-    const primaryKey = `${keyPrefix}${getDateBucket()}`;
+    const primaryKey = `${keyPrefix}${getFreshnessBucket()}`;
     let matchedKey;
     try {
         matchedKey = await _actions_cache__WEBPACK_IMPORTED_MODULE_3__/* .restoreCache */ .P3([cachePath], primaryKey, [keyPrefix]);
@@ -92,7 +93,7 @@ function registerJdkResolution(request, release) {
         _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .debug */ .Yz(`Failed to record the JDK resolution cache entry: ${getErrorMessage(error)}`);
         return;
     }
-    const key = `${getResolutionKeyPrefix(request)}${getDateBucket()}`;
+    const key = `${getResolutionKeyPrefix(request)}${getFreshnessBucket()}`;
     if (!pendingResolutions.some(item => item.key === key)) {
         pendingResolutions.push({ key, path: cachePath, release: payload });
     }
@@ -161,11 +162,21 @@ function getRunnerOs() {
     return process.env['RUNNER_OS'] ?? process.platform;
 }
 /**
- * UTC day the entry was resolved on. It bounds how long a floating version spec
- * such as `21` can keep resolving to an already known release.
+ * Start of the seven-day window the entry was resolved in, which bounds how long
+ * a floating version spec such as `21` can keep resolving to an already known
+ * release.
+ *
+ * Seven days is the longest usable window: GitHub evicts cache entries that have
+ * not been accessed for seven days, so a longer one would mean the previous
+ * entry is already gone when the window rolls over, taking the stale-fallback
+ * path with it. It also comfortably covers the real release cadence, which is
+ * monthly at its fastest and usually quarterly.
  */
-function getDateBucket() {
-    return new Date().toISOString().slice(0, 10);
+function getFreshnessBucket() {
+    const week = 7 * 24 * 60 * 60 * 1000;
+    return new Date(Math.floor(Date.now() / week) * week)
+        .toISOString()
+        .slice(0, 10);
 }
 /**
  * The restored payload drives a download, so it is validated as untrusted input

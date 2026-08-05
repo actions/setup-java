@@ -587,14 +587,23 @@ architecture, distribution, package type, requested version, and stability. A jo
 that finds a current entry installs the JDK without contacting the distribution's
 metadata API at all.
 
-Entries carry the date they were resolved on. An entry resolved earlier than the
-current day is not used directly: setup-java still queries the metadata API, so a
-floating request such as `java-version: 21` keeps picking up new releases. The
-older entry is used only when that query fails, which keeps a job working through
-a vendor outage or rate limit. Because the entry also holds the download URL and
-checksum, this fallback works even when the JDK itself is not cached and still
-has to be downloaded. When the fallback is used, setup-java reports it with a
-warning.
+Entries carry the seven-day window they were resolved in. An entry from an
+earlier window is not used directly: setup-java still queries the metadata API,
+so a floating request such as `java-version: 21` keeps picking up new releases.
+The older entry is used only when that query fails, which keeps a job working
+through a vendor outage or rate limit. Because the entry also holds the download
+URL and checksum, this fallback works even when the JDK itself is not cached and
+still has to be downloaded. When the fallback is used, setup-java reports it with
+a warning.
+
+Seven days is deliberate. GitHub removes cache entries that have not been
+accessed for seven days, so a longer window would mean the previous entry is
+already evicted by the time the window rolls over, leaving no fallback at the
+moment one is most likely to be needed. It also comfortably covers JDK release
+cadence, which is monthly at its fastest and usually quarterly, and it means a
+repository whose workflows run infrequently still benefits. Use
+`check-latest: true` for a workflow that must resolve the newest release on every
+run.
 
 Restored entries are validated before use: the download URL and any signature URL
 must be well-formed HTTPS URLs and the checksum must use a supported algorithm.

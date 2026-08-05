@@ -30,8 +30,8 @@ export interface JdkResolutionRequest {
 export interface RestoredJdkResolution {
   release: JavaDownloadRelease;
   /**
-   * Whether the entry was written within the current date bucket. A stale entry
-   * is only a fallback for the case where the vendor metadata API is
+   * Whether the entry was written within the current freshness window. A stale
+   * entry is only a fallback for the case where the vendor metadata API is
    * unreachable, so a floating version spec cannot be pinned indefinitely.
    */
   fresh: boolean;
@@ -54,7 +54,8 @@ const pendingResolutions: JdkResolutionState[] = [];
  * Restores a previously resolved release so a distribution can skip its vendor
  * metadata API.
  *
- * The cache path deliberately excludes the date bucket: `@actions/cache` derives
+ * The cache path deliberately excludes the freshness window: `@actions/cache`
+ * derives
  * a cache version by hashing the requested paths, so a bucket-independent path
  * is what allows the restore keys to fall back to an older bucket.
  */
@@ -74,7 +75,7 @@ export async function restoreJdkResolution(
   }
 
   const keyPrefix = getResolutionKeyPrefix(request);
-  const primaryKey = `${keyPrefix}${getDateBucket()}`;
+  const primaryKey = `${keyPrefix}${getFreshnessBucket()}`;
 
   let matchedKey: string | undefined;
   try {
@@ -135,7 +136,7 @@ export function registerJdkResolution(
     return;
   }
 
-  const key = `${getResolutionKeyPrefix(request)}${getDateBucket()}`;
+  const key = `${getResolutionKeyPrefix(request)}${getFreshnessBucket()}`;
   if (!pendingResolutions.some(item => item.key === key)) {
     pendingResolutions.push({key, path: cachePath, release: payload});
   }
@@ -225,11 +226,21 @@ function getRunnerOs(): string {
 }
 
 /**
- * UTC day the entry was resolved on. It bounds how long a floating version spec
- * such as `21` can keep resolving to an already known release.
+ * Start of the seven-day window the entry was resolved in, which bounds how long
+ * a floating version spec such as `21` can keep resolving to an already known
+ * release.
+ *
+ * Seven days is the longest usable window: GitHub evicts cache entries that have
+ * not been accessed for seven days, so a longer one would mean the previous
+ * entry is already gone when the window rolls over, taking the stale-fallback
+ * path with it. It also comfortably covers the real release cadence, which is
+ * monthly at its fastest and usually quarterly.
  */
-function getDateBucket(): string {
-  return new Date().toISOString().slice(0, 10);
+function getFreshnessBucket(): string {
+  const week = 7 * 24 * 60 * 60 * 1000;
+  return new Date(Math.floor(Date.now() / week) * week)
+    .toISOString()
+    .slice(0, 10);
 }
 
 /**

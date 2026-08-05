@@ -36,7 +36,9 @@ const release = {
   checksum: {algorithm: 'sha256' as const, value: 'abc123'}
 };
 
-const today = () => new Date().toISOString().slice(0, 10);
+const WEEK = 7 * 24 * 60 * 60 * 1000;
+const bucket = () =>
+  new Date(Math.floor(Date.now() / WEEK) * WEEK).toISOString().slice(0, 10);
 
 describe('JDK resolution cache', () => {
   const tempRoots: string[] = [];
@@ -97,16 +99,37 @@ describe('JDK resolution cache', () => {
       expect(
         paths[0].startsWith(path.join(runnerTemp, 'setup-java-jdk-resolution'))
       ).toBe(true);
-      expect(paths[0]).not.toContain(today());
-      expect(primaryKey).toBe(`${restoreKeys[0]}${today()}`);
+      expect(paths[0]).not.toContain(bucket());
+      expect(primaryKey).toBe(`${restoreKeys[0]}${bucket()}`);
       expect(restoreKeys[0]).toMatch(
         /^setup-java-jdkres-v1-Linux-x64-[0-9a-f]{64}-$/
       );
     });
 
+    it('holds the key steady for a week and then rolls it', async () => {
+      createRunnerTemp();
+      const nowSpy = jest.spyOn(Date, 'now');
+      const keyAt = async (ms: number) => {
+        nowSpy.mockReturnValue(ms);
+        await restoreJdkResolution(request);
+        return jest.mocked(cache.restoreCache).mock.calls.at(-1)![1] as string;
+      };
+
+      // A window boundary, so the offsets below are unambiguous.
+      const windowStart = 2900 * WEEK;
+
+      const start = await keyAt(windowStart);
+      const sameWindow = await keyAt(windowStart + 6 * 24 * 60 * 60 * 1000);
+      const nextWindow = await keyAt(windowStart + WEEK);
+
+      expect(sameWindow).toBe(start);
+      expect(nextWindow).not.toBe(start);
+      nowSpy.mockRestore();
+    });
+
     it('reports a hit on the current bucket as fresh', async () => {
       createRunnerTemp();
-      const key = `setup-java-jdkres-v1-Linux-x64-${'0'.repeat(64)}-${today()}`;
+      const key = `setup-java-jdkres-v1-Linux-x64-${'0'.repeat(64)}-${bucket()}`;
       restoreWith(JSON.stringify(release), key);
 
       // The key the module computes is the one it passes to restoreCache, so
@@ -254,7 +277,7 @@ describe('JDK resolution cache', () => {
         jest.mocked(core.saveState).mock.calls.at(-1)![1] as string
       );
       const entry = state.at(-1);
-      expect(entry.key.endsWith(today())).toBe(true);
+      expect(entry.key.endsWith(bucket())).toBe(true);
       expect(
         JSON.parse(
           fs.readFileSync(path.join(entry.path, 'release.json'), 'utf8')
