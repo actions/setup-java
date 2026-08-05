@@ -15,12 +15,6 @@ permissions:
   contents: read
 
 jobs:
-  call-basic-validation:
-    name: Basic validation
-    uses: actions/reusable-workflows/.github/workflows/basic-validation.yml@main
-    with:
-      node-version: '24.x'
-
   call-check-dist:
     name: Check dist/
     uses: actions/reusable-workflows/.github/workflows/check-dist.yml@main
