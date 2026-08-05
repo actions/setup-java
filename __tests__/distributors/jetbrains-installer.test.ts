@@ -47,6 +47,24 @@ const core = await import('@actions/core');
 const {JetBrainsDistribution} =
   await import('../../src/distributions/jetbrains/installer.js');
 const {RetryingHttpClient} = await import('../../src/retrying-http-client.js');
+const {MAX_PAGINATION_PAGES} = await import('../../src/util.js');
+
+const JETBRAINS_RELEASES_URL =
+  'https://api.github.com/repos/JetBrains/JetBrainsRuntime/releases?per_page=100';
+
+function release(tagName: string, prerelease: boolean) {
+  return {
+    tag_name: tagName,
+    name: tagName,
+    prerelease
+  };
+}
+
+function nextPageHeader(page: number) {
+  return {
+    link: `<${JETBRAINS_RELEASES_URL}&page=${page}>; rel="next"`
+  };
+}
 
 function response(
   statusCode: number,
@@ -109,6 +127,138 @@ describe('getAvailableVersions', () => {
       os.platform() === 'win32' ? manifestData.length : manifestData.length + 2;
     expect(availableVersions.length).toBe(length);
   }, 10_000);
+
+  it('continues a stable request after an all-prerelease page', async () => {
+    jest.spyOn(HttpClient.prototype, 'head').mockResolvedValue({
+      message: {statusCode: 200}
+    } as any);
+    spyHttpClient
+      .mockResolvedValueOnce({
+        statusCode: 200,
+        headers: nextPageHeader(2),
+        result: [release('jbr-release-26.0.0b1.1', true)]
+      })
+      .mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        result: [release('jbr-release-21.0.11b1163.116', false)]
+      });
+    const distribution = new JetBrainsDistribution({
+      version: '21',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    const availableVersions = await distribution['getAvailableVersions']();
+
+    expect(availableVersions.map(version => version.tag_name)).toContain(
+      'jbr-release-21.0.11b1163.116'
+    );
+    expect(availableVersions.map(version => version.tag_name)).not.toContain(
+      'jbr-release-26.0.0b1.1'
+    );
+    expect(spyHttpClient).toHaveBeenCalledTimes(2);
+  });
+
+  it('continues an EA request after an all-stable page', async () => {
+    jest.spyOn(HttpClient.prototype, 'head').mockResolvedValue({
+      message: {statusCode: 200}
+    } as any);
+    spyHttpClient
+      .mockResolvedValueOnce({
+        statusCode: 200,
+        headers: nextPageHeader(2),
+        result: [release('jbr-release-21.0.11b1163.116', false)]
+      })
+      .mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        result: [release('jbr-release-26.0.0b1.1', true)]
+      });
+    const distribution = new JetBrainsDistribution({
+      version: '26-ea',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    const availableVersions = await distribution['getAvailableVersions']();
+
+    expect(availableVersions.map(version => version.tag_name)).toEqual([
+      'jbr-release-26.0.0b1.1'
+    ]);
+    expect(spyHttpClient).toHaveBeenCalledTimes(2);
+  });
+
+  it('stops pagination when a raw GitHub page is empty', async () => {
+    spyHttpClient
+      .mockResolvedValueOnce({
+        statusCode: 200,
+        headers: nextPageHeader(2),
+        result: [release('jbr-release-21.0.11b1163.116', false)]
+      })
+      .mockResolvedValueOnce({
+        statusCode: 200,
+        headers: nextPageHeader(3),
+        result: []
+      });
+    const distribution = new JetBrainsDistribution({
+      version: '26-ea',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    await distribution['getAvailableVersions']();
+
+    expect(spyHttpClient).toHaveBeenCalledTimes(2);
+  });
+
+  it('stops at the pagination safeguard', async () => {
+    spyHttpClient.mockResolvedValue({
+      statusCode: 200,
+      headers: nextPageHeader(2),
+      result: [release('jbr-release-21.0.11b1163.116', false)]
+    });
+    const distribution = new JetBrainsDistribution({
+      version: '26-ea',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    const availableVersions = await distribution['getAvailableVersions']();
+
+    expect(availableVersions).toEqual([]);
+    expect(spyHttpClient).toHaveBeenCalledTimes(MAX_PAGINATION_PAGES);
+    expect(core.warning).toHaveBeenCalledWith(
+      `Reached pagination safeguard limit (${MAX_PAGINATION_PAGES} pages) while listing JetBrains Runtime releases.`
+    );
+  });
+
+  it('ignores pagination links with an unexpected origin', async () => {
+    spyHttpClient.mockResolvedValueOnce({
+      statusCode: 200,
+      headers: {
+        link: '<https://example.com/releases?page=2>; rel="next"'
+      },
+      result: [release('jbr-release-21.0.11b1163.116', false)]
+    });
+    const distribution = new JetBrainsDistribution({
+      version: '26-ea',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    await distribution['getAvailableVersions']();
+
+    expect(spyHttpClient).toHaveBeenCalledTimes(1);
+    expect(core.warning).toHaveBeenCalledWith(
+      'Ignoring pagination link with unexpected origin: https://example.com/releases?page=2'
+    );
+  });
 
   it('retries a GitHub rate limit using Retry-After', async () => {
     spyHttpClient.mockRestore();

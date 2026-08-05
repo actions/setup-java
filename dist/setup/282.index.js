@@ -25,6 +25,8 @@ export const modules = {
 
 
 
+const JETBRAINS_RELEASES_URL = 'https://api.github.com/repos/JetBrains/JetBrainsRuntime/releases?per_page=100';
+const GITHUB_API_ORIGIN = 'https://api.github.com';
 class JetBrainsDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/* .JavaBase */ .O {
     constructor(installerOptions) {
         super('JetBrains', installerOptions);
@@ -74,34 +76,39 @@ class JetBrainsDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_
         if (_actions_core__WEBPACK_IMPORTED_MODULE_0__/* .isDebug */ ._o()) {
             console.time('Retrieving available versions for JBR took'); // eslint-disable-line no-console
         }
-        // need to iterate through all pages to retrieve the list of all versions
-        // GitHub API doesn't provide way to retrieve the count of pages to iterate so infinity loop
-        let page_index = 1;
         const rawVersions = [];
         const bearerToken = process.env.GITHUB_TOKEN;
-        while (true) {
-            const requestArguments = `per_page=100&page=${page_index}`;
-            const requestHeaders = {};
-            if (bearerToken) {
-                requestHeaders['Authorization'] = `Bearer ${bearerToken}`;
-            }
-            const rawUrl = `https://api.github.com/repos/JetBrains/JetBrainsRuntime/releases?${requestArguments}`;
-            if (_actions_core__WEBPACK_IMPORTED_MODULE_0__/* .isDebug */ ._o() && page_index === 1) {
-                // url is identical except page_index so print it once for debug
-                _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .debug */ .Yz(`Gathering available versions from '${rawUrl}'`);
-            }
-            const paginationPageResult = (await this.http.getJson(rawUrl, requestHeaders)).result;
+        const requestHeaders = {};
+        if (bearerToken) {
+            requestHeaders['Authorization'] = `Bearer ${bearerToken}`;
+        }
+        let releasesUrl = JETBRAINS_RELEASES_URL;
+        let pageCount = 0;
+        if (_actions_core__WEBPACK_IMPORTED_MODULE_0__/* .isDebug */ ._o()) {
+            _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .debug */ .Yz(`Gathering available versions from '${releasesUrl}'`);
+        }
+        while (releasesUrl) {
+            pageCount++;
+            const response = await this.http.getJson(releasesUrl, requestHeaders);
+            const paginationPageResult = response.result;
             if (!paginationPageResult || paginationPageResult.length === 0) {
-                // break infinity loop because we have reached end of pagination
                 break;
             }
-            const paginationPage = paginationPageResult.filter(version => this.stable ? !version.prerelease : version.prerelease);
-            if (!paginationPage || paginationPage.length === 0) {
-                // break infinity loop because we have reached end of pagination
+            rawVersions.push(...paginationPageResult.filter(version => this.stable ? !version.prerelease : version.prerelease));
+            const nextUrl = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .getNextPageUrlFromLinkHeader */ .rC)(response.headers);
+            if (nextUrl && !(0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .validatePaginationUrl */ .SA)(nextUrl, GITHUB_API_ORIGIN)) {
+                _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .warning */ .$e(`Ignoring pagination link with unexpected origin: ${nextUrl}`);
+                releasesUrl = null;
+            }
+            else {
+                releasesUrl = nextUrl;
+            }
+            if (pageCount >= _util_js__WEBPACK_IMPORTED_MODULE_5__/* .MAX_PAGINATION_PAGES */ .Tp) {
+                if (releasesUrl) {
+                    _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .warning */ .$e(`Reached pagination safeguard limit (${_util_js__WEBPACK_IMPORTED_MODULE_5__/* .MAX_PAGINATION_PAGES */ .Tp} pages) while listing JetBrains Runtime releases.`);
+                }
                 break;
             }
-            rawVersions.push(...paginationPage);
-            page_index++;
         }
         if (this.stable) {
             // Add versions not available from the API but are downloadable
