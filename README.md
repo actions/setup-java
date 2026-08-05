@@ -61,6 +61,7 @@ steps:
 - JDK downloads now automatically verify authoritative checksums for [supported distributions](#download-integrity-and-signatures).
 - Added `force-download: true` to bypass the tool cache and perform a reproducible fresh install.
 - Dependency caching now supports custom paths with `cache-path` and restore-only operation with `cache-read-only: true`.
+- Downloaded JDKs are now [cached](#caching-jdk-installations) automatically when `cache` is set; use `cache-jdk` to enable or disable it independently.
 - Set `problem-matcher: false` to disable Java compiler and uncaught-exception annotations.
 - GraalVM distributions now set `GRAALVM_HOME` in addition to `JAVA_HOME`.
 - Invalid boolean values, unsupported distribution/package/platform combinations, and mismatched Maven toolchain ID counts now fail with targeted errors.
