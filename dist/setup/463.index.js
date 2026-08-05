@@ -68,7 +68,10 @@ var base_installer = __webpack_require__(6242);
 var constants = __webpack_require__(7242);
 // EXTERNAL MODULE: ./src/util.ts
 var util = __webpack_require__(4527);
+// EXTERNAL MODULE: ./src/distributions/platform-types.ts
+var platform_types = __webpack_require__(7444);
 ;// CONCATENATED MODULE: ./src/distributions/temurin/installer.ts
+
 
 
 
@@ -246,7 +249,7 @@ class TemurinDistribution extends base_installer/* JavaBase */.O {
             case 'win32':
                 return 'windows';
             case 'linux':
-                if (external_fs_default().existsSync('/etc/alpine-release')) {
+                if ((0,platform_types/* isAlpineLinux */.G6)()) {
                     return 'alpine-linux';
                 }
                 return 'linux';
