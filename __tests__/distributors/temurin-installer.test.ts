@@ -72,7 +72,7 @@ jest.unstable_mockModule('../../src/util.js', () => ({
 
 jest.unstable_mockModule('../../src/gpg.js', () => ({
   importKey: jest.fn(),
-  deleteKey: jest.fn(),
+  removeGpgHome: jest.fn(),
   verifyPackageSignature: jest.fn()
 }));
 

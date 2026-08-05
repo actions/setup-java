@@ -1,14 +1,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import {randomUUID} from 'crypto';
 import * as io from '@actions/io';
 import * as exec from '@actions/exec';
 import * as tc from '@actions/tool-cache';
 import * as util from './util.js';
 import {ExecOptions} from '@actions/exec';
 
-export const PRIVATE_KEY_FILE = path.join(util.getTempDir(), 'private-key.asc');
-
-const PRIVATE_KEY_FINGERPRINT_REGEX = /\w{40}/;
+export const GPG_HOME_PREFIX = 'setup-java-gpg-';
+const VERIFY_GPG_HOME_PREFIX = 'verify-signature-gpg-home-';
 
 // Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
 // The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
@@ -21,49 +21,66 @@ export function toGpgPath(p: string): string {
     .replace(/^([A-Za-z]):\//, (_, drive) => `/${drive.toLowerCase()}/`);
 }
 
-export async function importKey(privateKey: string) {
-  fs.writeFileSync(PRIVATE_KEY_FILE, privateKey, {
-    encoding: 'utf-8',
-    flag: 'w'
-  });
-
-  let output = '';
-
-  const options: ExecOptions = {
-    silent: true,
-    listeners: {
-      stdout: (data: Buffer) => {
-        output += data.toString();
-      }
-    }
-  };
-
-  await exec.exec(
-    'gpg',
-    [
-      '--batch',
-      '--import-options',
-      'import-show',
-      '--import',
-      PRIVATE_KEY_FILE
-    ],
-    options
-  );
-
-  await io.rmRF(PRIVATE_KEY_FILE);
-
-  const match = output.match(PRIVATE_KEY_FINGERPRINT_REGEX);
-  return match && match[0];
+function createGpgHome(prefix: string): string {
+  const gpgHome = fs.mkdtempSync(path.join(util.getTempDir(), prefix));
+  if (process.platform !== 'win32') {
+    fs.chmodSync(gpgHome, 0o700);
+  }
+  return gpgHome;
 }
 
-export async function deleteKey(keyFingerprint: string) {
-  await exec.exec(
-    'gpg',
-    ['--batch', '--yes', '--delete-secret-and-public-key', keyFingerprint],
-    {
-      silent: true
-    }
+export async function importKey(privateKey: string): Promise<string> {
+  const gpgHome = createGpgHome(GPG_HOME_PREFIX);
+  const privateKeyFile = path.join(
+    gpgHome,
+    `private-key-${randomUUID()}.asc`
   );
+
+  try {
+    fs.writeFileSync(privateKeyFile, privateKey, {
+      encoding: 'utf-8',
+      flag: 'wx',
+      mode: 0o600
+    });
+
+    try {
+      await exec.exec(
+        'gpg',
+        [
+          '--homedir',
+          toGpgPath(gpgHome),
+          '--batch',
+          '--import',
+          toGpgPath(privateKeyFile)
+        ],
+        {silent: true}
+      );
+    } finally {
+      fs.rmSync(privateKeyFile, {force: true});
+    }
+
+    return gpgHome;
+  } catch (error) {
+    await io.rmRF(gpgHome);
+    throw error;
+  }
+}
+
+export async function removeGpgHome(gpgHome: string): Promise<void> {
+  if (!gpgHome) {
+    return;
+  }
+
+  const resolvedGpgHome = path.resolve(gpgHome);
+  const resolvedTempDir = path.resolve(util.getTempDir());
+  if (
+    path.dirname(resolvedGpgHome) !== resolvedTempDir ||
+    !path.basename(resolvedGpgHome).startsWith(GPG_HOME_PREFIX)
+  ) {
+    throw new Error(`Refusing to remove unexpected GPG home: ${gpgHome}`);
+  }
+
+  await io.rmRF(resolvedGpgHome);
 }
 
 export async function verifyPackageSignature(
@@ -74,9 +91,7 @@ export async function verifyPackageSignature(
   const signaturePath = await tc.downloadTool(signatureUrl);
   let gpgHome: string;
   try {
-    gpgHome = fs.mkdtempSync(
-      path.join(util.getTempDir(), 'verify-signature-gpg-home-')
-    );
+    gpgHome = createGpgHome(VERIFY_GPG_HOME_PREFIX);
   } catch (error) {
     try {
       await io.rmRF(signaturePath);

@@ -52,8 +52,14 @@ export async function configureAuthentication() {
 
   if (gpgPrivateKey) {
     core.info('Importing private gpg key');
-    const keyFingerprint = (await gpg.importKey(gpgPrivateKey)) || '';
-    core.saveState(constants.STATE_GPG_PRIVATE_KEY_FINGERPRINT, keyFingerprint);
+    const gpgHome = await gpg.importKey(gpgPrivateKey);
+    try {
+      core.saveState(constants.STATE_GPG_HOME, gpgHome);
+      core.exportVariable('GNUPGHOME', gpgHome);
+    } catch (error) {
+      await gpg.removeGpgHome(gpgHome);
+      throw error;
+    }
   }
 }
 

@@ -63,6 +63,8 @@ const core = await import('@actions/core');
 const cache = await import('@actions/cache');
 const {run: cleanup} = await import('../src/cleanup-java.js');
 const util = await import('../src/util.js');
+const constants = await import('../src/constants.js');
+const {GPG_HOME_PREFIX} = await import('../src/gpg.js');
 const {registerJdk, buildJdkCacheKey} = await import('../src/jdk-cache.js');
 
 const jdkTempRoots: string[] = [];
@@ -114,9 +116,60 @@ describe('cleanup', () => {
     (core.getInput as jest.Mock<any>).mockImplementation((name: string) => {
       return name === 'cache' ? 'gradle' : '';
     });
+
     await cleanup();
     expect(spyCacheSave).toHaveBeenCalled();
     expect(spyWarning).not.toHaveBeenCalled();
+  });
+
+  it('removes the isolated GPG home without touching unrelated key material', async () => {
+    const tempDir = util.getTempDir();
+    fs.mkdirSync(tempDir, {recursive: true});
+    const gpgHome = fs.mkdtempSync(path.join(tempDir, GPG_HOME_PREFIX));
+    const unrelatedGpgHome = fs.mkdtempSync(
+      path.join(tempDir, 'user-gpg-home-')
+    );
+    fs.writeFileSync(path.join(unrelatedGpgHome, 'private.key'), 'pre-existing');
+    (core.getInput as jest.Mock<any>).mockReturnValue('');
+    (core.getState as jest.Mock<any>).mockImplementation((name: string) =>
+      name === constants.STATE_GPG_HOME ? gpgHome : ''
+    );
+
+    await cleanup();
+
+    expect(fs.existsSync(gpgHome)).toBe(false);
+    expect(
+      fs.readFileSync(path.join(unrelatedGpgHome, 'private.key'), 'utf8')
+    ).toBe('pre-existing');
+    fs.rmSync(unrelatedGpgHome, {recursive: true, force: true});
+  });
+
+  it('makes repeated cleanup of the same GPG home idempotent', async () => {
+    const tempDir = util.getTempDir();
+    fs.mkdirSync(tempDir, {recursive: true});
+    const gpgHome = fs.mkdtempSync(path.join(tempDir, GPG_HOME_PREFIX));
+    (core.getInput as jest.Mock<any>).mockReturnValue('');
+    (core.getState as jest.Mock<any>).mockImplementation((name: string) =>
+      name === constants.STATE_GPG_HOME ? gpgHome : ''
+    );
+
+    await cleanup();
+    await cleanup();
+
+    expect(fs.existsSync(gpgHome)).toBe(false);
+    expect(core.setFailed).not.toHaveBeenCalled();
+  });
+
+  it('skips GPG cleanup when no home was persisted', async () => {
+    (core.getInput as jest.Mock<any>).mockReturnValue('');
+    (core.getState as jest.Mock<any>).mockReturnValue('');
+
+    await cleanup();
+
+    expect(spyInfo).not.toHaveBeenCalledWith(
+      'Removing private key from isolated GPG home'
+    );
+    expect(core.setFailed).not.toHaveBeenCalled();
   });
 
   it('does not fail even though the save process throws error', async () => {
