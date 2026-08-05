@@ -17,6 +17,7 @@
   - [Package compatibility](#Package-compatibility)
   - [JavaFX Maven project](#JavaFX-Maven-project)
 - [Ensuring the Maven cache is complete (plugin dependencies)](#ensuring-the-maven-cache-is-complete-plugin-dependencies)
+- [Caching JDK installations](#caching-jdk-installations)
 - [Installing custom Java architecture](#Installing-custom-Java-architecture)
 - [Installing JDK without setting as default](#Installing-JDK-without-setting-as-default)
 - [Installing custom Java distribution from local file](#Installing-Java-from-local-file)
@@ -467,6 +468,93 @@ jobs:
 > [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle),
 > which provides purpose-built caching (see the
 > [setup-gradle documentation](https://github.com/gradle/actions/blob/main/docs/setup-gradle.md)).
+
+## Caching JDK installations
+
+`cache-jdk` controls caching for downloaded JDK installations. The JDK cache is
+stored and restored as its own cache entry, separate from the dependency and
+build-tool wrapper caches selected by `cache`. Whether it is *enabled*, however,
+is coupled to `cache`: setting `cache` turns JDK caching on as well, unless
+`cache-jdk` is set explicitly.
+
+| `cache` | `cache-jdk` | Dependency and wrapper caches | JDK cache |
+| --- | --- | --- | --- |
+| Omitted | Omitted | Disabled | Disabled |
+| Omitted | `true` | Disabled | Enabled |
+| Omitted | `false` | Disabled | Disabled |
+| Set | Omitted | Enabled | Enabled |
+| Set | `true` | Enabled | Enabled |
+| Set | `false` | Enabled | Disabled |
+
+JDK entries are specific to the runner operating system and normalized
+architecture. They are additionally separated by distribution, package type,
+exact resolved Java version, release identity, and signature-verification
+identity. The release identity is the authoritative checksum when available and
+otherwise the download URL without its query string. These dimensions prevent
+incompatible JDKs from sharing an entry. They also mean that a matrix or workflow
+using multiple JDK versions, distributions, package types, architectures, or
+operating systems stores a separate JDK entry for each identity and consumes
+cache storage for each one.
+
+For `distribution: jdkfile`, the release source is a SHA-256 hash of the local
+`jdk-file` contents, streamed so the archive is not held in memory. Changing the
+archive therefore creates a different JDK cache entry, even when its path and
+requested version are unchanged. The archive is only read when the runner tool
+cache holds no installation satisfying the requested version: a matching
+tool-cache installation short-circuits setup, so a changed `jdk-file` is not
+re-extracted for a version that is already installed. Use
+`force-download: true` when the archive contents change but the version does not.
+
+The verification identity separates unverified downloads from packages verified
+with the distribution's bundled signing key and from packages verified with each
+custom key. Custom public keys are represented by a SHA-256 fingerprint of
+normalized key material; the key itself is not placed in the cache key, the logs,
+or action state. A verified exact-key hit reuses content that was
+signature-verified when it was downloaded by the run that saved the entry,
+instead of downloading and verifying it again.
+
+> [!IMPORTANT]
+> The JDK cache **key** is what isolates verification modes and release
+> identity: a JDK cache entry created by an unverified download can never be
+> restored for a request that sets `verify-signature: true`, and vice versa.
+> `cache-jdk` does not change how the runner tool cache is used. setup-java
+> first looks for an installation in the runner tool cache — a preinstalled
+> JDK, or one installed by an earlier step of the same job — and uses it as-is. Such an installation is not downloaded again, and its checksum
+> and signature are not reverified, even when `verify-signature: true` is set,
+> because its verification history is not recorded in the tool cache. Use
+> `force-download: true` for a request that must download and verify the archive
+> itself.
+
+`check-latest: true` and `java-version: latest` resolve remote metadata before
+looking up the exact resolved JDK entry. `force-download: true` bypasses both the
+runner tool cache and JDK cache restore, but an enabled JDK cache still records
+the downloaded installation for a post-job save. `cache-read-only: true` allows
+restores but suppresses post-job saves for JDK, dependency, and wrapper caches.
+
+If the cache service fails to restore an entry, or the restored entry lacks the
+expected completed tool-cache path, setup continues by downloading the JDK.
+Post-job saves are best-effort and do not fail the job: cache keys are immutable,
+so an existing key or a concurrent job winning the save race is left unchanged,
+and a failure to save one JDK entry is reported as a warning without preventing
+the remaining entries from being saved.
+
+A key is only ever populated with the installation it was computed for. Because
+tool-cache paths are shared per version and architecture, a later step — for
+example one using `force-download: true` — can replace the installation an
+earlier step registered. setup-java detects that replacement in the post-job
+step and skips the save with a warning, so a key is never saved with content
+other than the installation it identifies. This guarantee holds without
+rehashing hundreds of megabytes of JDK content on every job.
+
+JDK caching trades cache storage and cold-run save work for faster warm setup.
+In a five-run Ubuntu benchmark using Microsoft OpenJDK 17.0.19, the median warm
+`setup-java` time fell from 7 seconds to 3 seconds and median warm job time fell
+from 24 seconds to 18 seconds. The JDK entry added 175.3 MiB for that single
+identity. Results vary by runner, distribution, JDK size, network, and cache
+eviction pressure; short jobs may improve latency without changing billed
+minutes. The benchmark harness and methodology, along with results from later
+runs, live in
+[actions/setup-java-benchmarks](https://github.com/actions/setup-java-benchmarks).
 
 ## Platform and architecture compatibility
 

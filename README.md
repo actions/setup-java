@@ -33,7 +33,7 @@ steps:
 - [Inputs](#inputs)
 - [Supported distributions](#supported-distributions)
 - [Supported version syntax](#supported-version-syntax)
-- [Caching dependencies](#caching-dependencies)
+- [Caching](#caching)
 - [Multiple JDKs and Maven toolchains](#multiple-jdks-and-maven-toolchains)
 - [Publishing packages](#publishing-packages)
 - [Advanced usage](#advanced-usage)
@@ -61,6 +61,7 @@ steps:
 - JDK downloads now automatically verify authoritative checksums for [supported distributions](#download-integrity-and-signatures).
 - Added `force-download: true` to bypass the tool cache and perform a reproducible fresh install.
 - Dependency caching now supports custom paths with `cache-path` and restore-only operation with `cache-read-only: true`.
+- Downloaded JDKs are now [cached](#caching-jdk-installations) automatically when `cache` is set; use `cache-jdk` to enable or disable it independently.
 - Set `problem-matcher: false` to disable Java compiler and uncaught-exception annotations.
 - GraalVM distributions now set `GRAALVM_HOME` in addition to `JAVA_HOME`.
 - Invalid boolean values, unsupported distribution/package/platform combinations, and mismatched Maven toolchain ID counts now fail with targeted errors.
@@ -161,9 +162,10 @@ steps:
 | `verify-signature-public-key` | ASCII-armored GPG public key to use for signature verification. Overrides the bundled key. | |
 | `token` | Token for fetching GitHub.com-hosted version manifests, useful on GitHub Enterprise Server when unauthenticated requests are rate-limited. | `${{ github.token }}` on GitHub.com; empty string on GHES |
 | `cache` | Enable dependency caching for `maven`, `gradle`, or `sbt`. | |
+| `cache-jdk` | Cache downloaded JDK installations between jobs. When omitted, JDK caching is enabled only if `cache` is set. Set explicitly to `true` or `false` to override. | Enabled when `cache` is set |
 | `cache-dependency-path` | Dependency file paths used for cache key hashing. Supports globs and multiline values. | Auto-detected by package manager |
 | `cache-path` | Cache paths to use instead of the package manager's default dependency cache path. Supports multiline values and exclusions. | |
-| `cache-read-only` | Restore caches without saving changes in the post step. | `false` |
+| `cache-read-only` | Restore dependency, wrapper, and JDK caches without saving changes in the post step. | `false` |
 | `server-id` | Maven repository ID used in generated `settings.xml`. | `github` |
 | `server-username-env-var` | Environment variable name for Maven repository username. | `GITHUB_ACTOR` |
 | `server-password-env-var` | Environment variable name for Maven repository password or token. | `GITHUB_TOKEN` |
@@ -174,6 +176,8 @@ steps:
 | `mvn-toolchain-id` | Maven Toolchain ID. When multiple Java versions are installed, the number of IDs must match the number of versions. | `${distribution}_${java-version}` |
 | `mvn-toolchain-vendor` | Maven Toolchain vendor value. | `${distribution}` |
 | `show-download-progress` | Keep Maven artifact download and transfer progress in logs. When `false`, the action adds `-ntp` to `MAVEN_ARGS`. | `false` |
+
+- `java-package`: Supported package types are `jdk`, `jre`, `jdk+fx`, `jre+fx`, `jdk+crac`, `jre+crac`, `jdk+jmods`, `jdk+jcef`, `jre+jcef`, `jdk+ft`, and `jre+ft`. Availability varies by distribution.
 
 Deprecated aliases `jdkFile`, `server-username`, `server-password`, and `gpg-passphrase` remain accepted for compatibility, but should be replaced with the current input names.
 
@@ -238,11 +242,19 @@ GitHub-hosted runners primarily pre-cache Eclipse Temurin JDKs. See the installe
 
 `setup-java` automatically verifies downloaded archive checksums when a selected distribution publishes an authoritative checksum. Automatic checksum verification currently applies to `temurin`, `semeru`, `corretto`, `dragonwell`, `kona`, `sapmachine`, `graalvm`, `graalvm-community`, `zulu`, `oracle`, `oracle-openjdk`, `microsoft`, and `jetbrains`.
 
-Distributions or individual releases without an authoritative checksum continue to install normally, with the omission reported in debug logs. Archives resolved directly from the runner tool cache are not downloaded again and are not reverified.
+Distributions or individual releases without an authoritative checksum continue to install normally, with the omission reported in debug logs. Installations resolved directly from the runner tool cache — including JDKs preinstalled on the runner image and JDKs installed by an earlier step of the same job — are not downloaded again and are not reverified, even when `verify-signature: true` is set. Use `force-download: true` to always download and verify the archive.
 
 Use `verify-signature: true` to verify package signatures for distributions that support it. Currently supported distributions are `temurin` and `microsoft`; setting it for an unsupported distribution fails the workflow.
 
-## Caching dependencies
+## Caching
+
+`setup-java` manages three kinds of caches. Each one is restored and saved as a separate cache entry.
+
+| Cache | What it stores | Key based on | How it is enabled |
+| --- | --- | --- | --- |
+| Dependency cache | Downloaded dependencies, such as `~/.m2/repository`, `~/.gradle/caches`, or the sbt cache paths | Runner OS, architecture, package manager, and a hash of the dependency files | Set `cache` to `maven`, `gradle`, or `sbt` |
+| Wrapper caches | Maven and Gradle wrapper distributions (`~/.m2/wrapper/dists`, `~/.gradle/wrapper`) | Runner OS, architecture, wrapper cache name, and a hash of the wrapper properties | Set `cache` to `maven` or `gradle` |
+| JDK cache | The downloaded JDK installation | Runner OS, architecture, distribution, package type, resolved version, release identity, and signature-verification identity | Enabled implicitly whenever `cache` is set, or explicitly with `cache-jdk: true`. Opt out with `cache-jdk: false` |
 
 Set `cache` to `maven`, `gradle`, or `sbt` to cache dependencies with minimal configuration.
 
@@ -294,9 +306,30 @@ Use `cache-path` when the build tool stores dependencies outside the default loc
 
 `cache-path` changes what is restored and saved, but not the cache key. Jobs that should share a cache key must use the same OS, architecture, package manager, dependency files, and cache paths.
 
+### Wrapper caches
+
+Maven and Gradle wrapper distributions are restored and saved as additional cache entries, separate from the primary dependency cache. These entries have their own keys in the form `setup-java-<runner-os>-<node-arch>-<wrapper-cache-name>-<file-hash>`.
+
+| Package manager | Wrapper cache name | Cached path | Files used for wrapper-cache key |
+| --- | --- | --- | --- |
+| Maven | `maven-wrapper` | `~/.m2/wrapper/dists` | `**/.mvn/wrapper/maven-wrapper.properties` |
+| Gradle | `gradle-wrapper` | `~/.gradle/wrapper` | `**/gradle-wrapper.properties` |
+
+These wrapper caches are independent from dependency caches, so they remain useful even when dependency files change frequently. The wrapper properties are also part of the Maven and Gradle primary dependency-cache key because wrapper changes can affect how dependencies are resolved, but the wrapper distribution files themselves are stored in the separate wrapper cache entries above.
+
+For advanced Gradle caching features such as build output caching, configuration cache support, encrypted cache storage, cleanup, and fine-grained cache control, consider [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle).
+
+### Caching JDK installations
+
+The JDK cache stores the downloaded JDK installation so later runs skip the download. It is enabled implicitly whenever dependency `cache` is set, so most workflows that cache dependencies are already caching the JDK. Set `cache-jdk: true` to enable it without dependency caching, or `cache-jdk: false` to opt out while keeping dependency caching. With neither `cache` nor `cache-jdk` set, nothing is cached.
+
+> [!IMPORTANT]
+> Because JDK caching is on by default whenever `cache` is set, review [Caching JDK installations](docs/advanced-usage.md#caching-jdk-installations)
+> for the full `cache`/`cache-jdk` matrix, cache identity and storage impact.
+
 ### Read-only caches
 
-Set `cache-read-only: true` to restore dependency caches without saving changes in the post action. This is useful for pull requests, merge queues, short-lived branches, and matrix fan-out jobs that should only consume caches produced elsewhere.
+Set `cache-read-only: true` to restore dependency, wrapper, and JDK caches without saving changes in the post action. This is useful for pull requests, merge queues, short-lived branches, and matrix fan-out jobs that should only consume caches produced elsewhere.
 
 ```yaml
 - uses: actions/setup-java@v5
@@ -338,19 +371,6 @@ jobs:
           cache-read-only: true
       - run: mvn ${{ matrix.goal }}
 ```
-
-### Wrapper caches
-
-Maven and Gradle wrapper distributions are restored and saved as additional cache entries, separate from the primary dependency cache. These entries have their own keys in the form `setup-java-<runner-os>-<node-arch>-<wrapper-cache-name>-<file-hash>`.
-
-| Package manager | Wrapper cache name | Cached path | Files used for wrapper-cache key |
-| --- | --- | --- | --- |
-| Maven | `maven-wrapper` | `~/.m2/wrapper/dists` | `**/.mvn/wrapper/maven-wrapper.properties` |
-| Gradle | `gradle-wrapper` | `~/.gradle/wrapper` | `**/gradle-wrapper.properties` |
-
-These wrapper caches are independent from dependency caches, so they remain useful even when dependency files change frequently. The wrapper properties are also part of the Maven and Gradle primary dependency-cache key because wrapper changes can affect how dependencies are resolved, but the wrapper distribution files themselves are stored in the separate wrapper cache entries above.
-
-For advanced Gradle caching features such as build output caching, configuration cache support, encrypted cache storage, cleanup, and fine-grained cache control, consider [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle).
 
 ### Cache segment restore timeout
 

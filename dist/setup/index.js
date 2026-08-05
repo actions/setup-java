@@ -30770,6 +30770,7 @@ module.exports = {
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
 /* harmony export */   At: () => (/* binding */ INPUT_CACHE_DEPENDENCY_PATH),
 /* harmony export */   E8: () => (/* binding */ INPUT_SET_DEFAULT),
+/* harmony export */   GL: () => (/* binding */ INPUT_CACHE_JDK),
 /* harmony export */   I9: () => (/* binding */ INPUT_FORCE_DOWNLOAD),
 /* harmony export */   K$: () => (/* binding */ GPG_PASSPHRASE_PROFILE_ID),
 /* harmony export */   LS: () => (/* binding */ INPUT_ARCHITECTURE),
@@ -30849,6 +30850,7 @@ const MAVEN_GPG_PASSPHRASE_DEFAULT_ENV = 'MAVEN_GPG_PASSPHRASE';
 // Id of the settings.xml profile used to set `gpg.passphraseEnvName`.
 const GPG_PASSPHRASE_PROFILE_ID = 'setup-java-gpg';
 const INPUT_CACHE = 'cache';
+const INPUT_CACHE_JDK = 'cache-jdk';
 const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
 const INPUT_CACHE_PATH = 'cache-path';
 const INPUT_CACHE_READ_ONLY = 'cache-read-only';
@@ -31243,6 +31245,7 @@ function validateToolchainIds(versions, versionFile, toolchainIds) {
 /* harmony export */   ZY: () => (/* binding */ convertVersionToSemver),
 /* harmony export */   aT: () => (/* binding */ isGhes),
 /* harmony export */   ag: () => (/* binding */ getDownloadArchiveExtension),
+/* harmony export */   lN: () => (/* binding */ isJdkCacheEnabled),
 /* harmony export */   n2: () => (/* binding */ renameWinArchive),
 /* harmony export */   rC: () => (/* binding */ getNextPageUrlFromLinkHeader),
 /* harmony export */   ri: () => (/* binding */ getLatestMajorVersion),
@@ -31285,6 +31288,11 @@ function getBooleanInput(inputName, defaultValue = false) {
         return false;
     }
     throw new Error(`Invalid value '${inputValue}' for boolean input '${inputName}'. Expected 'true' or 'false'.`);
+}
+function isJdkCacheEnabled(cache) {
+    return _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_6__/* .INPUT_CACHE_JDK */ .GL).trim()
+        ? getBooleanInput(_constants_js__WEBPACK_IMPORTED_MODULE_6__/* .INPUT_CACHE_JDK */ .GL)
+        : Boolean(cache.trim());
 }
 function getVersionFromToolcachePath(toolPath) {
     if (toolPath) {
@@ -31890,6 +31898,7 @@ __nccwpck_require__.d(__webpack_exports__, {
   dN: () => (/* binding */ exportVariable),
   V4: () => (/* binding */ getInput),
   q3: () => (/* binding */ getMultilineInput),
+  Gu: () => (/* binding */ getState),
   pq: () => (/* binding */ info),
   _o: () => (/* binding */ isDebug),
   LZ: () => (/* binding */ saveState),
@@ -31900,7 +31909,7 @@ __nccwpck_require__.d(__webpack_exports__, {
   $e: () => (/* binding */ warning)
 });
 
-// UNUSED EXPORTS: ExitCode, getBooleanInput, getIDToken, getState, group, markdownSummary, notice, platform, setCommandEcho, summary, toPlatformPath, toPosixPath, toWin32Path
+// UNUSED EXPORTS: ExitCode, getBooleanInput, getIDToken, group, markdownSummary, notice, platform, setCommandEcho, summary, toPlatformPath, toPosixPath, toWin32Path
 
 // EXTERNAL MODULE: external "os"
 var external_os_ = __nccwpck_require__(857);
@@ -36119,6 +36128,7 @@ async function run() {
     const packageType = setup_java_core/* getInput */.V4(constants/* INPUT_JAVA_PACKAGE */.p1);
     const jdkFile = getJdkFileInput();
     const cache = setup_java_core/* getInput */.V4(constants/* INPUT_CACHE */.gk);
+    const cacheJdk = (0,util/* isJdkCacheEnabled */.lN)(cache);
     const cacheDependencyPath = setup_java_core/* getInput */.V4(constants/* INPUT_CACHE_DEPENDENCY_PATH */.At);
     const cachePath = setup_java_core/* getMultilineInput */.q3(constants/* INPUT_CACHE_PATH */.uW);
     const checkLatest = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_CHECK_LATEST */.YM, false);
@@ -36157,6 +36167,7 @@ async function run() {
                 packageType,
                 checkLatest,
                 forceDownload,
+                cacheJdk,
                 setDefault,
                 verifySignature,
                 verifySignaturePublicKey,
@@ -36179,6 +36190,7 @@ async function run() {
                 packageType,
                 checkLatest,
                 forceDownload,
+                cacheJdk,
                 setDefault,
                 verifySignature,
                 verifySignaturePublicKey,
@@ -36231,12 +36243,13 @@ function getJdkFileInput() {
     return jdkFile || deprecatedJdkFile;
 }
 async function installVersion(version, options, toolchainId = 0) {
-    const { distributionName, jdkFile, architecture, packageType, checkLatest, forceDownload, setDefault, verifySignature, verifySignaturePublicKey, toolchainIds } = options;
+    const { distributionName, jdkFile, architecture, packageType, checkLatest, forceDownload, cacheJdk, setDefault, verifySignature, verifySignaturePublicKey, toolchainIds } = options;
     const installerOptions = {
         architecture,
         packageType,
         checkLatest,
         forceDownload,
+        cacheJdk,
         setDefault,
         verifySignature,
         verifySignaturePublicKey,

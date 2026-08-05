@@ -1,7 +1,11 @@
 import * as core from '@actions/core';
 import * as gpg from './gpg.js';
 import * as constants from './constants.js';
-import {getBooleanInput, isJobStatusSuccess} from './util.js';
+import {
+  getBooleanInput,
+  isJdkCacheEnabled,
+  isJobStatusSuccess
+} from './util.js';
 import {fileURLToPath} from 'url';
 
 async function removePrivateKeyFromKeychain() {
@@ -24,10 +28,11 @@ async function removePrivateKeyFromKeychain() {
  * Check given input and run a save process for the specified package manager
  * @returns Promise that will be resolved when the save process finishes
  */
-async function saveCache() {
+async function saveCaches() {
   const jobStatus = isJobStatusSuccess();
   const cache = core.getInput(constants.INPUT_CACHE);
-  if (!jobStatus || !cache) {
+  const cacheJdk = isJdkCacheEnabled(cache);
+  if (!jobStatus || (!cache && !cacheJdk)) {
     return;
   }
 
@@ -36,8 +41,16 @@ async function saveCache() {
     return;
   }
 
-  const {save} = await import('./cache.js');
-  await save(cache);
+  const saves: Promise<void>[] = [];
+  if (cache) {
+    const {save} = await import('./cache.js');
+    saves.push(save(cache));
+  }
+  if (cacheJdk) {
+    const {saveJdkCaches} = await import('./jdk-cache.js');
+    saves.push(saveJdkCaches());
+  }
+  await Promise.all(saves);
 }
 
 /**
@@ -59,7 +72,7 @@ async function ignoreError(promise: Promise<void>) {
 
 export async function run() {
   await removePrivateKeyFromKeychain();
-  await ignoreError(saveCache());
+  await ignoreError(saveCaches());
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

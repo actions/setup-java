@@ -33,7 +33,8 @@ jest.unstable_mockModule('fs', () => ({
 
 jest.unstable_mockModule('../src/util.js', () => ({
   getBooleanInput: jest.fn(),
-  getVersionFromFileContent: jest.fn()
+  getVersionFromFileContent: jest.fn(),
+  isJdkCacheEnabled: jest.fn()
 }));
 
 jest.unstable_mockModule('../src/toolchains.js', () => ({
@@ -98,6 +99,7 @@ describe('setup-java conditional module loading', () => {
         return booleanInputs.get(name as string) ?? defaultValue;
       }
     );
+    (util.isJdkCacheEnabled as jest.Mock).mockReturnValue(false);
     (toolchains.configureToolchains as jest.Mock).mockResolvedValue(undefined);
   });
 

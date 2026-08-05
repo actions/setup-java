@@ -4,6 +4,7 @@ export interface JavaInstallerOptions {
   packageType: string;
   checkLatest: boolean;
   forceDownload?: boolean;
+  cacheJdk?: boolean;
   setDefault?: boolean;
   verifySignature?: boolean;
   verifySignaturePublicKey?: string;

@@ -84,6 +84,9 @@ inputs:
   cache:
     description: 'Name of the build platform to cache dependencies. It can be "maven", "gradle" or "sbt".'
     required: false
+  cache-jdk:
+    description: 'Cache downloaded JDK installations between jobs. Defaults to enabled when dependency caching is configured with `cache`; set explicitly to "true" or "false" to override.'
+    required: false
   cache-dependency-path:
     description: 'The path to a dependency file: pom.xml, build.gradle, build.sbt, etc. This option can be used with the `cache` option. If this option is omitted, the action searches for the dependency file in the entire repository. This option supports wildcards and a list of file names for caching multiple dependencies.'
     required: false
@@ -91,7 +94,7 @@ inputs:
     description: 'The path to cache instead of the default dependency cache path for the selected package manager. This option can be used with the `cache` option and supports a list of paths and exclusion patterns.'
     required: false
   cache-read-only:
-    description: 'Restore dependency caches without saving cache changes in the post action.'
+    description: 'Restore caches without saving cache changes in the post action.'
     required: false
     default: false
   job-status:

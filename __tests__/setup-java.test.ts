@@ -33,7 +33,8 @@ jest.unstable_mockModule('fs', () => ({
 
 jest.unstable_mockModule('../src/util.js', () => ({
   getBooleanInput: jest.fn(),
-  getVersionFromFileContent: jest.fn()
+  getVersionFromFileContent: jest.fn(),
+  isJdkCacheEnabled: jest.fn()
 }));
 
 jest.unstable_mockModule('../src/toolchains.js', () => ({
@@ -111,6 +112,14 @@ describe('setup action orchestration', () => {
     (util.getBooleanInput as jest.Mock).mockImplementation(
       (name: unknown, defaultValue: unknown) => {
         return booleanInputs.get(name as string) ?? defaultValue;
+      }
+    );
+    (util.isJdkCacheEnabled as jest.Mock).mockImplementation(
+      (cache: string) => {
+        const explicit = inputs.get('cache-jdk');
+        return explicit
+          ? (booleanInputs.get('cache-jdk') ?? explicit === 'true')
+          : Boolean(cache);
       }
     );
     (cacheFeature.isCacheFeatureAvailable as jest.Mock).mockReturnValue(true);
@@ -217,6 +226,7 @@ describe('setup action orchestration', () => {
         packageType: 'jdk',
         checkLatest: true,
         forceDownload: true,
+        cacheJdk: false,
         setDefault: false,
         verifySignature: true,
         verifySignaturePublicKey: 'public-key'
@@ -457,6 +467,7 @@ describe('setup action orchestration', () => {
   it('does not initialize cache modules when cache input is absent', async () => {
     inputs.set('distribution', 'temurin');
     multilineInputs.set('java-version', ['21']);
+    booleanInputs.set('cache-jdk', false);
     (factory.getJavaDistribution as jest.Mock).mockReturnValue({
       setupJava: jest.fn(async () => ({
         version: '21.0.4+7',
@@ -468,7 +479,46 @@ describe('setup action orchestration', () => {
 
     expect(cacheFeature.isCacheFeatureAvailable).not.toHaveBeenCalled();
     expect(cache.restore).not.toHaveBeenCalled();
+    expect(factory.getJavaDistribution).toHaveBeenCalledWith(
+      'temurin',
+      expect.objectContaining({cacheJdk: false}),
+      ''
+    );
   });
+
+  it.each([
+    ['', '', false],
+    ['', 'true', true],
+    ['', 'false', false],
+    ['maven', '', true],
+    ['maven', 'true', true],
+    ['maven', 'false', false]
+  ])(
+    'passes effective JDK caching for cache=%j and cache-jdk=%j',
+    async (cacheInput, cacheJdkInput, expected) => {
+      inputs.set('distribution', 'temurin');
+      inputs.set('cache', cacheInput);
+      inputs.set('cache-jdk', cacheJdkInput);
+      multilineInputs.set('java-version', ['21']);
+      if (cacheJdkInput) {
+        booleanInputs.set('cache-jdk', cacheJdkInput === 'true');
+      }
+      (factory.getJavaDistribution as jest.Mock).mockReturnValue({
+        setupJava: jest.fn(async () => ({
+          version: '21.0.4+7',
+          path: '/opt/java/21'
+        }))
+      });
+
+      await run();
+
+      expect(factory.getJavaDistribution).toHaveBeenCalledWith(
+        'temurin',
+        expect.objectContaining({cacheJdk: expected}),
+        ''
+      );
+    }
+  );
 
   it('reports unsupported distributions through core.setFailed', async () => {
     inputs.set('distribution', 'unsupported');

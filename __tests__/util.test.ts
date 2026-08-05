@@ -49,7 +49,8 @@ const {
   isGhes,
   validatePaginationUrl,
   getLatestMajorVersion,
-  getBooleanInput
+  getBooleanInput,
+  isJdkCacheEnabled
 } = await import('../src/util.js');
 
 describe('getBooleanInput', () => {
@@ -113,6 +114,37 @@ describe('getBooleanInput', () => {
       `Invalid value 'ture' for boolean input '${inputName}'. Expected 'true' or 'false'.`
     );
   });
+});
+
+describe('isJdkCacheEnabled', () => {
+  let inputs: Record<string, string>;
+
+  beforeEach(() => {
+    inputs = {};
+    (core.getInput as jest.Mock).mockImplementation(
+      (name: string) => inputs[name] ?? ''
+    );
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it.each([
+    ['', '', false],
+    ['', 'true', true],
+    ['', 'false', false],
+    ['maven', '', true],
+    ['maven', 'true', true],
+    ['maven', 'false', false]
+  ])(
+    'resolves cache=%j and cache-jdk=%j to %s',
+    (cache, cacheJdk, expected) => {
+      inputs['cache-jdk'] = cacheJdk;
+
+      expect(isJdkCacheEnabled(cache)).toBe(expected);
+    }
+  );
 });
 
 describe('isVersionSatisfies', () => {

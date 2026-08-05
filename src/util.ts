@@ -8,7 +8,8 @@ import * as tc from '@actions/tool-cache';
 import * as httpm from '@actions/http-client';
 import {
   INPUT_JOB_STATUS,
-  DISTRIBUTIONS_ONLY_MAJOR_VERSION
+  DISTRIBUTIONS_ONLY_MAJOR_VERSION,
+  INPUT_CACHE_JDK
 } from './constants.js';
 import {OutgoingHttpHeaders} from 'http';
 
@@ -35,6 +36,12 @@ export function getBooleanInput(inputName: string, defaultValue = false) {
   throw new Error(
     `Invalid value '${inputValue}' for boolean input '${inputName}'. Expected 'true' or 'false'.`
   );
+}
+
+export function isJdkCacheEnabled(cache: string): boolean {
+  return core.getInput(INPUT_CACHE_JDK).trim()
+    ? getBooleanInput(INPUT_CACHE_JDK)
+    : Boolean(cache.trim());
 }
 
 export function getVersionFromToolcachePath(toolPath: string) {

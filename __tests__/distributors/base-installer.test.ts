@@ -70,6 +70,14 @@ jest.unstable_mockModule('@actions/tool-cache', () => ({
   }
 }));
 
+jest.unstable_mockModule('../../src/jdk-cache.js', () => ({
+  getJdkVerificationIdentity: jest.fn((verified: boolean, key?: string) =>
+    verified ? (key ? 'verified:custom' : 'verified:bundled') : 'unverified'
+  ),
+  registerJdk: jest.fn(),
+  restoreJdk: jest.fn()
+}));
+
 const real_util_module = await import('../../src/util.js');
 jest.unstable_mockModule('../../src/util.js', () => ({
   ...real_util_module,
@@ -86,6 +94,7 @@ jest.unstable_mockModule('../../src/util.js', () => ({
 const core = await import('@actions/core');
 const tc = await import('@actions/tool-cache');
 const util = await import('../../src/util.js');
+const jdkCache = await import('../../src/jdk-cache.js');
 const {JavaBase} = await import('../../src/distributions/base-installer.js');
 
 class EmptyJavaBase extends JavaBase {
@@ -336,6 +345,10 @@ describe('setupJava', () => {
   let spyCoreError: any;
 
   beforeEach(() => {
+    (jdkCache.getJdkVerificationIdentity as jest.Mock).mockImplementation(
+      (verified: boolean, key?: string) =>
+        verified ? (key ? 'verified:custom' : 'verified:bundled') : 'unverified'
+    );
     spyGetToolcachePath = util.getToolcachePath as jest.Mock;
     spyGetToolcachePath.mockImplementation(
       (toolname: string, javaVersion: string, architecture: string) => {
@@ -463,8 +476,10 @@ describe('setupJava', () => {
       architecture: 'x86',
       packageType: 'jdk',
       checkLatest: false,
-      forceDownload: true
+      forceDownload: true,
+      cacheJdk: true
     });
+
     const findInToolcache = jest.fn(() => ({
       version: actualJavaVersion,
       path: javaPathInstalled
@@ -484,6 +499,111 @@ describe('setupJava', () => {
     expect(spyCoreInfo).not.toHaveBeenCalledWith(
       `Resolved Java ${actualJavaVersion} from tool-cache`
     );
+    expect(jdkCache.restoreJdk).not.toHaveBeenCalled();
+    expect(jdkCache.registerJdk).toHaveBeenCalledWith(
+      expect.objectContaining({
+        version: actualJavaVersion,
+        verification: 'unverified'
+      })
+    );
+  });
+
+  it.each([
+    [false, false, false, false],
+    [false, true, true, true],
+    [true, false, false, false],
+    [true, true, false, true]
+  ])(
+    'handles force-download=%s and cache-jdk=%s',
+    async (forceDownload, cacheJdkEnabled, restores, registers) => {
+      mockJavaBase = new EmptyJavaBase({
+        version: actualJavaVersion,
+        architecture: 'x86',
+        packageType: 'jdk',
+        checkLatest: true,
+        forceDownload,
+        cacheJdk: cacheJdkEnabled
+      });
+      (jdkCache.restoreJdk as jest.Mock).mockResolvedValue(false);
+
+      await mockJavaBase.setupJava();
+
+      expect(jdkCache.restoreJdk).toHaveBeenCalledTimes(restores ? 1 : 0);
+      expect(jdkCache.registerJdk).toHaveBeenCalledTimes(registers ? 1 : 0);
+    }
+  );
+
+  it('restores the exact resolved JDK before downloading', async () => {
+    const toolCachePath = path.join('toolcache');
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      RUNNER_TOOL_CACHE: toolCachePath
+    });
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: true,
+      cacheJdk: true
+    });
+    const downloadTool = jest.spyOn(mockJavaBase as any, 'downloadTool');
+    (jdkCache.restoreJdk as jest.Mock).mockResolvedValue(true);
+    jest
+      .spyOn(mockJavaBase as any, 'getRestoredJdkPath')
+      .mockReturnValue(javaPathInstalled);
+
+    await expect(mockJavaBase.setupJava()).resolves.toEqual({
+      version: actualJavaVersion,
+      path: javaPathInstalled
+    });
+
+    expect(jdkCache.restoreJdk).toHaveBeenCalledWith({
+      distribution: 'Empty',
+      packageType: 'jdk',
+      architecture: 'x86',
+      version: actualJavaVersion,
+      source: `some/random_url/java/${actualJavaVersion}`,
+      verification: 'unverified',
+      path: path.join(toolCachePath, 'Java_Empty_jdk', actualJavaVersion)
+    });
+    expect(downloadTool).not.toHaveBeenCalled();
+    expect(spyCoreInfo).not.toHaveBeenCalledWith('Trying to download...');
+    // A restored entry is already stored under its key; it must not be
+    // re-registered for a post-job save.
+    expect(jdkCache.registerJdk).not.toHaveBeenCalled();
+  });
+
+  it('registers the downloaded JDK identity after a JDK cache miss', async () => {
+    const toolCachePath = path.join('toolcache');
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      RUNNER_TOOL_CACHE: toolCachePath
+    });
+    mockJavaBase = new EmptyJavaBase({
+      version: '11',
+      architecture: 'x86',
+      packageType: 'jdk',
+      checkLatest: true,
+      cacheJdk: true
+    });
+    (jdkCache.restoreJdk as jest.Mock).mockResolvedValue(false);
+
+    await mockJavaBase.setupJava();
+
+    const expectedIdentity = {
+      distribution: 'Empty',
+      packageType: 'jdk',
+      architecture: 'x86',
+      version: actualJavaVersion,
+      source: `some/random_url/java/${actualJavaVersion}`,
+      verification: 'unverified',
+      path: path.join(toolCachePath, 'Java_Empty_jdk', actualJavaVersion)
+    };
+    expect(jdkCache.restoreJdk).toHaveBeenCalledWith(expectedIdentity);
+    // Registration happens after the installation exists, so the post-job save
+    // can detect a later step replacing it.
+    expect(jdkCache.registerJdk).toHaveBeenCalledWith(expectedIdentity);
+    expect(spyCoreInfo).toHaveBeenCalledWith('Trying to download...');
   });
 
   it.each([

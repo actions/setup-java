@@ -16,7 +16,11 @@ export const modules = {
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6242);
 /* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4527);
-/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(7242);
+/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(7242);
+/* harmony import */ var crypto__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(6982);
+/* harmony import */ var crypto__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(crypto__WEBPACK_IMPORTED_MODULE_6__);
+
+
 
 
 
@@ -34,6 +38,9 @@ class LocalDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/
         if (this.latest) {
             throw new Error("The 'latest' version alias is not supported for the 'jdkfile' distribution. Please specify a concrete version.");
         }
+        if (this.verifySignature) {
+            throw new Error(`Input 'verify-signature' is not supported for distribution '${this.distribution}'.`);
+        }
         let foundJava = this.forceDownload ? null : this.findInToolcache();
         if (foundJava) {
             _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq(`Resolved Java ${foundJava.version} from tool-cache`);
@@ -48,19 +55,54 @@ class LocalDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/
             if (!stats.isFile()) {
                 throw new Error(`JDK file was not found in path '${jdkFilePath}'`);
             }
-            _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq(`Extracting Java from '${jdkFilePath}'`);
-            const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .extractJdkFile */ .PE)(jdkFilePath);
-            const archiveName = fs__WEBPACK_IMPORTED_MODULE_2___default().readdirSync(extractedJavaPath)[0];
-            const archivePath = path__WEBPACK_IMPORTED_MODULE_3___default().join(extractedJavaPath, archiveName);
-            const javaVersion = this.version;
-            const javaPath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_0__/* .cacheDir */ .e8(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaVersion), this.architecture);
-            foundJava = {
-                version: javaVersion,
-                path: javaPath
-            };
+            let jdkCache;
+            if (this.cacheJdk) {
+                const [{ getJdkVerificationIdentity }, source] = await Promise.all([
+                    Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779)),
+                    hashFile(jdkFilePath)
+                ]);
+                jdkCache = {
+                    distribution: this.distribution,
+                    packageType: this.packageType,
+                    architecture: this.architecture,
+                    version: this.version,
+                    source,
+                    verification: getJdkVerificationIdentity(false),
+                    path: this.getJdkCachePath(this.version)
+                };
+            }
+            if (!this.forceDownload && jdkCache) {
+                const { restoreJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                const restored = await restoreJdk(jdkCache);
+                const restoredPath = restored
+                    ? this.getRestoredJdkPath(this.version)
+                    : undefined;
+                if (restoredPath) {
+                    foundJava = {
+                        version: this.version,
+                        path: restoredPath
+                    };
+                }
+            }
+            if (!foundJava) {
+                _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq(`Extracting Java from '${jdkFilePath}'`);
+                const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .extractJdkFile */ .PE)(jdkFilePath);
+                const archiveName = fs__WEBPACK_IMPORTED_MODULE_2___default().readdirSync(extractedJavaPath)[0];
+                const archivePath = path__WEBPACK_IMPORTED_MODULE_3___default().join(extractedJavaPath, archiveName);
+                const javaVersion = this.version;
+                const javaPath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_0__/* .cacheDir */ .e8(archivePath, this.toolcacheFolderName, this.getToolcacheVersionName(javaVersion), this.architecture);
+                foundJava = {
+                    version: javaVersion,
+                    path: javaPath
+                };
+                if (jdkCache) {
+                    const { registerJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                    registerJdk(jdkCache);
+                }
+            }
         }
         // JDK folder may contain postfix "Contents/Home" on macOS
-        const macOSPostfixPath = path__WEBPACK_IMPORTED_MODULE_3___default().join(foundJava.path, _constants_js__WEBPACK_IMPORTED_MODULE_6__/* .MACOS_JAVA_CONTENT_POSTFIX */ .PG);
+        const macOSPostfixPath = path__WEBPACK_IMPORTED_MODULE_3___default().join(foundJava.path, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .MACOS_JAVA_CONTENT_POSTFIX */ .PG);
         if (process.platform === 'darwin' && fs__WEBPACK_IMPORTED_MODULE_2___default().existsSync(macOSPostfixPath)) {
             foundJava.path = macOSPostfixPath;
         }
@@ -82,6 +124,13 @@ class LocalDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/
     ) {
         throw new Error('This method should not be implemented in local file provider');
     }
+}
+async function hashFile(file) {
+    const hash = (0,crypto__WEBPACK_IMPORTED_MODULE_6__.createHash)('sha256');
+    for await (const chunk of (0,fs__WEBPACK_IMPORTED_MODULE_2__.createReadStream)(file)) {
+        hash.update(chunk);
+    }
+    return hash.digest('hex');
 }
 
 
