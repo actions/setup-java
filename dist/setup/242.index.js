@@ -436,7 +436,7 @@ class JavaBase {
             // The cached resolution is older than the current bucket, but falling
             // back to it is strictly better than failing the job because the vendor
             // metadata API is down.
-            core/* warning */.$e(`Failed to resolve ${this.distribution} ${this.version} from remote (${error.message}); falling back to the cached resolution for ${restored.release.version}.`);
+            core/* warning */.$e(`Failed to resolve ${this.distribution} ${this.version} from remote (${error instanceof Error ? error.message : String(error)}); falling back to the cached resolution for ${restored.release.version}.`);
             return restored.release;
         }
     }
