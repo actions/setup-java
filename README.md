@@ -33,7 +33,7 @@ steps:
 - [Inputs](#inputs)
 - [Supported distributions](#supported-distributions)
 - [Supported version syntax](#supported-version-syntax)
-- [Caching dependencies](#caching-dependencies)
+- [Caching](#caching)
 - [Multiple JDKs and Maven toolchains](#multiple-jdks-and-maven-toolchains)
 - [Publishing packages](#publishing-packages)
 - [Advanced usage](#advanced-usage)
@@ -245,16 +245,15 @@ Distributions or individual releases without an authoritative checksum continue 
 
 Use `verify-signature: true` to verify package signatures for distributions that support it. Currently supported distributions are `temurin` and `microsoft`; setting it for an unsupported distribution fails the workflow.
 
-## Caching dependencies
+## Caching
 
-Downloaded JDK installations can be cached independently of dependency caching.
-When `cache-jdk` is omitted, dependency `cache` implicitly enables it. Set
-`cache-jdk: true` to enable JDK caching independently, or `cache-jdk: false` to
-opt out while retaining dependency caching.
+`setup-java` manages three kinds of caches. Each one is restored and saved as a separate cache entry.
 
-> [!IMPORTANT]
-> Review [Caching JDK installations](docs/advanced-usage.md#caching-jdk-installations)
-> for the full behavior, cache identity and storage impact before enabling it.
+| Cache | What it stores | Key based on | How it is enabled |
+| --- | --- | --- | --- |
+| Dependency cache | Downloaded dependencies, such as `~/.m2/repository`, `~/.gradle/caches`, or the sbt cache paths | Runner OS, architecture, package manager, and a hash of the dependency files | Set `cache` to `maven`, `gradle`, or `sbt` |
+| Wrapper caches | Maven and Gradle wrapper distributions (`~/.m2/wrapper/dists`, `~/.gradle/wrapper`) | Runner OS, architecture, wrapper cache name, and a hash of the wrapper properties | Set `cache` to `maven` or `gradle` |
+| JDK cache | The downloaded JDK installation | Runner OS, architecture, distribution, package type, resolved version, release identity, and signature-verification identity | Enabled implicitly whenever `cache` is set, or explicitly with `cache-jdk: true`. Opt out with `cache-jdk: false` |
 
 Set `cache` to `maven`, `gradle`, or `sbt` to cache dependencies with minimal configuration.
 
@@ -306,6 +305,36 @@ Use `cache-path` when the build tool stores dependencies outside the default loc
 
 `cache-path` changes what is restored and saved, but not the cache key. Jobs that should share a cache key must use the same OS, architecture, package manager, dependency files, and cache paths.
 
+### Wrapper caches
+
+Maven and Gradle wrapper distributions are restored and saved as additional cache entries, separate from the primary dependency cache. These entries have their own keys in the form `setup-java-<runner-os>-<node-arch>-<wrapper-cache-name>-<file-hash>`.
+
+| Package manager | Wrapper cache name | Cached path | Files used for wrapper-cache key |
+| --- | --- | --- | --- |
+| Maven | `maven-wrapper` | `~/.m2/wrapper/dists` | `**/.mvn/wrapper/maven-wrapper.properties` |
+| Gradle | `gradle-wrapper` | `~/.gradle/wrapper` | `**/gradle-wrapper.properties` |
+
+These wrapper caches are independent from dependency caches, so they remain useful even when dependency files change frequently. The wrapper properties are also part of the Maven and Gradle primary dependency-cache key because wrapper changes can affect how dependencies are resolved, but the wrapper distribution files themselves are stored in the separate wrapper cache entries above.
+
+For advanced Gradle caching features such as build output caching, configuration cache support, encrypted cache storage, cleanup, and fine-grained cache control, consider [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle).
+
+### Caching JDK installations
+
+The JDK cache stores the downloaded JDK installation so later runs skip the download. It is enabled implicitly whenever dependency `cache` is set, so most workflows that cache dependencies are already caching the JDK. Set `cache-jdk: true` to enable it without dependency caching, or `cache-jdk: false` to opt out while keeping dependency caching.
+
+| `cache` | `cache-jdk` | Dependency and wrapper caches | JDK cache |
+| --- | --- | --- | --- |
+| Omitted | Omitted | Disabled | Disabled |
+| Omitted | `true` | Disabled | Enabled |
+| Omitted | `false` | Disabled | Disabled |
+| Set | Omitted | Enabled | Enabled |
+| Set | `true` | Enabled | Enabled |
+| Set | `false` | Enabled | Disabled |
+
+> [!IMPORTANT]
+> Because JDK caching is on by default whenever `cache` is set, review [Caching JDK installations](docs/advanced-usage.md#caching-jdk-installations)
+> for the full behavior, cache identity and storage impact.
+
 ### Read-only caches
 
 Set `cache-read-only: true` to restore dependency, wrapper, and JDK caches without saving changes in the post action. This is useful for pull requests, merge queues, short-lived branches, and matrix fan-out jobs that should only consume caches produced elsewhere.
@@ -350,19 +379,6 @@ jobs:
           cache-read-only: true
       - run: mvn ${{ matrix.goal }}
 ```
-
-### Wrapper caches
-
-Maven and Gradle wrapper distributions are restored and saved as additional cache entries, separate from the primary dependency cache. These entries have their own keys in the form `setup-java-<runner-os>-<node-arch>-<wrapper-cache-name>-<file-hash>`.
-
-| Package manager | Wrapper cache name | Cached path | Files used for wrapper-cache key |
-| --- | --- | --- | --- |
-| Maven | `maven-wrapper` | `~/.m2/wrapper/dists` | `**/.mvn/wrapper/maven-wrapper.properties` |
-| Gradle | `gradle-wrapper` | `~/.gradle/wrapper` | `**/gradle-wrapper.properties` |
-
-These wrapper caches are independent from dependency caches, so they remain useful even when dependency files change frequently. The wrapper properties are also part of the Maven and Gradle primary dependency-cache key because wrapper changes can affect how dependencies are resolved, but the wrapper distribution files themselves are stored in the separate wrapper cache entries above.
-
-For advanced Gradle caching features such as build output caching, configuration cache support, encrypted cache storage, cleanup, and fine-grained cache control, consider [`gradle/actions/setup-gradle`](https://github.com/gradle/actions/tree/main/setup-gradle).
 
 ### Cache segment restore timeout
 
