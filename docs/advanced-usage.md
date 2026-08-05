@@ -575,14 +575,10 @@ other than the installation it identifies. This guarantee holds without
 rehashing hundreds of megabytes of JDK content on every job.
 
 JDK caching trades cache storage and cold-run save work for faster warm setup.
-In a five-run Ubuntu benchmark using Microsoft OpenJDK 17.0.19, the median warm
-`setup-java` time fell from 7 seconds to 3 seconds and median warm job time fell
-from 24 seconds to 18 seconds. The JDK entry added 175.3 MiB for that single
-identity. Results vary by runner, distribution, JDK size, network, and cache
-eviction pressure; short jobs may improve latency without changing billed
-minutes. The benchmark harness and methodology, along with results from later
-runs, live in
-[actions/setup-java-benchmarks](https://github.com/actions/setup-java-benchmarks).
+A warm run restores the installed JDK instead of downloading, verifying, and
+extracting it, while the first run pays to upload it and every cached identity
+consumes repository cache storage. How much time this saves depends on the
+runner, distribution, JDK size, network, and cache eviction pressure.
 
 ## Platform and architecture compatibility
 
