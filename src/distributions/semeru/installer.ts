@@ -6,6 +6,7 @@ import {
 } from '../base-models.js';
 import semver from 'semver';
 import {
+  cacheJdkDir,
   extractJdkFile,
   getNextPageUrlFromLinkHeader,
   getDownloadArchiveExtension,
@@ -15,7 +16,6 @@ import {
   validatePaginationUrl
 } from '../../util.js';
 import * as core from '@actions/core';
-import * as tc from '@actions/tool-cache';
 import fs from 'fs';
 import path from 'path';
 import {ISemeruAvailableVersions} from './models.js';
@@ -125,7 +125,7 @@ export class SemeruDistribution extends JavaBase {
     const archivePath = path.join(extractedJavaPath, archiveName);
     const version = this.getToolcacheVersionName(javaRelease.version);
 
-    const javaPath: string = await tc.cacheDir(
+    const javaPath: string = await cacheJdkDir(
       archivePath,
       this.toolcacheFolderName,
       version,

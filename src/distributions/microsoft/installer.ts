@@ -5,6 +5,7 @@ import {
   JavaInstallerResults
 } from '../base-models.js';
 import {
+  cacheJdkDir,
   extractJdkFile,
   getDownloadArchiveExtension,
   getGitHubHttpHeaders,
@@ -64,7 +65,7 @@ export class MicrosoftDistributions extends JavaBase {
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
 
-    const javaPath = await tc.cacheDir(
+    const javaPath = await cacheJdkDir(
       archivePath,
       this.toolcacheFolderName,
       this.getToolcacheVersionName(javaRelease.version),

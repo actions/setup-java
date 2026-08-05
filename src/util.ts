@@ -5,7 +5,10 @@ import * as semver from 'semver';
 import * as core from '@actions/core';
 
 import * as tc from '@actions/tool-cache';
+import * as exec from '@actions/exec';
+import * as io from '@actions/io';
 import * as httpm from '@actions/http-client';
+import {randomUUID} from 'crypto';
 import {
   INPUT_JOB_STATUS,
   DISTRIBUTIONS_ONLY_MAJOR_VERSION,
@@ -64,13 +67,152 @@ export async function extractJdkFile(toolPath: string, extension?: string) {
 
   switch (extension) {
     case 'tar.gz':
+      return await extractTarGz(toolPath);
     case 'tar':
       return await tc.extractTar(toolPath);
     case 'zip':
-      return await tc.extractZip(toolPath);
+      return await extractZipArchive(toolPath);
     default:
       return await tc.extract7z(toolPath);
   }
+}
+
+async function createExtractFolder(): Promise<string> {
+  const dest = path.join(getTempDir(), randomUUID());
+  await io.mkdirP(dest);
+
+  return dest;
+}
+
+/**
+ * Decompressing a JDK tarball with the default single-threaded gzip is one of the
+ * slowest parts of the install, so hand the decompression to `pigz` when the runner
+ * provides it. Any failure falls back to the stock extraction.
+ */
+async function extractTarGz(toolPath: string): Promise<string> {
+  const pigzPath = await io.which('pigz');
+  // tar splits --use-compress-program on whitespace, so a path containing a
+  // space would be word-split into a bogus command.
+  if (pigzPath && !/\s/.test(pigzPath)) {
+    const dest = await createExtractFolder();
+    try {
+      return await tc.extractTar(toolPath, dest, [
+        '--use-compress-program',
+        `${pigzPath} -d`,
+        '-x'
+      ]);
+    } catch (error) {
+      await io.rmRF(dest);
+      core.debug(
+        `Failed to extract '${toolPath}' with pigz, falling back to gzip: ${getErrorMessage(error)}`
+      );
+    }
+  }
+
+  return await tc.extractTar(toolPath);
+}
+
+/**
+ * `tc.extractZip` shells out to PowerShell's `Expand-Archive` on Windows, which is
+ * several times slower than the bundled bsdtar. Prefer `tar.exe` and fall back to
+ * the stock extraction when it is unavailable or fails.
+ */
+async function extractZipArchive(toolPath: string): Promise<string> {
+  if (process.platform === 'win32') {
+    const systemTar = path.join(
+      process.env['SystemRoot'] || 'C:\\Windows',
+      'System32',
+      'tar.exe'
+    );
+
+    if (fs.existsSync(systemTar)) {
+      const dest = await createExtractFolder();
+      try {
+        await exec.exec(`"${systemTar}"`, ['-xf', toolPath, '-C', dest], {
+          silent: true
+        });
+
+        return dest;
+      } catch (error) {
+        await io.rmRF(dest);
+        core.debug(
+          `Failed to extract '${toolPath}' with tar.exe, falling back to Expand-Archive: ${getErrorMessage(error)}`
+        );
+      }
+    }
+  }
+
+  return await tc.extractZip(toolPath);
+}
+
+/**
+ * Equivalent of `tc.cacheDir`, but moves the extracted JDK into the tool-cache
+ * instead of copying it. `tc.cacheDir` recursively copies the whole tree, which
+ * means a several hundred megabyte JDK is written to disk twice. The extraction
+ * directory and the tool-cache normally live on the same filesystem, so a rename
+ * is effectively free. Anything unexpected (a different filesystem, or a file
+ * handle held open by anti-virus software on Windows) falls back to the copy.
+ */
+export async function cacheJdkDir(
+  sourceDir: string,
+  toolName: string,
+  version: string,
+  architecture: string
+): Promise<string> {
+  const destPath = getToolcacheDestination(toolName, version, architecture);
+
+  if (destPath) {
+    let moved = false;
+    try {
+      // lstat, not stat: renaming a symlinked source would put the link itself
+      // in the tool-cache, leaving a dangling JAVA_HOME once RUNNER_TEMP is
+      // cleaned. tc.cacheDir dereferences it, so let it handle that case.
+      if (fs.lstatSync(sourceDir).isDirectory()) {
+        await io.rmRF(destPath);
+        await io.rmRF(`${destPath}.complete`);
+        await io.mkdirP(path.dirname(destPath));
+        // Renaming is atomic, so a failure here leaves sourceDir untouched and
+        // the copy-based fallback below can still run.
+        fs.renameSync(sourceDir, destPath);
+        moved = true;
+      }
+    } catch (error) {
+      core.debug(
+        `Failed to move '${sourceDir}' into the tool-cache, falling back to a copy: ${getErrorMessage(error)}`
+      );
+    }
+
+    if (moved) {
+      fs.writeFileSync(`${destPath}.complete`, '');
+
+      return destPath;
+    }
+  }
+
+  return await tc.cacheDir(sourceDir, toolName, version, architecture);
+}
+
+function getToolcacheDestination(
+  toolName: string,
+  version: string,
+  architecture: string
+): string | null {
+  const toolcacheRoot = process.env['RUNNER_TOOL_CACHE'];
+  if (!toolcacheRoot) {
+    return null;
+  }
+
+  // Mirrors the destination layout used by `tc.cacheDir`.
+  return path.join(
+    toolcacheRoot,
+    toolName,
+    semver.clean(version) || version,
+    architecture || os.arch()
+  );
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 export function getDownloadArchiveExtension() {

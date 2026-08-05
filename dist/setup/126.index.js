@@ -9,21 +9,19 @@ export const modules = {
 /* harmony export */   CorrettoDistribution: () => (/* binding */ CorrettoDistribution)
 /* harmony export */ });
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3838);
-/* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9805);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9896);
-/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6928);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(4527);
-/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(6242);
-
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(9896);
+/* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6928);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(4527);
+/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6242);
 
 
 
 
 
 const CORRETTO_VERSIONS_URL = 'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
-class CorrettoDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5__/* .JavaBase */ .O {
+class CorrettoDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_4__/* .JavaBase */ .O {
     constructor(installerOptions) {
         super('Corretto', installerOptions);
     }
@@ -31,15 +29,15 @@ class CorrettoDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
         let javaArchivePath = await this.downloadAndVerify(javaRelease);
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Extracting Java archive...`);
-        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .getDownloadArchiveExtension */ .ag)();
+        const extension = (0,_util_js__WEBPACK_IMPORTED_MODULE_3__/* .getDownloadArchiveExtension */ .ag)();
         if (process.platform === 'win32') {
-            javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .renameWinArchive */ .n2)(javaArchivePath);
+            javaArchivePath = (0,_util_js__WEBPACK_IMPORTED_MODULE_3__/* .renameWinArchive */ .n2)(javaArchivePath);
         }
-        const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
-        const archiveName = fs__WEBPACK_IMPORTED_MODULE_2___default().readdirSync(extractedJavaPath)[0];
-        const archivePath = path__WEBPACK_IMPORTED_MODULE_3___default().join(extractedJavaPath, archiveName);
+        const extractedJavaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_3__/* .extractJdkFile */ .PE)(javaArchivePath, extension);
+        const archiveName = fs__WEBPACK_IMPORTED_MODULE_1___default().readdirSync(extractedJavaPath)[0];
+        const archivePath = path__WEBPACK_IMPORTED_MODULE_2___default().join(extractedJavaPath, archiveName);
         const version = this.getToolcacheVersionName(javaRelease.version);
-        const javaPath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_1__/* .cacheDir */ .e8(archivePath, this.toolcacheFolderName, version, this.architecture);
+        const javaPath = await (0,_util_js__WEBPACK_IMPORTED_MODULE_3__/* .cacheJdkDir */ .Vj)(archivePath, this.toolcacheFolderName, version, this.architecture);
         return { version: javaRelease.version, path: javaPath };
     }
     async findPackageForDownload(version) {
@@ -66,7 +64,7 @@ class CorrettoDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5
             .filter(item => item.version == version)
             .map(item => {
             return {
-                version: (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .convertVersionToSemver */ .ZY)(item.correttoVersion),
+                version: (0,_util_js__WEBPACK_IMPORTED_MODULE_3__/* .convertVersionToSemver */ .ZY)(item.correttoVersion),
                 url: item.downloadLink,
                 checksum: {
                     algorithm: 'sha256',
@@ -112,7 +110,7 @@ class CorrettoDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5
         for (const version in eligibleVersions) {
             const availableVersion = eligibleVersions[version];
             for (const fileType in availableVersion) {
-                const skipNonExtractableBinaries = fileType != (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .getDownloadArchiveExtension */ .ag)();
+                const skipNonExtractableBinaries = fileType != (0,_util_js__WEBPACK_IMPORTED_MODULE_3__/* .getDownloadArchiveExtension */ .ag)();
                 if (skipNonExtractableBinaries) {
                     continue;
                 }

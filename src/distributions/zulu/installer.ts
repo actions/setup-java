@@ -1,5 +1,4 @@
 import * as core from '@actions/core';
-import * as tc from '@actions/tool-cache';
 
 import path from 'path';
 import fs from 'fs';
@@ -8,6 +7,7 @@ import semver from 'semver';
 import {JavaBase} from '../base-installer.js';
 import {IZuluPackageDetails, IZuluVersions} from './models.js';
 import {
+  cacheJdkDir,
   extractJdkFile,
   getDownloadArchiveExtension,
   convertVersionToSemver,
@@ -122,7 +122,7 @@ export class ZuluDistribution extends JavaBase {
     const archiveName = fs.readdirSync(extractedJavaPath)[0];
     const archivePath = path.join(extractedJavaPath, archiveName);
 
-    const javaPath = await tc.cacheDir(
+    const javaPath = await cacheJdkDir(
       archivePath,
       this.toolcacheFolderName,
       this.getToolcacheVersionName(javaRelease.version),

@@ -1,5 +1,4 @@
 import * as core from '@actions/core';
-import * as tc from '@actions/tool-cache';
 
 import fs from 'fs';
 import path from 'path';
@@ -16,6 +15,7 @@ import {
   JavaInstallerResults
 } from '../base-models.js';
 import {
+  cacheJdkDir,
   extractJdkFile,
   getNextPageUrlFromLinkHeader,
   getDownloadArchiveExtension,
@@ -122,7 +122,7 @@ export class TemurinDistribution extends JavaBase {
     }
     const version = this.getToolcacheVersionName(javaRelease.version);
 
-    const javaPath = await tc.cacheDir(
+    const javaPath = await cacheJdkDir(
       archivePath,
       this.toolcacheFolderName,
       version,
