@@ -49,8 +49,15 @@ async function configureAuthentication() {
     await createAuthenticationSettings(id, usernameEnvVar, passwordEnvVar, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar);
     if (gpgPrivateKey) {
         _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq('Importing private gpg key');
-        const keyFingerprint = (await _gpg_js__WEBPACK_IMPORTED_MODULE_5__/* .importKey */ .Fh(gpgPrivateKey)) || '';
-        _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .saveState */ .LZ(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .STATE_GPG_PRIVATE_KEY_FINGERPRINT */ .wm, keyFingerprint);
+        const gpgHome = await _gpg_js__WEBPACK_IMPORTED_MODULE_5__/* .importKey */ .Fh(gpgPrivateKey);
+        try {
+            _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .saveState */ .LZ(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .STATE_GPG_HOME */ .Fi, gpgHome);
+            _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .exportVariable */ .dN('GNUPGHOME', gpgHome);
+        }
+        catch (error) {
+            await _gpg_js__WEBPACK_IMPORTED_MODULE_5__/* .removeGpgHome */ .mS(gpgHome);
+            throw error;
+        }
     }
 }
 function getInputWithDeprecatedAlias(inputName, deprecatedInputName, defaultValue) {
@@ -124,25 +131,29 @@ async function write(directory, settings, overwriteSettings) {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   Fh: () => (/* binding */ importKey),
-/* harmony export */   Yi: () => (/* binding */ verifyPackageSignature)
+/* harmony export */   Yi: () => (/* binding */ verifyPackageSignature),
+/* harmony export */   mS: () => (/* binding */ removeGpgHome)
 /* harmony export */ });
-/* unused harmony exports PRIVATE_KEY_FILE, toGpgPath, deleteKey */
+/* unused harmony exports GPG_HOME_PREFIX, toGpgPath */
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9896);
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6928);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(8701);
-/* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5260);
-/* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(9805);
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4527);
+/* harmony import */ var crypto__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6982);
+/* harmony import */ var crypto__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(crypto__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8701);
+/* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(5260);
+/* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(9805);
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(4527);
 
 
 
 
 
 
-const PRIVATE_KEY_FILE = path__WEBPACK_IMPORTED_MODULE_1__.join(_util_js__WEBPACK_IMPORTED_MODULE_5__/* .getTempDir */ .G4(), 'private-key.asc');
-const PRIVATE_KEY_FINGERPRINT_REGEX = /\w{40}/;
+
+const GPG_HOME_PREFIX = 'setup-java-gpg-';
+const VERIFY_GPG_HOME_PREFIX = 'verify-signature-gpg-home-';
 // Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
 // The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
 // internally. Passing Windows paths with backslashes can cause fatal GPG errors
@@ -154,45 +165,62 @@ function toGpgPath(p) {
         .replace(/\\/g, '/')
         .replace(/^([A-Za-z]):\//, (_, drive) => `/${drive.toLowerCase()}/`);
 }
-async function importKey(privateKey) {
-    fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(PRIVATE_KEY_FILE, privateKey, {
-        encoding: 'utf-8',
-        flag: 'w'
-    });
-    let output = '';
-    const options = {
-        silent: true,
-        listeners: {
-            stdout: (data) => {
-                output += data.toString();
-            }
-        }
-    };
-    await _actions_exec__WEBPACK_IMPORTED_MODULE_3__/* .exec */ .m('gpg', [
-        '--batch',
-        '--import-options',
-        'import-show',
-        '--import',
-        PRIVATE_KEY_FILE
-    ], options);
-    await _actions_io__WEBPACK_IMPORTED_MODULE_2__/* .rmRF */ .Yz(PRIVATE_KEY_FILE);
-    const match = output.match(PRIVATE_KEY_FINGERPRINT_REGEX);
-    return match && match[0];
+function createGpgHome(prefix) {
+    const gpgHome = fs__WEBPACK_IMPORTED_MODULE_0__.mkdtempSync(path__WEBPACK_IMPORTED_MODULE_1__.join(_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getTempDir */ .G4(), prefix));
+    if (process.platform !== 'win32') {
+        fs__WEBPACK_IMPORTED_MODULE_0__.chmodSync(gpgHome, 0o700);
+    }
+    return gpgHome;
 }
-async function deleteKey(keyFingerprint) {
-    await exec.exec('gpg', ['--batch', '--yes', '--delete-secret-and-public-key', keyFingerprint], {
-        silent: true
-    });
+async function importKey(privateKey) {
+    const gpgHome = createGpgHome(GPG_HOME_PREFIX);
+    const privateKeyFile = path__WEBPACK_IMPORTED_MODULE_1__.join(gpgHome, `private-key-${(0,crypto__WEBPACK_IMPORTED_MODULE_2__.randomUUID)()}.asc`);
+    try {
+        fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(privateKeyFile, privateKey, {
+            encoding: 'utf-8',
+            flag: 'wx',
+            mode: 0o600
+        });
+        try {
+            await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpg', [
+                '--homedir',
+                toGpgPath(gpgHome),
+                '--batch',
+                '--import',
+                toGpgPath(privateKeyFile)
+            ], { silent: true });
+        }
+        finally {
+            fs__WEBPACK_IMPORTED_MODULE_0__.rmSync(privateKeyFile, { force: true });
+        }
+        return gpgHome;
+    }
+    catch (error) {
+        await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(gpgHome);
+        throw error;
+    }
+}
+async function removeGpgHome(gpgHome) {
+    if (!gpgHome) {
+        return;
+    }
+    const resolvedGpgHome = path__WEBPACK_IMPORTED_MODULE_1__.resolve(gpgHome);
+    const resolvedTempDir = path__WEBPACK_IMPORTED_MODULE_1__.resolve(_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getTempDir */ .G4());
+    if (path__WEBPACK_IMPORTED_MODULE_1__.dirname(resolvedGpgHome) !== resolvedTempDir ||
+        !path__WEBPACK_IMPORTED_MODULE_1__.basename(resolvedGpgHome).startsWith(GPG_HOME_PREFIX)) {
+        throw new Error(`Refusing to remove unexpected GPG home: ${gpgHome}`);
+    }
+    await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(resolvedGpgHome);
 }
 async function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
-    const signaturePath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_4__/* .downloadTool */ .bq(signatureUrl);
+    const signaturePath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_5__/* .downloadTool */ .bq(signatureUrl);
     let gpgHome;
     try {
-        gpgHome = fs__WEBPACK_IMPORTED_MODULE_0__.mkdtempSync(path__WEBPACK_IMPORTED_MODULE_1__.join(_util_js__WEBPACK_IMPORTED_MODULE_5__/* .getTempDir */ .G4(), 'verify-signature-gpg-home-'));
+        gpgHome = createGpgHome(VERIFY_GPG_HOME_PREFIX);
     }
     catch (error) {
         try {
-            await _actions_io__WEBPACK_IMPORTED_MODULE_2__/* .rmRF */ .Yz(signaturePath);
+            await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(signaturePath);
         }
         catch {
             // ignore cleanup failures
@@ -203,14 +231,14 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
         const publicKeyFile = path__WEBPACK_IMPORTED_MODULE_1__.join(gpgHome, 'public-key.asc');
         fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(publicKeyFile, publicKeyContent, { encoding: 'utf-8' });
         const options = { silent: true };
-        await _actions_exec__WEBPACK_IMPORTED_MODULE_3__/* .exec */ .m('gpg', [
+        await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpg', [
             '--homedir',
             toGpgPath(gpgHome),
             '--batch',
             '--import',
             toGpgPath(publicKeyFile)
         ], options);
-        await _actions_exec__WEBPACK_IMPORTED_MODULE_3__/* .exec */ .m('gpg', [
+        await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpg', [
             '--homedir',
             toGpgPath(gpgHome),
             '--batch',
@@ -220,8 +248,8 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
         ], options);
     }
     finally {
-        await _actions_io__WEBPACK_IMPORTED_MODULE_2__/* .rmRF */ .Yz(signaturePath);
-        await _actions_io__WEBPACK_IMPORTED_MODULE_2__/* .rmRF */ .Yz(gpgHome);
+        await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(signaturePath);
+        await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(gpgHome);
     }
 }
 

@@ -30769,13 +30769,12 @@ module.exports = {
 
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
 /* harmony export */   Ch: () => (/* binding */ INPUT_CACHE_READ_ONLY),
+/* harmony export */   Fi: () => (/* binding */ STATE_GPG_HOME),
 /* harmony export */   GL: () => (/* binding */ INPUT_CACHE_JDK),
 /* harmony export */   gk: () => (/* binding */ INPUT_CACHE),
-/* harmony export */   wG: () => (/* binding */ INPUT_JOB_STATUS),
-/* harmony export */   wm: () => (/* binding */ STATE_GPG_PRIVATE_KEY_FINGERPRINT),
-/* harmony export */   wz: () => (/* binding */ INPUT_GPG_PRIVATE_KEY)
+/* harmony export */   wG: () => (/* binding */ INPUT_JOB_STATUS)
 /* harmony export */ });
-/* unused harmony exports MACOS_JAVA_CONTENT_POSTFIX, INPUT_JAVA_VERSION, INPUT_JAVA_VERSION_FILE, INPUT_ARCHITECTURE, INPUT_JAVA_PACKAGE, INPUT_DISTRIBUTION, INPUT_JDK_FILE, INPUT_JDK_FILE_DEPRECATED, INPUT_CHECK_LATEST, INPUT_FORCE_DOWNLOAD, INPUT_SET_DEFAULT, INPUT_PROBLEM_MATCHER, INPUT_VERIFY_SIGNATURE, INPUT_VERIFY_SIGNATURE_PUBLIC_KEY, INPUT_SERVER_ID, INPUT_SERVER_USERNAME_ENV_VAR, INPUT_SERVER_PASSWORD_ENV_VAR, INPUT_SERVER_USERNAME_DEPRECATED, INPUT_SERVER_PASSWORD_DEPRECATED, INPUT_SETTINGS_PATH, INPUT_OVERWRITE_SETTINGS, INPUT_GPG_PASSPHRASE_ENV_VAR, INPUT_GPG_PASSPHRASE_DEPRECATED, INPUT_DEFAULT_SERVER_USERNAME, INPUT_DEFAULT_SERVER_PASSWORD, INPUT_DEFAULT_GPG_PRIVATE_KEY, INPUT_DEFAULT_GPG_PASSPHRASE, MAVEN_GPG_PASSPHRASE_DEFAULT_ENV, GPG_PASSPHRASE_PROFILE_ID, INPUT_CACHE_DEPENDENCY_PATH, INPUT_CACHE_PATH, M2_DIR, MVN_SETTINGS_FILE, MVN_TOOLCHAINS_FILE, INPUT_MVN_TOOLCHAIN_ID, INPUT_MVN_TOOLCHAIN_VENDOR, INPUT_SHOW_DOWNLOAD_PROGRESS, MAVEN_ARGS_ENV, MAVEN_NO_TRANSFER_PROGRESS_FLAG, MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG, DISTRIBUTIONS_ONLY_MAJOR_VERSION */
+/* unused harmony exports MACOS_JAVA_CONTENT_POSTFIX, INPUT_JAVA_VERSION, INPUT_JAVA_VERSION_FILE, INPUT_ARCHITECTURE, INPUT_JAVA_PACKAGE, INPUT_DISTRIBUTION, INPUT_JDK_FILE, INPUT_JDK_FILE_DEPRECATED, INPUT_CHECK_LATEST, INPUT_FORCE_DOWNLOAD, INPUT_SET_DEFAULT, INPUT_PROBLEM_MATCHER, INPUT_VERIFY_SIGNATURE, INPUT_VERIFY_SIGNATURE_PUBLIC_KEY, INPUT_SERVER_ID, INPUT_SERVER_USERNAME_ENV_VAR, INPUT_SERVER_PASSWORD_ENV_VAR, INPUT_SERVER_USERNAME_DEPRECATED, INPUT_SERVER_PASSWORD_DEPRECATED, INPUT_SETTINGS_PATH, INPUT_OVERWRITE_SETTINGS, INPUT_GPG_PRIVATE_KEY, INPUT_GPG_PASSPHRASE_ENV_VAR, INPUT_GPG_PASSPHRASE_DEPRECATED, INPUT_DEFAULT_SERVER_USERNAME, INPUT_DEFAULT_SERVER_PASSWORD, INPUT_DEFAULT_GPG_PRIVATE_KEY, INPUT_DEFAULT_GPG_PASSPHRASE, MAVEN_GPG_PASSPHRASE_DEFAULT_ENV, GPG_PASSPHRASE_PROFILE_ID, INPUT_CACHE_DEPENDENCY_PATH, INPUT_CACHE_PATH, M2_DIR, MVN_SETTINGS_FILE, MVN_TOOLCHAINS_FILE, INPUT_MVN_TOOLCHAIN_ID, INPUT_MVN_TOOLCHAIN_VENDOR, INPUT_SHOW_DOWNLOAD_PROGRESS, MAVEN_ARGS_ENV, MAVEN_NO_TRANSFER_PROGRESS_FLAG, MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG, DISTRIBUTIONS_ONLY_MAJOR_VERSION */
 const MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
 const INPUT_JAVA_VERSION = 'java-version';
 const INPUT_JAVA_VERSION_FILE = 'java-version-file';
@@ -30816,7 +30815,7 @@ const INPUT_CACHE_DEPENDENCY_PATH = 'cache-dependency-path';
 const INPUT_CACHE_PATH = 'cache-path';
 const INPUT_CACHE_READ_ONLY = 'cache-read-only';
 const INPUT_JOB_STATUS = 'job-status';
-const STATE_GPG_PRIVATE_KEY_FINGERPRINT = 'gpg-private-key-fingerprint';
+const STATE_GPG_HOME = 'gpg-home';
 const M2_DIR = '.m2';
 const MVN_SETTINGS_FILE = 'settings.xml';
 const MVN_TOOLCHAINS_FILE = 'toolchains.xml';
@@ -34150,10 +34149,11 @@ const lowercaseKeys = (obj) => Object.keys(obj).reduce((c, k) => ((c[k.toLowerCa
 /* harmony export */   Ck: () => (/* binding */ mkdir),
 /* harmony export */   H8: () => (/* binding */ IS_WINDOWS),
 /* harmony export */   Qh: () => (/* binding */ isRooted),
+/* harmony export */   rm: () => (/* binding */ rm),
 /* harmony export */   t2: () => (/* binding */ exists),
 /* harmony export */   vr: () => (/* binding */ tryGetExecutablePath)
 /* harmony export */ });
-/* unused harmony exports chmod, copyFile, lstat, open, readdir, rename, rm, rmdir, stat, symlink, unlink, readlink, UV_FS_O_EXLOCK, READONLY, isDirectory, getCmdPath */
+/* unused harmony exports chmod, copyFile, lstat, open, readdir, rename, rmdir, stat, symlink, unlink, readlink, UV_FS_O_EXLOCK, READONLY, isDirectory, getCmdPath */
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(9896);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(6928);
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -34343,9 +34343,10 @@ function getCmdPath() {
 
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
 /* harmony export */   K7: () => (/* binding */ which),
-/* harmony export */   U$: () => (/* binding */ mkdirP)
+/* harmony export */   U$: () => (/* binding */ mkdirP),
+/* harmony export */   Yz: () => (/* binding */ rmRF)
 /* harmony export */ });
-/* unused harmony exports cp, mv, rmRF, findInPath */
+/* unused harmony exports cp, mv, findInPath */
 /* harmony import */ var assert__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(2613);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(6928);
 /* harmony import */ var _io_util_js__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(90);
@@ -34438,7 +34439,7 @@ function mv(source_1, dest_1) {
  */
 function rmRF(inputPath) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (ioUtil.IS_WINDOWS) {
+        if (_io_util_js__WEBPACK_IMPORTED_MODULE_2__/* .IS_WINDOWS */ .H8) {
             // Check for invalid characters
             // https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
             if (/[*"<>|]/.test(inputPath)) {
@@ -34447,7 +34448,7 @@ function rmRF(inputPath) {
         }
         try {
             // note if path does not exist, error is silent
-            yield ioUtil.rm(inputPath, {
+            yield _io_util_js__WEBPACK_IMPORTED_MODULE_2__.rm(inputPath, {
                 force: true,
                 maxRetries: 3,
                 recursive: true,
@@ -35661,6 +35662,8 @@ var cleanup_java_core = __nccwpck_require__(3838);
 var external_fs_ = __nccwpck_require__(9896);
 // EXTERNAL MODULE: external "path"
 var external_path_ = __nccwpck_require__(6928);
+// EXTERNAL MODULE: external "crypto"
+var external_crypto_ = __nccwpck_require__(6982);
 // EXTERNAL MODULE: ./node_modules/@actions/io/lib/io.js
 var lib_io = __nccwpck_require__(8701);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js + 2 modules
@@ -35676,8 +35679,9 @@ var src_util = __nccwpck_require__(4527);
 
 
 
-const PRIVATE_KEY_FILE = external_path_.join(src_util/* getTempDir */.G4(), 'private-key.asc');
-const PRIVATE_KEY_FINGERPRINT_REGEX = /\w{40}/;
+
+const GPG_HOME_PREFIX = 'setup-java-gpg-';
+const VERIFY_GPG_HOME_PREFIX = 'verify-signature-gpg-home-';
 // Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
 // The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
 // internally. Passing Windows paths with backslashes can cause fatal GPG errors
@@ -35689,41 +35693,58 @@ function toGpgPath(p) {
         .replace(/\\/g, '/')
         .replace(/^([A-Za-z]):\//, (_, drive) => `/${drive.toLowerCase()}/`);
 }
-async function importKey(privateKey) {
-    fs.writeFileSync(PRIVATE_KEY_FILE, privateKey, {
-        encoding: 'utf-8',
-        flag: 'w'
-    });
-    let output = '';
-    const options = {
-        silent: true,
-        listeners: {
-            stdout: (data) => {
-                output += data.toString();
-            }
-        }
-    };
-    await exec.exec('gpg', [
-        '--batch',
-        '--import-options',
-        'import-show',
-        '--import',
-        PRIVATE_KEY_FILE
-    ], options);
-    await io.rmRF(PRIVATE_KEY_FILE);
-    const match = output.match(PRIVATE_KEY_FINGERPRINT_REGEX);
-    return match && match[0];
+function createGpgHome(prefix) {
+    const gpgHome = fs.mkdtempSync(path.join(util.getTempDir(), prefix));
+    if (process.platform !== 'win32') {
+        fs.chmodSync(gpgHome, 0o700);
+    }
+    return gpgHome;
 }
-async function deleteKey(keyFingerprint) {
-    await lib_exec/* exec */.m('gpg', ['--batch', '--yes', '--delete-secret-and-public-key', keyFingerprint], {
-        silent: true
-    });
+async function importKey(privateKey) {
+    const gpgHome = createGpgHome(GPG_HOME_PREFIX);
+    const privateKeyFile = path.join(gpgHome, `private-key-${randomUUID()}.asc`);
+    try {
+        fs.writeFileSync(privateKeyFile, privateKey, {
+            encoding: 'utf-8',
+            flag: 'wx',
+            mode: 0o600
+        });
+        try {
+            await exec.exec('gpg', [
+                '--homedir',
+                toGpgPath(gpgHome),
+                '--batch',
+                '--import',
+                toGpgPath(privateKeyFile)
+            ], { silent: true });
+        }
+        finally {
+            fs.rmSync(privateKeyFile, { force: true });
+        }
+        return gpgHome;
+    }
+    catch (error) {
+        await io.rmRF(gpgHome);
+        throw error;
+    }
+}
+async function removeGpgHome(gpgHome) {
+    if (!gpgHome) {
+        return;
+    }
+    const resolvedGpgHome = external_path_.resolve(gpgHome);
+    const resolvedTempDir = external_path_.resolve(src_util/* getTempDir */.G4());
+    if (external_path_.dirname(resolvedGpgHome) !== resolvedTempDir ||
+        !external_path_.basename(resolvedGpgHome).startsWith(GPG_HOME_PREFIX)) {
+        throw new Error(`Refusing to remove unexpected GPG home: ${gpgHome}`);
+    }
+    await lib_io/* rmRF */.Yz(resolvedGpgHome);
 }
 async function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
     const signaturePath = await tc.downloadTool(signatureUrl);
     let gpgHome;
     try {
-        gpgHome = fs.mkdtempSync(path.join(util.getTempDir(), 'verify-signature-gpg-home-'));
+        gpgHome = createGpgHome(VERIFY_GPG_HOME_PREFIX);
     }
     catch (error) {
         try {
@@ -35770,16 +35791,17 @@ var external_url_ = __nccwpck_require__(7016);
 
 
 
-async function removePrivateKeyFromKeychain() {
-    if (cleanup_java_core/* getInput */.V4(constants/* INPUT_GPG_PRIVATE_KEY */.wz, { required: false })) {
-        cleanup_java_core/* info */.pq('Removing private key from keychain');
-        try {
-            const keyFingerprint = cleanup_java_core/* getState */.Gu(constants/* STATE_GPG_PRIVATE_KEY_FINGERPRINT */.wm);
-            await deleteKey(keyFingerprint);
-        }
-        catch (error) {
-            cleanup_java_core/* setFailed */.C1(`Failed to remove private key due to: ${error.message}`);
-        }
+async function cleanup_java_removeGpgHome() {
+    const gpgHome = cleanup_java_core/* getState */.Gu(constants/* STATE_GPG_HOME */.Fi);
+    if (!gpgHome) {
+        return;
+    }
+    cleanup_java_core/* info */.pq('Removing private key from isolated GPG home');
+    try {
+        await removeGpgHome(gpgHome);
+    }
+    catch (error) {
+        cleanup_java_core/* setFailed */.C1(`Failed to remove isolated GPG home due to: ${error.message}`);
     }
 }
 /**
@@ -35827,7 +35849,7 @@ async function ignoreError(promise) {
     });
 }
 async function run() {
-    await removePrivateKeyFromKeychain();
+    await cleanup_java_removeGpgHome();
     await ignoreError(saveCaches());
 }
 if (process.argv[1] === (0,external_url_.fileURLToPath)(import.meta.url)) {

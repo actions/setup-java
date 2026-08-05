@@ -31,10 +31,7 @@ function createGpgHome(prefix: string): string {
 
 export async function importKey(privateKey: string): Promise<string> {
   const gpgHome = createGpgHome(GPG_HOME_PREFIX);
-  const privateKeyFile = path.join(
-    gpgHome,
-    `private-key-${randomUUID()}.asc`
-  );
+  const privateKeyFile = path.join(gpgHome, `private-key-${randomUUID()}.asc`);
 
   try {
     fs.writeFileSync(privateKeyFile, privateKey, {

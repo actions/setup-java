@@ -129,7 +129,10 @@ describe('cleanup', () => {
     const unrelatedGpgHome = fs.mkdtempSync(
       path.join(tempDir, 'user-gpg-home-')
     );
-    fs.writeFileSync(path.join(unrelatedGpgHome, 'private.key'), 'pre-existing');
+    fs.writeFileSync(
+      path.join(unrelatedGpgHome, 'private.key'),
+      'pre-existing'
+    );
     (core.getInput as jest.Mock<any>).mockReturnValue('');
     (core.getState as jest.Mock<any>).mockImplementation((name: string) =>
       name === constants.STATE_GPG_HOME ? gpgHome : ''
