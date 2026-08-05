@@ -174,8 +174,9 @@ export class SapMachineDistribution extends JavaBase {
             continue;
           }
 
-          // skip earlyAccessVersions if stable version requested
-          if (this.stable && buildVersionMap.ea === 'true') {
+          const isEarlyAccess =
+            buildVersionMap.ea === true || buildVersionMap.ea === 'true';
+          if (this.stable === isEarlyAccess) {
             continue;
           }
 

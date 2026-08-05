@@ -11,6 +11,9 @@ import {
 import {HttpClient} from '@actions/http-client';
 
 import manifestData from '../data/sapmachine.json' with {type: 'json'};
+import releaseClassManifestData from '../data/sapmachine-release-classes.json' with {
+  type: 'json'
+};
 
 // Mock @actions/core before importing source modules that depend on it
 jest.unstable_mockModule('@actions/core', () => ({
@@ -132,9 +135,9 @@ describe('getAvailableVersions', () => {
       ['11', 'aarch64', 'linux', 54],
       ['17', 'riscv', 'linux', 0],
       ['16.0.1', 'x64', 'linux', 71],
-      ['23-ea', 'x64', 'linux', 798],
+      ['23-ea', 'x64', 'linux', 727],
       ['23-ea', 'aarch64', 'windows', 0],
-      ['23-ea', 'x64', 'windows', 750]
+      ['23-ea', 'x64', 'windows', 679]
     ])(
       'should get right number of available versions from JSON',
       async (
@@ -154,6 +157,46 @@ describe('getAvailableVersions', () => {
         const availableVersions = await distribution['getAvailableVersions']();
         expect(availableVersions).not.toBeNull();
         expect(availableVersions.length).toBe(len);
+      }
+    );
+
+    it.each([
+      [
+        '25',
+        [
+          'https://example.test/sapmachine-25.0.2-ga.tar.gz',
+          'https://example.test/sapmachine-25.0.1-ga.tar.gz'
+        ]
+      ],
+      [
+        '25-ea',
+        [
+          'https://example.test/sapmachine-25-ea.11.tar.gz',
+          'https://example.test/sapmachine-25-ea.10.tar.gz'
+        ]
+      ]
+    ])(
+      'should classify boolean and string EA metadata for %s requests',
+      async (version: string, expectedLinks: string[]) => {
+        spyHttpClient.mockReturnValue({
+          statusCode: 200,
+          headers: {},
+          result: releaseClassManifestData
+        });
+        const distribution = new SapMachineDistribution({
+          version,
+          architecture: 'x64',
+          packageType: 'jdk',
+          checkLatest: false
+        });
+        mockPlatform(distribution, 'linux');
+
+        const availableVersions =
+          await distribution['getAvailableVersions']();
+
+        expect(
+          availableVersions.map(item => item.downloadLink)
+        ).toStrictEqual(expectedLinks);
       }
     );
   });
@@ -312,6 +355,27 @@ describe('getAvailableVersions', () => {
         release.url.replace(/\.(?:tar\.gz|zip)$/, '.sha256.txt')
       );
       expect(release.checksum?.value).toBe(archiveChecksum);
+    });
+
+    it('does not select a newer stable release for an EA request', async () => {
+      spyHttpClient.mockReturnValue({
+        statusCode: 200,
+        headers: {},
+        result: releaseClassManifestData
+      });
+      const distribution = new SapMachineDistribution({
+        version: '25-ea',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      mockPlatform(distribution, 'linux');
+
+      const release = await distribution['findPackageForDownload']('25');
+
+      expect(release.url).toBe(
+        'https://example.test/sapmachine-25-ea.11.tar.gz'
+      );
     });
 
     it.each([
