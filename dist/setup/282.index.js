@@ -77,10 +77,12 @@ class JetBrainsDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_
             console.time('Retrieving available versions for JBR took'); // eslint-disable-line no-console
         }
         const rawVersions = [];
-        const bearerToken = process.env.GITHUB_TOKEN;
-        const requestHeaders = {};
+        const bearerToken = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .getGitHubToken */ .lK)();
+        const requestHeaders = {
+            Accept: 'application/vnd.github+json'
+        };
         if (bearerToken) {
-            requestHeaders['Authorization'] = `Bearer ${bearerToken}`;
+            requestHeaders.Authorization = `Bearer ${bearerToken}`;
         }
         let releasesUrl = JETBRAINS_RELEASES_URL;
         let pageCount = 0;

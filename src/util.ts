@@ -544,8 +544,12 @@ export function getArtifactFingerprint(
   return undefined;
 }
 
+export function getGitHubToken(): string | undefined {
+  return core.getInput('token') || process.env.GITHUB_TOKEN;
+}
+
 export function getGitHubHttpHeaders(): OutgoingHttpHeaders {
-  const resolvedToken = core.getInput('token') || process.env.GITHUB_TOKEN;
+  const resolvedToken = getGitHubToken();
   const auth = !resolvedToken ? undefined : `token ${resolvedToken}`;
 
   const headers: OutgoingHttpHeaders = {

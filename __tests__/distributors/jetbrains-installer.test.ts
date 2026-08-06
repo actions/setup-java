@@ -80,8 +80,11 @@ function response(
 describe('getAvailableVersions', () => {
   let spyHttpClient: any;
   let spyCoreError: any;
+  const originalGitHubToken = process.env.GITHUB_TOKEN;
 
   beforeEach(() => {
+    delete process.env.GITHUB_TOKEN;
+    (core.getInput as jest.Mock).mockReturnValue('');
     spyHttpClient = jest.spyOn(HttpClient.prototype, 'getJson');
     spyHttpClient.mockReturnValue({
       statusCode: 200,
@@ -95,6 +98,11 @@ describe('getAvailableVersions', () => {
   });
 
   afterEach(() => {
+    if (originalGitHubToken === undefined) {
+      delete process.env.GITHUB_TOKEN;
+    } else {
+      process.env.GITHUB_TOKEN = originalGitHubToken;
+    }
     jest.resetAllMocks();
     jest.clearAllMocks();
     jest.restoreAllMocks();
@@ -189,6 +197,92 @@ describe('getAvailableVersions', () => {
       'jbr-release-26.0.0b1.1'
     ]);
     expect(spyHttpClient).toHaveBeenCalledTimes(2);
+  });
+
+  it('uses the token input for every paginated GitHub Releases request', async () => {
+    (core.getInput as jest.Mock).mockReturnValue('input-token');
+    spyHttpClient
+      .mockResolvedValueOnce({
+        statusCode: 200,
+        headers: nextPageHeader(2),
+        result: [release('jbr-release-21.0.11b1163.116', false)]
+      })
+      .mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        result: [release('jbr-release-21.0.10b1087.6', false)]
+      });
+    const distribution = new JetBrainsDistribution({
+      version: '21',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    await distribution['getAvailableVersions']();
+
+    expect(spyHttpClient).toHaveBeenNthCalledWith(1, JETBRAINS_RELEASES_URL, {
+      Accept: 'application/vnd.github+json',
+      Authorization: 'Bearer input-token'
+    });
+    expect(spyHttpClient).toHaveBeenNthCalledWith(
+      2,
+      `${JETBRAINS_RELEASES_URL}&page=2`,
+      {
+        Accept: 'application/vnd.github+json',
+        Authorization: 'Bearer input-token'
+      }
+    );
+  });
+
+  it('prefers the token input over the environment fallback', async () => {
+    (core.getInput as jest.Mock).mockReturnValue('input-token');
+    process.env.GITHUB_TOKEN = 'environment-token';
+    const distribution = new JetBrainsDistribution({
+      version: '21',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    await distribution['getAvailableVersions']();
+
+    expect(spyHttpClient).toHaveBeenCalledWith(JETBRAINS_RELEASES_URL, {
+      Accept: 'application/vnd.github+json',
+      Authorization: 'Bearer input-token'
+    });
+  });
+
+  it('falls back to GITHUB_TOKEN when the token input is empty', async () => {
+    process.env.GITHUB_TOKEN = 'environment-token';
+    const distribution = new JetBrainsDistribution({
+      version: '21',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    await distribution['getAvailableVersions']();
+
+    expect(spyHttpClient).toHaveBeenCalledWith(JETBRAINS_RELEASES_URL, {
+      Accept: 'application/vnd.github+json',
+      Authorization: 'Bearer environment-token'
+    });
+  });
+
+  it('omits authorization when no GitHub token is available', async () => {
+    const distribution = new JetBrainsDistribution({
+      version: '21',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    await distribution['getAvailableVersions']();
+
+    expect(spyHttpClient).toHaveBeenCalledWith(JETBRAINS_RELEASES_URL, {
+      Accept: 'application/vnd.github+json'
+    });
   });
 
   it('stops pagination when a raw GitHub page is empty', async () => {
