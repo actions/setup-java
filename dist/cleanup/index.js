@@ -30839,7 +30839,7 @@ const DISTRIBUTIONS_ONLY_MAJOR_VERSION = (/* unused pure expression or super */ 
 /* harmony export */   Vt: () => (/* binding */ getBooleanInput),
 /* harmony export */   lN: () => (/* binding */ isJdkCacheEnabled)
 /* harmony export */ });
-/* unused harmony exports getVersionFromToolcachePath, extractJdkFile, cacheJdkDir, getJavaVersionFromReleaseFile, getDownloadArchiveExtension, isVersionSatisfies, getToolcachePath, isGhes, getVersionFromFileContent, convertVersionToSemver, getArtifactFingerprint, getGitHubHttpHeaders, MAX_PAGINATION_PAGES, getNextPageUrlFromLinkHeader, validatePaginationUrl, renameWinArchive, getLatestMajorVersion */
+/* unused harmony exports getVersionFromToolcachePath, extractJdkFile, cacheJdkDir, getJavaVersionFromReleaseFile, getDownloadArchiveExtension, isVersionSatisfies, getToolcachePath, isGhes, getVersionFromFileContent, convertVersionToSemver, getArtifactFingerprint, getGitHubToken, getGitHubHttpHeaders, MAX_PAGINATION_PAGES, getNextPageUrlFromLinkHeader, validatePaginationUrl, renameWinArchive, getLatestMajorVersion */
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(857);
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(os__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(6928);
@@ -31266,8 +31266,11 @@ function getArtifactFingerprint(headers) {
     }
     return undefined;
 }
+function getGitHubToken() {
+    return core.getInput('token') || process.env.GITHUB_TOKEN;
+}
 function getGitHubHttpHeaders() {
-    const resolvedToken = core.getInput('token') || process.env.GITHUB_TOKEN;
+    const resolvedToken = getGitHubToken();
     const auth = !resolvedToken ? undefined : `token ${resolvedToken}`;
     const headers = {
         accept: 'application/vnd.github.VERSION.raw'

@@ -31265,6 +31265,7 @@ function validateToolchainIds(versions, versionFile, toolchainIds) {
 /* harmony export */   ZY: () => (/* binding */ convertVersionToSemver),
 /* harmony export */   aT: () => (/* binding */ isGhes),
 /* harmony export */   ag: () => (/* binding */ getDownloadArchiveExtension),
+/* harmony export */   lK: () => (/* binding */ getGitHubToken),
 /* harmony export */   lN: () => (/* binding */ isJdkCacheEnabled),
 /* harmony export */   n2: () => (/* binding */ renameWinArchive),
 /* harmony export */   rC: () => (/* binding */ getNextPageUrlFromLinkHeader),
@@ -31699,8 +31700,11 @@ function getArtifactFingerprint(headers) {
     }
     return undefined;
 }
+function getGitHubToken() {
+    return _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getInput */ .V4('token') || process.env.GITHUB_TOKEN;
+}
 function getGitHubHttpHeaders() {
-    const resolvedToken = _actions_core__WEBPACK_IMPORTED_MODULE_4__/* .getInput */ .V4('token') || process.env.GITHUB_TOKEN;
+    const resolvedToken = getGitHubToken();
     const auth = !resolvedToken ? undefined : `token ${resolvedToken}`;
     const headers = {
         accept: 'application/vnd.github.VERSION.raw'
