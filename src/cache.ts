@@ -137,6 +137,10 @@ function findPackageManager(id: string): PackageManager {
   return packageManager;
 }
 
+export function validatePackageManager(id: string): void {
+  findPackageManager(id);
+}
+
 function resolveCachePaths(
   packageManager: PackageManager,
   cachePaths: string[]

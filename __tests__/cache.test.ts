@@ -67,7 +67,7 @@ jest.unstable_mockModule('@actions/glob', () => ({
 const core = await import('@actions/core');
 const cache = await import('@actions/cache');
 const glob = await import('@actions/glob');
-const {restore, save} = await import('../src/cache.js');
+const {restore, save, validatePackageManager} = await import('../src/cache.js');
 
 describe('dependency cache', () => {
   const ORIGINAL_RUNNER_OS = process.env['RUNNER_OS'];
@@ -128,6 +128,20 @@ describe('dependency cache', () => {
     jest.resetAllMocks();
     jest.clearAllMocks();
     jest.restoreAllMocks();
+  });
+
+  describe('validatePackageManager', () => {
+    it('accepts supported package managers', () => {
+      expect(() => validatePackageManager('maven')).not.toThrow();
+      expect(() => validatePackageManager('gradle')).not.toThrow();
+      expect(() => validatePackageManager('sbt')).not.toThrow();
+    });
+
+    it('throws the targeted error for unsupported package managers', () => {
+      expect(() => validatePackageManager('ant')).toThrow(
+        'unknown package manager specified: ant'
+      );
+    });
   });
 
   describe('restore', () => {

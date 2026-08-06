@@ -6,7 +6,8 @@ export const modules = {
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   restore: () => (/* binding */ restore)
+/* harmony export */   restore: () => (/* binding */ restore),
+/* harmony export */   validatePackageManager: () => (/* binding */ validatePackageManager)
 /* harmony export */ });
 /* unused harmony export save */
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6928);
@@ -106,6 +107,9 @@ function findPackageManager(id) {
         throw new Error(`unknown package manager specified: ${id}`);
     }
     return packageManager;
+}
+function validatePackageManager(id) {
+    findPackageManager(id);
 }
 function resolveCachePaths(packageManager, cachePaths) {
     return cachePaths.length > 0 ? cachePaths : packageManager.path;

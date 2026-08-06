@@ -47,7 +47,8 @@ jest.unstable_mockModule('../src/toolchain-ids.js', () => ({
 }));
 
 jest.unstable_mockModule('../src/cache.js', () => ({
-  restore: jest.fn()
+  restore: jest.fn(),
+  validatePackageManager: jest.fn()
 }));
 
 jest.unstable_mockModule('../src/cache-feature.js', () => ({
@@ -129,6 +130,9 @@ describe('setup action orchestration', () => {
     (toolchains.configureToolchains as jest.Mock).mockResolvedValue(undefined);
     (auth.configureAuthentication as jest.Mock).mockResolvedValue(undefined);
     (cache.restore as jest.Mock).mockResolvedValue(undefined);
+    (cache.validatePackageManager as jest.Mock).mockImplementation(
+      () => undefined
+    );
   });
 
   it('does not execute the action when imported', () => {
@@ -486,6 +490,26 @@ describe('setup action orchestration', () => {
     );
   });
 
+  it('fails invalid cache input before resolving a Java distribution', async () => {
+    inputs.set('distribution', 'temurin');
+    inputs.set('cache', 'ant');
+    multilineInputs.set('java-version', ['21']);
+    const setupJava = jest.fn();
+    (factory.getJavaDistribution as jest.Mock).mockReturnValue({setupJava});
+    (cache.validatePackageManager as jest.Mock).mockImplementation(() => {
+      throw new Error('unknown package manager specified: ant');
+    });
+
+    await run();
+
+    expect(core.setFailed).toHaveBeenCalledWith(
+      'unknown package manager specified: ant'
+    );
+    expect(factory.getJavaDistribution).not.toHaveBeenCalled();
+    expect(setupJava).not.toHaveBeenCalled();
+    expect(cache.restore).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['', '', false],
     ['', 'true', true],
@@ -591,6 +615,42 @@ describe('setup action orchestration', () => {
     await run();
 
     expect(core.setFailed).toHaveBeenCalledWith('download failed');
+  });
+
+  it('observes cache failures while Java setup is still pending', async () => {
+    inputs.set('distribution', 'temurin');
+    inputs.set('cache', 'maven');
+    multilineInputs.set('java-version', ['21']);
+    const javaSetup = deferred<{version: string; path: string}>();
+    const setupJava = jest.fn(() => javaSetup.promise);
+    (factory.getJavaDistribution as jest.Mock).mockReturnValue({setupJava});
+    (cache.restore as jest.Mock).mockRejectedValue(
+      new Error('cache restore failed')
+    );
+    const unhandledRejections: unknown[] = [];
+    const onUnhandledRejection = (reason: unknown) => {
+      unhandledRejections.push(reason);
+    };
+    process.on('unhandledRejection', onUnhandledRejection);
+
+    const runPromise = run();
+    try {
+      await tick();
+
+      expect(setupJava).toHaveBeenCalled();
+      expect(core.setFailed).not.toHaveBeenCalled();
+      expect(unhandledRejections).toEqual([]);
+
+      javaSetup.resolve({version: '21.0.4+7', path: '/opt/java/21'});
+      await runPromise;
+    } finally {
+      process.off('unhandledRejection', onUnhandledRejection);
+      javaSetup.resolve({version: '21.0.4+7', path: '/opt/java/21'});
+      await runPromise;
+    }
+
+    expect(unhandledRejections).toEqual([]);
+    expect(core.setFailed).toHaveBeenCalledWith('cache restore failed');
   });
 });
 

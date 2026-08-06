@@ -36342,6 +36342,10 @@ async function run() {
     let cacheRestore;
     const toolchainConfigurations = [];
     try {
+        if (cache) {
+            const { validatePackageManager } = await Promise.all(/* import() */[__nccwpck_require__.e(824), __nccwpck_require__.e(971), __nccwpck_require__.e(377)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7377));
+            validatePackageManager(cache);
+        }
         setup_java_core/* startGroup */.Oh('Installed distributions');
         if (!versions.length && !versionFile) {
             throw new Error('java-version or java-version-file input expected');
@@ -36377,7 +36381,7 @@ async function run() {
                 toolchainIds
             };
             cacheRestore = cache
-                ? startCacheRestore(cache, cacheDependencyPath, cachePath)
+                ? settle(startCacheRestore(cache, cacheDependencyPath, cachePath))
                 : undefined;
             toolchainConfigurations.push(await installVersion(versionInfo.version, installerInputsOptions));
         }
@@ -36400,7 +36404,7 @@ async function run() {
                 toolchainIds
             };
             cacheRestore = cache
-                ? startCacheRestore(cache, cacheDependencyPath, cachePath)
+                ? settle(startCacheRestore(cache, cacheDependencyPath, cachePath))
                 : undefined;
             for (const [index, version] of versions.entries()) {
                 toolchainConfigurations.push(await installVersion(version, installerInputsOptions, index));
@@ -36415,18 +36419,17 @@ async function run() {
         actionError = error;
     }
     if (cacheRestore) {
-        try {
-            await cacheRestore;
-        }
-        catch (error) {
-            if (!actionError) {
-                actionError = error;
-            }
+        const cacheResult = await cacheRestore;
+        if (cacheResult.status === 'rejected' && !actionError) {
+            actionError = cacheResult.reason;
         }
     }
     if (actionError) {
         setup_java_core/* setFailed */.C1(actionError.message);
     }
+}
+function settle(promise) {
+    return promise.then(value => ({ status: 'fulfilled', value }), reason => ({ status: 'rejected', reason }));
 }
 if (process.argv[1] === (0,external_url_.fileURLToPath)(import.meta.url)) {
     run();
