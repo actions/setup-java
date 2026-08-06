@@ -14,6 +14,7 @@ import {
 import {
   cacheJdkDir,
   extractJdkFile,
+  getGitHubToken,
   getNextPageUrlFromLinkHeader,
   isVersionSatisfies,
   MAX_PAGINATION_PAGES,
@@ -108,10 +109,12 @@ export class JetBrainsDistribution extends JavaBase {
     }
 
     const rawVersions: IJetBrainsRawVersion[] = [];
-    const bearerToken = process.env.GITHUB_TOKEN;
-    const requestHeaders: OutgoingHttpHeaders = {};
+    const bearerToken = getGitHubToken();
+    const requestHeaders: OutgoingHttpHeaders = {
+      Accept: 'application/vnd.github+json'
+    };
     if (bearerToken) {
-      requestHeaders['Authorization'] = `Bearer ${bearerToken}`;
+      requestHeaders.Authorization = `Bearer ${bearerToken}`;
     }
     let releasesUrl: string | null = JETBRAINS_RELEASES_URL;
     let pageCount = 0;
