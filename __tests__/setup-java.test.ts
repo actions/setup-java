@@ -510,6 +510,21 @@ describe('setup action orchestration', () => {
     expect(cache.restore).not.toHaveBeenCalled();
   });
 
+  it('reports missing java-version before validating the cache input', async () => {
+    inputs.set('distribution', 'temurin');
+    inputs.set('cache', 'ant');
+    (cache.validatePackageManager as jest.Mock).mockImplementation(() => {
+      throw new Error('unknown package manager specified: ant');
+    });
+
+    await run();
+
+    expect(core.setFailed).toHaveBeenCalledWith(
+      'java-version or java-version-file input expected'
+    );
+    expect(cache.validatePackageManager).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['', '', false],
     ['', 'true', true],

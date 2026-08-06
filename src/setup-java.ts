@@ -41,11 +41,6 @@ export async function run() {
   const toolchainConfigurations: ToolchainConfiguration[] = [];
 
   try {
-    if (cache) {
-      const {validatePackageManager} = await import('./cache.js');
-      validatePackageManager(cache);
-    }
-
     core.startGroup('Installed distributions');
 
     if (!versions.length && !versionFile) {
@@ -99,6 +94,7 @@ export async function run() {
         toolchainIds
       };
 
+      await validateCacheInput(cache);
       cacheRestore = cache
         ? settle(startCacheRestore(cache, cacheDependencyPath, cachePath))
         : undefined;
@@ -125,6 +121,7 @@ export async function run() {
         toolchainIds
       };
 
+      await validateCacheInput(cache);
       cacheRestore = cache
         ? settle(startCacheRestore(cache, cacheDependencyPath, cachePath))
         : undefined;
@@ -158,6 +155,14 @@ export async function run() {
   if (actionError) {
     core.setFailed(actionError.message);
   }
+}
+
+async function validateCacheInput(cache: string): Promise<void> {
+  if (!cache) {
+    return;
+  }
+  const {validatePackageManager} = await import('./cache.js');
+  validatePackageManager(cache);
 }
 
 function settle<T>(promise: Promise<T>): Promise<PromiseSettledResult<T>> {

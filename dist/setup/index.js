@@ -36346,10 +36346,6 @@ async function run() {
     let cacheRestore;
     const toolchainConfigurations = [];
     try {
-        if (cache) {
-            const { validatePackageManager } = await Promise.all(/* import() */[__nccwpck_require__.e(824), __nccwpck_require__.e(971), __nccwpck_require__.e(377)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7377));
-            validatePackageManager(cache);
-        }
         setup_java_core/* startGroup */.Oh('Installed distributions');
         if (!versions.length && !versionFile) {
             throw new Error('java-version or java-version-file input expected');
@@ -36384,6 +36380,7 @@ async function run() {
                 jdkFile,
                 toolchainIds
             };
+            await validateCacheInput(cache);
             cacheRestore = cache
                 ? settle(startCacheRestore(cache, cacheDependencyPath, cachePath))
                 : undefined;
@@ -36407,6 +36404,7 @@ async function run() {
                 jdkFile,
                 toolchainIds
             };
+            await validateCacheInput(cache);
             cacheRestore = cache
                 ? settle(startCacheRestore(cache, cacheDependencyPath, cachePath))
                 : undefined;
@@ -36431,6 +36429,13 @@ async function run() {
     if (actionError) {
         setup_java_core/* setFailed */.C1(actionError.message);
     }
+}
+async function validateCacheInput(cache) {
+    if (!cache) {
+        return;
+    }
+    const { validatePackageManager } = await Promise.all(/* import() */[__nccwpck_require__.e(824), __nccwpck_require__.e(971), __nccwpck_require__.e(377)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7377));
+    validatePackageManager(cache);
 }
 function settle(promise) {
     return promise.then(value => ({ status: 'fulfilled', value }), reason => ({ status: 'rejected', reason }));
