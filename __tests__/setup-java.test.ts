@@ -624,9 +624,12 @@ describe('setup action orchestration', () => {
     const javaSetup = deferred<{version: string; path: string}>();
     const setupJava = jest.fn(() => javaSetup.promise);
     (factory.getJavaDistribution as jest.Mock).mockReturnValue({setupJava});
-    (cache.restore as jest.Mock).mockRejectedValue(
-      new Error('cache restore failed')
-    );
+    const cacheRestore = deferred<void>();
+    const cacheRestoreCalled = deferred<void>();
+    (cache.restore as jest.Mock).mockImplementation(() => {
+      cacheRestoreCalled.resolve();
+      return cacheRestore.promise;
+    });
     const unhandledRejections: unknown[] = [];
     const onUnhandledRejection = (reason: unknown) => {
       unhandledRejections.push(reason);
@@ -635,18 +638,20 @@ describe('setup action orchestration', () => {
 
     const runPromise = run();
     try {
+      // Only reject once the restore has actually started and while the Java
+      // installation is still pending, so the unfixed code would leave the
+      // rejection unhandled.
+      await cacheRestoreCalled.promise;
+      cacheRestore.reject(new Error('cache restore failed'));
       await tick();
 
       expect(setupJava).toHaveBeenCalled();
-      expect(core.setFailed).not.toHaveBeenCalled();
       expect(unhandledRejections).toEqual([]);
-
-      javaSetup.resolve({version: '21.0.4+7', path: '/opt/java/21'});
-      await runPromise;
+      expect(core.setFailed).not.toHaveBeenCalled();
     } finally {
-      process.off('unhandledRejection', onUnhandledRejection);
       javaSetup.resolve({version: '21.0.4+7', path: '/opt/java/21'});
       await runPromise;
+      process.off('unhandledRejection', onUnhandledRejection);
     }
 
     expect(unhandledRejections).toEqual([]);
