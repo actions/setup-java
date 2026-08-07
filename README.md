@@ -274,7 +274,7 @@ The primary dependency cache key is `setup-java-<runner-os>-<node-arch>-<package
 
 | Package manager | Files used for the primary dependency-cache key |
 | --- | --- |
-| Gradle | `**/*.gradle*`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, `**/versions.properties` |
+| Gradle | `**/*.gradle*`, `**/gradle.properties`, `**/gradle-wrapper.properties`, `buildSrc/**/Versions.kt`, `buildSrc/**/Dependencies.kt`, `gradle/*.versions.toml`, `**/versions.properties` |
 | Maven | `**/pom.xml`, `**/.mvn/wrapper/maven-wrapper.properties`, `**/.mvn/extensions.xml` |
 | sbt | `**/*.sbt`, `**/project/build.properties`, `**/project/**.scala`, `**/project/**.sbt` |
 
