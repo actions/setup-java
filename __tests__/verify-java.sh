@@ -35,6 +35,9 @@ fi
 
 if [ -n "$SETUP_JAVA_VERSION" ]; then
   OUTPUT_JAVA_VERSION=$(echo "$SETUP_JAVA_VERSION" | cut -d'+' -f1)
+  if [[ $OUTPUT_JAVA_VERSION == *-ea* ]]; then
+    OUTPUT_JAVA_VERSION=$(echo "$OUTPUT_JAVA_VERSION" | cut -d'-' -f1 | cut -d'.' -f1)
+  fi
   OUTPUT_GREP_RESULT=$(echo "$ACTUAL_JAVA_VERSION" | grep -E "^(openjdk|java) version \"$OUTPUT_JAVA_VERSION")
   if [ -z "$OUTPUT_GREP_RESULT" ]; then
     echo "::error::The version output does not match the installed Java version"
