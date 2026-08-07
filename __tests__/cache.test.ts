@@ -11,6 +11,7 @@ import {
 import {mkdtempSync} from 'fs';
 import {tmpdir} from 'os';
 import {join} from 'path';
+import {createHash} from 'crypto';
 import * as fs from 'fs';
 import * as os from 'os';
 
@@ -356,7 +357,7 @@ describe('dependency cache', () => {
         await expect(restore('gradle', '')).rejects.toThrow(
           `No file in ${projectRoot(
             workspace
-          )} matched to [**/*.gradle*,**/gradle-wrapper.properties,buildSrc/**/Versions.kt,buildSrc/**/Dependencies.kt,gradle/*.versions.toml,**/versions.properties], make sure you have checked out the target repository`
+          )} matched to [**/*.gradle*,**/gradle.properties,**/gradle-wrapper.properties,buildSrc/**/Versions.kt,buildSrc/**/Dependencies.kt,gradle/*.versions.toml,**/versions.properties], make sure you have checked out the target repository`
         );
       });
       it('downloads cache based on build.gradle', async () => {
@@ -365,7 +366,7 @@ describe('dependency cache', () => {
         await restore('gradle', '');
         expect(spyCacheRestore).toHaveBeenCalled();
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
-          '**/*.gradle*\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
+          '**/*.gradle*\n**/gradle.properties\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
         );
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
@@ -376,7 +377,7 @@ describe('dependency cache', () => {
         await restore('gradle', '');
         expect(spyCacheRestore).toHaveBeenCalled();
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
-          '**/*.gradle*\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
+          '**/*.gradle*\n**/gradle.properties\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
         );
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
@@ -388,7 +389,7 @@ describe('dependency cache', () => {
         await restore('gradle', '');
         expect(spyCacheRestore).toHaveBeenCalled();
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
-          '**/*.gradle*\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
+          '**/*.gradle*\n**/gradle.properties\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
         );
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
@@ -400,10 +401,38 @@ describe('dependency cache', () => {
         await restore('gradle', '');
         expect(spyCacheRestore).toHaveBeenCalled();
         expect(spyGlobHashFiles).toHaveBeenCalledWith(
-          '**/*.gradle*\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
+          '**/*.gradle*\n**/gradle.properties\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
         );
         expect(spyWarning).not.toHaveBeenCalled();
         expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
+      });
+      it('changes the cache key when gradle.properties changes', async () => {
+        const buildFile = join(workspace, 'build.gradle');
+        const propertiesFile = join(workspace, 'gradle.properties');
+        createFile(buildFile);
+        createFile(propertiesFile, 'dependencyVersion=1.0.0');
+        spyGlobHashFiles.mockImplementation(async (pattern: string) => {
+          if (pattern === '**/gradle-wrapper.properties') {
+            return '';
+          }
+
+          const files = [buildFile];
+          if (pattern.split('\n').includes('**/gradle.properties')) {
+            files.push(propertiesFile);
+          }
+          const hash = createHash('sha256');
+          files.forEach(file => hash.update(fs.readFileSync(file)));
+          return hash.digest('hex');
+        });
+
+        await restore('gradle', '');
+        const firstKey = spyCacheRestore.mock.calls[0][1];
+
+        fs.writeFileSync(propertiesFile, 'dependencyVersion=2.0.0');
+        await restore('gradle', '');
+        const secondKey = spyCacheRestore.mock.calls[1][1];
+
+        expect(secondKey).not.toBe(firstKey);
       });
       it('restores the gradle wrapper distribution cache independently of the main cache', async () => {
         createFile(join(workspace, 'build.gradle'));
@@ -543,7 +572,7 @@ describe('dependency cache', () => {
       await restore('gradle', '');
       expect(spyCacheRestore).toHaveBeenCalled();
       expect(spyGlobHashFiles).toHaveBeenCalledWith(
-        '**/*.gradle*\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
+        '**/*.gradle*\n**/gradle.properties\n**/gradle-wrapper.properties\nbuildSrc/**/Versions.kt\nbuildSrc/**/Dependencies.kt\ngradle/*.versions.toml\n**/versions.properties'
       );
       expect(spyWarning).not.toHaveBeenCalled();
       expect(spyInfo).toHaveBeenCalledWith('gradle cache is not found');
@@ -1041,9 +1070,9 @@ function createStateForSuccessfulRestore() {
   });
 }
 
-function createFile(path: string) {
+function createFile(path: string, contents = '') {
   core.info(`created a file at ${path}`);
-  fs.writeFileSync(path, '');
+  fs.writeFileSync(path, contents);
 }
 
 function deferred<T>() {
