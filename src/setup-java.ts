@@ -37,7 +37,7 @@ export async function run() {
     core.getInput(constants.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
   const toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
   let actionError: Error | undefined;
-  let cacheRestore: Promise<void> | undefined;
+  let cacheRestore: Promise<PromiseSettledResult<void>> | undefined;
   const toolchainConfigurations: ToolchainConfiguration[] = [];
 
   try {
@@ -94,8 +94,9 @@ export async function run() {
         toolchainIds
       };
 
+      await validateCacheInput(cache);
       cacheRestore = cache
-        ? startCacheRestore(cache, cacheDependencyPath, cachePath)
+        ? settle(startCacheRestore(cache, cacheDependencyPath, cachePath))
         : undefined;
       toolchainConfigurations.push(
         await installVersion(versionInfo.version, installerInputsOptions)
@@ -120,8 +121,9 @@ export async function run() {
         toolchainIds
       };
 
+      await validateCacheInput(cache);
       cacheRestore = cache
-        ? startCacheRestore(cache, cacheDependencyPath, cachePath)
+        ? settle(startCacheRestore(cache, cacheDependencyPath, cachePath))
         : undefined;
       for (const [index, version] of versions.entries()) {
         toolchainConfigurations.push(
@@ -144,18 +146,30 @@ export async function run() {
   }
 
   if (cacheRestore) {
-    try {
-      await cacheRestore;
-    } catch (error) {
-      if (!actionError) {
-        actionError = error as Error;
-      }
+    const cacheResult = await cacheRestore;
+    if (cacheResult.status === 'rejected' && !actionError) {
+      actionError = cacheResult.reason as Error;
     }
   }
 
   if (actionError) {
     core.setFailed(actionError.message);
   }
+}
+
+async function validateCacheInput(cache: string): Promise<void> {
+  if (!cache) {
+    return;
+  }
+  const {validatePackageManager} = await import('./cache.js');
+  validatePackageManager(cache);
+}
+
+function settle<T>(promise: Promise<T>): Promise<PromiseSettledResult<T>> {
+  return promise.then<PromiseFulfilledResult<T>, PromiseRejectedResult>(
+    value => ({status: 'fulfilled', value}),
+    reason => ({status: 'rejected', reason})
+  );
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
