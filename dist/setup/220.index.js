@@ -127,7 +127,8 @@ class MicrosoftDistributions extends base_installer/* JavaBase */.O {
     async getAvailableVersions() {
         let releases = null;
         const fileUrl = `https://aka.ms/download-jdk/microsoft-openjdk-versions.json`;
-        const headers = (0,util/* getGitHubHttpHeaders */.U_)();
+        // Avoid leaking the GitHub token to a non-GitHub host (aka.ms redirects to a CDN).
+        const headers = { accept: 'application/json' };
         let response = null;
         if (core/* isDebug */._o()) {
             console.time('Retrieving available versions for Microsoft took'); // eslint-disable-line no-console
