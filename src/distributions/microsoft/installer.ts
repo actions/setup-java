@@ -8,7 +8,6 @@ import {
   cacheJdkDir,
   extractJdkFile,
   getDownloadArchiveExtension,
-  getGitHubHttpHeaders,
   renameWinArchive
 } from '../../util.js';
 import * as gpg from '../../gpg.js';
