@@ -131,8 +131,8 @@ export class MicrosoftDistributions extends JavaBase {
     let releases: tc.IToolRelease[] | null = null;
     const fileUrl = `https://aka.ms/download-jdk/microsoft-openjdk-versions.json`;
 
-    const headers = getGitHubHttpHeaders();
-
+    // Avoid leaking the GitHub token to a non-GitHub host (aka.ms redirects to a CDN).
+    const headers = {accept: 'application/json'};
     let response: TypedResponse<tc.IToolRelease[]> | null = null;
 
     if (core.isDebug()) {
