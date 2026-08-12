@@ -123,16 +123,8 @@ export class MicrosoftDistributions extends JavaBase {
   }
 
   private async getAvailableVersions(): Promise<tc.IToolRelease[] | null> {
-    // TODO get these dynamically!
-    // We will need Microsoft to add an endpoint where we can query for versions.
-    const owner = 'actions';
-    const repository = 'setup-java';
-    const branch = 'main';
-    const filePath =
-      'src/distributions/microsoft/microsoft-openjdk-versions.json';
-
     let releases: tc.IToolRelease[] | null = null;
-    const fileUrl = `https://api.github.com/repos/${owner}/${repository}/contents/${filePath}?ref=${branch}`;
+    const fileUrl = `https://aka.ms/download-jdk/microsoft-openjdk-versions.json`;
 
     const headers = getGitHubHttpHeaders();
 
