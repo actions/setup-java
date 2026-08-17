@@ -263,6 +263,7 @@ describe('validatePaginationUrl', () => {
 describe('getVersionFromFileContent', () => {
   describe('.sdkmanrc', () => {
     it.each([
+      ['java=26-tem', '26', 'temurin'],
       ['java=11.0.20.1-tem', '11.0.20', 'temurin'],
       ['java = 11.0.20.1-tem', '11.0.20', 'temurin'],
       ['java=11.0.20.1-tem # a comment in sdkmanrc', '11.0.20', 'temurin'],
