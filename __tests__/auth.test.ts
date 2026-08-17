@@ -60,6 +60,15 @@ const settingsFile = path.join(m2Dir, MVN_SETTINGS_FILE);
 const credentials = (id: string, username: string, password: string) => [
   {id, usernameEnvVar: username, passwordEnvVar: password}
 ];
+const repositorySettings = (
+  repositories: auth.MavenRepository[],
+  includeCentral = true,
+  prioritizeCentral = true
+): auth.MavenRepositorySettings => ({
+  repositories,
+  includeCentral,
+  prioritizeCentral
+});
 
 describe('auth tests', () => {
   let spyOSHomedir: any;
@@ -383,6 +392,179 @@ describe('auth tests', () => {
     ]);
   });
 
+  it('generates an active profile with Central before custom repositories by default', () => {
+    const parsed = parseXmlObject(
+      auth.generate(
+        credentials('packages', 'USERNAME', 'PASSWORD'),
+        undefined,
+        repositorySettings([
+          {
+            id: 'private',
+            url: 'https://repo.example.com/maven',
+            snapshotsEnabled: true
+          }
+        ])
+      )
+    ) as any;
+
+    expect(parsed.settings.profiles.profile).toEqual({
+      id: 'setup-java-repositories',
+      repositories: {
+        repository: [
+          {
+            id: 'central',
+            url: 'https://repo.maven.apache.org/maven2',
+            snapshots: {enabled: 'false'}
+          },
+          {
+            id: 'private',
+            url: 'https://repo.example.com/maven',
+            snapshots: {enabled: 'true'}
+          }
+        ]
+      }
+    });
+    expect(parsed.settings.activeProfiles.activeProfile).toBe(
+      'setup-java-repositories'
+    );
+  });
+
+  it('places custom repositories before Central when configured', () => {
+    const parsed = parseXmlObject(
+      auth.generate(
+        credentials('packages', 'USERNAME', 'PASSWORD'),
+        undefined,
+        repositorySettings(
+          [
+            {
+              id: 'first',
+              url: 'https://first.example.com',
+              snapshotsEnabled: false
+            },
+            {
+              id: 'second',
+              url: 'https://second.example.com',
+              snapshotsEnabled: true
+            }
+          ],
+          true,
+          false
+        )
+      )
+    ) as any;
+
+    expect(
+      parsed.settings.profiles.profile.repositories.repository.map(
+        (repository: {id: string}) => repository.id
+      )
+    ).toEqual(['first', 'second', 'central']);
+  });
+
+  it('excludes Central from the generated repository profile when configured', () => {
+    const parsed = parseXmlObject(
+      auth.generate(
+        credentials('packages', 'USERNAME', 'PASSWORD'),
+        undefined,
+        repositorySettings(
+          [
+            {
+              id: 'private',
+              url: 'https://repo.example.com',
+              snapshotsEnabled: false
+            }
+          ],
+          false
+        )
+      )
+    ) as any;
+
+    expect(parsed.settings.profiles.profile.repositories.repository).toEqual([
+      {
+        id: 'private',
+        url: 'https://repo.example.com',
+        snapshots: {enabled: 'false'}
+      },
+      {
+        id: 'central',
+        url: 'https://repo.maven.apache.org/maven2',
+        releases: {enabled: 'false'},
+        snapshots: {enabled: 'false'}
+      }
+    ]);
+  });
+
+  it('combines repository and GPG configuration in shared profile blocks', () => {
+    const parsed = parseXmlObject(
+      auth.generate(
+        credentials('packages', 'USERNAME', 'PASSWORD'),
+        'GPG_PASSPHRASE',
+        repositorySettings(
+          [
+            {
+              id: 'private',
+              url: 'https://repo.example.com',
+              snapshotsEnabled: false
+            }
+          ],
+          false
+        )
+      )
+    ) as any;
+
+    expect(parsed.settings.profiles.profile).toEqual([
+      {
+        id: 'setup-java-repositories',
+        repositories: {
+          repository: [
+            {
+              id: 'private',
+              url: 'https://repo.example.com',
+              snapshots: {enabled: 'false'}
+            },
+            {
+              id: 'central',
+              url: 'https://repo.maven.apache.org/maven2',
+              releases: {enabled: 'false'},
+              snapshots: {enabled: 'false'}
+            }
+          ]
+        }
+      },
+      {
+        id: 'setup-java-gpg',
+        properties: {['gpg.passphraseEnvName']: 'GPG_PASSPHRASE'}
+      }
+    ]);
+    expect(parsed.settings.activeProfiles.activeProfile).toEqual([
+      'setup-java-repositories',
+      'setup-java-gpg'
+    ]);
+  });
+
+  it('escapes repository values while preserving parsed semantics', () => {
+    const repository = {
+      id: `private&<>"'é`,
+      url: `https://repo.example.com/a?x=1&y=<value>"'é`,
+      snapshotsEnabled: true
+    };
+    const xml = auth.generate(
+      credentials('packages', 'USERNAME', 'PASSWORD'),
+      undefined,
+      repositorySettings([repository], false)
+    );
+    const parsed = parseXmlObject(xml) as any;
+
+    expect(
+      parsed.settings.profiles.profile.repositories.repository.find(
+        (entry: {id: string}) => entry.id === repository.id
+      )
+    ).toEqual({
+      id: repository.id,
+      url: repository.url,
+      snapshots: {enabled: 'true'}
+    });
+  });
+
   it('parses and trims multiline Maven server credentials', () => {
     expect(
       auth.parseMavenServerCredentials([
@@ -402,6 +584,136 @@ describe('auth tests', () => {
         passwordEnvVar: 'SNAPSHOTS_PASSWORD'
       }
     ]);
+  });
+
+  it('parses Maven repositories while preserving colons in URLs', () => {
+    expect(
+      auth.parseMavenRepositories(
+        [
+          '',
+          ' private : https://repo.example.com:8443/maven : true ',
+          'releases:https://repo.example.com/releases:false'
+        ],
+        true
+      )
+    ).toEqual([
+      {
+        id: 'private',
+        url: 'https://repo.example.com:8443/maven',
+        snapshotsEnabled: true
+      },
+      {
+        id: 'releases',
+        url: 'https://repo.example.com/releases',
+        snapshotsEnabled: false
+      }
+    ]);
+  });
+
+  it.each([
+    {
+      entries: ['private'],
+      error:
+        'Invalid mvn-repositories entry at line 1. Expected format: repository-id:repository-url:snapshots-enabled'
+    },
+    {
+      entries: ['private:https://repo.example.com'],
+      error:
+        "Invalid snapshots-enabled value '//repo.example.com' in mvn-repositories entry at line 1. Expected true or false"
+    },
+    {
+      entries: ['private::true'],
+      error:
+        'Invalid mvn-repositories entry at line 1. repository-id, repository URL, and snapshots-enabled are required'
+    },
+    {
+      entries: ['private:https://repo.example.com:sometimes'],
+      error:
+        "Invalid snapshots-enabled value 'sometimes' in mvn-repositories entry at line 1. Expected true or false"
+    }
+  ])('rejects malformed Maven repositories: $entries', ({entries, error}) => {
+    expect(() => auth.parseMavenRepositories(entries, true)).toThrow(error);
+  });
+
+  it('rejects duplicate Maven repository ids', () => {
+    expect(() =>
+      auth.parseMavenRepositories(
+        [
+          'private:https://first.example.com:false',
+          'private:https://second.example.com:true'
+        ],
+        true
+      )
+    ).toThrow("Duplicate repository-id 'private' in mvn-repositories input");
+  });
+
+  it('reserves the Central repository id only when automatic Central inclusion is enabled', () => {
+    const central = 'central:https://custom.example.com/maven:false';
+
+    expect(() => auth.parseMavenRepositories([central], true)).toThrow(
+      "Repository-id 'central' is reserved when mvn-repositories-include-central is enabled"
+    );
+    expect(auth.parseMavenRepositories([central], false)).toEqual([
+      {
+        id: 'central',
+        url: 'https://custom.example.com/maven',
+        snapshotsEnabled: false
+      }
+    ]);
+  });
+
+  it('uses an explicit Central repository instead of adding a disabled override', () => {
+    const parsed = parseXmlObject(
+      auth.generate(
+        credentials('packages', 'USERNAME', 'PASSWORD'),
+        undefined,
+        repositorySettings(
+          auth.parseMavenRepositories(
+            ['central:https://mirror.example.com/maven:true'],
+            false
+          ),
+          false
+        )
+      )
+    ) as any;
+
+    expect(parsed.settings.profiles.profile.repositories.repository).toEqual({
+      id: 'central',
+      url: 'https://mirror.example.com/maven',
+      snapshots: {enabled: 'true'}
+    });
+  });
+
+  it('reads Maven repository settings and Central controls', () => {
+    (core.getMultilineInput as jest.Mock).mockImplementation((name: string) =>
+      name === 'mvn-repositories'
+        ? ['private:https://repo.example.com:true']
+        : []
+    );
+    (core.getInput as jest.Mock).mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        'mvn-repositories-include-central': 'false',
+        'mvn-repositories-prioritize-central': 'false'
+      };
+      return inputs[name] ?? '';
+    });
+
+    expect(auth.getMavenRepositorySettings()).toEqual({
+      repositories: [
+        {
+          id: 'private',
+          url: 'https://repo.example.com',
+          snapshotsEnabled: true
+        }
+      ],
+      includeCentral: false,
+      prioritizeCentral: false
+    });
+  });
+
+  it('does not read repository controls when no repositories are configured', () => {
+    expect(auth.getMavenRepositorySettings()).toBeUndefined();
+    expect(core.getInput).not.toHaveBeenCalled();
   });
 
   it.each([
