@@ -173,7 +173,7 @@ steps:
 | `mvn-server-credentials` | Multiline Maven server credentials in the format `server-id:USERNAME_ENV:PASSWORD_ENV`. Replaces the single server configured by the three inputs above when set. | |
 | `mvn-repositories` | Multiline Maven dependency repositories in the format `repository-id:repository-url:snapshots-enabled`. | |
 | `mvn-repositories-include-central` | Include Maven Central in the generated dependency repositories profile. When `false`, Central is disabled unless an explicit `central` repository is declared. | `true` |
-| `mvn-repositories-prioritize-central` | Place Maven Central before custom dependency repositories. | `true` |
+| `mvn-repositories-prioritize-central` | Place Maven Central before custom dependency repositories. Has no effect when Maven Central is excluded. | `true` |
 | `settings-path` | Directory where `settings.xml` is written. | `~/.m2` |
 | `overwrite-settings` | Overwrite an existing `settings.xml`. | `true` |
 | `gpg-private-key` | GPG private key to import into an isolated temporary keyring. | |
