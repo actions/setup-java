@@ -636,6 +636,26 @@ jobs:
         run: bash __tests__/verify-java.sh "17.0.10" "$JAVA_PATH"
         shell: bash
 
+  setup-java-version-from-sdkman-major:
+    name: temurin 26 from .sdkmanrc - ubuntu-latest
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout_step
+      - name: Create SDKMAN and Gradle files
+        run: |
+          echo "java=26-tem" > .sdkmanrc
+          touch build.gradle
+      - name: setup-java
+        uses: ./
+        id: setup-java
+        with:
+          java-version-file: .sdkmanrc
+          cache: gradle
+      - name: Verify Java
+        env:
+          JAVA_PATH: ${{ steps.setup-java.outputs.path }}
+        run: bash __tests__/verify-java.sh "26" "$JAVA_PATH"
+
   setup-java-set-default:
     name: set-default option - ${{ matrix.os }}
     needs: setup-java-major-versions
