@@ -1,0 +1,11 @@
+{
+  "result": [
+    {
+      "filename": "java-21-openjdk-21.0.8.0.9-1.portable.jdk.x86_64.tar.xz",
+      "direct_download_uri": "https://developers.redhat.com/content-gateway/file/pub/openjdk/java-21-openjdk-21.0.8.0.9-1.portable.jdk.x86_64.tar.xz",
+      "checksum": "91a6f3284cbded9de17f65985a4fca48dd4fd0aa295162178631c23ade335aad",
+      "checksum_type": "sha256"
+    }
+  ],
+  "message": ""
+}

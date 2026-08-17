@@ -30915,6 +30915,7 @@ var JavaDistribution;
     JavaDistribution["JetBrains"] = "jetbrains";
     JavaDistribution["Kona"] = "kona";
     JavaDistribution["OracleOpenJdk"] = "oracle-openjdk";
+    JavaDistribution["RedHat"] = "redhat";
 })(JavaDistribution || (JavaDistribution = {}));
 const JAVA_PACKAGE_CAPABILITIES = {
     [JavaDistribution.Temurin]: ['jdk', 'jre', 'jdk+jmods'],
@@ -30946,7 +30947,8 @@ const JAVA_PACKAGE_CAPABILITIES = {
         'jre+ft'
     ],
     [JavaDistribution.Kona]: ['jdk'],
-    [JavaDistribution.OracleOpenJdk]: ['jdk']
+    [JavaDistribution.OracleOpenJdk]: ['jdk'],
+    [JavaDistribution.RedHat]: ['jdk', 'jre']
 };
 function validateJavaPackage(distributionName, packageType, version) {
     if (!isJavaDistribution(distributionName)) {
@@ -31130,6 +31132,19 @@ const JAVA_PLATFORM_CAPABILITIES = {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: ['x64']
+        }
+    },
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.RedHat]: {
+        platforms: {
+            linux: [
+                'x64',
+                { architecture: 'aarch64', versionRange: '<12' },
+                { architecture: 'ppc64le', versionRange: '<12' }
+            ],
+            windows: [
+                { architecture: 'x64', versionRange: '<22' },
+                { architecture: 'x86', versionRange: '<11' }
+            ]
         }
     }
 };
@@ -31346,7 +31361,9 @@ async function extractJdkFile(toolPath, extension) {
     if (!extension) {
         extension = toolPath.endsWith('.tar.gz')
             ? 'tar.gz'
-            : path__WEBPACK_IMPORTED_MODULE_1___default().extname(toolPath);
+            : toolPath.endsWith('.tar.xz')
+                ? 'tar.xz'
+                : path__WEBPACK_IMPORTED_MODULE_1___default().extname(toolPath);
         if (extension.startsWith('.')) {
             extension = extension.substring(1);
         }
@@ -31354,6 +31371,8 @@ async function extractJdkFile(toolPath, extension) {
     switch (extension) {
         case 'tar.gz':
             return await extractTarGz(toolPath);
+        case 'tar.xz':
+            return await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_5__/* .extractTar */ .nN(toolPath, undefined, 'xJ');
         case 'tar':
             return await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_5__/* .extractTar */ .nN(toolPath);
         case 'zip':
@@ -36308,6 +36327,10 @@ async function getJavaDistribution(distributionName, installerOptions, jdkFile) 
         case package_types/* JavaDistribution */.zS.OracleOpenJdk: {
             const { OpenJdkDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(735)]).then(__nccwpck_require__.bind(__nccwpck_require__, 3735));
             return new OpenJdkDistribution(normalizedInstallerOptions);
+        }
+        case package_types/* JavaDistribution */.zS.RedHat: {
+            const { RedHatDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(228)]).then(__nccwpck_require__.bind(__nccwpck_require__, 8228));
+            return new RedHatDistribution(normalizedInstallerOptions);
         }
         default:
             return null;

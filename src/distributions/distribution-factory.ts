@@ -98,6 +98,10 @@ export async function getJavaDistribution(
       const {OpenJdkDistribution} = await import('./openjdk/installer.js');
       return new OpenJdkDistribution(normalizedInstallerOptions);
     }
+    case JavaDistribution.RedHat: {
+      const {RedHatDistribution} = await import('./redhat/installer.js');
+      return new RedHatDistribution(normalizedInstallerOptions);
+    }
     default:
       return null;
   }

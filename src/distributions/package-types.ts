@@ -17,7 +17,8 @@ export enum JavaDistribution {
   GraalVMCommunity = 'graalvm-community',
   JetBrains = 'jetbrains',
   Kona = 'kona',
-  OracleOpenJdk = 'oracle-openjdk'
+  OracleOpenJdk = 'oracle-openjdk',
+  RedHat = 'redhat'
 }
 
 export const JAVA_PACKAGE_CAPABILITIES = {
@@ -50,7 +51,8 @@ export const JAVA_PACKAGE_CAPABILITIES = {
     'jre+ft'
   ],
   [JavaDistribution.Kona]: ['jdk'],
-  [JavaDistribution.OracleOpenJdk]: ['jdk']
+  [JavaDistribution.OracleOpenJdk]: ['jdk'],
+  [JavaDistribution.RedHat]: ['jdk', 'jre']
 } as const satisfies Record<JavaDistribution, readonly string[]>;
 
 export function validateJavaPackage(

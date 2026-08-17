@@ -405,6 +405,18 @@ describe('extractJdkFile', () => {
     expect(io.which).not.toHaveBeenCalled();
   });
 
+  it('extracts xz-compressed tarballs with xz tar flags', async () => {
+    (tc.extractTar as jest.Mock).mockResolvedValue('/extracted' as never);
+
+    await expect(extractJdkFile('/tmp/jdk.tar.xz')).resolves.toBe('/extracted');
+    expect(tc.extractTar).toHaveBeenCalledWith(
+      '/tmp/jdk.tar.xz',
+      undefined,
+      'xJ'
+    );
+    expect(io.which).not.toHaveBeenCalled();
+  });
+
   it('uses the bundled tar.exe for zip archives on Windows', async () => {
     setPlatform('win32');
     const systemRoot = path.join(workDir, 'Windows');

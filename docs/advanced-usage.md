@@ -77,6 +77,19 @@ steps:
   - run: java --version
 ```
 
+### Red Hat Build of OpenJDK
+
+```yaml
+steps:
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'redhat'
+      java-version: '21'
+      java-package: jdk # optional (jdk or jre) - defaults to jdk
+  - run: java --version
+```
+
 ### Liberica
 
 ```yaml
@@ -329,6 +342,7 @@ The package types have these meanings:
 | `corretto` | `jdk`, `jre` | Accepts major versions only. JDK availability follows Amazon's platform catalog. For the operating systems directly selected by `setup-java`, JRE downloads are limited to Java 8 on Windows; Linux and macOS use `jdk`. |
 | `oracle` | `jdk` | Stable Oracle JDK 17 and later only. |
 | `oracle-openjdk` | `jdk` | Installs the GA or early-access JDK builds currently listed or archived on `jdk.java.net`; use a `-ea` version such as `27-ea` for early access. |
+| `redhat` | `jdk`, `jre` | Stable builds only. Version availability follows the Foojay Disco catalog for Red Hat Build of OpenJDK and can lag Red Hat's downloads page. |
 | `dragonwell` | `jdk` | Stable builds only. The current vendor catalog provides Java 8, 11, 17, 21, and 25. |
 | `sapmachine` | `jdk`, `jre` | Follows the SapMachine catalog. Both editions are represented from Java 10 onward, but individual versions and platforms can differ. |
 | `graalvm` | `jdk` | Stable Oracle GraalVM for JDK 17 and later only. |
@@ -644,6 +658,7 @@ absent from a vendor catalog.
 | `corretto` | `x64`, `x86`, `armv7`, `aarch64` | `x64`, `aarch64` | `x64`, `x86` | `x86` is limited to Java 11 or earlier; Linux `armv7` is available for Java 11. |
 | `oracle` | `x64`, `aarch64` | `x64`, `aarch64` | `x64` | |
 | `oracle-openjdk` | `x64`, `aarch64` | `x64`, `aarch64` | `x64` | |
+| `redhat` | `x64`, `aarch64`, `ppc64le` | — | `x64`, `x86` | Linux requires glibc; Alpine is unsupported. Linux `aarch64` and `ppc64le` are limited to Java 11 or earlier. Windows `x64` is limited to Java 21 or earlier and `x86` to Java 10 or earlier. |
 | `dragonwell` | `x64`, `aarch64` | — | `x64` | |
 | `sapmachine` | `x64`, `aarch64`, `ppc64le` | `x64`, `aarch64` | `x64`, `aarch64` | |
 | `graalvm`, `graalvm-community` | `x64`, `aarch64` | `x64`, `aarch64` | `x64` | |
