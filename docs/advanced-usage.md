@@ -907,6 +907,82 @@ This configuration produces the following server entries:
 </servers>
 ```
 
+### Resolving Maven dependencies from custom repositories
+
+Use `mvn-repositories` when Maven must download dependencies from repositories
+outside Maven Central. Each line has the format
+`repository-id:repository-url:snapshots-enabled`. The parser uses the first and
+last colons as separators, so repository URLs can contain a scheme or port.
+
+The repository ID can match a `mvn-server-credentials` server ID to authenticate
+requests to a private repository:
+
+```yaml
+steps:
+  - uses: actions/checkout@v7
+  - name: Set up Java and private Maven repositories
+    uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+      mvn-server-credentials: |
+        private:PRIVATE_REPOSITORY_USERNAME:PRIVATE_REPOSITORY_TOKEN
+      mvn-repositories: |
+        private:https://maven.example.com:8443/releases:false
+        snapshots:https://maven.example.com:8443/snapshots:true
+      mvn-repositories-include-central: true
+      mvn-repositories-prioritize-central: true
+  - run: mvn --batch-mode verify
+    env:
+      PRIVATE_REPOSITORY_USERNAME: ${{ secrets.PRIVATE_REPOSITORY_USERNAME }}
+      PRIVATE_REPOSITORY_TOKEN: ${{ secrets.PRIVATE_REPOSITORY_TOKEN }}
+```
+
+This configuration adds the following active profile to `settings.xml`:
+
+```xml
+<profiles>
+  <profile>
+    <id>setup-java-repositories</id>
+    <repositories>
+      <repository>
+        <id>central</id>
+        <url>https://repo.maven.apache.org/maven2</url>
+        <snapshots>
+          <enabled>false</enabled>
+        </snapshots>
+      </repository>
+      <repository>
+        <id>private</id>
+        <url>https://maven.example.com:8443/releases</url>
+        <snapshots>
+          <enabled>false</enabled>
+        </snapshots>
+      </repository>
+      <repository>
+        <id>snapshots</id>
+        <url>https://maven.example.com:8443/snapshots</url>
+        <snapshots>
+          <enabled>true</enabled>
+        </snapshots>
+      </repository>
+    </repositories>
+  </profile>
+</profiles>
+<activeProfiles>
+  <activeProfile>setup-java-repositories</activeProfile>
+</activeProfiles>
+```
+
+Maven Central is included first by default. Set
+`mvn-repositories-prioritize-central: false` to place custom repositories
+first, or set `mvn-repositories-include-central: false` to disable Central. The
+generated profile overrides the Central repository inherited from Maven's Super
+POM with releases and snapshots disabled. When automatic Central inclusion is
+off, the ID `central` may instead be declared explicitly in `mvn-repositories`
+to replace it with a user-specified repository; otherwise that ID is reserved
+to prevent duplicate entries.
+
 ### GPG
 
 The example above uses the [Maven GPG Plugin](https://maven.apache.org/plugins/maven-gpg-plugin/)'s Bouncy Castle signer (`-Dgpg.signer=bc`, available since `maven-gpg-plugin` 3.2.0). It is a pure-Java signer that reads the key directly from the `MAVEN_GPG_KEY` environment variable, so it does **not** require the `gpg` executable, importing the key into a GPG keychain, or the `--pinentry-mode loopback` workaround in your `pom.xml`. The key must be an ASCII-armored secret key (transferable secret key format).

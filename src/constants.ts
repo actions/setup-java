@@ -13,6 +13,11 @@ export const INPUT_PROBLEM_MATCHER = 'problem-matcher';
 export const INPUT_VERIFY_SIGNATURE = 'verify-signature';
 export const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
 export const INPUT_MVN_SERVER_CREDENTIALS = 'mvn-server-credentials';
+export const INPUT_MVN_REPOSITORIES = 'mvn-repositories';
+export const INPUT_MVN_REPOSITORIES_INCLUDE_CENTRAL =
+  'mvn-repositories-include-central';
+export const INPUT_MVN_REPOSITORIES_PRIORITIZE_CENTRAL =
+  'mvn-repositories-prioritize-central';
 export const INPUT_SERVER_ID = 'server-id';
 export const INPUT_SERVER_USERNAME_ENV_VAR = 'server-username-env-var';
 export const INPUT_SERVER_PASSWORD_ENV_VAR = 'server-password-env-var';
@@ -36,6 +41,10 @@ export const MAVEN_GPG_PASSPHRASE_DEFAULT_ENV = 'MAVEN_GPG_PASSPHRASE';
 
 // Id of the settings.xml profile used to set `gpg.passphraseEnvName`.
 export const GPG_PASSPHRASE_PROFILE_ID = 'setup-java-gpg';
+export const MAVEN_REPOSITORIES_PROFILE_ID = 'setup-java-repositories';
+export const MAVEN_CENTRAL_REPOSITORY_ID = 'central';
+export const MAVEN_CENTRAL_REPOSITORY_URL =
+  'https://repo.maven.apache.org/maven2';
 
 export const INPUT_CACHE = 'cache';
 export const INPUT_CACHE_JDK = 'cache-jdk';

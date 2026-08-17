@@ -11,7 +11,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   createAuthenticationSettings: () => (/* binding */ createAuthenticationSettings),
 /* harmony export */   generate: () => (/* binding */ generate),
 /* harmony export */   getInputWithDeprecatedAlias: () => (/* binding */ getInputWithDeprecatedAlias),
+/* harmony export */   getMavenRepositorySettings: () => (/* binding */ getMavenRepositorySettings),
 /* harmony export */   getMavenServerSettings: () => (/* binding */ getMavenServerSettings),
+/* harmony export */   parseMavenRepositories: () => (/* binding */ parseMavenRepositories),
 /* harmony export */   parseMavenServerCredentials: () => (/* binding */ parseMavenServerCredentials)
 /* harmony export */ });
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6928);
@@ -37,6 +39,7 @@ __webpack_require__.r(__webpack_exports__);
 
 async function configureAuthentication() {
     const servers = getMavenServerSettings();
+    const repositorySettings = getMavenRepositorySettings();
     const settingsDirectory = _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SETTINGS_PATH */ .Xh) ||
         path__WEBPACK_IMPORTED_MODULE_0__.join(os__WEBPACK_IMPORTED_MODULE_4__.homedir(), _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .M2_DIR */ .iT);
     const overwriteSettings = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getBooleanInput */ .Vt)(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_OVERWRITE_SETTINGS */ .TS, true);
@@ -46,7 +49,7 @@ async function configureAuthentication() {
     if (gpgPrivateKey) {
         _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .setSecret */ .Pq(gpgPrivateKey);
     }
-    await createAuthenticationSettings(servers, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar);
+    await createAuthenticationSettings(servers, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar, repositorySettings);
     if (gpgPrivateKey) {
         _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq('Importing private gpg key');
         const gpgHome = await _gpg_js__WEBPACK_IMPORTED_MODULE_5__/* .importKey */ .Fh(gpgPrivateKey);
@@ -106,15 +109,68 @@ function parseMavenServerCredentials(entries) {
     });
     return servers;
 }
-async function createAuthenticationSettings(servers, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar = undefined) {
+// only exported for testing purposes
+function getMavenRepositorySettings() {
+    const entries = _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .getMultilineInput */ .q3(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_MVN_REPOSITORIES */ .W2);
+    if (!entries.some(entry => entry.trim())) {
+        return undefined;
+    }
+    const includeCentral = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getBooleanInput */ .Vt)(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_MVN_REPOSITORIES_INCLUDE_CENTRAL */ .H5, true);
+    return {
+        repositories: parseMavenRepositories(entries, includeCentral),
+        includeCentral,
+        prioritizeCentral: (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getBooleanInput */ .Vt)(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_MVN_REPOSITORIES_PRIORITIZE_CENTRAL */ .OT, true)
+    };
+}
+// only exported for testing purposes
+function parseMavenRepositories(entries, includeCentral) {
+    const repositories = [];
+    const repositoryIds = new Set();
+    entries.forEach((entry, index) => {
+        if (!entry.trim()) {
+            return;
+        }
+        const firstSeparator = entry.indexOf(':');
+        const lastSeparator = entry.lastIndexOf(':');
+        if (firstSeparator <= 0 || lastSeparator <= firstSeparator) {
+            throw new Error(`Invalid mvn-repositories entry at line ${index + 1}. Expected format: repository-id:repository-url:snapshots-enabled`);
+        }
+        const id = entry.slice(0, firstSeparator).trim();
+        const url = entry.slice(firstSeparator + 1, lastSeparator).trim();
+        const snapshotsValue = entry
+            .slice(lastSeparator + 1)
+            .trim()
+            .toLowerCase();
+        if (!id || !url || !snapshotsValue) {
+            throw new Error(`Invalid mvn-repositories entry at line ${index + 1}. repository-id, repository URL, and snapshots-enabled are required`);
+        }
+        if (snapshotsValue !== 'true' && snapshotsValue !== 'false') {
+            throw new Error(`Invalid snapshots-enabled value '${snapshotsValue}' in mvn-repositories entry at line ${index + 1}. Expected true or false`);
+        }
+        if (repositoryIds.has(id)) {
+            throw new Error(`Duplicate repository-id '${id}' in mvn-repositories input`);
+        }
+        if (includeCentral && id === _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .MAVEN_CENTRAL_REPOSITORY_ID */ .xg) {
+            throw new Error(`Repository-id '${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .MAVEN_CENTRAL_REPOSITORY_ID */ .xg}' is reserved when ${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_MVN_REPOSITORIES_INCLUDE_CENTRAL */ .H5} is enabled`);
+        }
+        repositoryIds.add(id);
+        repositories.push({
+            id,
+            url,
+            snapshotsEnabled: snapshotsValue === 'true'
+        });
+    });
+    return repositories;
+}
+async function createAuthenticationSettings(servers, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar = undefined, repositorySettings = undefined) {
     _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq(`Creating ${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .MVN_SETTINGS_FILE */ .vO} with server-id: ${servers.map(server => server.id).join(', ')}`);
     // when an alternate m2 location is specified use only that location (no .m2 directory)
     // otherwise use the home/.m2/ path
     await _actions_io__WEBPACK_IMPORTED_MODULE_2__/* .mkdirP */ .U$(settingsDirectory);
-    await write(settingsDirectory, generate(servers, gpgPassphraseEnvVar), overwriteSettings);
+    await write(settingsDirectory, generate(servers, gpgPassphraseEnvVar, repositorySettings), overwriteSettings);
 }
 // only exported for testing purposes
-function generate(servers, gpgPassphraseEnvVar) {
+function generate(servers, gpgPassphraseEnvVar, repositorySettings) {
     // The maven-gpg-plugin reads the passphrase from the environment variable
     // named by the `gpg.passphraseEnvName` property (default MAVEN_GPG_PASSPHRASE).
     // Only configure it when the requested env var name differs from that default;
@@ -134,8 +190,48 @@ function generate(servers, gpgPassphraseEnvVar) {
         lines.push('    <server>', `      <id>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(server.id)}</id>`, `      <username>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(`\${env.${server.usernameEnvVar}}`)}</username>`, `      <password>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(`\${env.${server.passwordEnvVar}}`)}</password>`, '    </server>');
     }
     lines.push('  </servers>');
-    if (includeGpgPassphraseProfile) {
-        lines.push('  <profiles>', '    <profile>', `      <id>${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .GPG_PASSPHRASE_PROFILE_ID */ .K$}</id>`, '      <properties>', `        <gpg.passphraseEnvName>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(gpgPassphraseEnvVar)}</gpg.passphraseEnvName>`, '      </properties>', '    </profile>', '  </profiles>', '  <activeProfiles>', `    <activeProfile>${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .GPG_PASSPHRASE_PROFILE_ID */ .K$}</activeProfile>`, '  </activeProfiles>');
+    if (repositorySettings || includeGpgPassphraseProfile) {
+        lines.push('  <profiles>');
+        if (repositorySettings) {
+            const centralRepository = {
+                id: _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .MAVEN_CENTRAL_REPOSITORY_ID */ .xg,
+                url: _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .MAVEN_CENTRAL_REPOSITORY_URL */ .jv,
+                snapshotsEnabled: false
+            };
+            const customCentralConfigured = repositorySettings.repositories.some(repository => repository.id === _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .MAVEN_CENTRAL_REPOSITORY_ID */ .xg);
+            const repositories = repositorySettings.includeCentral
+                ? repositorySettings.prioritizeCentral
+                    ? [centralRepository, ...repositorySettings.repositories]
+                    : [...repositorySettings.repositories, centralRepository]
+                : customCentralConfigured
+                    ? repositorySettings.repositories
+                    : [
+                        ...repositorySettings.repositories,
+                        { ...centralRepository, releasesEnabled: false }
+                    ];
+            lines.push('    <profile>', `      <id>${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .MAVEN_REPOSITORIES_PROFILE_ID */ .hq}</id>`, '      <repositories>');
+            for (const repository of repositories) {
+                lines.push('        <repository>', `          <id>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(repository.id)}</id>`, `          <url>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(repository.url)}</url>`, ...(repository.releasesEnabled === undefined
+                    ? []
+                    : [
+                        '          <releases>',
+                        `            <enabled>${repository.releasesEnabled}</enabled>`,
+                        '          </releases>'
+                    ]), '          <snapshots>', `            <enabled>${repository.snapshotsEnabled}</enabled>`, '          </snapshots>', '        </repository>');
+            }
+            lines.push('      </repositories>', '    </profile>');
+        }
+        if (includeGpgPassphraseProfile) {
+            lines.push('    <profile>', `      <id>${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .GPG_PASSPHRASE_PROFILE_ID */ .K$}</id>`, '      <properties>', `        <gpg.passphraseEnvName>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(gpgPassphraseEnvVar)}</gpg.passphraseEnvName>`, '      </properties>', '    </profile>');
+        }
+        lines.push('  </profiles>', '  <activeProfiles>');
+        if (repositorySettings) {
+            lines.push(`    <activeProfile>${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .MAVEN_REPOSITORIES_PROFILE_ID */ .hq}</activeProfile>`);
+        }
+        if (includeGpgPassphraseProfile) {
+            lines.push(`    <activeProfile>${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .GPG_PASSPHRASE_PROFILE_ID */ .K$}</activeProfile>`);
+        }
+        lines.push('  </activeProfiles>');
     }
     lines.push('</settings>');
     return lines.join('\n');

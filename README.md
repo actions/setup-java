@@ -171,6 +171,9 @@ steps:
 | `server-username-env-var` | Environment variable name for Maven repository username. | `GITHUB_ACTOR` |
 | `server-password-env-var` | Environment variable name for Maven repository password or token. | `GITHUB_TOKEN` |
 | `mvn-server-credentials` | Multiline Maven server credentials in the format `server-id:USERNAME_ENV:PASSWORD_ENV`. Replaces the single server configured by the three inputs above when set. | |
+| `mvn-repositories` | Multiline Maven dependency repositories in the format `repository-id:repository-url:snapshots-enabled`. | |
+| `mvn-repositories-include-central` | Include Maven Central in the generated dependency repositories profile. When `false`, Central is disabled unless an explicit `central` repository is declared. | `true` |
+| `mvn-repositories-prioritize-central` | Place Maven Central before custom dependency repositories. | `true` |
 | `settings-path` | Directory where `settings.xml` is written. | `~/.m2` |
 | `overwrite-settings` | Overwrite an existing `settings.xml`. | `true` |
 | `gpg-private-key` | GPG private key to import into an isolated temporary keyring. | |
@@ -452,6 +455,11 @@ steps:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+For dependencies hosted outside Maven Central, use `mvn-repositories` to add
+resolution repositories to an active profile in the generated `settings.xml`.
+Repository IDs can match `mvn-server-credentials` IDs when authentication is
+required. See [Resolving Maven dependencies from custom repositories](docs/advanced-usage.md#resolving-maven-dependencies-from-custom-repositories).
 
 ### GPG signing
 
