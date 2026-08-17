@@ -64,6 +64,9 @@ inputs:
   server-password:
     description: 'Deprecated alias for server-password-env-var'
     required: false
+  mvn-server-credentials:
+    description: 'Multiline list of Maven server credentials in the format `server-id:USERNAME_ENV:PASSWORD_ENV`. When set, replaces the single server configured by server-id, server-username-env-var, and server-password-env-var.'
+    required: false
   settings-path:
     description: 'Path to where the settings.xml file will be written. Default is ~/.m2.'
     required: false

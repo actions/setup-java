@@ -27,6 +27,7 @@
 - [Testing against different Java distributions](#Testing-against-different-Java-distributions)
 - [Testing against different platforms](#Testing-against-different-platforms)
 - [Publishing using Apache Maven](#Publishing-using-Apache-Maven)
+- [Publishing to multiple Maven servers](#publishing-to-multiple-maven-servers)
 - [Apache Maven with a settings path](#apache-maven-with-a-settings-path)
 - [Maven transfer progress (download logs)](#Maven-transfer-progress-download-logs)
 - [Java problem matcher (compiler annotations)](#java-problem-matcher-compiler-annotations)
@@ -862,6 +863,49 @@ The two `settings.xml` files created from the above example look like the follow
 ***NOTE***: The generated `settings.xml` sets `<interactiveMode>false</interactiveMode>` so that Maven never blocks a CI run waiting on an interactive prompt. This is applied automatically whenever the action generates `settings.xml`.
 
 If you don't want to overwrite the `settings.xml` file, you can set `overwrite-settings: false`
+
+### Publishing to multiple Maven servers
+
+Use `mvn-server-credentials` to add more than one credential entry to the generated `settings.xml`. Each line has the format `server-id:USERNAME_ENV:PASSWORD_ENV`. The username and password fields are environment variable names, not credential values.
+
+When this input is set, it replaces the single server configured by `server-id`, `server-username-env-var`, and `server-password-env-var`.
+
+```yaml
+steps:
+  - uses: actions/checkout@v7
+  - name: Set up release and snapshot repositories
+    uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+      mvn-server-credentials: |
+        releases:RELEASES_USERNAME:RELEASES_PASSWORD
+        snapshots:SNAPSHOTS_USERNAME:SNAPSHOTS_PASSWORD
+  - name: Publish with Maven
+    run: mvn deploy
+    env:
+      RELEASES_USERNAME: ${{ secrets.RELEASES_USERNAME }}
+      RELEASES_PASSWORD: ${{ secrets.RELEASES_PASSWORD }}
+      SNAPSHOTS_USERNAME: ${{ secrets.SNAPSHOTS_USERNAME }}
+      SNAPSHOTS_PASSWORD: ${{ secrets.SNAPSHOTS_PASSWORD }}
+```
+
+This configuration produces the following server entries:
+
+```xml
+<servers>
+  <server>
+    <id>releases</id>
+    <username>${env.RELEASES_USERNAME}</username>
+    <password>${env.RELEASES_PASSWORD}</password>
+  </server>
+  <server>
+    <id>snapshots</id>
+    <username>${env.SNAPSHOTS_USERNAME}</username>
+    <password>${env.SNAPSHOTS_PASSWORD}</password>
+  </server>
+</servers>
+```
 
 ### GPG
 

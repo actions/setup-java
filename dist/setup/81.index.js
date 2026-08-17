@@ -10,7 +10,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   configureAuthentication: () => (/* binding */ configureAuthentication),
 /* harmony export */   createAuthenticationSettings: () => (/* binding */ createAuthenticationSettings),
 /* harmony export */   generate: () => (/* binding */ generate),
-/* harmony export */   getInputWithDeprecatedAlias: () => (/* binding */ getInputWithDeprecatedAlias)
+/* harmony export */   getInputWithDeprecatedAlias: () => (/* binding */ getInputWithDeprecatedAlias),
+/* harmony export */   getMavenServerSettings: () => (/* binding */ getMavenServerSettings),
+/* harmony export */   parseMavenServerCredentials: () => (/* binding */ parseMavenServerCredentials)
 /* harmony export */ });
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6928);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_0__);
@@ -34,9 +36,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 async function configureAuthentication() {
-    const id = _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_ID */ .fd);
-    const usernameEnvVar = getInputWithDeprecatedAlias(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_USERNAME_ENV_VAR */ .sc, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_USERNAME_DEPRECATED */ .sp, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_DEFAULT_SERVER_USERNAME */ .Wj);
-    const passwordEnvVar = getInputWithDeprecatedAlias(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_PASSWORD_ENV_VAR */ .r4, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_PASSWORD_DEPRECATED */ .Vt, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_DEFAULT_SERVER_PASSWORD */ .xp);
+    const servers = getMavenServerSettings();
     const settingsDirectory = _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SETTINGS_PATH */ .Xh) ||
         path__WEBPACK_IMPORTED_MODULE_0__.join(os__WEBPACK_IMPORTED_MODULE_4__.homedir(), _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .M2_DIR */ .iT);
     const overwriteSettings = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getBooleanInput */ .Vt)(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_OVERWRITE_SETTINGS */ .TS, true);
@@ -46,7 +46,7 @@ async function configureAuthentication() {
     if (gpgPrivateKey) {
         _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .setSecret */ .Pq(gpgPrivateKey);
     }
-    await createAuthenticationSettings(id, usernameEnvVar, passwordEnvVar, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar);
+    await createAuthenticationSettings(servers, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar);
     if (gpgPrivateKey) {
         _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq('Importing private gpg key');
         const gpgHome = await _gpg_js__WEBPACK_IMPORTED_MODULE_5__/* .importKey */ .Fh(gpgPrivateKey);
@@ -68,15 +68,53 @@ function getInputWithDeprecatedAlias(inputName, deprecatedInputName, defaultValu
     }
     return value || deprecatedValue || defaultValue || '';
 }
-async function createAuthenticationSettings(id, usernameEnvVar, passwordEnvVar, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar = undefined) {
-    _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq(`Creating ${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .MVN_SETTINGS_FILE */ .vO} with server-id: ${id}`);
+// only exported for testing purposes
+function getMavenServerSettings() {
+    const entries = _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .getMultilineInput */ .q3(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_MVN_SERVER_CREDENTIALS */ .MM);
+    if (entries.some(entry => entry.trim())) {
+        return parseMavenServerCredentials(entries);
+    }
+    return [
+        {
+            id: _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_ID */ .fd),
+            usernameEnvVar: getInputWithDeprecatedAlias(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_USERNAME_ENV_VAR */ .sc, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_USERNAME_DEPRECATED */ .sp, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_DEFAULT_SERVER_USERNAME */ .Wj),
+            passwordEnvVar: getInputWithDeprecatedAlias(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_PASSWORD_ENV_VAR */ .r4, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_PASSWORD_DEPRECATED */ .Vt, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_DEFAULT_SERVER_PASSWORD */ .xp)
+        }
+    ];
+}
+// only exported for testing purposes
+function parseMavenServerCredentials(entries) {
+    const servers = [];
+    const serverIds = new Set();
+    entries.forEach((entry, index) => {
+        if (!entry.trim()) {
+            return;
+        }
+        const fields = entry.split(':');
+        if (fields.length !== 3) {
+            throw new Error(`Invalid mvn-server-credentials entry at line ${index + 1}. Expected format: server-id:USERNAME_ENV:PASSWORD_ENV`);
+        }
+        const [id, usernameEnvVar, passwordEnvVar] = fields.map(field => field.trim());
+        if (!id || !usernameEnvVar || !passwordEnvVar) {
+            throw new Error(`Invalid mvn-server-credentials entry at line ${index + 1}. server-id, username environment variable, and password environment variable are required`);
+        }
+        if (serverIds.has(id)) {
+            throw new Error(`Duplicate server-id '${id}' in mvn-server-credentials input`);
+        }
+        serverIds.add(id);
+        servers.push({ id, usernameEnvVar, passwordEnvVar });
+    });
+    return servers;
+}
+async function createAuthenticationSettings(servers, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar = undefined) {
+    _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq(`Creating ${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .MVN_SETTINGS_FILE */ .vO} with server-id: ${servers.map(server => server.id).join(', ')}`);
     // when an alternate m2 location is specified use only that location (no .m2 directory)
     // otherwise use the home/.m2/ path
     await _actions_io__WEBPACK_IMPORTED_MODULE_2__/* .mkdirP */ .U$(settingsDirectory);
-    await write(settingsDirectory, generate(id, usernameEnvVar, passwordEnvVar, gpgPassphraseEnvVar), overwriteSettings);
+    await write(settingsDirectory, generate(servers, gpgPassphraseEnvVar), overwriteSettings);
 }
 // only exported for testing purposes
-function generate(id, usernameEnvVar, passwordEnvVar, gpgPassphraseEnvVar) {
+function generate(servers, gpgPassphraseEnvVar) {
     // The maven-gpg-plugin reads the passphrase from the environment variable
     // named by the `gpg.passphraseEnvName` property (default MAVEN_GPG_PASSPHRASE).
     // Only configure it when the requested env var name differs from that default;
@@ -90,14 +128,12 @@ function generate(id, usernameEnvVar, passwordEnvVar, gpgPassphraseEnvVar) {
         '  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"',
         '  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">',
         '  <interactiveMode>false</interactiveMode>',
-        '  <servers>',
-        '    <server>',
-        `      <id>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(id)}</id>`,
-        `      <username>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(`\${env.${usernameEnvVar}}`)}</username>`,
-        `      <password>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(`\${env.${passwordEnvVar}}`)}</password>`,
-        '    </server>',
-        '  </servers>'
+        '  <servers>'
     ];
+    for (const server of servers) {
+        lines.push('    <server>', `      <id>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(server.id)}</id>`, `      <username>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(`\${env.${server.usernameEnvVar}}`)}</username>`, `      <password>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(`\${env.${server.passwordEnvVar}}`)}</password>`, '    </server>');
+    }
+    lines.push('  </servers>');
     if (includeGpgPassphraseProfile) {
         lines.push('  <profiles>', '    <profile>', `      <id>${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .GPG_PASSPHRASE_PROFILE_ID */ .K$}</id>`, '      <properties>', `        <gpg.passphraseEnvName>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(gpgPassphraseEnvVar)}</gpg.passphraseEnvName>`, '      </properties>', '    </profile>', '  </profiles>', '  <activeProfiles>', `    <activeProfile>${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .GPG_PASSPHRASE_PROFILE_ID */ .K$}</activeProfile>`, '  </activeProfiles>');
     }

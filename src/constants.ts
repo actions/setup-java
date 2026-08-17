@@ -12,6 +12,7 @@ export const INPUT_SET_DEFAULT = 'set-default';
 export const INPUT_PROBLEM_MATCHER = 'problem-matcher';
 export const INPUT_VERIFY_SIGNATURE = 'verify-signature';
 export const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
+export const INPUT_MVN_SERVER_CREDENTIALS = 'mvn-server-credentials';
 export const INPUT_SERVER_ID = 'server-id';
 export const INPUT_SERVER_USERNAME_ENV_VAR = 'server-username-env-var';
 export const INPUT_SERVER_PASSWORD_ENV_VAR = 'server-password-env-var';
