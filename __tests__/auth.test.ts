@@ -26,7 +26,7 @@ jest.unstable_mockModule('@actions/core', () => ({
   setOutput: jest.fn(),
   getInput: jest.fn(),
   getBooleanInput: jest.fn(),
-  getMultilineInput: jest.fn(),
+  getMultilineInput: jest.fn(() => []),
   addPath: jest.fn(),
   exportVariable: jest.fn(),
   saveState: jest.fn(),
@@ -57,6 +57,9 @@ const {M2_DIR, MVN_SETTINGS_FILE, STATE_GPG_HOME} =
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const m2Dir = path.join(__dirname, M2_DIR);
 const settingsFile = path.join(m2Dir, MVN_SETTINGS_FILE);
+const credentials = (id: string, username: string, password: string) => [
+  {id, usernameEnvVar: username, passwordEnvVar: password}
+];
 
 describe('auth tests', () => {
   let spyOSHomedir: any;
@@ -73,6 +76,9 @@ describe('auth tests', () => {
 
   afterEach(() => {
     (core.getInput as jest.Mock).mockReset();
+    (core.getMultilineInput as jest.Mock).mockReset();
+    (core.getMultilineInput as jest.Mock).mockReturnValue([]);
+    (core.warning as jest.Mock).mockReset();
     (core.exportVariable as jest.Mock).mockReset();
     (gpg.importKey as jest.Mock).mockReset();
     (gpg.removeGpgHome as jest.Mock).mockReset();
@@ -100,9 +106,7 @@ describe('auth tests', () => {
     await io.rmRF(altHome); // ensure it doesn't already exist
 
     await auth.createAuthenticationSettings(
-      id,
-      username,
-      password,
+      credentials(id, username, password),
       altHome,
       true
     );
@@ -113,7 +117,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(altHome)).toBe(true);
     expect(fs.existsSync(altSettingsFile)).toBe(true);
     expect(fs.readFileSync(altSettingsFile, 'utf-8')).toEqual(
-      auth.generate(id, username, password)
+      auth.generate(credentials(id, username, password))
     );
 
     await io.rmRF(altHome);
@@ -125,9 +129,7 @@ describe('auth tests', () => {
     const password = 'TOKEN';
 
     await auth.createAuthenticationSettings(
-      id,
-      username,
-      password,
+      credentials(id, username, password),
       m2Dir,
       true
     );
@@ -135,7 +137,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(id, username, password)
+      auth.generate(credentials(id, username, password))
     );
   }, 100000);
 
@@ -146,9 +148,7 @@ describe('auth tests', () => {
     const gpgPassphrase = 'GPG';
 
     await auth.createAuthenticationSettings(
-      id,
-      username,
-      password,
+      credentials(id, username, password),
       m2Dir,
       true,
       gpgPassphrase
@@ -157,7 +157,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(id, username, password, gpgPassphrase)
+      auth.generate(credentials(id, username, password), gpgPassphrase)
     );
   }, 100000);
 
@@ -218,9 +218,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(settingsFile)).toBe(true);
 
     await auth.createAuthenticationSettings(
-      id,
-      username,
-      password,
+      credentials(id, username, password),
       m2Dir,
       true
     );
@@ -228,7 +226,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(m2Dir)).toBe(true);
     expect(fs.existsSync(settingsFile)).toBe(true);
     expect(fs.readFileSync(settingsFile, 'utf-8')).toEqual(
-      auth.generate(id, username, password)
+      auth.generate(credentials(id, username, password))
     );
   }, 100000);
 
@@ -243,9 +241,7 @@ describe('auth tests', () => {
     expect(fs.existsSync(settingsFile)).toBe(true);
 
     await auth.createAuthenticationSettings(
-      id,
-      username,
-      password,
+      credentials(id, username, password),
       m2Dir,
       false
     );
@@ -273,7 +269,9 @@ describe('auth tests', () => {
   </servers>
 </settings>`;
 
-    expect(auth.generate(id, username, password)).toEqual(expectedSettings);
+    expect(auth.generate(credentials(id, username, password))).toEqual(
+      expectedSettings
+    );
   });
 
   it('generates valid settings.xml with additional configuration', () => {
@@ -306,9 +304,9 @@ describe('auth tests', () => {
   </activeProfiles>
 </settings>`;
 
-    expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(
-      expectedSettings
-    );
+    expect(
+      auth.generate(credentials(id, username, password), gpgPassphrase)
+    ).toEqual(expectedSettings);
   });
 
   it('does not add a gpg profile when the passphrase env var is the maven-gpg-plugin default', () => {
@@ -330,9 +328,9 @@ describe('auth tests', () => {
   </servers>
 </settings>`;
 
-    expect(auth.generate(id, username, password, gpgPassphrase)).toEqual(
-      expectedSettings
-    );
+    expect(
+      auth.generate(credentials(id, username, password), gpgPassphrase)
+    ).toEqual(expectedSettings);
   });
 
   it('escapes settings.xml values while preserving parsed semantics', () => {
@@ -341,7 +339,10 @@ describe('auth tests', () => {
     const password = `TOKEN&<>"'é`;
     const gpgPassphrase = `GPG&<>"'é`;
 
-    const xml = auth.generate(id, username, password, gpgPassphrase);
+    const xml = auth.generate(
+      credentials(id, username, password),
+      gpgPassphrase
+    );
     const parsed = parseXmlObject(xml) as any;
 
     expect(parsed.settings.interactiveMode).toBe('false');
@@ -350,6 +351,144 @@ describe('auth tests', () => {
     expect(xmlElementText(xml, 'password')).toBe(`\${env.${password}}`);
     expect(xmlElementText(xml, 'gpg.passphraseEnvName')).toBe(gpgPassphrase);
     expect(parsed.settings.activeProfiles.activeProfile).toBe('setup-java-gpg');
+  });
+
+  it('generates ordered settings.xml entries for multiple servers', () => {
+    const servers = [
+      {
+        id: 'releases',
+        usernameEnvVar: 'RELEASES_USERNAME',
+        passwordEnvVar: 'RELEASES_PASSWORD'
+      },
+      {
+        id: 'snapshots',
+        usernameEnvVar: 'SNAPSHOTS_USERNAME',
+        passwordEnvVar: 'SNAPSHOTS_PASSWORD'
+      }
+    ];
+
+    const parsed = parseXmlObject(auth.generate(servers)) as any;
+
+    expect(parsed.settings.servers.server).toEqual([
+      {
+        id: 'releases',
+        username: '${env.RELEASES_USERNAME}',
+        password: '${env.RELEASES_PASSWORD}'
+      },
+      {
+        id: 'snapshots',
+        username: '${env.SNAPSHOTS_USERNAME}',
+        password: '${env.SNAPSHOTS_PASSWORD}'
+      }
+    ]);
+  });
+
+  it('parses and trims multiline Maven server credentials', () => {
+    expect(
+      auth.parseMavenServerCredentials([
+        '',
+        ' releases : RELEASES_USERNAME : RELEASES_PASSWORD ',
+        'snapshots:SNAPSHOTS_USERNAME:SNAPSHOTS_PASSWORD'
+      ])
+    ).toEqual([
+      {
+        id: 'releases',
+        usernameEnvVar: 'RELEASES_USERNAME',
+        passwordEnvVar: 'RELEASES_PASSWORD'
+      },
+      {
+        id: 'snapshots',
+        usernameEnvVar: 'SNAPSHOTS_USERNAME',
+        passwordEnvVar: 'SNAPSHOTS_PASSWORD'
+      }
+    ]);
+  });
+
+  it.each([
+    {
+      entries: ['releases:RELEASES_USERNAME'],
+      error:
+        'Invalid mvn-server-credentials entry at line 1. Expected format: server-id:USERNAME_ENV:PASSWORD_ENV'
+    },
+    {
+      entries: ['', 'releases:RELEASES_USERNAME:RELEASES_PASSWORD:EXTRA'],
+      error:
+        'Invalid mvn-server-credentials entry at line 2. Expected format: server-id:USERNAME_ENV:PASSWORD_ENV'
+    },
+    {
+      entries: ['releases::RELEASES_PASSWORD'],
+      error:
+        'Invalid mvn-server-credentials entry at line 1. server-id, username environment variable, and password environment variable are required'
+    }
+  ])(
+    'rejects malformed Maven server credentials: $entries',
+    ({entries, error}) => {
+      expect(() => auth.parseMavenServerCredentials(entries)).toThrow(error);
+    }
+  );
+
+  it('rejects duplicate Maven server ids', () => {
+    expect(() =>
+      auth.parseMavenServerCredentials([
+        'releases:RELEASES_USERNAME:RELEASES_PASSWORD',
+        'releases:OTHER_USERNAME:OTHER_PASSWORD'
+      ])
+    ).toThrow("Duplicate server-id 'releases' in mvn-server-credentials input");
+  });
+
+  it('uses multiline Maven server credentials instead of single-server inputs', () => {
+    (core.getMultilineInput as jest.Mock).mockReturnValue([
+      'releases:RELEASES_USERNAME:RELEASES_PASSWORD',
+      'snapshots:SNAPSHOTS_USERNAME:SNAPSHOTS_PASSWORD'
+    ]);
+
+    expect(auth.getMavenServerSettings()).toEqual([
+      {
+        id: 'releases',
+        usernameEnvVar: 'RELEASES_USERNAME',
+        passwordEnvVar: 'RELEASES_PASSWORD'
+      },
+      {
+        id: 'snapshots',
+        usernameEnvVar: 'SNAPSHOTS_USERNAME',
+        passwordEnvVar: 'SNAPSHOTS_PASSWORD'
+      }
+    ]);
+    expect(core.getInput).not.toHaveBeenCalled();
+  });
+
+  it('uses the existing single-server inputs when multiline credentials are absent', () => {
+    (core.getInput as jest.Mock).mockImplementation((name: string) =>
+      name === 'server-id' ? 'github' : ''
+    );
+
+    expect(auth.getMavenServerSettings()).toEqual([
+      {
+        id: 'github',
+        usernameEnvVar: 'GITHUB_ACTOR',
+        passwordEnvVar: 'GITHUB_TOKEN'
+      }
+    ]);
+  });
+
+  it('preserves deprecated single-server aliases as fallback inputs', () => {
+    (core.getInput as jest.Mock).mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        'server-id': 'legacy',
+        'server-username': 'LEGACY_USERNAME',
+        'server-password': 'LEGACY_PASSWORD'
+      };
+      return inputs[name] ?? '';
+    });
+
+    expect(auth.getMavenServerSettings()).toEqual([
+      {
+        id: 'legacy',
+        usernameEnvVar: 'LEGACY_USERNAME',
+        passwordEnvVar: 'LEGACY_PASSWORD'
+      }
+    ]);
+    expect(core.warning).toHaveBeenCalledTimes(2);
   });
 
   function xmlElementText(xml: string, tagName: string): string {

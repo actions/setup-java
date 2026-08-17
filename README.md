@@ -170,6 +170,7 @@ steps:
 | `server-id` | Maven repository ID used in generated `settings.xml`. | `github` |
 | `server-username-env-var` | Environment variable name for Maven repository username. | `GITHUB_ACTOR` |
 | `server-password-env-var` | Environment variable name for Maven repository password or token. | `GITHUB_TOKEN` |
+| `mvn-server-credentials` | Multiline Maven server credentials in the format `server-id:USERNAME_ENV:PASSWORD_ENV`. Replaces the single server configured by the three inputs above when set. | |
 | `settings-path` | Directory where `settings.xml` is written. | `~/.m2` |
 | `overwrite-settings` | Overwrite an existing `settings.xml`. | `true` |
 | `gpg-private-key` | GPG private key to import into an isolated temporary keyring. | |

@@ -9,18 +9,14 @@ import * as gpg from './gpg.js';
 import {getBooleanInput} from './util.js';
 import {escapeXmlText} from './xml.js';
 
+export interface MavenServerCredentials {
+  id: string;
+  usernameEnvVar: string;
+  passwordEnvVar: string;
+}
+
 export async function configureAuthentication() {
-  const id = core.getInput(constants.INPUT_SERVER_ID);
-  const usernameEnvVar = getInputWithDeprecatedAlias(
-    constants.INPUT_SERVER_USERNAME_ENV_VAR,
-    constants.INPUT_SERVER_USERNAME_DEPRECATED,
-    constants.INPUT_DEFAULT_SERVER_USERNAME
-  );
-  const passwordEnvVar = getInputWithDeprecatedAlias(
-    constants.INPUT_SERVER_PASSWORD_ENV_VAR,
-    constants.INPUT_SERVER_PASSWORD_DEPRECATED,
-    constants.INPUT_DEFAULT_SERVER_PASSWORD
-  );
+  const servers = getMavenServerSettings();
   const settingsDirectory =
     core.getInput(constants.INPUT_SETTINGS_PATH) ||
     path.join(os.homedir(), constants.M2_DIR);
@@ -42,9 +38,7 @@ export async function configureAuthentication() {
   }
 
   await createAuthenticationSettings(
-    id,
-    usernameEnvVar,
-    passwordEnvVar,
+    servers,
     settingsDirectory,
     overwriteSettings,
     gpgPassphraseEnvVar
@@ -80,30 +74,95 @@ export function getInputWithDeprecatedAlias(
   return value || deprecatedValue || defaultValue || '';
 }
 
+// only exported for testing purposes
+export function getMavenServerSettings(): MavenServerCredentials[] {
+  const entries = core.getMultilineInput(
+    constants.INPUT_MVN_SERVER_CREDENTIALS
+  );
+
+  if (entries.some(entry => entry.trim())) {
+    return parseMavenServerCredentials(entries);
+  }
+
+  return [
+    {
+      id: core.getInput(constants.INPUT_SERVER_ID),
+      usernameEnvVar: getInputWithDeprecatedAlias(
+        constants.INPUT_SERVER_USERNAME_ENV_VAR,
+        constants.INPUT_SERVER_USERNAME_DEPRECATED,
+        constants.INPUT_DEFAULT_SERVER_USERNAME
+      ),
+      passwordEnvVar: getInputWithDeprecatedAlias(
+        constants.INPUT_SERVER_PASSWORD_ENV_VAR,
+        constants.INPUT_SERVER_PASSWORD_DEPRECATED,
+        constants.INPUT_DEFAULT_SERVER_PASSWORD
+      )
+    }
+  ];
+}
+
+// only exported for testing purposes
+export function parseMavenServerCredentials(
+  entries: string[]
+): MavenServerCredentials[] {
+  const servers: MavenServerCredentials[] = [];
+  const serverIds = new Set<string>();
+
+  entries.forEach((entry, index) => {
+    if (!entry.trim()) {
+      return;
+    }
+
+    const fields = entry.split(':');
+    if (fields.length !== 3) {
+      throw new Error(
+        `Invalid mvn-server-credentials entry at line ${index + 1}. Expected format: server-id:USERNAME_ENV:PASSWORD_ENV`
+      );
+    }
+
+    const [id, usernameEnvVar, passwordEnvVar] = fields.map(field =>
+      field.trim()
+    );
+    if (!id || !usernameEnvVar || !passwordEnvVar) {
+      throw new Error(
+        `Invalid mvn-server-credentials entry at line ${index + 1}. server-id, username environment variable, and password environment variable are required`
+      );
+    }
+    if (serverIds.has(id)) {
+      throw new Error(
+        `Duplicate server-id '${id}' in mvn-server-credentials input`
+      );
+    }
+
+    serverIds.add(id);
+    servers.push({id, usernameEnvVar, passwordEnvVar});
+  });
+
+  return servers;
+}
+
 export async function createAuthenticationSettings(
-  id: string,
-  usernameEnvVar: string,
-  passwordEnvVar: string,
+  servers: MavenServerCredentials[],
   settingsDirectory: string,
   overwriteSettings: boolean,
   gpgPassphraseEnvVar: string | undefined = undefined
 ) {
-  core.info(`Creating ${constants.MVN_SETTINGS_FILE} with server-id: ${id}`);
+  core.info(
+    `Creating ${constants.MVN_SETTINGS_FILE} with server-id: ${servers.map(server => server.id).join(', ')}`
+  );
   // when an alternate m2 location is specified use only that location (no .m2 directory)
   // otherwise use the home/.m2/ path
   await io.mkdirP(settingsDirectory);
   await write(
     settingsDirectory,
-    generate(id, usernameEnvVar, passwordEnvVar, gpgPassphraseEnvVar),
+    generate(servers, gpgPassphraseEnvVar),
     overwriteSettings
   );
 }
 
 // only exported for testing purposes
 export function generate(
-  id: string,
-  usernameEnvVar: string,
-  passwordEnvVar: string,
+  servers: MavenServerCredentials[],
   gpgPassphraseEnvVar?: string | undefined
 ) {
   // The maven-gpg-plugin reads the passphrase from the environment variable
@@ -121,14 +180,19 @@ export function generate(
     '  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"',
     '  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">',
     '  <interactiveMode>false</interactiveMode>',
-    '  <servers>',
-    '    <server>',
-    `      <id>${escapeXmlText(id)}</id>`,
-    `      <username>${escapeXmlText(`\${env.${usernameEnvVar}}`)}</username>`,
-    `      <password>${escapeXmlText(`\${env.${passwordEnvVar}}`)}</password>`,
-    '    </server>',
-    '  </servers>'
+    '  <servers>'
   ];
+
+  for (const server of servers) {
+    lines.push(
+      '    <server>',
+      `      <id>${escapeXmlText(server.id)}</id>`,
+      `      <username>${escapeXmlText(`\${env.${server.usernameEnvVar}}`)}</username>`,
+      `      <password>${escapeXmlText(`\${env.${server.passwordEnvVar}}`)}</password>`,
+      '    </server>'
+    );
+  }
+  lines.push('  </servers>');
 
   if (includeGpgPassphraseProfile) {
     lines.push(
