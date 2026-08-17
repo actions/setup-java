@@ -1,4 +1,5 @@
 import {beforeEach, describe, expect, it, jest} from '@jest/globals';
+import path from 'path';
 
 const mockReaddirSync = jest.fn();
 const realFs = await import('fs');
@@ -68,7 +69,7 @@ describe('Red Hat package installation', () => {
     expect(mockExtractJdkFile).toHaveBeenCalledWith('/tmp/download', 'tar.xz');
     expect(mockRenameWinArchive).not.toHaveBeenCalled();
     expect(mockCacheJdkDir).toHaveBeenCalledWith(
-      '/tmp/extracted/jdk-21',
+      path.join('/tmp/extracted', 'jdk-21'),
       'Java_RedHat_jdk',
       '21.0.8-9',
       'x64'

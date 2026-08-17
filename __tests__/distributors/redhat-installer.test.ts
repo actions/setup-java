@@ -7,13 +7,17 @@ import {RedHatDistribution} from '../../src/distributions/redhat/installer.js';
 const createDistribution = (
   version: string,
   packageType = 'jdk'
-): RedHatDistribution =>
-  new RedHatDistribution({
+): RedHatDistribution => {
+  const distribution = new RedHatDistribution({
     version,
     architecture: 'x64',
     packageType,
     checkLatest: false
   });
+  distribution['getOperatingSystem'] = () => 'linux';
+  distribution['getArchiveType'] = () => 'tar.xz';
+  return distribution;
+};
 
 const mockDisco = (
   packageResponse: unknown = packages,
@@ -113,7 +117,12 @@ describe('Red Hat package resolution', () => {
 
   it('rejects Alpine before requesting glibc package metadata', async () => {
     const getJson = mockDisco();
-    const distribution = createDistribution('21');
+    const distribution = new RedHatDistribution({
+      version: '21',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
 
     expect(() => distribution['getOperatingSystem'](true)).toThrow(
       "Distribution 'redhat' does not support Alpine Linux because Red Hat portable archives require glibc."
