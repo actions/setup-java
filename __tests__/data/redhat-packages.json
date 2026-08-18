@@ -1,0 +1,71 @@
+{
+  "result": [
+    {
+      "id": "redhat-21.0.8-jdk-linux-x64",
+      "archive_type": "tar.xz",
+      "distribution": "redhat",
+      "java_version": "21.0.8+9",
+      "release_status": "ga",
+      "operating_system": "linux",
+      "architecture": "x64",
+      "package_type": "jdk",
+      "directly_downloadable": true
+    },
+    {
+      "id": "redhat-21.0.7-jdk-linux-x64",
+      "archive_type": "tar.xz",
+      "distribution": "redhat",
+      "java_version": "21.0.7+6",
+      "release_status": "ga",
+      "operating_system": "linux",
+      "architecture": "x64",
+      "package_type": "jdk",
+      "directly_downloadable": true
+    },
+    {
+      "id": "redhat-17.0.16-jdk-linux-x64",
+      "archive_type": "tar.xz",
+      "distribution": "redhat",
+      "java_version": "17.0.16+8",
+      "release_status": "ga",
+      "operating_system": "linux",
+      "architecture": "x64",
+      "package_type": "jdk",
+      "directly_downloadable": true
+    },
+    {
+      "id": "redhat-9-jdk-linux-x64",
+      "archive_type": "tar.xz",
+      "distribution": "redhat",
+      "java_version": "9+181",
+      "release_status": "ga",
+      "operating_system": "linux",
+      "architecture": "x64",
+      "package_type": "jdk",
+      "directly_downloadable": true
+    },
+    {
+      "id": "redhat-21.0.8-jre-linux-x64",
+      "archive_type": "tar.xz",
+      "distribution": "redhat",
+      "java_version": "21.0.8+9",
+      "release_status": "ga",
+      "operating_system": "linux",
+      "architecture": "x64",
+      "package_type": "jre",
+      "directly_downloadable": true
+    },
+    {
+      "id": "redhat-17.0.16-jdk-windows-x64",
+      "archive_type": "zip",
+      "distribution": "redhat",
+      "java_version": "17.0.16+8",
+      "release_status": "ga",
+      "operating_system": "windows",
+      "architecture": "x64",
+      "package_type": "jdk",
+      "directly_downloadable": true
+    }
+  ],
+  "message": "6 package(s) found"
+}

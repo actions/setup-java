@@ -59,7 +59,9 @@ export async function extractJdkFile(toolPath: string, extension?: string) {
   if (!extension) {
     extension = toolPath.endsWith('.tar.gz')
       ? 'tar.gz'
-      : path.extname(toolPath);
+      : toolPath.endsWith('.tar.xz')
+        ? 'tar.xz'
+        : path.extname(toolPath);
     if (extension.startsWith('.')) {
       extension = extension.substring(1);
     }
@@ -68,6 +70,8 @@ export async function extractJdkFile(toolPath: string, extension?: string) {
   switch (extension) {
     case 'tar.gz':
       return await extractTarGz(toolPath);
+    case 'tar.xz':
+      return await tc.extractTar(toolPath, undefined, 'xJ');
     case 'tar':
       return await tc.extractTar(toolPath);
     case 'zip':

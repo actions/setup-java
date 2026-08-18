@@ -211,6 +211,7 @@ Deprecated aliases `jdkFile`, `server-username`, `server-password`, and `gpg-pas
 | `microsoft` | [Microsoft Build of OpenJDK](https://www.microsoft.com/openjdk) | [License](https://docs.microsoft.com/java/openjdk/faq) |
 | `oracle` | [Oracle JDK](https://www.oracle.com/java/technologies/downloads/) | [License](https://java.com/freeuselicense) |
 | `oracle-openjdk` | [Oracle OpenJDK](https://jdk.java.net/) | [License](https://openjdk.org/legal/gplv2+ce.html) |
+| `redhat` | [Red Hat Build of OpenJDK](https://developers.redhat.com/products/openjdk/overview) | [License](https://openjdk.org/legal/gplv2+ce.html) |
 | `sapmachine` | [SAP SapMachine JDK/JRE](https://sapmachine.io/) | [License](https://github.com/SAP/SapMachine/blob/sapmachine/LICENSE) |
 | `semeru` | [IBM Semeru Runtime Open Edition](https://developer.ibm.com/languages/java/semeru-runtimes/downloads/) | [License](https://openjdk.java.net/legal/gplv2+ce.html) |
 | `temurin` | [Eclipse Temurin](https://adoptium.net/) | [License](https://adoptium.net/about.html) |

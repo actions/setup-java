@@ -145,6 +145,19 @@ export const JAVA_PLATFORM_CAPABILITIES: Record<
       macos: X64_ARM64,
       windows: ['x64']
     }
+  },
+  [JavaDistribution.RedHat]: {
+    platforms: {
+      linux: [
+        'x64',
+        {architecture: 'aarch64', versionRange: '<12'},
+        {architecture: 'ppc64le', versionRange: '<12'}
+      ],
+      windows: [
+        {architecture: 'x64', versionRange: '<22'},
+        {architecture: 'x86', versionRange: '<11'}
+      ]
+    }
   }
 };
 
