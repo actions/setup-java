@@ -1,4 +1,4 @@
-# Contributors
+# Contributing
 
 Thank you for contributing!
 
