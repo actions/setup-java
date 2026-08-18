@@ -52,8 +52,8 @@ class RedHatDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5__
         if (!details?.direct_download_uri) {
             throw new Error(`Foojay Disco returned no direct Red Hat download URL for package '${selectedPackage.item.id}'.`);
         }
-        if (details.checksum_type?.toLowerCase() !== 'sha256' ||
-            !details.checksum.trim()) {
+        const checksum = details.checksum?.trim();
+        if (details.checksum_type?.toLowerCase() !== 'sha256' || !checksum) {
             throw new Error(`Foojay Disco returned no SHA-256 checksum for Red Hat package '${selectedPackage.item.id}'.`);
         }
         return {
@@ -61,7 +61,7 @@ class RedHatDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5__
             url: details.direct_download_uri,
             checksum: {
                 algorithm: 'sha256',
-                value: details.checksum,
+                value: checksum,
                 source: detailsUrl
             }
         };
