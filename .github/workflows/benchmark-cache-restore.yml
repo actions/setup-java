@@ -24,6 +24,7 @@ jobs:
   warm-caches:
     name: Warm ${{ matrix.tool }} ${{ matrix.profile }} caches (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    cache-mode: write-only
     strategy:
       fail-fast: false
       matrix:
@@ -65,6 +66,7 @@ jobs:
     name: Benchmark ${{ matrix.tool }} ${{ matrix.profile }} (${{ matrix.os }})
     needs: warm-caches
     runs-on: ${{ matrix.os }}
+    cache-mode: read
     strategy:
       fail-fast: false
       matrix:
