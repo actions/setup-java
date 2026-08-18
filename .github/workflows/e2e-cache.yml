@@ -21,6 +21,7 @@ defaults:
 jobs:
   gradle-save:
     runs-on: ${{ matrix.os }}
+    cache-mode: write-only
     strategy:
       fail-fast: false
       matrix:
@@ -48,6 +49,7 @@ jobs:
           bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists"
   gradle-restore:
     runs-on: ${{ matrix.os }}
+    cache-mode: read
     strategy:
       fail-fast: false
       matrix:
@@ -72,6 +74,7 @@ jobs:
         run: bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists"
   maven-save:
     runs-on: ${{ matrix.os }}
+    cache-mode: write-only
     strategy:
       fail-fast: false
       matrix:
@@ -97,6 +100,7 @@ jobs:
           bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists"
   maven-restore:
     runs-on: ${{ matrix.os }}
+    cache-mode: read
     strategy:
       fail-fast: false
       matrix:
@@ -121,6 +125,7 @@ jobs:
         run: bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists"
   sbt-save:
     runs-on: ${{ matrix.os }}
+    cache-mode: write-only
     defaults:
       run:
         shell: bash
@@ -160,6 +165,7 @@ jobs:
         run: bash "$GITHUB_WORKSPACE/__tests__/check-dir.sh" "$HOME/.cache/coursier"
   sbt-restore:
     runs-on: ${{ matrix.os }}
+    cache-mode: read
     defaults:
       run:
         shell: bash
@@ -194,6 +200,7 @@ jobs:
         run: bash "$GITHUB_WORKSPACE/__tests__/check-dir.sh" "$HOME/.cache/coursier"
   gradle1-save:
     runs-on: ${{ matrix.os }}
+    cache-mode: write-only
     strategy:
       fail-fast: false
       matrix:
@@ -222,6 +229,7 @@ jobs:
           bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists"
   gradle1-restore:
     runs-on: ${{ matrix.os }}
+    cache-mode: read
     strategy:
       fail-fast: false
       matrix:
@@ -246,6 +254,7 @@ jobs:
         run: bash __tests__/check-dir.sh "$HOME/.gradle/wrapper/dists"
   gradle2-restore:
     runs-on: ${{ matrix.os }}
+    cache-mode: read
     strategy:
       fail-fast: false
       matrix:
@@ -268,6 +277,7 @@ jobs:
         run: bash __tests__/check-dir.sh "$HOME/.gradle/caches" absent
   maven1-save:
     runs-on: ${{ matrix.os }}
+    cache-mode: write-only
     strategy:
       fail-fast: false
       matrix:
@@ -294,6 +304,7 @@ jobs:
           bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists"
   maven1-restore:
     runs-on: ${{ matrix.os }}
+    cache-mode: read
     strategy:
       fail-fast: false
       matrix:
@@ -318,6 +329,7 @@ jobs:
         run: bash __tests__/check-dir.sh "$HOME/.m2/wrapper/dists"
   maven2-restore:
     runs-on: ${{ matrix.os }}
+    cache-mode: read
     strategy:
       fail-fast: false
       matrix:
@@ -342,6 +354,7 @@ jobs:
         run: bash __tests__/check-dir.sh "$HOME/.m2/repository" absent
   sbt1-save:
     runs-on: ${{ matrix.os }}
+    cache-mode: write-only
     defaults:
       run:
         shell: bash
@@ -382,6 +395,7 @@ jobs:
         run: bash "$GITHUB_WORKSPACE/__tests__/check-dir.sh" "$HOME/.cache/coursier"
   sbt1-restore:
     runs-on: ${{ matrix.os }}
+    cache-mode: read
     defaults:
       run:
         shell: bash
@@ -416,6 +430,7 @@ jobs:
         run: bash "$GITHUB_WORKSPACE/__tests__/check-dir.sh" "$HOME/.cache/coursier"
   sbt2-restore:
     runs-on: ${{ matrix.os }}
+    cache-mode: read
     defaults:
       run:
         shell: bash
@@ -450,6 +465,7 @@ jobs:
         run: bash "$GITHUB_WORKSPACE/__tests__/check-dir.sh" "$HOME/.cache/coursier" absent
   custom-maven-path-save:
     runs-on: ubuntu-latest
+    cache-mode: write-only
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -474,6 +490,7 @@ jobs:
           bash __tests__/check-dir.sh "$RUNNER_TEMP/setup-java-custom-maven-repository"
   custom-maven-path-restore:
     runs-on: ubuntu-latest
+    cache-mode: read
     needs: custom-maven-path-save
     steps:
       - name: Checkout
