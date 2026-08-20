@@ -13,6 +13,8 @@ import {JavaInstallerOptions} from './distributions/base-models.js';
 import {configureProblemMatcher} from './problem-matcher.js';
 import {validateToolchainIds} from './toolchain-ids.js';
 
+const SIGNATURE_VERIFICATION_DISTRIBUTIONS = new Set(['temurin', 'microsoft']);
+
 export async function run() {
   const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
   let distributionName = core.getInput(constants.INPUT_DISTRIBUTION);
@@ -29,10 +31,6 @@ export async function run() {
   const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
   const forceDownload = getBooleanInput(constants.INPUT_FORCE_DOWNLOAD, false);
   const setDefault = getBooleanInput(constants.INPUT_SET_DEFAULT, true);
-  const verifySignature = getBooleanInput(
-    constants.INPUT_VERIFY_SIGNATURE,
-    false
-  );
   const verifySignaturePublicKey =
     core.getInput(constants.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
   const toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
@@ -80,6 +78,11 @@ export async function run() {
         );
       }
 
+      const verifySignature = getBooleanInput(
+        constants.INPUT_VERIFY_SIGNATURE,
+        SIGNATURE_VERIFICATION_DISTRIBUTIONS.has(distributionName)
+      );
+
       const installerInputsOptions: installerInputsOptions = {
         architecture,
         packageType,
@@ -106,6 +109,11 @@ export async function run() {
       if (!distributionName) {
         throw new Error('distribution input is required');
       }
+
+      const verifySignature = getBooleanInput(
+        constants.INPUT_VERIFY_SIGNATURE,
+        SIGNATURE_VERIFICATION_DISTRIBUTIONS.has(distributionName)
+      );
 
       const installerInputsOptions: installerInputsOptions = {
         architecture,

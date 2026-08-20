@@ -36362,6 +36362,7 @@ var toolchain_ids = __nccwpck_require__(7083);
 
 
 
+const SIGNATURE_VERIFICATION_DISTRIBUTIONS = new Set(['temurin', 'microsoft']);
 async function run() {
     const versions = setup_java_core/* getMultilineInput */.q3(constants/* INPUT_JAVA_VERSION */.QM);
     let distributionName = setup_java_core/* getInput */.V4(constants/* INPUT_DISTRIBUTION */.g_);
@@ -36376,7 +36377,6 @@ async function run() {
     const checkLatest = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_CHECK_LATEST */.YM, false);
     const forceDownload = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_FORCE_DOWNLOAD */.I9, false);
     const setDefault = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_SET_DEFAULT */.E8, true);
-    const verifySignature = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_VERIFY_SIGNATURE */.qy, false);
     const verifySignaturePublicKey = setup_java_core/* getInput */.V4(constants/* INPUT_VERIFY_SIGNATURE_PUBLIC_KEY */.u) || undefined;
     const toolchainIds = setup_java_core/* getMultilineInput */.q3(constants/* INPUT_MVN_TOOLCHAIN_ID */.nr);
     let actionError;
@@ -36404,6 +36404,7 @@ async function run() {
             else if (!distributionName) {
                 throw new Error('distribution input is required when not specified in the version file');
             }
+            const verifySignature = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_VERIFY_SIGNATURE */.qy, SIGNATURE_VERIFICATION_DISTRIBUTIONS.has(distributionName));
             const installerInputsOptions = {
                 architecture,
                 packageType,
@@ -36428,6 +36429,7 @@ async function run() {
             if (!distributionName) {
                 throw new Error('distribution input is required');
             }
+            const verifySignature = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_VERIFY_SIGNATURE */.qy, SIGNATURE_VERIFICATION_DISTRIBUTIONS.has(distributionName));
             const installerInputsOptions = {
                 architecture,
                 packageType,

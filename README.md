@@ -159,7 +159,7 @@ steps:
 | `force-download` | Always download Java and replace any matching version in the tool cache. | `false` |
 | `set-default` | Add Java to `PATH` and set `JAVA_HOME`. When `false`, only version-specific `JAVA_HOME_<major>_<arch>` variables are set. | `true` |
 | `problem-matcher` | Register Java compiler and uncaught exception problem matchers. | `true` |
-| `verify-signature` | Verify downloaded Java package signatures when supported. Currently supported for `temurin` and `microsoft`. | `false` |
+| `verify-signature` | Verify downloaded Java package signatures when supported. Defaults to `true` for `temurin` and `microsoft`, and `false` for other distributions. | Automatically enabled for `temurin` and `microsoft` |
 | `verify-signature-public-key` | ASCII-armored GPG public key to use for signature verification. Overrides the bundled key. | |
 | `token` | Token for fetching GitHub.com-hosted version manifests, useful on GitHub Enterprise Server when unauthenticated requests are rate-limited. | `${{ github.token }}` on GitHub.com; empty string on GHES |
 | `cache` | Enable dependency caching for `maven`, `gradle`, or `sbt`. | |
