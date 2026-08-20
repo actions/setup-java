@@ -36362,7 +36362,6 @@ var toolchain_ids = __nccwpck_require__(7083);
 
 
 
-const SIGNATURE_VERIFICATION_DISTRIBUTIONS = new Set(['temurin', 'microsoft']);
 async function run() {
     const versions = setup_java_core/* getMultilineInput */.q3(constants/* INPUT_JAVA_VERSION */.QM);
     let distributionName = setup_java_core/* getInput */.V4(constants/* INPUT_DISTRIBUTION */.g_);
@@ -36404,7 +36403,7 @@ async function run() {
             else if (!distributionName) {
                 throw new Error('distribution input is required when not specified in the version file');
             }
-            const verifySignature = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_VERIFY_SIGNATURE */.qy, SIGNATURE_VERIFICATION_DISTRIBUTIONS.has(distributionName));
+            const verifySignature = getVerifySignatureInput();
             const installerInputsOptions = {
                 architecture,
                 packageType,
@@ -36429,7 +36428,7 @@ async function run() {
             if (!distributionName) {
                 throw new Error('distribution input is required');
             }
-            const verifySignature = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_VERIFY_SIGNATURE */.qy, SIGNATURE_VERIFICATION_DISTRIBUTIONS.has(distributionName));
+            const verifySignature = getVerifySignatureInput();
             const installerInputsOptions = {
                 architecture,
                 packageType,
@@ -36493,6 +36492,11 @@ function getJdkFileInput() {
         setup_java_core/* warning */.$e(`The '${constants/* INPUT_JDK_FILE_DEPRECATED */.wc}' input is deprecated and may be removed in a future release. Please use '${constants/* INPUT_JDK_FILE */.kM}' instead.`);
     }
     return jdkFile || deprecatedJdkFile;
+}
+function getVerifySignatureInput() {
+    return setup_java_core/* getInput */.V4(constants/* INPUT_VERIFY_SIGNATURE */.qy).trim()
+        ? (0,util/* getBooleanInput */.Vt)(constants/* INPUT_VERIFY_SIGNATURE */.qy)
+        : undefined;
 }
 async function installVersion(version, options, toolchainId = 0) {
     const { distributionName, jdkFile, architecture, packageType, checkLatest, forceDownload, cacheJdk, setDefault, verifySignature, verifySignaturePublicKey, toolchainIds } = options;

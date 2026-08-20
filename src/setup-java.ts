@@ -13,8 +13,6 @@ import {JavaInstallerOptions} from './distributions/base-models.js';
 import {configureProblemMatcher} from './problem-matcher.js';
 import {validateToolchainIds} from './toolchain-ids.js';
 
-const SIGNATURE_VERIFICATION_DISTRIBUTIONS = new Set(['temurin', 'microsoft']);
-
 export async function run() {
   const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
   let distributionName = core.getInput(constants.INPUT_DISTRIBUTION);
@@ -78,10 +76,7 @@ export async function run() {
         );
       }
 
-      const verifySignature = getBooleanInput(
-        constants.INPUT_VERIFY_SIGNATURE,
-        SIGNATURE_VERIFICATION_DISTRIBUTIONS.has(distributionName)
-      );
+      const verifySignature = getVerifySignatureInput();
 
       const installerInputsOptions: installerInputsOptions = {
         architecture,
@@ -110,10 +105,7 @@ export async function run() {
         throw new Error('distribution input is required');
       }
 
-      const verifySignature = getBooleanInput(
-        constants.INPUT_VERIFY_SIGNATURE,
-        SIGNATURE_VERIFICATION_DISTRIBUTIONS.has(distributionName)
-      );
+      const verifySignature = getVerifySignatureInput();
 
       const installerInputsOptions: installerInputsOptions = {
         architecture,
@@ -200,6 +192,12 @@ function getJdkFileInput(): string {
   return jdkFile || deprecatedJdkFile;
 }
 
+function getVerifySignatureInput(): boolean | undefined {
+  return core.getInput(constants.INPUT_VERIFY_SIGNATURE).trim()
+    ? getBooleanInput(constants.INPUT_VERIFY_SIGNATURE)
+    : undefined;
+}
+
 async function installVersion(
   version: string,
   options: installerInputsOptions,
@@ -271,7 +269,7 @@ interface installerInputsOptions {
   forceDownload: boolean;
   cacheJdk: boolean;
   setDefault: boolean;
-  verifySignature: boolean;
+  verifySignature: boolean | undefined;
   verifySignaturePublicKey: string | undefined;
   distributionName: string;
   jdkFile: string;

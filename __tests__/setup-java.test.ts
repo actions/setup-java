@@ -162,16 +162,17 @@ describe('setup action orchestration', () => {
   });
 
   it.each([
-    ['temurin', undefined, true],
-    ['microsoft', undefined, true],
-    ['zulu', undefined, false],
-    ['temurin', false, false]
+    ['temurin', undefined, undefined],
+    ['zulu', undefined, undefined],
+    ['temurin', false, false],
+    ['zulu', true, true]
   ])(
-    'defaults signature verification for %s with explicit value %s to %s',
+    'passes signature verification input for %s with explicit value %s as %s',
     async (distribution, explicitValue, expectedValue) => {
       inputs.set('distribution', distribution);
       multilineInputs.set('java-version', ['21']);
       if (explicitValue !== undefined) {
+        inputs.set('verify-signature', String(explicitValue));
         booleanInputs.set('verify-signature', explicitValue);
       }
       (factory.getJavaDistribution as jest.Mock).mockReturnValue({
@@ -261,7 +262,7 @@ describe('setup action orchestration', () => {
         forceDownload: true,
         cacheJdk: false,
         setDefault: false,
-        verifySignature: true,
+        verifySignature: undefined,
         verifySignaturePublicKey: 'public-key'
       },
       '/tmp/java.tar.gz'
