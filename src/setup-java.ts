@@ -29,10 +29,6 @@ export async function run() {
   const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
   const forceDownload = getBooleanInput(constants.INPUT_FORCE_DOWNLOAD, false);
   const setDefault = getBooleanInput(constants.INPUT_SET_DEFAULT, true);
-  const verifySignature = getBooleanInput(
-    constants.INPUT_VERIFY_SIGNATURE,
-    false
-  );
   const verifySignaturePublicKey =
     core.getInput(constants.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
   const toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
@@ -80,6 +76,8 @@ export async function run() {
         );
       }
 
+      const verifySignature = getVerifySignatureInput();
+
       const installerInputsOptions: installerInputsOptions = {
         architecture,
         packageType,
@@ -106,6 +104,8 @@ export async function run() {
       if (!distributionName) {
         throw new Error('distribution input is required');
       }
+
+      const verifySignature = getVerifySignatureInput();
 
       const installerInputsOptions: installerInputsOptions = {
         architecture,
@@ -192,6 +192,12 @@ function getJdkFileInput(): string {
   return jdkFile || deprecatedJdkFile;
 }
 
+function getVerifySignatureInput(): boolean | undefined {
+  return core.getInput(constants.INPUT_VERIFY_SIGNATURE).trim()
+    ? getBooleanInput(constants.INPUT_VERIFY_SIGNATURE)
+    : undefined;
+}
+
 async function installVersion(
   version: string,
   options: installerInputsOptions,
@@ -263,7 +269,7 @@ interface installerInputsOptions {
   forceDownload: boolean;
   cacheJdk: boolean;
   setDefault: boolean;
-  verifySignature: boolean;
+  verifySignature: boolean | undefined;
   verifySignaturePublicKey: string | undefined;
   distributionName: string;
   jdkFile: string;

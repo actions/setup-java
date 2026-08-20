@@ -398,13 +398,12 @@ describe('downloadTool', () => {
     jest.restoreAllMocks();
   });
 
-  it('verifies signature when enabled', async () => {
+  it('verifies signatures by default', async () => {
     const signedDistribution = new MicrosoftDistributions({
       version: '17',
       architecture: 'x64',
       packageType: 'jdk',
-      checkLatest: false,
-      verifySignature: true
+      checkLatest: false
     });
 
     await signedDistribution['downloadTool']({

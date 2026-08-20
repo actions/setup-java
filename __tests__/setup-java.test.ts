@@ -161,6 +161,37 @@ describe('setup action orchestration', () => {
     expect(factory.getJavaDistribution).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ['temurin', undefined, undefined],
+    ['zulu', undefined, undefined],
+    ['temurin', false, false],
+    ['zulu', true, true]
+  ])(
+    'passes signature verification input for %s with explicit value %s as %s',
+    async (distribution, explicitValue, expectedValue) => {
+      inputs.set('distribution', distribution);
+      multilineInputs.set('java-version', ['21']);
+      if (explicitValue !== undefined) {
+        inputs.set('verify-signature', String(explicitValue));
+        booleanInputs.set('verify-signature', explicitValue);
+      }
+      (factory.getJavaDistribution as jest.Mock).mockReturnValue({
+        setupJava: jest.fn(async () => ({
+          version: '21.0.4+7',
+          path: '/opt/java/21'
+        }))
+      });
+
+      await run();
+
+      expect(factory.getJavaDistribution).toHaveBeenCalledWith(
+        distribution,
+        expect.objectContaining({verifySignature: expectedValue}),
+        ''
+      );
+    }
+  );
+
   it('requires distribution when it cannot be inferred from the version file', async () => {
     inputs.set('java-version-file', '.java-version');
     (fs.readFileSync as jest.Mock).mockReturnValue(Buffer.from('21'));
@@ -200,7 +231,6 @@ describe('setup action orchestration', () => {
     booleanInputs.set('check-latest', true);
     booleanInputs.set('force-download', true);
     booleanInputs.set('set-default', false);
-    booleanInputs.set('verify-signature', true);
     inputs.set('verify-signature-public-key', 'public-key');
     (fs.readFileSync as jest.Mock).mockReturnValue(
       Buffer.from('java=21.0.5-tem')
@@ -232,7 +262,7 @@ describe('setup action orchestration', () => {
         forceDownload: true,
         cacheJdk: false,
         setDefault: false,
-        verifySignature: true,
+        verifySignature: undefined,
         verifySignaturePublicKey: 'public-key'
       },
       '/tmp/java.tar.gz'
