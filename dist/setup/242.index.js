@@ -244,7 +244,8 @@ class JavaBase {
             installerOptions.setDefault !== undefined
                 ? installerOptions.setDefault
                 : true;
-        this.verifySignature = installerOptions.verifySignature ?? false;
+        this.verifySignature =
+            installerOptions.verifySignature ?? this.supportsSignatureVerification();
         this.verifySignaturePublicKey = installerOptions.verifySignaturePublicKey;
     }
     async downloadAndVerify(javaRelease) {

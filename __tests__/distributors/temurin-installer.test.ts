@@ -457,14 +457,13 @@ describe('downloadTool', () => {
     jest.restoreAllMocks();
   });
 
-  it('verifies signature when enabled', async () => {
+  it('verifies signatures by default', async () => {
     const distribution = new TemurinDistribution(
       {
         version: '17',
         architecture: 'x64',
         packageType: 'jdk',
-        checkLatest: false,
-        verifySignature: true
+        checkLatest: false
       },
       TemurinImplementation.Hotspot
     );
@@ -480,6 +479,27 @@ describe('downloadTool', () => {
       'https://example.com/jdk.tar.gz.sig',
       ADOPTIUM_PUBLIC_KEY
     );
+  });
+
+  it('does not verify signatures when explicitly disabled', async () => {
+    const distribution = new TemurinDistribution(
+      {
+        version: '17',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false,
+        verifySignature: false
+      },
+      TemurinImplementation.Hotspot
+    );
+
+    await distribution['downloadTool']({
+      version: '17.0.14+7',
+      url: 'https://example.com/jdk.tar.gz',
+      signatureUrl: 'https://example.com/jdk.tar.gz.sig'
+    });
+
+    expect(spyVerifySignature).not.toHaveBeenCalled();
   });
 
   it('downloads and adds matching JMODs to the JDK', async () => {
@@ -499,7 +519,8 @@ describe('downloadTool', () => {
         version: '25',
         architecture: 'x64',
         packageType: 'jdk+jmods',
-        checkLatest: false
+        checkLatest: false,
+        verifySignature: false
       },
       TemurinImplementation.Hotspot
     );
