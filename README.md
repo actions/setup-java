@@ -48,13 +48,17 @@ steps:
 ### V6
 
 - Migrated the action implementation to ESM to support the latest `@actions/*` packages.
-- Added the `oracle-openjdk`, `redhat`, and `liberica-nik` distributions.
+- Added Oracle OpenJDK (`oracle-openjdk`), Red Hat Build of OpenJDK (`redhat`), and Liberica Native Image Kit (`liberica-nik`), and expanded Tencent Kona support through JDK 25.
 - Added `java-version: latest` to resolve the newest stable GA release from the distribution's remote metadata.
+- Expanded install compatibility with JEP 322 multi-field versions such as `18.0.1.1`, Temurin `jdk+jmods` packages, and native musl artifacts on Alpine for Dragonwell, Corretto, Zulu, and Liberica.
 - JDK downloads now automatically verify authoritative checksums, and package signature verification defaults to enabled for Temurin and Microsoft builds.
 - Added `force-download: true` to bypass the tool cache and perform a reproducible fresh install.
 - Dependency caching now supports custom paths with `cache-path` and restore-only operation with `cache-read-only: true`.
+- Dependency cache keys now include `.mvn/extensions.xml` and `gradle.properties`, preventing stale restores when Maven extensions or Gradle dependency properties change.
 - Downloaded JDKs are now [cached](#caching-jdk-installations) automatically when `cache` is set; use `cache-jdk` to enable or disable it independently.
+- Warm JDK-cached jobs can reuse cached release metadata, avoiding vendor API calls while retaining a stale-metadata fallback for vendor outages and rate limits.
 - Maven configuration now supports multiple server credentials and custom dependency-resolution repositories.
+- Maven signing keys are imported into an isolated temporary GPG home instead of the runner's default keyring.
 - Set `problem-matcher: false` to disable Java compiler and uncaught-exception annotations.
 - GraalVM distributions now set `GRAALVM_HOME` in addition to `JAVA_HOME`.
 - Invalid boolean values, unsupported distribution/package/platform combinations, and mismatched Maven toolchain ID counts now fail with targeted errors.
@@ -65,6 +69,7 @@ steps:
 - Deprecated aliases still work, but emit warnings.
 - Maven GPG passphrases are now passed through `gpg.passphraseEnvName` instead of a deprecated `gpg.passphrase` server entry in `settings.xml`. This requires `maven-gpg-plugin` 3.2.0 or newer. See [GPG](docs/advanced-usage.md#gpg).
 - Legacy AdoptOpenJDK distributions were removed. Use `temurin` instead of `adopt` or `adopt-hotspot`, and `semeru` instead of `adopt-openj9`.
+- See the [complete V6 release notes](https://github.com/actions/setup-java/releases/tag/v6.0.0) for all enhancements and fixes.
 
 ### V5
 
