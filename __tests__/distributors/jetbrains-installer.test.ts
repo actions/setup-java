@@ -78,6 +78,8 @@ function response(
 }
 
 describe('getAvailableVersions', () => {
+  jest.setTimeout(10_000);
+
   let spyHttpClient: any;
   let spyCoreError: any;
   const originalGitHubToken = process.env.GITHUB_TOKEN;

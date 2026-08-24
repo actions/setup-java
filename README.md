@@ -9,21 +9,12 @@ Set up Java for GitHub Actions workflows. `setup-java` installs a requested Java
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: temurin
       java-version: '25'
   - run: java --version
 ```
-
-> [!NOTE]
-> V6 is still in development on the `main` branch and is not yet recommended for production workflows. To use it, you must explicitly reference the `main` branch in your workflow, as in 
->
-> ```yaml
-> - uses: actions/setup-java@main
-> ```
-> 
-> For production workflows, it is recommended to use the latest stable release `v5`.
 
 ## Contents
 
@@ -54,15 +45,16 @@ steps:
 
 ## What's new
 
-### V6 (in development)
+### V6
 
 - Migrated the action implementation to ESM to support the latest `@actions/*` packages.
-- Added the `oracle-openjdk` distribution for OpenJDK builds from Oracle.
+- Added the `oracle-openjdk`, `redhat`, and `liberica-nik` distributions.
 - Added `java-version: latest` to resolve the newest stable GA release from the distribution's remote metadata.
-- JDK downloads now automatically verify authoritative checksums for [supported distributions](#download-integrity-and-signatures).
+- JDK downloads now automatically verify authoritative checksums, and package signature verification defaults to enabled for Temurin and Microsoft builds.
 - Added `force-download: true` to bypass the tool cache and perform a reproducible fresh install.
 - Dependency caching now supports custom paths with `cache-path` and restore-only operation with `cache-read-only: true`.
 - Downloaded JDKs are now [cached](#caching-jdk-installations) automatically when `cache` is set; use `cache-jdk` to enable or disable it independently.
+- Maven configuration now supports multiple server credentials and custom dependency-resolution repositories.
 - Set `problem-matcher: false` to disable Java compiler and uncaught-exception annotations.
 - GraalVM distributions now set `GRAALVM_HOME` in addition to `JAVA_HOME`.
 - Invalid boolean values, unsupported distribution/package/platform combinations, and mismatched Maven toolchain ID counts now fail with targeted errors.
@@ -89,7 +81,7 @@ steps:
 ### Older versions
 
 > [!WARNING]
-> `actions/setup-java` versions `v1` through `v4` are deprecated. Upgrade workflows to `actions/setup-java@v5`, the latest stable release.
+> `actions/setup-java` versions `v1` through `v4` are deprecated. Upgrade workflows to `actions/setup-java@v6`, the latest stable release.
 
 ## Usage
 
@@ -98,7 +90,7 @@ steps:
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: temurin
       java-version: '25'
@@ -110,7 +102,7 @@ steps:
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: microsoft
       java-version: '25'
@@ -122,7 +114,7 @@ steps:
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: temurin
       java-version-file: .java-version
@@ -136,7 +128,7 @@ Supported version files are `.java-version`, `.tool-versions`, and `.sdkmanrc`. 
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: temurin
       java-version: latest
@@ -267,7 +259,7 @@ Set `cache` to `maven`, `gradle`, or `sbt` to cache dependencies with minimal co
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: temurin
       java-version: '25'
@@ -286,7 +278,7 @@ The primary dependency cache key is `setup-java-<runner-os>-<node-arch>-<package
 Use `cache-dependency-path` to override the files used for key hashing, especially in monorepos:
 
 ```yaml
-- uses: actions/setup-java@v5
+- uses: actions/setup-java@v6
   with:
     distribution: temurin
     java-version: '25'
@@ -299,7 +291,7 @@ Use `cache-dependency-path` to override the files used for key hashing, especial
 Use `cache-path` when the build tool stores dependencies outside the default location:
 
 ```yaml
-- uses: actions/setup-java@v5
+- uses: actions/setup-java@v6
   with:
     distribution: temurin
     java-version: '25'
@@ -338,7 +330,7 @@ The JDK cache stores the downloaded JDK installation so later runs skip the down
 Set `cache-read-only: true` to restore dependency, wrapper, and JDK caches without saving changes in the post action. This is useful for pull requests, merge queues, short-lived branches, and matrix fan-out jobs that should only consume caches produced elsewhere.
 
 ```yaml
-- uses: actions/setup-java@v5
+- uses: actions/setup-java@v6
   with:
     distribution: temurin
     java-version: '25'
@@ -354,7 +346,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
@@ -369,7 +361,7 @@ jobs:
         goal: [test, verify, package]
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
@@ -387,7 +379,7 @@ env:
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: '5'
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: temurin
       java-version: '25'
@@ -401,7 +393,7 @@ Install multiple Java versions by providing a multiline `java-version` value. Al
 
 ```yaml
 steps:
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: temurin
       java-version: |
@@ -428,7 +420,7 @@ jobs:
     name: Java ${{ matrix.java }}
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
@@ -445,7 +437,7 @@ jobs:
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: temurin
       java-version: '25'
@@ -467,7 +459,7 @@ required. See [Resolving Maven dependencies from custom repositories](docs/advan
 ```yaml
 steps:
   - uses: actions/checkout@v7
-  - uses: actions/setup-java@v5
+  - uses: actions/setup-java@v6
     with:
       distribution: temurin
       java-version: '25'
