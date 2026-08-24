@@ -39,15 +39,6 @@
 
 See [action.yml](../action.yml) for more details on task inputs.
 
-> [!NOTE]
-> The examples on this page reference `actions/setup-java@v6`, which is still in
-> development on the `main` branch and is not yet published as a release tag. To
-> try the V6 features documented here (`cache-jdk`, `force-download`,
-> `problem-matcher`, `cache-path`, `cache-read-only`, `java-version: latest`,
-> `oracle-openjdk`, and the `*-env-var` input names), reference
-> `actions/setup-java@main`. For production workflows use the latest stable
-> release, `actions/setup-java@v5`, as shown in the [README](../README.md).
-
 ## Selecting a Java distribution
 `java-version` and `distribution` select what gets installed. `java-version` may be replaced by `java-version-file`, and `distribution` is optional only when `java-version-file` points to a `.sdkmanrc` or `.tool-versions` file that carries a recognized vendor identifier. In every other case both inputs must be provided. See [Supported distributions](../README.md#Supported-distributions) for a list of available options.
 
