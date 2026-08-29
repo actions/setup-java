@@ -159,15 +159,32 @@ class TemurinDistribution extends base_installer/* JavaBase */.O {
     async downloadPackage(release) {
         const archivePath = await this.downloadAndVerify(release);
         if (this.verifySignature) {
-            if (!release.signatureUrl) {
-                throw new Error(`Input 'verify-signature' is enabled, but no signature URL was found for Temurin version ${release.version}.`);
-            }
-            core/* info */.pq(`Verifying Java package signature...`);
             try {
-                await gpg/* verifyPackageSignature */.Yi(archivePath, release.signatureUrl, this.verifySignaturePublicKey ?? ADOPTIUM_PUBLIC_KEY);
+                if (!(await gpg/* isGpgAvailable */.o6())) {
+                    throw new Error("Input 'verify-signature' is enabled, but gpg is not available.");
+                }
+                if (!release.signatureUrl) {
+                    throw new Error(`Input 'verify-signature' is enabled, but no signature URL was found for Temurin version ${release.version}.`);
+                }
+                core/* info */.pq(`Verifying Java package signature...`);
+                try {
+                    await gpg/* verifyPackageSignature */.Yi(archivePath, release.signatureUrl, this.verifySignaturePublicKey ?? ADOPTIUM_PUBLIC_KEY);
+                }
+                catch (error) {
+                    const verificationError = new Error(`Failed to verify signature for Temurin version ${release.version} from ${release.signatureUrl}: ${error.message} ${constants/* SIGNATURE_VERIFICATION_FAILURE_HELP */.kQ}`, { cause: error });
+                    if (this.verifySignatureExplicitlyRequested) {
+                        throw verificationError;
+                    }
+                    else {
+                        core/* warning */.$e(verificationError.message);
+                    }
+                }
             }
             catch (error) {
-                throw new Error(`Failed to verify signature for Temurin version ${release.version} from ${release.signatureUrl}: ${error.message}`, { cause: error });
+                if (this.verifySignatureExplicitlyRequested) {
+                    throw error;
+                }
+                core/* warning */.$e(error instanceof Error ? error.message : `Unknown error: ${error}`);
             }
         }
         return archivePath;
@@ -273,7 +290,8 @@ class TemurinDistribution extends base_installer/* JavaBase */.O {
 /* harmony export */   Fh: () => (/* binding */ importKey),
 /* harmony export */   Yi: () => (/* binding */ verifyPackageSignature),
 /* harmony export */   mS: () => (/* binding */ removeGpgHome),
-/* harmony export */   nY: () => (/* binding */ toGpgPath)
+/* harmony export */   nY: () => (/* binding */ toGpgPath),
+/* harmony export */   o6: () => (/* binding */ isGpgAvailable)
 /* harmony export */ });
 /* unused harmony export GPG_HOME_PREFIX */
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9896);
@@ -295,6 +313,9 @@ class TemurinDistribution extends base_installer/* JavaBase */.O {
 
 const GPG_HOME_PREFIX = 'setup-java-gpg-';
 const VERIFY_GPG_HOME_PREFIX = 'verify-signature-gpg-home-';
+async function isGpgAvailable() {
+    return Boolean(await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .which */ .K7('gpg', false));
+}
 // Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
 // The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
 // internally. Passing Windows paths with backslashes can cause fatal GPG errors
@@ -378,15 +399,21 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
         throw new Error(`Failed to create temporary GPG home directory for signature verification: ${error.message}`, { cause: error });
     }
     try {
-        const publicKeyFile = path__WEBPACK_IMPORTED_MODULE_1__.join(gpgHome, 'public-key.asc');
-        fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(publicKeyFile, publicKeyContent, { encoding: 'utf-8' });
+        const publicKeys = Array.isArray(publicKeyContent)
+            ? publicKeyContent
+            : [publicKeyContent];
+        const publicKeyFiles = publicKeys.map((publicKey, index) => {
+            const publicKeyFile = path__WEBPACK_IMPORTED_MODULE_1__.join(gpgHome, `public-key-${index}.asc`);
+            fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(publicKeyFile, publicKey, { encoding: 'utf-8' });
+            return toGpgPath(publicKeyFile);
+        });
         const options = { silent: true };
         await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpg', [
             '--homedir',
             toGpgPath(gpgHome),
             '--batch',
             '--import',
-            toGpgPath(publicKeyFile)
+            ...publicKeyFiles
         ], options);
         await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpg', [
             '--homedir',

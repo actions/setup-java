@@ -245,7 +245,7 @@ describe('gpg tests', () => {
           expect.any(String),
           '--batch',
           '--import',
-          expect.stringContaining('public-key.asc')
+          expect.stringContaining('public-key-0.asc')
         ],
         expect.objectContaining({silent: true})
       );
@@ -262,6 +262,33 @@ describe('gpg tests', () => {
         ],
         expect.objectContaining({silent: true})
       );
+    });
+
+    it('imports multiple bundled keys before verifying the package', async () => {
+      (tc.downloadTool as jest.Mock<any>).mockResolvedValue(
+        '/tmp/jdk.tar.gz.sig'
+      );
+
+      await gpg.verifyPackageSignature(
+        '/tmp/jdk.tar.gz',
+        'https://example.com/jdk.tar.gz.sig',
+        ['public-key-a', 'public-key-b']
+      );
+
+      expect(exec.exec).toHaveBeenNthCalledWith(
+        1,
+        'gpg',
+        [
+          '--homedir',
+          expect.any(String),
+          '--batch',
+          '--import',
+          expect.stringContaining('public-key-0.asc'),
+          expect.stringContaining('public-key-1.asc')
+        ],
+        expect.objectContaining({silent: true})
+      );
+      expect(exec.exec).toHaveBeenCalledTimes(2);
     });
   });
 });

@@ -122,16 +122,25 @@ function getInstallationIdentity(jdkPath, architecture) {
         return undefined;
     }
 }
-function getJdkVerificationIdentity(verifySignature, publicKey) {
+function getJdkVerificationIdentity(verifySignature, enforceSignatureVerification, publicKey) {
     if (!verifySignature) {
-        return 'unverified';
+        return 'disabled';
     }
+    const verificationPolicy = enforceSignatureVerification
+        ? 'enforced'
+        : 'check-and-warn';
     if (!publicKey) {
-        return 'verified:bundled';
+        return `${verificationPolicy}:bundled`;
     }
-    const normalizedKey = publicKey.replace(/\r\n?/g, '\n').trim();
-    const fingerprint = createHash('sha256').update(normalizedKey).digest('hex');
-    return `verified:custom:sha256:${fingerprint}`;
+    const publicKeys = Array.isArray(publicKey) ? publicKey : [publicKey];
+    const normalizedKeys = publicKeys.map(key => key.replace(/\r\n?/g, '\n').trim());
+    const fingerprintSource = Array.isArray(publicKey)
+        ? normalizedKeys.map(key => `${Buffer.byteLength(key)}:${key}`).join('')
+        : normalizedKeys[0];
+    const fingerprint = createHash('sha256')
+        .update(fingerprintSource)
+        .digest('hex');
+    return `${verificationPolicy}:custom:sha256:${fingerprint}`;
 }
 async function saveJdkCaches() {
     const state = lib_core/* getState */.Gu(STATE_JDK_CACHES);

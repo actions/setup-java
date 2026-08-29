@@ -8,7 +8,10 @@ import * as gpg from '../../gpg.js';
 import {ADOPTIUM_PUBLIC_KEY} from './adoptium-key.js';
 import {JavaBase} from '../base-installer.js';
 import {ITemurinAvailableVersions} from './models.js';
-import {MACOS_JAVA_CONTENT_POSTFIX} from '../../constants.js';
+import {
+  MACOS_JAVA_CONTENT_POSTFIX,
+  SIGNATURE_VERIFICATION_FAILURE_HELP
+} from '../../constants.js';
 import {
   JavaDownloadRelease,
   JavaInstallerOptions,
@@ -141,24 +144,41 @@ export class TemurinDistribution extends JavaBase {
     const archivePath = await this.downloadAndVerify(release);
 
     if (this.verifySignature) {
-      if (!release.signatureUrl) {
-        throw new Error(
-          `Input 'verify-signature' is enabled, but no signature URL was found for Temurin version ${release.version}.`
-        );
-      }
-      core.info(`Verifying Java package signature...`);
       try {
-        await gpg.verifyPackageSignature(
-          archivePath,
-          release.signatureUrl,
-          this.verifySignaturePublicKey ?? ADOPTIUM_PUBLIC_KEY
-        );
+        if (!(await gpg.isGpgAvailable())) {
+          throw new Error(
+            "Input 'verify-signature' is enabled, but gpg is not available."
+          );
+        }
+        if (!release.signatureUrl) {
+          throw new Error(
+            `Input 'verify-signature' is enabled, but no signature URL was found for Temurin version ${release.version}.`
+          );
+        }
+        core.info(`Verifying Java package signature...`);
+        try {
+          await gpg.verifyPackageSignature(
+            archivePath,
+            release.signatureUrl,
+            this.verifySignaturePublicKey ?? ADOPTIUM_PUBLIC_KEY
+          );
+        } catch (error) {
+          const verificationError = new Error(
+            `Failed to verify signature for Temurin version ${release.version} from ${release.signatureUrl}: ${(error as Error).message} ${SIGNATURE_VERIFICATION_FAILURE_HELP}`,
+            {cause: error}
+          );
+          if (this.verifySignatureExplicitlyRequested) {
+            throw verificationError;
+          } else {
+            core.warning(verificationError.message);
+          }
+        }
       } catch (error) {
-        throw new Error(
-          `Failed to verify signature for Temurin version ${release.version} from ${release.signatureUrl}: ${
-            (error as Error).message
-          }`,
-          {cause: error}
+        if (this.verifySignatureExplicitlyRequested) {
+          throw error;
+        }
+        core.warning(
+          error instanceof Error ? error.message : `Unknown error: ${error}`
         );
       }
     }
