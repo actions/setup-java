@@ -30774,7 +30774,7 @@ module.exports = {
 /* harmony export */   gk: () => (/* binding */ INPUT_CACHE),
 /* harmony export */   wG: () => (/* binding */ INPUT_JOB_STATUS)
 /* harmony export */ });
-/* unused harmony exports MACOS_JAVA_CONTENT_POSTFIX, INPUT_JAVA_VERSION, INPUT_JAVA_VERSION_FILE, INPUT_ARCHITECTURE, INPUT_JAVA_PACKAGE, INPUT_DISTRIBUTION, INPUT_JDK_FILE, INPUT_JDK_FILE_DEPRECATED, INPUT_CHECK_LATEST, INPUT_FORCE_DOWNLOAD, INPUT_SET_DEFAULT, INPUT_PROBLEM_MATCHER, INPUT_VERIFY_SIGNATURE, INPUT_VERIFY_SIGNATURE_PUBLIC_KEY, INPUT_MVN_SERVER_CREDENTIALS, INPUT_MVN_REPOSITORIES, INPUT_MVN_REPOSITORIES_INCLUDE_CENTRAL, INPUT_MVN_REPOSITORIES_PRIORITIZE_CENTRAL, INPUT_SERVER_ID, INPUT_SERVER_USERNAME_ENV_VAR, INPUT_SERVER_PASSWORD_ENV_VAR, INPUT_SERVER_USERNAME_DEPRECATED, INPUT_SERVER_PASSWORD_DEPRECATED, INPUT_SETTINGS_PATH, INPUT_OVERWRITE_SETTINGS, INPUT_GPG_PRIVATE_KEY, INPUT_GPG_PASSPHRASE_ENV_VAR, INPUT_GPG_PASSPHRASE_DEPRECATED, INPUT_DEFAULT_SERVER_USERNAME, INPUT_DEFAULT_SERVER_PASSWORD, INPUT_DEFAULT_GPG_PRIVATE_KEY, INPUT_DEFAULT_GPG_PASSPHRASE, MAVEN_GPG_PASSPHRASE_DEFAULT_ENV, GPG_PASSPHRASE_PROFILE_ID, MAVEN_REPOSITORIES_PROFILE_ID, MAVEN_CENTRAL_REPOSITORY_ID, MAVEN_CENTRAL_REPOSITORY_URL, INPUT_CACHE_DEPENDENCY_PATH, INPUT_CACHE_PATH, M2_DIR, MVN_SETTINGS_FILE, MVN_TOOLCHAINS_FILE, INPUT_MVN_TOOLCHAIN_ID, INPUT_MVN_TOOLCHAIN_VENDOR, INPUT_SHOW_DOWNLOAD_PROGRESS, MAVEN_ARGS_ENV, MAVEN_NO_TRANSFER_PROGRESS_FLAG, MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG, DISTRIBUTIONS_ONLY_MAJOR_VERSION */
+/* unused harmony exports MACOS_JAVA_CONTENT_POSTFIX, INPUT_JAVA_VERSION, INPUT_JAVA_VERSION_FILE, INPUT_ARCHITECTURE, INPUT_JAVA_PACKAGE, INPUT_DISTRIBUTION, INPUT_JDK_FILE, INPUT_JDK_FILE_DEPRECATED, INPUT_CHECK_LATEST, INPUT_FORCE_DOWNLOAD, INPUT_SET_DEFAULT, INPUT_PROBLEM_MATCHER, INPUT_VERIFY_SIGNATURE, INPUT_VERIFY_SIGNATURE_PUBLIC_KEY, SIGNATURE_VERIFICATION_DOCUMENTATION_URL, SIGNATURE_VERIFICATION_FAILURE_HELP, INPUT_MVN_SERVER_CREDENTIALS, INPUT_MVN_REPOSITORIES, INPUT_MVN_REPOSITORIES_INCLUDE_CENTRAL, INPUT_MVN_REPOSITORIES_PRIORITIZE_CENTRAL, INPUT_SERVER_ID, INPUT_SERVER_USERNAME_ENV_VAR, INPUT_SERVER_PASSWORD_ENV_VAR, INPUT_SERVER_USERNAME_DEPRECATED, INPUT_SERVER_PASSWORD_DEPRECATED, INPUT_SETTINGS_PATH, INPUT_OVERWRITE_SETTINGS, INPUT_GPG_PRIVATE_KEY, INPUT_GPG_PASSPHRASE_ENV_VAR, INPUT_GPG_PASSPHRASE_DEPRECATED, INPUT_DEFAULT_SERVER_USERNAME, INPUT_DEFAULT_SERVER_PASSWORD, INPUT_DEFAULT_GPG_PRIVATE_KEY, INPUT_DEFAULT_GPG_PASSPHRASE, MAVEN_GPG_PASSPHRASE_DEFAULT_ENV, GPG_PASSPHRASE_PROFILE_ID, MAVEN_REPOSITORIES_PROFILE_ID, MAVEN_CENTRAL_REPOSITORY_ID, MAVEN_CENTRAL_REPOSITORY_URL, INPUT_CACHE_DEPENDENCY_PATH, INPUT_CACHE_PATH, M2_DIR, MVN_SETTINGS_FILE, MVN_TOOLCHAINS_FILE, INPUT_MVN_TOOLCHAIN_ID, INPUT_MVN_TOOLCHAIN_VENDOR, INPUT_SHOW_DOWNLOAD_PROGRESS, MAVEN_ARGS_ENV, MAVEN_NO_TRANSFER_PROGRESS_FLAG, MAVEN_NO_TRANSFER_PROGRESS_LONG_FLAG, DISTRIBUTIONS_ONLY_MAJOR_VERSION */
 const MACOS_JAVA_CONTENT_POSTFIX = 'Contents/Home';
 const INPUT_JAVA_VERSION = 'java-version';
 const INPUT_JAVA_VERSION_FILE = 'java-version-file';
@@ -30789,6 +30789,8 @@ const INPUT_SET_DEFAULT = 'set-default';
 const INPUT_PROBLEM_MATCHER = 'problem-matcher';
 const INPUT_VERIFY_SIGNATURE = 'verify-signature';
 const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
+const SIGNATURE_VERIFICATION_DOCUMENTATION_URL = 'https://github.com/actions/setup-java#download-integrity-and-signatures';
+const SIGNATURE_VERIFICATION_FAILURE_HELP = (/* unused pure expression or super */ null && (`If this is a legitimate vendor signing-key rotation, see ${SIGNATURE_VERIFICATION_DOCUMENTATION_URL} for instructions to configure the updated public key or temporarily disable signature verification.`));
 const INPUT_MVN_SERVER_CREDENTIALS = 'mvn-server-credentials';
 const INPUT_MVN_REPOSITORIES = 'mvn-repositories';
 const INPUT_MVN_REPOSITORIES_INCLUDE_CENTRAL = 'mvn-repositories-include-central';
@@ -35767,6 +35769,9 @@ var src_util = __nccwpck_require__(4527);
 
 const GPG_HOME_PREFIX = 'setup-java-gpg-';
 const VERIFY_GPG_HOME_PREFIX = 'verify-signature-gpg-home-';
+async function isGpgAvailable() {
+    return Boolean(await io.which('gpg', false));
+}
 // Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
 // The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
 // internally. Passing Windows paths with backslashes can cause fatal GPG errors
@@ -35850,15 +35855,21 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
         throw new Error(`Failed to create temporary GPG home directory for signature verification: ${error.message}`, { cause: error });
     }
     try {
-        const publicKeyFile = path.join(gpgHome, 'public-key.asc');
-        fs.writeFileSync(publicKeyFile, publicKeyContent, { encoding: 'utf-8' });
+        const publicKeys = Array.isArray(publicKeyContent)
+            ? publicKeyContent
+            : [publicKeyContent];
+        const publicKeyFiles = publicKeys.map((publicKey, index) => {
+            const publicKeyFile = path.join(gpgHome, `public-key-${index}.asc`);
+            fs.writeFileSync(publicKeyFile, publicKey, { encoding: 'utf-8' });
+            return toGpgPath(publicKeyFile);
+        });
         const options = { silent: true };
         await exec.exec('gpg', [
             '--homedir',
             toGpgPath(gpgHome),
             '--batch',
             '--import',
-            toGpgPath(publicKeyFile)
+            ...publicKeyFiles
         ], options);
         await exec.exec('gpg', [
             '--homedir',

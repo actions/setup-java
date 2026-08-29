@@ -226,6 +226,7 @@ class JavaBase {
     floatingVersionVerified = false;
     setDefault;
     verifySignature;
+    verifySignatureExplicitlyRequested;
     verifySignaturePublicKey;
     constructor(distribution, installerOptions) {
         this.distribution = distribution;
@@ -246,6 +247,8 @@ class JavaBase {
                 : true;
         this.verifySignature =
             installerOptions.verifySignature ?? this.supportsSignatureVerification();
+        this.verifySignatureExplicitlyRequested =
+            installerOptions.verifySignature === true;
         this.verifySignaturePublicKey = installerOptions.verifySignaturePublicKey;
     }
     async downloadAndVerify(javaRelease) {
@@ -481,7 +484,7 @@ class JavaBase {
             architecture: this.architecture,
             version: javaRelease.version,
             source: this.getJdkReleaseIdentity(javaRelease),
-            verification: getJdkVerificationIdentity(this.verifySignature, this.verifySignaturePublicKey),
+            verification: getJdkVerificationIdentity(this.verifySignature, this.verifySignatureExplicitlyRequested, this.verifySignaturePublicKey),
             path: this.getJdkCachePath(javaRelease.version)
         };
     }

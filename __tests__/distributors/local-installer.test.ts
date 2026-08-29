@@ -58,7 +58,7 @@ jest.unstable_mockModule('@actions/tool-cache', () => ({
 }));
 
 jest.unstable_mockModule('../../src/jdk-cache.js', () => ({
-  getJdkVerificationIdentity: jest.fn(() => 'unverified'),
+  getJdkVerificationIdentity: jest.fn(() => 'disabled'),
   registerJdk: jest.fn(),
   restoreJdk: jest.fn()
 }));
@@ -106,7 +106,7 @@ describe('setupJava', () => {
 
   beforeEach(() => {
     (jdkCache.getJdkVerificationIdentity as jest.Mock).mockReturnValue(
-      'unverified'
+      'disabled'
     );
     spyGetToolcachePath = util.getToolcachePath as jest.Mock;
     spyGetToolcachePath.mockImplementation(
@@ -283,7 +283,7 @@ describe('setupJava', () => {
           expect.objectContaining({
             distribution: 'jdkfile',
             version: actualJavaVersion,
-            verification: 'unverified'
+            verification: 'disabled'
           })
         );
       } finally {

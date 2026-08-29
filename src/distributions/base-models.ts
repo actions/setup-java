@@ -1,3 +1,5 @@
+export type SignatureVerificationKey = string | readonly string[];
+
 export interface JavaInstallerOptions {
   version: string;
   architecture: string;
@@ -7,7 +9,7 @@ export interface JavaInstallerOptions {
   cacheJdk?: boolean;
   setDefault?: boolean;
   verifySignature?: boolean;
-  verifySignaturePublicKey?: string;
+  verifySignaturePublicKey?: SignatureVerificationKey;
 }
 
 export interface JavaInstallerResults {

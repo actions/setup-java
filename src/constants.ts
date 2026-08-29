@@ -12,6 +12,9 @@ export const INPUT_SET_DEFAULT = 'set-default';
 export const INPUT_PROBLEM_MATCHER = 'problem-matcher';
 export const INPUT_VERIFY_SIGNATURE = 'verify-signature';
 export const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
+export const SIGNATURE_VERIFICATION_DOCUMENTATION_URL =
+  'https://github.com/actions/setup-java#download-integrity-and-signatures';
+export const SIGNATURE_VERIFICATION_FAILURE_HELP = `If this is a legitimate vendor signing-key rotation, see ${SIGNATURE_VERIFICATION_DOCUMENTATION_URL} for instructions to configure the updated public key or temporarily disable signature verification.`;
 export const INPUT_MVN_SERVER_CREDENTIALS = 'mvn-server-credentials';
 export const INPUT_MVN_REPOSITORIES = 'mvn-repositories';
 export const INPUT_MVN_REPOSITORIES_INCLUDE_CENTRAL =

@@ -65,7 +65,7 @@ export class LocalDistribution extends JavaBase {
           architecture: this.architecture,
           version: this.version,
           source,
-          verification: getJdkVerificationIdentity(false),
+          verification: getJdkVerificationIdentity(false, false),
           path: this.getJdkCachePath(this.version)
         };
       }

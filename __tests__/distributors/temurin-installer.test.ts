@@ -73,6 +73,7 @@ jest.unstable_mockModule('../../src/util.js', () => ({
 jest.unstable_mockModule('../../src/gpg.js', () => ({
   importKey: jest.fn(),
   removeGpgHome: jest.fn(),
+  isGpgAvailable: jest.fn(),
   verifyPackageSignature: jest.fn()
 }));
 
@@ -437,6 +438,7 @@ describe('downloadTool', () => {
   beforeEach(() => {
     spyDownloadTool = tc.downloadTool as jest.Mock;
     spyDownloadTool.mockResolvedValue('/tmp/jdk.tar.gz');
+    (gpg.isGpgAvailable as jest.Mock).mockResolvedValue(true);
     spyVerifySignature = gpg.verifyPackageSignature as jest.Mock;
     spyVerifySignature.mockResolvedValue(undefined);
     spyExtractJdkFile = util.extractJdkFile as jest.Mock;
@@ -499,6 +501,133 @@ describe('downloadTool', () => {
       signatureUrl: 'https://example.com/jdk.tar.gz.sig'
     });
 
+    expect(spyVerifySignature).not.toHaveBeenCalled();
+  });
+
+  it('skips implicit signature verification when gpg is unavailable', async () => {
+    (gpg.isGpgAvailable as jest.Mock).mockResolvedValue(false);
+    const distribution = new TemurinDistribution(
+      {
+        version: '17',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
+      TemurinImplementation.Hotspot
+    );
+
+    await expect(
+      distribution['downloadTool']({
+        version: '17.0.14+7',
+        url: 'https://example.com/jdk.tar.gz',
+        signatureUrl: 'https://example.com/jdk.tar.gz.sig'
+      })
+    ).resolves.toEqual({version: '17.0.14+7', path: '/tmp/toolcache'});
+
+    expect(spyVerifySignature).not.toHaveBeenCalled();
+    expect(core.warning).toHaveBeenCalledWith(
+      "Input 'verify-signature' is enabled, but gpg is not available."
+    );
+  });
+
+  it('fails when signature verification is explicitly enabled without gpg', async () => {
+    (gpg.isGpgAvailable as jest.Mock).mockResolvedValue(false);
+    const distribution = new TemurinDistribution(
+      {
+        version: '17',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false,
+        verifySignature: true
+      },
+      TemurinImplementation.Hotspot
+    );
+
+    await expect(
+      distribution['downloadTool']({
+        version: '17.0.14+7',
+        url: 'https://example.com/jdk.tar.gz',
+        signatureUrl: 'https://example.com/jdk.tar.gz.sig'
+      })
+    ).rejects.toThrow(
+      "Input 'verify-signature' is enabled, but gpg is not available."
+    );
+
+    expect(spyVerifySignature).not.toHaveBeenCalled();
+  });
+
+  it('warns when implicit signature verification fails', async () => {
+    spyVerifySignature.mockRejectedValue(new Error('bad signature'));
+    const distribution = new TemurinDistribution(
+      {
+        version: '17',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
+      TemurinImplementation.Hotspot
+    );
+
+    await expect(
+      distribution['downloadTool']({
+        version: '17.0.14+7',
+        url: 'https://example.com/jdk.tar.gz',
+        signatureUrl: 'https://example.com/jdk.tar.gz.sig'
+      })
+    ).resolves.toEqual({version: '17.0.14+7', path: '/tmp/toolcache'});
+
+    expect(core.warning).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'https://github.com/actions/setup-java#download-integrity-and-signatures'
+      )
+    );
+  });
+
+  it('fails when explicitly requested signature verification fails', async () => {
+    spyVerifySignature.mockRejectedValue(new Error('bad signature'));
+    const distribution = new TemurinDistribution(
+      {
+        version: '17',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false,
+        verifySignature: true
+      },
+      TemurinImplementation.Hotspot
+    );
+
+    await expect(
+      distribution['downloadTool']({
+        version: '17.0.14+7',
+        url: 'https://example.com/jdk.tar.gz',
+        signatureUrl: 'https://example.com/jdk.tar.gz.sig'
+      })
+    ).rejects.toThrow(
+      /Failed to verify signature for Temurin version 17\.0\.14\+7.*bad signature.*https:\/\/github\.com\/actions\/setup-java#download-integrity-and-signatures/
+    );
+  });
+
+  it('warns when a signature is missing and verification is implicit', async () => {
+    const distribution = new TemurinDistribution(
+      {
+        version: '17',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      },
+      TemurinImplementation.Hotspot
+    );
+
+    await expect(
+      distribution['downloadTool']({
+        version: '17.0.14+7',
+        url: 'https://example.com/jdk.tar.gz'
+      })
+    ).resolves.toEqual({version: '17.0.14+7', path: '/tmp/toolcache'});
+
+    expect(core.warning).toHaveBeenCalledWith(
+      "Input 'verify-signature' is enabled, but no signature URL was found for Temurin version 17.0.14+7."
+    );
     expect(spyVerifySignature).not.toHaveBeenCalled();
   });
 

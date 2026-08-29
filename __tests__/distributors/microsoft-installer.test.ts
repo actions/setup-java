@@ -444,6 +444,64 @@ describe('downloadTool', () => {
     );
   });
 
+  it('warns with key rotation recovery guidance when default verification fails', async () => {
+    spyVerifySignature.mockRejectedValue(new Error('bad signature'));
+    const signedDistribution = new MicrosoftDistributions({
+      version: '17',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    await signedDistribution['downloadTool']({
+      version: '17.0.14+7',
+      url: 'https://example.com/jdk.tar.gz',
+      signatureUrl: 'https://example.com/jdk.tar.gz.sig'
+    });
+
+    expect(core.warning).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /bad signature.*https:\/\/github\.com\/actions\/setup-java#download-integrity-and-signatures/
+      )
+    );
+    expect(spyExtractJdkFile).toHaveBeenCalled();
+  });
+
+  it('fails with recovery guidance when verification is explicitly enabled', async () => {
+    spyVerifySignature.mockRejectedValue(new Error('bad signature'));
+    const signedDistribution = new MicrosoftDistributions({
+      version: '17',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false,
+      verifySignature: true
+    });
+
+    await expect(
+      signedDistribution['downloadTool']({
+        version: '17.0.14+7',
+        url: 'https://example.com/jdk.tar.gz',
+        signatureUrl: 'https://example.com/jdk.tar.gz.sig'
+      })
+    ).rejects.toThrow(
+      /bad signature.*https:\/\/github\.com\/actions\/setup-java#download-integrity-and-signatures/
+    );
+    expect(spyExtractJdkFile).not.toHaveBeenCalled();
+  });
+
+  it('warns when the signature is missing during default verification', async () => {
+    await distribution['downloadTool']({
+      version: '17.0.14+7',
+      url: 'https://example.com/jdk.tar.gz'
+    });
+
+    expect(core.warning).toHaveBeenCalledWith(
+      "Input 'verify-signature' is enabled, but no signature URL was found for Microsoft Build of OpenJDK version 17.0.14+7."
+    );
+    expect(spyVerifySignature).not.toHaveBeenCalled();
+    expect(spyExtractJdkFile).toHaveBeenCalled();
+  });
+
   it('fails when signature is missing and verification is enabled', async () => {
     const signedDistribution = new MicrosoftDistributions({
       version: '17',

@@ -393,7 +393,7 @@ function createRegisteredJdk(version = '21.0.8+9') {
     architecture: 'x64',
     version,
     source: `sha256:${path.basename(root)}`,
-    verification: 'unverified',
+    verification: 'disabled',
     path: jdkPath
   };
   registerJdk(jdk);

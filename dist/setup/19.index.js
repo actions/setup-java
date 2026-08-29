@@ -65,7 +65,7 @@ class LocalDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_3__/
                     architecture: this.architecture,
                     version: this.version,
                     source,
-                    verification: getJdkVerificationIdentity(false),
+                    verification: getJdkVerificationIdentity(false, false),
                     path: this.getJdkCachePath(this.version)
                 };
             }
