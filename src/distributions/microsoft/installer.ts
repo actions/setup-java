@@ -12,6 +12,7 @@ import {
 } from '../../util.js';
 import * as gpg from '../../gpg.js';
 import {MICROSOFT_PUBLIC_KEY} from './microsoft-key.js';
+import {SIGNATURE_VERIFICATION_FAILURE_HELP} from '../../constants.js';
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
 import fs from 'fs';
@@ -34,22 +35,31 @@ export class MicrosoftDistributions extends JavaBase {
     let javaArchivePath = await this.downloadAndVerify(javaRelease);
 
     if (this.verifySignature) {
-      if (!javaRelease.signatureUrl) {
-        throw new Error(
-          `Input 'verify-signature' is enabled, but no signature URL was found for Microsoft Build of OpenJDK version ${javaRelease.version}.`
-        );
-      }
-      core.info(`Verifying Java package signature...`);
       try {
-        await gpg.verifyPackageSignature(
-          javaArchivePath,
-          javaRelease.signatureUrl,
-          this.verifySignaturePublicKey ?? MICROSOFT_PUBLIC_KEY
-        );
+        if (!javaRelease.signatureUrl) {
+          throw new Error(
+            `Input 'verify-signature' is enabled, but no signature URL was found for Microsoft Build of OpenJDK version ${javaRelease.version}.`
+          );
+        }
+        core.info(`Verifying Java package signature...`);
+        try {
+          await gpg.verifyPackageSignature(
+            javaArchivePath,
+            javaRelease.signatureUrl,
+            this.verifySignaturePublicKey ?? MICROSOFT_PUBLIC_KEY
+          );
+        } catch (error) {
+          throw new Error(
+            `Failed to verify signature for Microsoft Build of OpenJDK version ${javaRelease.version}. Signature URL: ${javaRelease.signatureUrl}. Error: ${(error as Error).message} ${SIGNATURE_VERIFICATION_FAILURE_HELP}`,
+            {cause: error}
+          );
+        }
       } catch (error) {
-        throw new Error(
-          `Failed to verify signature for Microsoft Build of OpenJDK version ${javaRelease.version}. Signature URL: ${javaRelease.signatureUrl}. Error: ${(error as Error).message}`,
-          {cause: error}
+        if (this.verifySignatureExplicitlyRequested) {
+          throw error;
+        }
+        core.warning(
+          error instanceof Error ? error.message : `Unknown error: ${error}`
         );
       }
     }

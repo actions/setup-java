@@ -4,6 +4,7 @@ import path from 'path';
 import * as cache from '@actions/cache';
 import * as core from '@actions/core';
 import {isCacheFeatureAvailable} from './cache-feature.js';
+import type {SignatureVerificationKey} from './distributions/base-models.js';
 
 const STATE_JDK_CACHES = 'jdk-caches';
 const JDK_CACHE_KEY_VERSION = 1;
@@ -117,18 +118,30 @@ function getInstallationIdentity(
 
 export function getJdkVerificationIdentity(
   verifySignature: boolean,
-  publicKey?: string
+  enforceSignatureVerification: boolean,
+  publicKey?: SignatureVerificationKey
 ): string {
   if (!verifySignature) {
-    return 'unverified';
+    return 'disabled';
   }
+  const verificationPolicy = enforceSignatureVerification
+    ? 'enforced'
+    : 'check-and-warn';
   if (!publicKey) {
-    return 'verified:bundled';
+    return `${verificationPolicy}:bundled`;
   }
 
-  const normalizedKey = publicKey.replace(/\r\n?/g, '\n').trim();
-  const fingerprint = createHash('sha256').update(normalizedKey).digest('hex');
-  return `verified:custom:sha256:${fingerprint}`;
+  const publicKeys = Array.isArray(publicKey) ? publicKey : [publicKey];
+  const normalizedKeys = publicKeys.map(key =>
+    key.replace(/\r\n?/g, '\n').trim()
+  );
+  const fingerprintSource = Array.isArray(publicKey)
+    ? normalizedKeys.map(key => `${Buffer.byteLength(key)}:${key}`).join('')
+    : normalizedKeys[0];
+  const fingerprint = createHash('sha256')
+    .update(fingerprintSource)
+    .digest('hex');
+  return `${verificationPolicy}:custom:sha256:${fingerprint}`;
 }
 
 export async function saveJdkCaches(): Promise<void> {

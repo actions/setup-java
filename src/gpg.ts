@@ -5,10 +5,15 @@ import * as io from '@actions/io';
 import * as exec from '@actions/exec';
 import * as tc from '@actions/tool-cache';
 import * as util from './util.js';
-import {ExecOptions} from '@actions/exec';
+import type {ExecOptions} from '@actions/exec';
+import type {SignatureVerificationKey} from './distributions/base-models.js';
 
 export const GPG_HOME_PREFIX = 'setup-java-gpg-';
 const VERIFY_GPG_HOME_PREFIX = 'verify-signature-gpg-home-';
+
+export async function isGpgAvailable(): Promise<boolean> {
+  return Boolean(await io.which('gpg', false));
+}
 
 // Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
 // The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
@@ -97,7 +102,7 @@ export async function removeGpgHome(gpgHome: string): Promise<void> {
 export async function verifyPackageSignature(
   archivePath: string,
   signatureUrl: string,
-  publicKeyContent: string
+  publicKeyContent: SignatureVerificationKey
 ) {
   const signaturePath = await tc.downloadTool(signatureUrl);
   let gpgHome: string;
@@ -117,8 +122,14 @@ export async function verifyPackageSignature(
     );
   }
   try {
-    const publicKeyFile = path.join(gpgHome, 'public-key.asc');
-    fs.writeFileSync(publicKeyFile, publicKeyContent, {encoding: 'utf-8'});
+    const publicKeys = Array.isArray(publicKeyContent)
+      ? publicKeyContent
+      : [publicKeyContent];
+    const publicKeyFiles = publicKeys.map((publicKey, index) => {
+      const publicKeyFile = path.join(gpgHome, `public-key-${index}.asc`);
+      fs.writeFileSync(publicKeyFile, publicKey, {encoding: 'utf-8'});
+      return toGpgPath(publicKeyFile);
+    });
     const options: ExecOptions = {silent: true};
     await exec.exec(
       'gpg',
@@ -127,7 +138,7 @@ export async function verifyPackageSignature(
         toGpgPath(gpgHome),
         '--batch',
         '--import',
-        toGpgPath(publicKeyFile)
+        ...publicKeyFiles
       ],
       options
     );

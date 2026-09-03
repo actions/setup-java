@@ -42,6 +42,8 @@ Fa133tP85xzJEq1XeXm8WeLFo2wV
 =rHCS
 -----END PGP PUBLIC KEY BLOCK-----`;
 
+// EXTERNAL MODULE: ./src/constants.ts
+var constants = __webpack_require__(7242);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 7 modules
 var core = __webpack_require__(3838);
 // EXTERNAL MODULE: ./node_modules/@actions/tool-cache/lib/tool-cache.js + 2 modules
@@ -62,6 +64,7 @@ var external_path_default = /*#__PURE__*/__webpack_require__.n(external_path_);
 
 
 
+
 class MicrosoftDistributions extends base_installer/* JavaBase */.O {
     constructor(installerOptions) {
         super('Microsoft', installerOptions);
@@ -70,15 +73,23 @@ class MicrosoftDistributions extends base_installer/* JavaBase */.O {
         core/* info */.pq(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);
         let javaArchivePath = await this.downloadAndVerify(javaRelease);
         if (this.verifySignature) {
-            if (!javaRelease.signatureUrl) {
-                throw new Error(`Input 'verify-signature' is enabled, but no signature URL was found for Microsoft Build of OpenJDK version ${javaRelease.version}.`);
-            }
-            core/* info */.pq(`Verifying Java package signature...`);
             try {
-                await gpg/* verifyPackageSignature */.Yi(javaArchivePath, javaRelease.signatureUrl, this.verifySignaturePublicKey ?? MICROSOFT_PUBLIC_KEY);
+                if (!javaRelease.signatureUrl) {
+                    throw new Error(`Input 'verify-signature' is enabled, but no signature URL was found for Microsoft Build of OpenJDK version ${javaRelease.version}.`);
+                }
+                core/* info */.pq(`Verifying Java package signature...`);
+                try {
+                    await gpg/* verifyPackageSignature */.Yi(javaArchivePath, javaRelease.signatureUrl, this.verifySignaturePublicKey ?? MICROSOFT_PUBLIC_KEY);
+                }
+                catch (error) {
+                    throw new Error(`Failed to verify signature for Microsoft Build of OpenJDK version ${javaRelease.version}. Signature URL: ${javaRelease.signatureUrl}. Error: ${error.message} ${constants/* SIGNATURE_VERIFICATION_FAILURE_HELP */.kQ}`, { cause: error });
+                }
             }
             catch (error) {
-                throw new Error(`Failed to verify signature for Microsoft Build of OpenJDK version ${javaRelease.version}. Signature URL: ${javaRelease.signatureUrl}. Error: ${error.message}`, { cause: error });
+                if (this.verifySignatureExplicitlyRequested) {
+                    throw error;
+                }
+                core/* warning */.$e(error instanceof Error ? error.message : `Unknown error: ${error}`);
             }
         }
         core/* info */.pq(`Extracting Java archive...`);
@@ -167,7 +178,8 @@ class MicrosoftDistributions extends base_installer/* JavaBase */.O {
 /* harmony export */   Fh: () => (/* binding */ importKey),
 /* harmony export */   Yi: () => (/* binding */ verifyPackageSignature),
 /* harmony export */   mS: () => (/* binding */ removeGpgHome),
-/* harmony export */   nY: () => (/* binding */ toGpgPath)
+/* harmony export */   nY: () => (/* binding */ toGpgPath),
+/* harmony export */   o6: () => (/* binding */ isGpgAvailable)
 /* harmony export */ });
 /* unused harmony export GPG_HOME_PREFIX */
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9896);
@@ -189,6 +201,9 @@ class MicrosoftDistributions extends base_installer/* JavaBase */.O {
 
 const GPG_HOME_PREFIX = 'setup-java-gpg-';
 const VERIFY_GPG_HOME_PREFIX = 'verify-signature-gpg-home-';
+async function isGpgAvailable() {
+    return Boolean(await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .which */ .K7('gpg', false));
+}
 // Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
 // The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
 // internally. Passing Windows paths with backslashes can cause fatal GPG errors
@@ -272,15 +287,21 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
         throw new Error(`Failed to create temporary GPG home directory for signature verification: ${error.message}`, { cause: error });
     }
     try {
-        const publicKeyFile = path__WEBPACK_IMPORTED_MODULE_1__.join(gpgHome, 'public-key.asc');
-        fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(publicKeyFile, publicKeyContent, { encoding: 'utf-8' });
+        const publicKeys = Array.isArray(publicKeyContent)
+            ? publicKeyContent
+            : [publicKeyContent];
+        const publicKeyFiles = publicKeys.map((publicKey, index) => {
+            const publicKeyFile = path__WEBPACK_IMPORTED_MODULE_1__.join(gpgHome, `public-key-${index}.asc`);
+            fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(publicKeyFile, publicKey, { encoding: 'utf-8' });
+            return toGpgPath(publicKeyFile);
+        });
         const options = { silent: true };
         await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpg', [
             '--homedir',
             toGpgPath(gpgHome),
             '--batch',
             '--import',
-            toGpgPath(publicKeyFile)
+            ...publicKeyFiles
         ], options);
         await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpg', [
             '--homedir',

@@ -539,18 +539,27 @@ tool-cache installation short-circuits setup, so a changed `jdk-file` is not
 re-extracted for a version that is already installed. Use
 `force-download: true` when the archive contents change but the version does not.
 
-The verification identity separates unverified downloads from packages verified
-with the distribution's bundled signing key and from packages verified with each
-custom key. Custom public keys are represented by a SHA-256 fingerprint of
-normalized key material; the key itself is not placed in the cache key, the logs,
-or action state. A verified exact-key hit reuses content that was
-signature-verified when it was downloaded by the run that saved the entry,
-instead of downloading and verifying it again.
+The verification identity separates requests that disable signature verification,
+check and warn without enforcement, or explicitly enforce verification. Disabled
+and check-and-warn requests have the same non-enforcement guarantee, but they are
+kept separate so an entry downloaded with verification disabled cannot prevent a
+later check-and-warn request from attempting verification. The identity also
+separates the distribution's bundled signing keys from custom keys. Custom
+public-key sets are represented by a SHA-256 fingerprint of normalized,
+boundary-delimited key material; the keys themselves are not placed in the cache
+key, the logs, or action state. Enforced requests only restore entries created by
+an enforced request whose signature verification succeeded. Check-and-warn entries
+may have been saved after verification succeeded or after a verification failure
+was reported as a warning.
+
+For signature-verification defaults, enforced failure behavior, and recovery from
+a legitimate vendor signing-key rotation, see
+[Download integrity and signatures](../README.md#download-integrity-and-signatures).
 
 > [!IMPORTANT]
-> The JDK cache **key** is what isolates verification modes and release
-> identity: a JDK cache entry created by an unverified download can never be
-> restored for a request that sets `verify-signature: true`, and vice versa.
+> The JDK cache **key** isolates disabled, check-and-warn, and enforced verification
+> modes as well as release identity. A check-and-warn entry can never be restored
+> for a request that sets `verify-signature: true`, and vice versa.
 > `cache-jdk` does not change how the runner tool cache is used. setup-java
 > first looks for an installation in the runner tool cache — a preinstalled
 > JDK, or one installed by an earlier step of the same job — and uses it as-is. Such an installation is not downloaded again, and its checksum

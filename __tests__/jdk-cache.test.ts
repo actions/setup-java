@@ -43,7 +43,7 @@ const jdk = {
   architecture: 'x64',
   version: '21.0.8+9',
   source: 'sha256:abc123',
-  verification: 'unverified',
+  verification: 'disabled',
   path: '/toolcache/Java_temurin_jdk/21.0.8-9'
 };
 
@@ -117,32 +117,59 @@ describe('JDK cache', () => {
     );
   });
 
-  it('separates unverified, bundled-key, and custom-key caches', () => {
-    const unverified = getJdkVerificationIdentity(false);
-    const bundled = getJdkVerificationIdentity(true);
+  it('separates verification policies and keys', () => {
+    const disabled = getJdkVerificationIdentity(false, false);
+    const checkAndWarnBundled = getJdkVerificationIdentity(true, false);
+    const enforcedBundled = getJdkVerificationIdentity(true, true);
     const customA = getJdkVerificationIdentity(
+      true,
       true,
       '-----BEGIN PGP PUBLIC KEY BLOCK-----\r\nkey-a\r\n-----END PGP PUBLIC KEY BLOCK-----\r\n'
     );
     const customANormalized = getJdkVerificationIdentity(
       true,
+      true,
       '-----BEGIN PGP PUBLIC KEY BLOCK-----\nkey-a\n-----END PGP PUBLIC KEY BLOCK-----'
     );
-    const customB = getJdkVerificationIdentity(true, 'different-key');
-
-    expect(new Set([unverified, bundled, customA, customB])).toHaveProperty(
-      'size',
-      4
+    const customB = getJdkVerificationIdentity(true, true, 'different-key');
+    const checkAndWarnCustomA = getJdkVerificationIdentity(
+      true,
+      false,
+      '-----BEGIN PGP PUBLIC KEY BLOCK-----\nkey-a\n-----END PGP PUBLIC KEY BLOCK-----'
     );
+    const customList = getJdkVerificationIdentity(true, true, [
+      'key-a',
+      'key-b'
+    ]);
+    const customListWithDifferentBoundary = getJdkVerificationIdentity(
+      true,
+      true,
+      ['key-ak', 'ey-b']
+    );
+
+    expect(
+      new Set([
+        disabled,
+        checkAndWarnBundled,
+        enforcedBundled,
+        customA,
+        customB
+      ])
+    ).toHaveProperty('size', 5);
+    expect(disabled).toBe('disabled');
+    expect(checkAndWarnBundled).toBe('check-and-warn:bundled');
+    expect(enforcedBundled).toBe('enforced:bundled');
+    expect(checkAndWarnCustomA).not.toBe(customA);
     expect(customA).toBe(customANormalized);
     expect(customA).not.toContain('key-a');
+    expect(customList).not.toBe(customListWithDifferentBoundary);
     expect(
       new Set(
-        [unverified, bundled, customA, customB].map(verification =>
-          buildJdkCacheKey({...jdk, verification})
+        [disabled, checkAndWarnBundled, enforcedBundled, customA, customB].map(
+          verification => buildJdkCacheKey({...jdk, verification})
         )
       )
-    ).toHaveProperty('size', 4);
+    ).toHaveProperty('size', 5);
   });
 
   it('restores and records an exact JDK cache hit', async () => {
@@ -210,12 +237,12 @@ describe('JDK cache', () => {
 
   it('saves only the key matching the installation that occupies the path', async () => {
     const jdkPath = createInstallation();
-    const verified = {...jdk, path: jdkPath, verification: 'verified:bundled'};
-    const unverified = {...jdk, path: jdkPath};
+    const enforced = {...jdk, path: jdkPath, verification: 'enforced:bundled'};
+    const disabled = {...jdk, path: jdkPath};
 
-    registerJdk(verified);
+    registerJdk(enforced);
     writeInstallation(jdkPath, 'force-downloaded-without-verification');
-    registerJdk(unverified);
+    registerJdk(disabled);
     (core.getState as jest.Mock).mockReturnValue(lastState());
     (cache.saveCache as jest.Mock).mockResolvedValue(1);
 
@@ -223,11 +250,11 @@ describe('JDK cache', () => {
 
     expect(cache.saveCache).not.toHaveBeenCalledWith(
       [jdkPath],
-      buildJdkCacheKey(verified)
+      buildJdkCacheKey(enforced)
     );
     expect(cache.saveCache).toHaveBeenCalledWith(
       [jdkPath],
-      buildJdkCacheKey(unverified)
+      buildJdkCacheKey(disabled)
     );
   });
 
