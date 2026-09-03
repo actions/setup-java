@@ -340,6 +340,7 @@ jobs:
         with:
           java-version: ${{ matrix.version }}
           distribution: ${{ matrix.distribution }}
+          verify-signature: ${{ matrix.distribution == 'temurin' && contains(matrix.version, '-ea') && 'false' || '' }}
       - name: Verify Java
         env:
           JAVA_VERSION: ${{ matrix.version }}
