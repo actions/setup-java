@@ -154,8 +154,8 @@ jobs:
         version: ['21', '17']
     steps:
       - *checkout_step
-      - name: Install bash
-        run: apk add --no-cache bash
+      - name: Install bash and GnuPG
+        run: apk add --no-cache bash gnupg
       - name: setup-java
         uses: ./
         id: setup-java
