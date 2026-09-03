@@ -111,7 +111,6 @@ jobs:
         with:
           java-version: ${{ matrix.version }}
           distribution: ${{ matrix.distribution }}
-          verify-signature: ${{ matrix.distribution != 'temurin' || !contains(matrix.version, '-ea') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Verify Java
@@ -163,7 +162,6 @@ jobs:
         with:
           java-version: ${{ matrix.version }}
           distribution: ${{ matrix.distribution }}
-          verify-signature: ${{ matrix.distribution != 'temurin' || !contains(matrix.version, '-ea') }}
       - name: Verify Java
         env:
           JAVA_VERSION: ${{ matrix.version }}
@@ -342,6 +340,7 @@ jobs:
         with:
           java-version: ${{ matrix.version }}
           distribution: ${{ matrix.distribution }}
+          verify-signature: ${{ matrix.distribution == 'temurin' && contains(matrix.version, '-ea') && 'false' || '' }}
       - name: Verify Java
         env:
           JAVA_VERSION: ${{ matrix.version }}
