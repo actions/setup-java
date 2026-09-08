@@ -36480,7 +36480,7 @@ async function validateCacheInput(cache) {
 function settle(promise) {
     return promise.then(value => ({ status: 'fulfilled', value }), reason => ({ status: 'rejected', reason }));
 }
-if (process.argv[1] === (0,external_url_.fileURLToPath)(import.meta.url)) {
+if (external_fs_default().realpathSync(process.argv[1]) === (0,external_url_.fileURLToPath)(import.meta.url)) {
     run();
 }
 else {

@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as gpg from './gpg.js';
 import * as constants from './constants.js';
+import fs from 'fs';
 import {
   getBooleanInput,
   isJdkCacheEnabled,
@@ -77,7 +78,7 @@ export async function run() {
   await ignoreError(saveCaches());
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (fs.realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   run();
 } else {
   // https://nodejs.org/api/modules.html#modules_accessing_the_main_module

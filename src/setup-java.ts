@@ -172,7 +172,7 @@ function settle<T>(promise: Promise<T>): Promise<PromiseSettledResult<T>> {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (fs.realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   run();
 } else {
   // https://nodejs.org/api/modules.html#modules_accessing_the_main_module

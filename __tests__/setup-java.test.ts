@@ -27,7 +27,8 @@ jest.unstable_mockModule('@actions/core', () => ({
 
 jest.unstable_mockModule('fs', () => ({
   default: {
-    readFileSync: jest.fn()
+    readFileSync: jest.fn(),
+    realpathSync: jest.fn()
   }
 }));
 

@@ -35747,6 +35747,7 @@ __nccwpck_require__.d(__webpack_exports__, {
 var cleanup_java_core = __nccwpck_require__(3838);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(9896);
+var external_fs_default = /*#__PURE__*/__nccwpck_require__.n(external_fs_);
 // EXTERNAL MODULE: external "path"
 var external_path_ = __nccwpck_require__(6928);
 // EXTERNAL MODULE: external "crypto"
@@ -35896,6 +35897,7 @@ var external_url_ = __nccwpck_require__(7016);
 
 
 
+
 async function cleanup_java_removeGpgHome() {
     const gpgHome = cleanup_java_core/* getState */.Gu(constants/* STATE_GPG_HOME */.Fi);
     if (!gpgHome) {
@@ -35957,7 +35959,7 @@ async function run() {
     await cleanup_java_removeGpgHome();
     await ignoreError(saveCaches());
 }
-if (process.argv[1] === (0,external_url_.fileURLToPath)(import.meta.url)) {
+if (external_fs_default().realpathSync(process.argv[1]) === (0,external_url_.fileURLToPath)(import.meta.url)) {
     run();
 }
 else {
