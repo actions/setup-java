@@ -6,7 +6,7 @@ import {
   isJdkCacheEnabled,
   isJobStatusSuccess
 } from './util.js';
-import {fileURLToPath} from 'url';
+import {isMainModule} from './is-main-module.js';
 
 async function removeGpgHome() {
   const gpgHome = core.getState(constants.STATE_GPG_HOME);
@@ -77,7 +77,7 @@ export async function run() {
   await ignoreError(saveCaches());
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (isMainModule(import.meta.url)) {
   run();
 } else {
   // https://nodejs.org/api/modules.html#modules_accessing_the_main_module

@@ -36354,7 +36354,32 @@ function configureProblemMatcher(matcherPath) {
 
 // EXTERNAL MODULE: ./src/toolchain-ids.ts
 var toolchain_ids = __nccwpck_require__(7083);
+;// CONCATENATED MODULE: ./src/is-main-module.ts
+
+
+function isMainModule(moduleUrl) {
+    const entrypoint = process.argv[1];
+    if (!entrypoint || entrypoint === '-') {
+        return false;
+    }
+    let entrypointPath;
+    try {
+        entrypointPath = external_fs_default().realpathSync(entrypoint);
+    }
+    catch (error) {
+        if (error instanceof Error &&
+            'code' in error &&
+            (error.code === 'ENOENT' || error.code === 'ENOTDIR')) {
+            return false;
+        }
+        throw error;
+    }
+    // Resolve both paths for runtimes using --preserve-symlinks-main.
+    return entrypointPath === external_fs_default().realpathSync((0,external_url_.fileURLToPath)(moduleUrl));
+}
+
 ;// CONCATENATED MODULE: ./src/setup-java.ts
+
 
 
 
@@ -36480,7 +36505,7 @@ async function validateCacheInput(cache) {
 function settle(promise) {
     return promise.then(value => ({ status: 'fulfilled', value }), reason => ({ status: 'rejected', reason }));
 }
-if (process.argv[1] === (0,external_url_.fileURLToPath)(import.meta.url)) {
+if (isMainModule(import.meta.url)) {
     run();
 }
 else {

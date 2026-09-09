@@ -12,6 +12,7 @@ import {getJavaDistribution} from './distributions/distribution-factory.js';
 import {JavaInstallerOptions} from './distributions/base-models.js';
 import {configureProblemMatcher} from './problem-matcher.js';
 import {validateToolchainIds} from './toolchain-ids.js';
+import {isMainModule} from './is-main-module.js';
 
 export async function run() {
   const versions = core.getMultilineInput(constants.INPUT_JAVA_VERSION);
@@ -172,7 +173,7 @@ function settle<T>(promise: Promise<T>): Promise<PromiseSettledResult<T>> {
   );
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
+if (isMainModule(import.meta.url)) {
   run();
 } else {
   // https://nodejs.org/api/modules.html#modules_accessing_the_main_module
