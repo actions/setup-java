@@ -35747,8 +35747,6 @@ __nccwpck_require__.d(__webpack_exports__, {
 var cleanup_java_core = __nccwpck_require__(3838);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(9896);
-// EXTERNAL MODULE: external "os"
-var external_os_ = __nccwpck_require__(857);
 // EXTERNAL MODULE: external "path"
 var external_path_ = __nccwpck_require__(6928);
 // EXTERNAL MODULE: external "crypto"
@@ -35762,7 +35760,6 @@ var tool_cache = __nccwpck_require__(9805);
 // EXTERNAL MODULE: ./src/util.ts
 var src_util = __nccwpck_require__(4527);
 ;// CONCATENATED MODULE: ./src/gpg.ts
-
 
 
 
@@ -35846,8 +35843,9 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
     const signaturePath = await tc.downloadTool(signatureUrl);
     let gpgHome;
     try {
-        // Long RUNNER_TEMP paths can exceed macOS's 104-byte gpg-agent socket limit.
-        gpgHome = createGpgHome(VERIFY_GPG_HOME_PREFIX, os.tmpdir());
+        // Both RUNNER_TEMP and TMPDIR can exceed macOS's 104-byte agent socket limit.
+        const tempDir = process.platform === 'darwin' ? '/tmp' : util.getTempDir();
+        gpgHome = createGpgHome(VERIFY_GPG_HOME_PREFIX, tempDir);
     }
     catch (error) {
         try {

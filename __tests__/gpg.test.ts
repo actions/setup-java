@@ -14,6 +14,13 @@ import * as path from 'path';
 import * as io from '@actions/io';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const mockTmpDir = jest.fn(os.tmpdir);
+
+jest.unstable_mockModule('os', () => ({
+  ...os,
+  default: {...os, tmpdir: mockTmpDir},
+  tmpdir: mockTmpDir
+}));
 
 jest.unstable_mockModule('@actions/exec', () => ({
   exec: jest.fn()
@@ -35,6 +42,7 @@ describe('gpg tests', () => {
     await io.rmRF(tempDir);
     await io.mkdirP(tempDir);
     jest.clearAllMocks();
+    mockTmpDir.mockImplementation(os.tmpdir);
     (exec.exec as jest.Mock<any>).mockResolvedValue(0);
   });
 
@@ -223,40 +231,57 @@ describe('gpg tests', () => {
   });
 
   describe('verifyPackageSignature', () => {
-    it.each(['success', 'import failure', 'verification failure'])(
-      'uses the OS temp directory with a long RUNNER_TEMP and cleans up after %s',
-      async outcome => {
-        const longRunnerTemp = path.join(
-          tempDir,
-          'long-runner-path-'.repeat(8)
-        );
-        const signaturePath = path.join(tempDir, 'jdk.tar.gz.sig');
-        let gpgHome = '';
-        process.env['RUNNER_TEMP'] = longRunnerTemp;
-        fs.mkdirSync(longRunnerTemp, {recursive: true});
-        fs.writeFileSync(signaturePath, 'signature');
-        (tc.downloadTool as jest.Mock<any>).mockResolvedValue(signaturePath);
-        (exec.exec as jest.Mock<any>).mockImplementation(
-          async (_command: string, args: string[]) => {
-            gpgHome = path.join(os.tmpdir(), path.posix.basename(args[1]));
-            expect(args[1]).toBe(gpg.toGpgPath(gpgHome));
-            expect(
-              fs.readFileSync(path.join(gpgHome, 'public-key-0.asc'), 'utf8')
-            ).toBe('public key');
-            if (process.platform !== 'win32') {
-              expect(fs.statSync(gpgHome).mode & 0o777).toBe(0o700);
-            }
-            if (
-              (outcome === 'import failure' && args.includes('--import')) ||
-              (outcome === 'verification failure' && args.includes('--verify'))
-            ) {
-              throw new Error(outcome);
-            }
-            return 0;
-          }
-        );
+    describe.each(['long', 'canonical macOS'])('%s TMPDIR', tempDirKind => {
+      afterEach(() => {
+        process.env['RUNNER_TEMP'] = tempDir;
+      });
 
-        try {
+      it.each(['success', 'import failure', 'verification failure'])(
+        'uses a short macOS home or RUNNER_TEMP elsewhere and cleans up after %s',
+        async outcome => {
+          const longRunnerTemp = path.join(
+            tempDir,
+            'long-runner-path-'.repeat(8)
+          );
+          const signaturePath = path.join(tempDir, 'jdk.tar.gz.sig');
+          const expectedParent =
+            process.platform === 'darwin' ? '/tmp' : longRunnerTemp;
+          let gpgHome = '';
+          process.env['RUNNER_TEMP'] = longRunnerTemp;
+          mockTmpDir.mockReturnValue(
+            tempDirKind === 'long'
+              ? longRunnerTemp
+              : `/private/var/folders/ab/${'c'.repeat(31)}/T`
+          );
+          fs.mkdirSync(longRunnerTemp, {recursive: true});
+          fs.writeFileSync(signaturePath, 'signature');
+          (tc.downloadTool as jest.Mock<any>).mockResolvedValue(signaturePath);
+          (exec.exec as jest.Mock<any>).mockImplementation(
+            async (_command: string, args: string[]) => {
+              gpgHome = path.join(expectedParent, path.posix.basename(args[1]));
+              expect(args[1]).toBe(gpg.toGpgPath(gpgHome));
+              if (process.platform === 'darwin') {
+                expect(
+                  Buffer.byteLength(path.join(gpgHome, 'S.gpg-agent.browser'))
+                ).toBeLessThan(104);
+              }
+              expect(
+                fs.readFileSync(path.join(gpgHome, 'public-key-0.asc'), 'utf8')
+              ).toBe('public key');
+              if (process.platform !== 'win32') {
+                expect(fs.statSync(gpgHome).mode & 0o777).toBe(0o700);
+              }
+              if (
+                (outcome === 'import failure' && args.includes('--import')) ||
+                (outcome === 'verification failure' &&
+                  args.includes('--verify'))
+              ) {
+                throw new Error(outcome);
+              }
+              return 0;
+            }
+          );
+
           const verification = gpg.verifyPackageSignature(
             path.join(tempDir, 'jdk.tar.gz'),
             'https://example.com/jdk.tar.gz.sig',
@@ -273,11 +298,9 @@ describe('gpg tests', () => {
           expect(fs.existsSync(gpgHome)).toBe(false);
           expect(fs.existsSync(signaturePath)).toBe(false);
           expect(fs.readdirSync(longRunnerTemp)).toEqual([]);
-        } finally {
-          process.env['RUNNER_TEMP'] = tempDir;
         }
-      }
-    );
+      );
+    });
 
     it('imports bundled key and verifies package', async () => {
       const publicKeyContent =

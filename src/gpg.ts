@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
 import {randomUUID} from 'crypto';
 import * as io from '@actions/io';
@@ -111,8 +110,9 @@ export async function verifyPackageSignature(
   const signaturePath = await tc.downloadTool(signatureUrl);
   let gpgHome: string;
   try {
-    // Long RUNNER_TEMP paths can exceed macOS's 104-byte gpg-agent socket limit.
-    gpgHome = createGpgHome(VERIFY_GPG_HOME_PREFIX, os.tmpdir());
+    // Both RUNNER_TEMP and TMPDIR can exceed macOS's 104-byte agent socket limit.
+    const tempDir = process.platform === 'darwin' ? '/tmp' : util.getTempDir();
+    gpgHome = createGpgHome(VERIFY_GPG_HOME_PREFIX, tempDir);
   } catch (error) {
     try {
       await io.rmRF(signaturePath);

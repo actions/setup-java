@@ -184,17 +184,14 @@ class MicrosoftDistributions extends base_installer/* JavaBase */.O {
 /* unused harmony export GPG_HOME_PREFIX */
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9896);
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var os__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(857);
-/* harmony import */ var os__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(os__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6928);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var crypto__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6982);
-/* harmony import */ var crypto__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(crypto__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(8701);
-/* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(5260);
-/* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(9805);
-/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(4527);
-
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6928);
+/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var crypto__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(6982);
+/* harmony import */ var crypto__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(crypto__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var _actions_io__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8701);
+/* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(5260);
+/* harmony import */ var _actions_tool_cache__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(9805);
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(4527);
 
 
 
@@ -205,7 +202,7 @@ class MicrosoftDistributions extends base_installer/* JavaBase */.O {
 const GPG_HOME_PREFIX = 'setup-java-gpg-';
 const VERIFY_GPG_HOME_PREFIX = 'verify-signature-gpg-home-';
 async function isGpgAvailable() {
-    return Boolean(await _actions_io__WEBPACK_IMPORTED_MODULE_4__/* .which */ .K7('gpg', false));
+    return Boolean(await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .which */ .K7('gpg', false));
 }
 // Convert a Windows path (D:\a\_temp\...) to a POSIX path (/d/a/_temp/...).
 // The Git-bundled GPG on Windows (MSYS2-based) uses POSIX path conventions
@@ -218,8 +215,8 @@ function toGpgPath(p) {
         .replace(/\\/g, '/')
         .replace(/^([A-Za-z]):\//, (_, drive) => `/${drive.toLowerCase()}/`);
 }
-function createGpgHome(prefix, tempDir = _util_js__WEBPACK_IMPORTED_MODULE_7__/* .getTempDir */ .G4()) {
-    const gpgHome = fs__WEBPACK_IMPORTED_MODULE_0__.mkdtempSync(path__WEBPACK_IMPORTED_MODULE_2__.join(tempDir, prefix));
+function createGpgHome(prefix, tempDir = _util_js__WEBPACK_IMPORTED_MODULE_6__/* .getTempDir */ .G4()) {
+    const gpgHome = fs__WEBPACK_IMPORTED_MODULE_0__.mkdtempSync(path__WEBPACK_IMPORTED_MODULE_1__.join(tempDir, prefix));
     if (process.platform !== 'win32') {
         fs__WEBPACK_IMPORTED_MODULE_0__.chmodSync(gpgHome, 0o700);
     }
@@ -227,7 +224,7 @@ function createGpgHome(prefix, tempDir = _util_js__WEBPACK_IMPORTED_MODULE_7__/*
 }
 async function importKey(privateKey) {
     const gpgHome = createGpgHome(GPG_HOME_PREFIX);
-    const privateKeyFile = path__WEBPACK_IMPORTED_MODULE_2__.join(gpgHome, `private-key-${(0,crypto__WEBPACK_IMPORTED_MODULE_3__.randomUUID)()}.asc`);
+    const privateKeyFile = path__WEBPACK_IMPORTED_MODULE_1__.join(gpgHome, `private-key-${(0,crypto__WEBPACK_IMPORTED_MODULE_2__.randomUUID)()}.asc`);
     try {
         fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(privateKeyFile, privateKey, {
             encoding: 'utf-8',
@@ -235,7 +232,7 @@ async function importKey(privateKey) {
             mode: 0o600
         });
         try {
-            await _actions_exec__WEBPACK_IMPORTED_MODULE_5__/* .exec */ .m('gpg', [
+            await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpg', [
                 '--homedir',
                 toGpgPath(gpgHome),
                 '--batch',
@@ -257,33 +254,34 @@ async function removeGpgHome(gpgHome) {
     if (!gpgHome) {
         return;
     }
-    const resolvedGpgHome = path__WEBPACK_IMPORTED_MODULE_2__.resolve(gpgHome);
-    const resolvedTempDir = path__WEBPACK_IMPORTED_MODULE_2__.resolve(_util_js__WEBPACK_IMPORTED_MODULE_7__/* .getTempDir */ .G4());
-    if (path__WEBPACK_IMPORTED_MODULE_2__.dirname(resolvedGpgHome) !== resolvedTempDir ||
-        !path__WEBPACK_IMPORTED_MODULE_2__.basename(resolvedGpgHome).startsWith(GPG_HOME_PREFIX)) {
+    const resolvedGpgHome = path__WEBPACK_IMPORTED_MODULE_1__.resolve(gpgHome);
+    const resolvedTempDir = path__WEBPACK_IMPORTED_MODULE_1__.resolve(_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getTempDir */ .G4());
+    if (path__WEBPACK_IMPORTED_MODULE_1__.dirname(resolvedGpgHome) !== resolvedTempDir ||
+        !path__WEBPACK_IMPORTED_MODULE_1__.basename(resolvedGpgHome).startsWith(GPG_HOME_PREFIX)) {
         throw new Error(`Refusing to remove unexpected GPG home: ${gpgHome}`);
     }
     if (!fs__WEBPACK_IMPORTED_MODULE_0__.existsSync(resolvedGpgHome)) {
         return;
     }
     try {
-        await _actions_exec__WEBPACK_IMPORTED_MODULE_5__/* .exec */ .m('gpgconf', ['--homedir', toGpgPath(resolvedGpgHome), '--kill', 'gpg-agent'], { silent: true, ignoreReturnCode: true });
+        await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpgconf', ['--homedir', toGpgPath(resolvedGpgHome), '--kill', 'gpg-agent'], { silent: true, ignoreReturnCode: true });
     }
     catch {
         // gpgconf may be unavailable, but directory removal must still be attempted.
     }
-    await _actions_io__WEBPACK_IMPORTED_MODULE_4__/* .rmRF */ .Yz(resolvedGpgHome);
+    await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(resolvedGpgHome);
 }
 async function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
-    const signaturePath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_6__/* .downloadTool */ .bq(signatureUrl);
+    const signaturePath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_5__/* .downloadTool */ .bq(signatureUrl);
     let gpgHome;
     try {
-        // Long RUNNER_TEMP paths can exceed macOS's 104-byte gpg-agent socket limit.
-        gpgHome = createGpgHome(VERIFY_GPG_HOME_PREFIX, os__WEBPACK_IMPORTED_MODULE_1__.tmpdir());
+        // Both RUNNER_TEMP and TMPDIR can exceed macOS's 104-byte agent socket limit.
+        const tempDir = process.platform === 'darwin' ? '/tmp' : _util_js__WEBPACK_IMPORTED_MODULE_6__/* .getTempDir */ .G4();
+        gpgHome = createGpgHome(VERIFY_GPG_HOME_PREFIX, tempDir);
     }
     catch (error) {
         try {
-            await _actions_io__WEBPACK_IMPORTED_MODULE_4__/* .rmRF */ .Yz(signaturePath);
+            await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(signaturePath);
         }
         catch {
             // ignore cleanup failures
@@ -295,19 +293,19 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
             ? publicKeyContent
             : [publicKeyContent];
         const publicKeyFiles = publicKeys.map((publicKey, index) => {
-            const publicKeyFile = path__WEBPACK_IMPORTED_MODULE_2__.join(gpgHome, `public-key-${index}.asc`);
+            const publicKeyFile = path__WEBPACK_IMPORTED_MODULE_1__.join(gpgHome, `public-key-${index}.asc`);
             fs__WEBPACK_IMPORTED_MODULE_0__.writeFileSync(publicKeyFile, publicKey, { encoding: 'utf-8' });
             return toGpgPath(publicKeyFile);
         });
         const options = { silent: true };
-        await _actions_exec__WEBPACK_IMPORTED_MODULE_5__/* .exec */ .m('gpg', [
+        await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpg', [
             '--homedir',
             toGpgPath(gpgHome),
             '--batch',
             '--import',
             ...publicKeyFiles
         ], options);
-        await _actions_exec__WEBPACK_IMPORTED_MODULE_5__/* .exec */ .m('gpg', [
+        await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpg', [
             '--homedir',
             toGpgPath(gpgHome),
             '--batch',
@@ -317,8 +315,8 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
         ], options);
     }
     finally {
-        await _actions_io__WEBPACK_IMPORTED_MODULE_4__/* .rmRF */ .Yz(signaturePath);
-        await _actions_io__WEBPACK_IMPORTED_MODULE_4__/* .rmRF */ .Yz(gpgHome);
+        await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(signaturePath);
+        await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(gpgHome);
     }
 }
 
