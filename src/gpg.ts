@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import {randomUUID} from 'crypto';
 import * as io from '@actions/io';
@@ -26,8 +27,11 @@ export function toGpgPath(p: string): string {
     .replace(/^([A-Za-z]):\//, (_, drive) => `/${drive.toLowerCase()}/`);
 }
 
-function createGpgHome(prefix: string): string {
-  const gpgHome = fs.mkdtempSync(path.join(util.getTempDir(), prefix));
+function createGpgHome(
+  prefix: string,
+  tempDir: string = util.getTempDir()
+): string {
+  const gpgHome = fs.mkdtempSync(path.join(tempDir, prefix));
   if (process.platform !== 'win32') {
     fs.chmodSync(gpgHome, 0o700);
   }
@@ -107,7 +111,8 @@ export async function verifyPackageSignature(
   const signaturePath = await tc.downloadTool(signatureUrl);
   let gpgHome: string;
   try {
-    gpgHome = createGpgHome(VERIFY_GPG_HOME_PREFIX);
+    // Long RUNNER_TEMP paths can exceed macOS's 104-byte gpg-agent socket limit.
+    gpgHome = createGpgHome(VERIFY_GPG_HOME_PREFIX, os.tmpdir());
   } catch (error) {
     try {
       await io.rmRF(signaturePath);

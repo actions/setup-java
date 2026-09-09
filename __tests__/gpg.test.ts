@@ -9,6 +9,7 @@ import {
 } from '@jest/globals';
 import {fileURLToPath} from 'url';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import * as io from '@actions/io';
 
@@ -222,6 +223,62 @@ describe('gpg tests', () => {
   });
 
   describe('verifyPackageSignature', () => {
+    it.each(['success', 'import failure', 'verification failure'])(
+      'uses the OS temp directory with a long RUNNER_TEMP and cleans up after %s',
+      async outcome => {
+        const longRunnerTemp = path.join(
+          tempDir,
+          'long-runner-path-'.repeat(8)
+        );
+        const signaturePath = path.join(tempDir, 'jdk.tar.gz.sig');
+        let gpgHome = '';
+        process.env['RUNNER_TEMP'] = longRunnerTemp;
+        fs.mkdirSync(longRunnerTemp, {recursive: true});
+        fs.writeFileSync(signaturePath, 'signature');
+        (tc.downloadTool as jest.Mock<any>).mockResolvedValue(signaturePath);
+        (exec.exec as jest.Mock<any>).mockImplementation(
+          async (_command: string, args: string[]) => {
+            gpgHome = path.join(os.tmpdir(), path.posix.basename(args[1]));
+            expect(args[1]).toBe(gpg.toGpgPath(gpgHome));
+            expect(
+              fs.readFileSync(path.join(gpgHome, 'public-key-0.asc'), 'utf8')
+            ).toBe('public key');
+            if (process.platform !== 'win32') {
+              expect(fs.statSync(gpgHome).mode & 0o777).toBe(0o700);
+            }
+            if (
+              (outcome === 'import failure' && args.includes('--import')) ||
+              (outcome === 'verification failure' && args.includes('--verify'))
+            ) {
+              throw new Error(outcome);
+            }
+            return 0;
+          }
+        );
+
+        try {
+          const verification = gpg.verifyPackageSignature(
+            path.join(tempDir, 'jdk.tar.gz'),
+            'https://example.com/jdk.tar.gz.sig',
+            'public key'
+          );
+          if (outcome === 'success') {
+            await verification;
+          } else {
+            await expect(verification).rejects.toThrow(outcome);
+          }
+          expect(exec.exec).toHaveBeenCalledTimes(
+            outcome === 'import failure' ? 1 : 2
+          );
+          expect(fs.existsSync(gpgHome)).toBe(false);
+          expect(fs.existsSync(signaturePath)).toBe(false);
+          expect(fs.readdirSync(longRunnerTemp)).toEqual([]);
+        } finally {
+          process.env['RUNNER_TEMP'] = tempDir;
+        }
+      }
+    );
+
     it('imports bundled key and verifies package', async () => {
       const publicKeyContent =
         '-----BEGIN PGP PUBLIC KEY BLOCK-----\ntest\n-----END PGP PUBLIC KEY BLOCK-----';
