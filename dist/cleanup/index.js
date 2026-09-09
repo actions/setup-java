@@ -35891,8 +35891,31 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
 var constants = __nccwpck_require__(7242);
 // EXTERNAL MODULE: external "url"
 var external_url_ = __nccwpck_require__(7016);
-;// CONCATENATED MODULE: ./src/cleanup-java.ts
+;// CONCATENATED MODULE: ./src/is-main-module.ts
 
+
+function isMainModule(moduleUrl) {
+    const entrypoint = process.argv[1];
+    if (!entrypoint || entrypoint === '-') {
+        return false;
+    }
+    let entrypointPath;
+    try {
+        entrypointPath = external_fs_default().realpathSync(entrypoint);
+    }
+    catch (error) {
+        if (error instanceof Error &&
+            'code' in error &&
+            (error.code === 'ENOENT' || error.code === 'ENOTDIR')) {
+            return false;
+        }
+        throw error;
+    }
+    // Resolve both paths for runtimes using --preserve-symlinks-main.
+    return entrypointPath === external_fs_default().realpathSync((0,external_url_.fileURLToPath)(moduleUrl));
+}
+
+;// CONCATENATED MODULE: ./src/cleanup-java.ts
 
 
 
@@ -35959,7 +35982,7 @@ async function run() {
     await cleanup_java_removeGpgHome();
     await ignoreError(saveCaches());
 }
-if (external_fs_default().realpathSync(process.argv[1]) === (0,external_url_.fileURLToPath)(import.meta.url)) {
+if (isMainModule(import.meta.url)) {
     run();
 }
 else {
