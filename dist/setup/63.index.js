@@ -128,7 +128,8 @@ class LibericaDistributions extends _base_installer_js__WEBPACK_IMPORTED_MODULE_
         }
     }
     convertVersionToSemver(version) {
-        const { buildVersion, featureVersion, interimVersion, updateVersion } = version;
+        const { featureVersion, interimVersion, updateVersion } = version;
+        const buildVersion = version.version.split('+')[1] || version.buildVersion;
         const mainVersion = [featureVersion, interimVersion, updateVersion].join('.');
         if (buildVersion != 0) {
             return `${mainVersion}+${buildVersion}`;

@@ -166,8 +166,8 @@ export class LibericaDistributions extends JavaBase {
   }
 
   private convertVersionToSemver(version: LibericaVersion): string {
-    const {buildVersion, featureVersion, interimVersion, updateVersion} =
-      version;
+    const {featureVersion, interimVersion, updateVersion} = version;
+    const buildVersion = version.version.split('+')[1] || version.buildVersion;
     const mainVersion = [featureVersion, interimVersion, updateVersion].join(
       '.'
     );

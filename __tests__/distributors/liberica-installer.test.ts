@@ -253,6 +253,39 @@ describe('findPackageForDownload', () => {
     expect(result.version).toBe(expected);
   });
 
+  describe('compound build versions', () => {
+    beforeEach(() => {
+      distribution['getAvailableVersions'] = async () =>
+        ['1', '1.1', '1.2', '1.10'].map(build => ({
+          featureVersion: 25,
+          interimVersion: 0,
+          updateVersion: 4,
+          buildVersion: 1,
+          version: `25.0.4+${build}`,
+          downloadUrl: `https://download.bell-sw.com/java/25.0.4+${build}/bellsoft-jdk25.0.4+${build}-macos-aarch64.tar.gz`
+        }));
+    });
+
+    it.each([
+      ['25.0.4+1.1', '25.0.4+1.1'],
+      ['25.0.4+1', '25.0.4+1'],
+      ['25.0.4', '25.0.4+1.10'],
+      ['25', '25.0.4+1.10']
+    ])('version is %s -> %s', async (input, expected) => {
+      const result = await distribution['findPackageForDownload'](input);
+      expect(result).toEqual({
+        version: expected,
+        url: `https://download.bell-sw.com/java/${expected}/bellsoft-jdk${expected}-macos-aarch64.tar.gz`
+      });
+    });
+
+    it('does not substitute a different compound build', async () => {
+      await expect(
+        distribution['findPackageForDownload']('25.0.4+1.3')
+      ).rejects.toThrow(/No matching version found for SemVer/);
+    });
+  });
+
   it('should throw an error', async () => {
     await expect(distribution['findPackageForDownload']('17')).rejects.toThrow(
       /No matching version found for SemVer/
@@ -335,6 +368,36 @@ describe('convertVersionToSemver', () => {
         buildVersion: 13
       },
       '11.0.0+13'
+    ],
+    [
+      {
+        version: '25.0.4+1.1',
+        featureVersion: 25,
+        interimVersion: 0,
+        updateVersion: 4,
+        buildVersion: 1
+      },
+      '25.0.4+1.1'
+    ],
+    [
+      {
+        version: '25+36',
+        featureVersion: 25,
+        interimVersion: 0,
+        updateVersion: 0,
+        buildVersion: 36
+      },
+      '25.0.0+36'
+    ],
+    [
+      {
+        version: '8u202',
+        featureVersion: 8,
+        interimVersion: 0,
+        updateVersion: 202,
+        buildVersion: 8
+      },
+      '8.0.202+8'
     ]
   ])('%s -> %s', (input, expected) => {
     const actual = distributions['convertVersionToSemver']({
