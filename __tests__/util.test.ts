@@ -181,7 +181,10 @@ describe('convertVersionToSemver', () => {
     ['12.0', '12.0'],
     ['12.0.2', '12.0.2'],
     ['12.0.2.1', '12.0.2+1'],
-    ['12.0.2.1.0', '12.0.2+1.0']
+    ['12.0.2.1.0', '12.0.2+1.0'],
+    ['26.0.2.1+1', '26.0.2+1.1'],
+    ['25.0.4.1+1', '25.0.4+1.1'],
+    ['26.0.2+10', '26.0.2+10']
   ])('%s -> %s', (input: string, expected: string) => {
     const actual = convertVersionToSemver(input);
     expect(actual).toBe(expected);

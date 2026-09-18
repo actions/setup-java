@@ -501,13 +501,29 @@ function avoidOldNotation(content: string): string {
 }
 
 export function convertVersionToSemver(version: number[] | string) {
-  // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1)
-  const versionArray = Array.isArray(version) ? version : version.split('.');
+  // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1).
+  // Temurin also publishes four-field versions that already carry build
+  // metadata (26.0.2.1+1). Preserve that +build by folding the extra numeric
+  // fields into SemVer build metadata alongside it.
+  if (Array.isArray(version)) {
+    const mainVersion = version.slice(0, 3).join('.');
+    if (version.length > 3) {
+      return `${mainVersion}+${version.slice(3).join('.')}`;
+    }
+    return mainVersion;
+  }
+
+  const plusIndex = version.indexOf('+');
+  const core = plusIndex >= 0 ? version.slice(0, plusIndex) : version;
+  const existingBuild = plusIndex >= 0 ? version.slice(plusIndex + 1) : '';
+  const versionArray = core.split('.');
   const mainVersion = versionArray.slice(0, 3).join('.');
   if (versionArray.length > 3) {
-    return `${mainVersion}+${versionArray.slice(3).join('.')}`;
+    const fromFields = versionArray.slice(3).join('.');
+    const mergedBuild = [fromFields, existingBuild].filter(Boolean).join('.');
+    return `${mainVersion}+${mergedBuild}`;
   }
-  return mainVersion;
+  return existingBuild ? `${mainVersion}+${existingBuild}` : mainVersion;
 }
 
 /**
