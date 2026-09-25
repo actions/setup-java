@@ -5,7 +5,14 @@ import {JavaDistribution} from './package-types.js';
 export type JavaPlatform = 'linux' | 'macos' | 'windows' | 'solaris';
 
 export type JavaArchitecture =
-  'x86' | 'x64' | 'armv7' | 'aarch64' | 'ppc64le' | 'ppc64' | 's390x';
+  | 'x86'
+  | 'x64'
+  | 'armv7'
+  | 'aarch64'
+  | 'ppc64le'
+  | 'ppc64'
+  | 'riscv64'
+  | 's390x';
 
 interface VersionedArchitecture {
   architecture: JavaArchitecture;
@@ -27,7 +34,14 @@ export type JavaPlatformCapability =
   RestrictedPlatformCapability | UnrestrictedPlatformCapability;
 
 const X64_ARM64 = ['x64', 'aarch64'] as const;
-const STANDARD_LINUX = ['x64', 'x86', 'aarch64', 'ppc64le', 's390x'] as const;
+const STANDARD_LINUX = [
+  'x64',
+  'x86',
+  'aarch64',
+  'ppc64le',
+  'riscv64',
+  's390x'
+] as const;
 
 export const JAVA_PLATFORM_CAPABILITIES: Record<
   JavaDistribution,
@@ -174,6 +188,7 @@ const CANONICAL_ARCHITECTURES: readonly JavaArchitecture[] = [
   'aarch64',
   'ppc64le',
   'ppc64',
+  'riscv64',
   's390x'
 ];
 

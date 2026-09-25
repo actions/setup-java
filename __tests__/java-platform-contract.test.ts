@@ -25,6 +25,7 @@ describe('Java platform capabilities', () => {
     ['aarch64', 'aarch64'],
     ['arm64', 'aarch64'],
     ['ppc64le', 'ppc64le'],
+    ['RiScV64', 'riscv64'],
     ['s390x', 's390x']
   ])('normalizes architecture %s to %s', (input, expected) => {
     expect(normalizeArchitecture(input)).toBe(expected);
@@ -65,6 +66,12 @@ describe('Java platform capabilities', () => {
   it('uses the normalized architecture for validation', () => {
     expect(validateJavaPlatform('microsoft', 'linux', 'arm64', '25')).toBe(
       'aarch64'
+    );
+  });
+
+  it('allows Temurin on Linux riscv64', () => {
+    expect(validateJavaPlatform('temurin', 'linux', 'riscv64', '25')).toBe(
+      'riscv64'
     );
   });
 
@@ -115,6 +122,7 @@ describe('Java platform capabilities', () => {
         'aarch64',
         'ppc64le',
         'ppc64',
+        'riscv64',
         's390x'
       ]) {
         expect(content).toContain(architecture);
