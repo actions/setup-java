@@ -101,7 +101,9 @@ function canResolveTemurinJmods(version: string): boolean {
   let normalizedRange = normalizedVersion
     .replace(/-ea$/, '')
     .replace('-ea.', '+');
-  if (/^\d+(\.\d+){3,}$/.test(normalizedRange)) {
+  // Match JavaBase: fold four-or-more field versions (with or without +build)
+  // into SemVer before the jmods gate, e.g. '23.0.1.1+1' -> '23.0.1+1.1'.
+  if (/^\d+(\.\d+){3,}(\+.*)?$/.test(normalizedRange)) {
     normalizedRange = convertVersionToSemver(normalizedRange);
   }
   if (!semver.validRange(normalizedRange)) {

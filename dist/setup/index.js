@@ -30978,7 +30978,9 @@ function canResolveTemurinJmods(version) {
     let normalizedRange = normalizedVersion
         .replace(/-ea$/, '')
         .replace('-ea.', '+');
-    if (/^\d+(\.\d+){3,}$/.test(normalizedRange)) {
+    // Match JavaBase: fold four-or-more field versions (with or without +build)
+    // into SemVer before the jmods gate, e.g. '23.0.1.1+1' -> '23.0.1+1.1'.
+    if (/^\d+(\.\d+){3,}(\+.*)?$/.test(normalizedRange)) {
         normalizedRange = (0,_util_js__WEBPACK_IMPORTED_MODULE_1__/* .convertVersionToSemver */ .ZY)(normalizedRange);
     }
     if (!semver__WEBPACK_IMPORTED_MODULE_0___default().validRange(normalizedRange)) {

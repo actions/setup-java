@@ -182,6 +182,8 @@ describe('convertVersionToSemver', () => {
     ['12.0.2', '12.0.2'],
     ['12.0.2.1', '12.0.2+1'],
     ['12.0.2.1.0', '12.0.2+1.0'],
+    // Extra numeric fields land before an existing +build so Temurin
+    // '26.0.2.1+1' becomes '26.0.2+1.1' (field suffix, then original build).
     ['26.0.2.1+1', '26.0.2+1.1'],
     ['25.0.4.1+1', '25.0.4+1.1'],
     ['26.0.2+10', '26.0.2+10']
