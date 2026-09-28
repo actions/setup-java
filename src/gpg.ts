@@ -89,17 +89,20 @@ export async function removeGpgHome(gpgHome: string): Promise<void> {
     return;
   }
 
+  await stopGpgAgent(resolvedGpgHome);
+  await io.rmRF(resolvedGpgHome);
+}
+
+async function stopGpgAgent(gpgHome: string): Promise<void> {
   try {
     await exec.exec(
       'gpgconf',
-      ['--homedir', toGpgPath(resolvedGpgHome), '--kill', 'gpg-agent'],
+      ['--homedir', toGpgPath(gpgHome), '--kill', 'gpg-agent'],
       {silent: true, ignoreReturnCode: true}
     );
   } catch {
     // gpgconf may be unavailable, but directory removal must still be attempted.
   }
-
-  await io.rmRF(resolvedGpgHome);
 }
 
 export async function verifyPackageSignature(
@@ -160,6 +163,7 @@ export async function verifyPackageSignature(
       options
     );
   } finally {
+    await stopGpgAgent(gpgHome);
     await io.rmRF(signaturePath);
     await io.rmRF(gpgHome);
   }
