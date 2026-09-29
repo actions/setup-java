@@ -236,7 +236,12 @@ describe('gpg tests', () => {
         process.env['RUNNER_TEMP'] = tempDir;
       });
 
-      it.each(['success', 'import failure', 'verification failure'])(
+      it.each([
+        'success',
+        'import failure',
+        'verification failure',
+        'gpgconf unavailable'
+      ])(
         'uses a short macOS home or RUNNER_TEMP elsewhere and cleans up after %s',
         async outcome => {
           const longRunnerTemp = path.join(
@@ -257,9 +262,16 @@ describe('gpg tests', () => {
           fs.writeFileSync(signaturePath, 'signature');
           (tc.downloadTool as jest.Mock<any>).mockResolvedValue(signaturePath);
           (exec.exec as jest.Mock<any>).mockImplementation(
-            async (_command: string, args: string[]) => {
+            async (command: string, args: string[]) => {
               gpgHome = path.join(expectedParent, path.posix.basename(args[1]));
               expect(args[1]).toBe(gpg.toGpgPath(gpgHome));
+              if (command === 'gpgconf') {
+                expect(fs.existsSync(gpgHome)).toBe(true);
+                if (outcome === 'gpgconf unavailable') {
+                  throw new Error('gpgconf unavailable');
+                }
+                return 0;
+              }
               if (process.platform === 'darwin') {
                 expect(
                   Buffer.byteLength(path.join(gpgHome, 'S.gpg-agent.browser'))
@@ -287,13 +299,18 @@ describe('gpg tests', () => {
             'https://example.com/jdk.tar.gz.sig',
             'public key'
           );
-          if (outcome === 'success') {
+          if (outcome === 'success' || outcome === 'gpgconf unavailable') {
             await verification;
           } else {
             await expect(verification).rejects.toThrow(outcome);
           }
           expect(exec.exec).toHaveBeenCalledTimes(
-            outcome === 'import failure' ? 1 : 2
+            outcome === 'import failure' ? 2 : 3
+          );
+          expect(exec.exec).toHaveBeenLastCalledWith(
+            'gpgconf',
+            ['--homedir', gpg.toGpgPath(gpgHome), '--kill', 'gpg-agent'],
+            {silent: true, ignoreReturnCode: true}
           );
           expect(fs.existsSync(gpgHome)).toBe(false);
           expect(fs.existsSync(signaturePath)).toBe(false);
@@ -368,7 +385,7 @@ describe('gpg tests', () => {
         ],
         expect.objectContaining({silent: true})
       );
-      expect(exec.exec).toHaveBeenCalledTimes(2);
+      expect(exec.exec).toHaveBeenCalledTimes(3);
     });
   });
 });

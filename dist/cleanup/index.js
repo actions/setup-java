@@ -35832,13 +35832,16 @@ async function removeGpgHome(gpgHome) {
     if (!external_fs_.existsSync(resolvedGpgHome)) {
         return;
     }
+    await stopGpgAgent(resolvedGpgHome);
+    await lib_io/* rmRF */.Yz(resolvedGpgHome);
+}
+async function stopGpgAgent(gpgHome) {
     try {
-        await lib_exec/* exec */.m('gpgconf', ['--homedir', toGpgPath(resolvedGpgHome), '--kill', 'gpg-agent'], { silent: true, ignoreReturnCode: true });
+        await lib_exec/* exec */.m('gpgconf', ['--homedir', toGpgPath(gpgHome), '--kill', 'gpg-agent'], { silent: true, ignoreReturnCode: true });
     }
     catch {
         // gpgconf may be unavailable, but directory removal must still be attempted.
     }
-    await lib_io/* rmRF */.Yz(resolvedGpgHome);
 }
 async function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
     const signaturePath = await tc.downloadTool(signatureUrl);
@@ -35884,6 +35887,7 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
         ], options);
     }
     finally {
+        await stopGpgAgent(gpgHome);
         await io.rmRF(signaturePath);
         await io.rmRF(gpgHome);
     }

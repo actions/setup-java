@@ -375,13 +375,16 @@ async function removeGpgHome(gpgHome) {
     if (!fs__WEBPACK_IMPORTED_MODULE_0__.existsSync(resolvedGpgHome)) {
         return;
     }
+    await stopGpgAgent(resolvedGpgHome);
+    await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(resolvedGpgHome);
+}
+async function stopGpgAgent(gpgHome) {
     try {
-        await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpgconf', ['--homedir', toGpgPath(resolvedGpgHome), '--kill', 'gpg-agent'], { silent: true, ignoreReturnCode: true });
+        await _actions_exec__WEBPACK_IMPORTED_MODULE_4__/* .exec */ .m('gpgconf', ['--homedir', toGpgPath(gpgHome), '--kill', 'gpg-agent'], { silent: true, ignoreReturnCode: true });
     }
     catch {
         // gpgconf may be unavailable, but directory removal must still be attempted.
     }
-    await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(resolvedGpgHome);
 }
 async function verifyPackageSignature(archivePath, signatureUrl, publicKeyContent) {
     const signaturePath = await _actions_tool_cache__WEBPACK_IMPORTED_MODULE_5__/* .downloadTool */ .bq(signatureUrl);
@@ -427,6 +430,7 @@ async function verifyPackageSignature(archivePath, signatureUrl, publicKeyConten
         ], options);
     }
     finally {
+        await stopGpgAgent(gpgHome);
         await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(signaturePath);
         await _actions_io__WEBPACK_IMPORTED_MODULE_3__/* .rmRF */ .Yz(gpgHome);
     }
