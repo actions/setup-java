@@ -14,7 +14,6 @@ import type {IncomingMessage} from 'http';
 import {Readable} from 'stream';
 
 import manifestData from '../data/jetbrains.json' with {type: 'json'};
-import os from 'os';
 
 // Mock @actions/core before importing source modules that depend on it
 jest.unstable_mockModule('@actions/core', () => ({
@@ -138,9 +137,7 @@ describe('getAvailableVersions', () => {
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).not.toBeNull();
 
-    const length =
-      os.platform() === 'win32' ? manifestData.length : manifestData.length + 2;
-    expect(availableVersions.length).toBe(length);
+    expect(availableVersions.length).toBe(manifestData.length + 2);
   }, 10_000);
 
   it('continues a stable request after an all-prerelease page', async () => {
