@@ -81,6 +81,7 @@ describe('getAvailableVersions', () => {
   jest.setTimeout(10_000);
 
   let spyHttpClient: any;
+  let spyHttpClientHead: any;
   let spyCoreError: any;
   const originalGitHubToken = process.env.GITHUB_TOKEN;
 
@@ -93,6 +94,10 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: []
     });
+    spyHttpClientHead = jest.spyOn(HttpClient.prototype, 'head');
+    spyHttpClientHead.mockResolvedValue({
+      message: {statusCode: 200}
+    } as any);
 
     // Mock core.error to suppress error logs
     spyCoreError = core.error as jest.Mock;
@@ -358,6 +363,7 @@ describe('getAvailableVersions', () => {
 
   it('retries a GitHub rate limit using Retry-After', async () => {
     spyHttpClient.mockRestore();
+    spyHttpClientHead.mockRestore();
     const sleep = jest.fn(async () => undefined);
     const requestRaw = jest
       .spyOn(HttpClient.prototype, 'requestRaw')
