@@ -1,5 +1,5 @@
 import semver from 'semver';
-import {convertVersionToSemver} from '../util.js';
+import {normalizeJavaVersionToSemver} from '../util.js';
 
 export enum JavaDistribution {
   Temurin = 'temurin',
@@ -98,12 +98,9 @@ function canResolveTemurinJmods(version: string): boolean {
     return true;
   }
 
-  let normalizedRange = normalizedVersion
-    .replace(/-ea$/, '')
-    .replace('-ea.', '+');
-  if (/^\d+(\.\d+){3,}$/.test(normalizedRange)) {
-    normalizedRange = convertVersionToSemver(normalizedRange);
-  }
+  const normalizedRange = normalizeJavaVersionToSemver(
+    normalizedVersion.replace(/-ea$/, '').replace('-ea.', '+')
+  );
   if (!semver.validRange(normalizedRange)) {
     // JavaBase owns general version validation and its targeted error messages.
     return true;

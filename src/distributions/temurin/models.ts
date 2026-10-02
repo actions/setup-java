@@ -34,6 +34,7 @@ export interface ITemurinAvailableVersions {
     minor: number;
     openjdk_version: string;
     security: string;
+    patch?: number;
     semver: string;
   };
 }

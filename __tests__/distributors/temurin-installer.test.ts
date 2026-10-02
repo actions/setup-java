@@ -378,6 +378,97 @@ describe('findPackageForDownload', () => {
     expect(resolvedVersion.version).toBe('16.0.2+7');
   });
 
+  describe('OpenJDK patch (respin) versions', () => {
+    const makeRelease = (
+      semverVersion: string,
+      openjdkVersion: string,
+      versionData: Record<string, number>
+    ) => ({
+      binaries: [
+        {
+          package: {
+            link: `https://example.com/${openjdkVersion}.tar.gz`,
+            checksum: `checksum-${openjdkVersion}`,
+            checksum_link: `https://example.com/${openjdkVersion}.sha256.txt`
+          }
+        }
+      ],
+      version_data: {
+        semver: semverVersion,
+        openjdk_version: openjdkVersion,
+        minor: 0,
+        ...versionData
+      }
+    });
+
+    const respinManifest = [
+      makeRelease('26.0.2+101', '26.0.2.1+1', {
+        major: 26,
+        security: 2,
+        patch: 1,
+        build: 1
+      }),
+      makeRelease('26.0.2+10', '26.0.2+10', {
+        major: 26,
+        security: 2,
+        build: 10
+      }),
+      makeRelease('25.0.4+101.0.LTS', '25.0.4.1+1-LTS', {
+        major: 25,
+        security: 4,
+        patch: 1,
+        build: 1
+      }),
+      makeRelease('25.0.4+7.0.LTS', '25.0.4+7-LTS', {
+        major: 25,
+        security: 4,
+        build: 7
+      })
+    ];
+
+    it.each([
+      ['26.0.2.1+1', '26.0.2+101'],
+      ['26.0.2+10', '26.0.2+10'],
+      ['26', '26.0.2+101'],
+      ['26.0.2', '26.0.2+101'],
+      ['25.0.4.1+1', '25.0.4+101.0.LTS'],
+      ['25.0.4+7', '25.0.4+7.0.LTS'],
+      ['25.0.4', '25.0.4+101.0.LTS']
+    ])('%s resolves to %s', async (input, expected) => {
+      const distribution = new TemurinDistribution(
+        {
+          version: input,
+          architecture: 'x64',
+          packageType: 'jdk',
+          checkLatest: false
+        },
+        TemurinImplementation.Hotspot
+      );
+      distribution['getAvailableVersions'] = async () => respinManifest as any;
+      const resolvedVersion = await distribution['findPackageForDownload'](
+        distribution['version']
+      );
+      expect(resolvedVersion.version).toBe(expected);
+      expect(resolvedVersion).not.toHaveProperty('openjdkVersion');
+    });
+
+    it('does not match a non-existent respin', async () => {
+      const distribution = new TemurinDistribution(
+        {
+          version: '26.0.2.2+1',
+          architecture: 'x64',
+          packageType: 'jdk',
+          checkLatest: false
+        },
+        TemurinImplementation.Hotspot
+      );
+      distribution['getAvailableVersions'] = async () => respinManifest as any;
+      await expect(
+        distribution['findPackageForDownload'](distribution['version'])
+      ).rejects.toThrow(/No matching version found for SemVer '26.0.2\+2.1'/);
+    });
+  });
+
   it('version is found but binaries list is empty', async () => {
     const distribution = new TemurinDistribution(
       {
