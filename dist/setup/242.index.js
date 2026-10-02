@@ -730,12 +730,9 @@ class JavaBase {
         }
         // Java uses a versioning scheme (JEP 322) that can contain more numeric
         // fields than SemVer allows, e.g. '18.0.1.1' or '11.0.9.1'. Convert such
-        // exact versions to SemVer build notation ('18.0.1+1') so they are
-        // accepted. Ranges and versions that already carry build metadata are
-        // left untouched.
-        if (/^\d+(\.\d+){3,}$/.test(version)) {
-            version = (0,util/* convertVersionToSemver */.ZY)(version);
-        }
+        // exact versions to SemVer build notation ('18.0.1+1', or '26.0.2+1.1'
+        // for '26.0.2.1+1') so they are accepted. Ranges are left untouched.
+        version = (0,util/* normalizeJavaVersionToSemver */.zZ)(version);
         if (!semver_default().validRange(version)) {
             throw new Error(`The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`);
         }

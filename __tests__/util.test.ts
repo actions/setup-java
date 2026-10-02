@@ -43,6 +43,7 @@ const core = await import('@actions/core');
 
 const {
   convertVersionToSemver,
+  normalizeJavaVersionToSemver,
   getNextPageUrlFromLinkHeader,
   getVersionFromFileContent,
   isVersionSatisfies,
@@ -185,6 +186,22 @@ describe('convertVersionToSemver', () => {
   ])('%s -> %s', (input: string, expected: string) => {
     const actual = convertVersionToSemver(input);
     expect(actual).toBe(expected);
+  });
+});
+
+describe('normalizeJavaVersionToSemver', () => {
+  it.each([
+    ['17', '17'],
+    ['17.0.8', '17.0.8'],
+    ['17.0.8+7', '17.0.8+7'],
+    ['11.0.9.1', '11.0.9+1'],
+    ['12.0.2.1.0', '12.0.2+1.0'],
+    ['26.0.2.1+1', '26.0.2+1.1'],
+    ['17.0.8.1+1080.1', '17.0.8+1.1080.1'],
+    ['>=11.0.9.1', '>=11.0.9.1'],
+    ['17.x', '17.x']
+  ])('%s -> %s', (input: string, expected: string) => {
+    expect(normalizeJavaVersionToSemver(input)).toBe(expected);
   });
 });
 

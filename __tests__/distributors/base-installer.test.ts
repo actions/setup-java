@@ -1758,6 +1758,8 @@ describe('normalizeVersion', () => {
     ['11.0.9.1', {version: '11.0.9+1', stable: true, latest: false}],
     ['12.0.2.1.0', {version: '12.0.2+1.0', stable: true, latest: false}],
     ['18.0.1.1-ea', {version: '18.0.1+1', stable: false, latest: false}],
+    ['26.0.2.1+1', {version: '26.0.2+1.1', stable: true, latest: false}],
+    ['25.0.4.1+1', {version: '25.0.4+1.1', stable: true, latest: false}],
     ['latest', {version: 'x', stable: true, latest: true}],
     ['LATEST', {version: 'x', stable: true, latest: true}],
     ['  Latest  ', {version: 'x', stable: true, latest: true}]
