@@ -334,6 +334,69 @@ describe('findPackageForDownload', () => {
     );
   });
 
+  describe('hotfix builds with a 4-segment java_version', () => {
+    // Mirrors the Azul Metadata API: 25.0.4.1 hotfix is reported as
+    // java_version=[25,0,4,1], openjdk_build_number=1 (SDKMAN '25.0.4+1.1').
+    const hotfixManifest = [
+      {
+        package_uuid: 'uuid-25.0.4+7',
+        name: 'zulu25.36.15-ca-jdk25.0.4-linux_x64.tar.gz',
+        download_url:
+          'https://cdn.azul.com/zulu/bin/zulu25.36.15-ca-jdk25.0.4-linux_x64.tar.gz',
+        java_version: [25, 0, 4],
+        openjdk_build_number: 7,
+        distro_version: [25, 36, 15, 0],
+        latest: false,
+        availability_type: 'ca'
+      },
+      {
+        package_uuid: 'uuid-25.0.4+1.1',
+        name: 'zulu25.36.205-ca-jdk25.0.4.1-linux_x64.tar.gz',
+        download_url:
+          'https://cdn.azul.com/zulu/bin/zulu25.36.205-ca-jdk25.0.4.1-linux_x64.tar.gz',
+        java_version: [25, 0, 4, 1],
+        openjdk_build_number: 1,
+        distro_version: [25, 36, 205, 0],
+        latest: true,
+        availability_type: 'ca'
+      },
+      {
+        package_uuid: 'uuid-25.0.3+9',
+        name: 'zulu25.34.17-ca-jdk25.0.3-linux_x64.tar.gz',
+        download_url:
+          'https://cdn.azul.com/zulu/bin/zulu25.34.17-ca-jdk25.0.3-linux_x64.tar.gz',
+        java_version: [25, 0, 3],
+        openjdk_build_number: 9,
+        distro_version: [25, 34, 17, 0],
+        latest: false,
+        availability_type: 'ca'
+      }
+    ] as IZuluVersions[];
+
+    it.each([
+      ['25.0.4+1.1', '25.0.4+1.1', 'uuid-25.0.4+1.1'],
+      ['25', '25.0.4+1.1', 'uuid-25.0.4+1.1'],
+      ['25.0.4', '25.0.4+1.1', 'uuid-25.0.4+1.1'],
+      ['25.0.4+7', '25.0.4+7', 'uuid-25.0.4+7'],
+      ['25.0.3', '25.0.3+9', 'uuid-25.0.3+9']
+    ])('version is %s -> %s', async (input, expected, uuid) => {
+      const distribution = new ZuluDistribution({
+        version: input,
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      distribution['getAvailableVersions'] = async () => hotfixManifest;
+      const result = await distribution['findPackageForDownload'](
+        distribution['version']
+      );
+      expect(result.version).toBe(expected);
+      expect(result.url).toBe(
+        hotfixManifest.find(item => item.package_uuid === uuid)!.download_url
+      );
+    });
+  });
+
   it('should throw an error', async () => {
     const distribution = new ZuluDistribution({
       version: '18',
