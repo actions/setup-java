@@ -233,7 +233,7 @@ Additional distribution notes:
 | --- | --- |
 | Major version | `8`, `11`, `17`, `21`, `25` |
 | Specific feature or patch version | `11.0`, `11.0.4`, `17.0`, `8.0.282+8` |
-| JEP 322 multi-field versions | `11.0.9.1`, `18.0.1.1` |
+| JEP 322 multi-field versions | `11.0.9.1`, `18.0.1.1`, `26.0.2.1+1` |
 | Early access | `15-ea`, `15.0.0-ea`, `27-ea` |
 | Latest stable GA release | `latest` |
 

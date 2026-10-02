@@ -2,7 +2,6 @@ import * as core from '@actions/core';
 
 import path from 'path';
 import fs from 'fs';
-import semver from 'semver';
 
 import {JavaBase} from '../base-installer.js';
 import {IZuluPackageDetails, IZuluVersions} from './models.js';
@@ -30,6 +29,17 @@ interface ZuluResolvedRelease {
   packageUuid: string;
 }
 
+function compareNumberArrays(a: number[], b: number[]): number {
+  const length = Math.max(a.length, b.length);
+  for (let i = 0; i < length; i++) {
+    const diff = (a[i] ?? 0) - (b[i] ?? 0);
+    if (diff !== 0) {
+      return diff;
+    }
+  }
+  return 0;
+}
+
 export class ZuluDistribution extends JavaBase {
   constructor(installerOptions: JavaInstallerOptions) {
     super('Zulu', installerOptions);
@@ -50,7 +60,9 @@ export class ZuluDistribution extends JavaBase {
       return {
         version: convertVersionToSemver(javaVersion),
         url: item.download_url,
-        zuluVersion: convertVersionToSemver(item.distro_version),
+        javaVersion: item.java_version,
+        buildNumber: item.openjdk_build_number ?? 0,
+        distroVersion: item.distro_version,
         packageUuid: item.package_uuid
       };
     });
@@ -58,11 +70,14 @@ export class ZuluDistribution extends JavaBase {
     const satisfiedVersions = availableVersions
       .filter(item => isVersionSatisfies(version, item.version))
       .sort((a, b) => {
-        // Azul provides two versions: java_version and distro_version
-        // we should sort by both fields by descending
+        // Compare numerically rather than via semver build metadata: Azul
+        // hotfix releases carry a 4th java_version segment (e.g. 25.0.4.1+1,
+        // rendered as '25.0.4+1.1') that must rank above 25.0.4+7, whereas
+        // semver.compareBuild would order the build identifiers '7' > '1'.
         return (
-          -semver.compareBuild(a.version, b.version) ||
-          -semver.compareBuild(a.zuluVersion, b.zuluVersion)
+          -compareNumberArrays(a.javaVersion, b.javaVersion) ||
+          b.buildNumber - a.buildNumber ||
+          -compareNumberArrays(a.distroVersion, b.distroVersion)
         );
       })
       .map((item): ZuluResolvedRelease => ({

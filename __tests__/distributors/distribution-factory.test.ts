@@ -82,7 +82,7 @@ describe('getJavaDistribution', () => {
     );
   });
 
-  it.each(['8', '23.x', '23.0.1.1', '<24'])(
+  it.each(['8', '23.x', '23.0.1.1', '23.0.1.1+1', '<24'])(
     "rejects Temurin java-package 'jdk+jmods' for version %s",
     async version => {
       await expect(
@@ -96,7 +96,7 @@ describe('getJavaDistribution', () => {
     }
   );
 
-  it.each(['24', '24.0.1.1', '25-ea', '>=21', 'latest'])(
+  it.each(['24', '24.0.1.1', '25.0.4.1+1', '25-ea', '>=21', 'latest'])(
     "accepts Temurin java-package 'jdk+jmods' for version %s",
     async version => {
       expect(

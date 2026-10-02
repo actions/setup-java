@@ -70,7 +70,7 @@ export class TemurinDistribution extends JavaBase {
         const formattedVersion = this.stable
           ? item.version_data.semver
           : item.version_data.semver.replace('-beta+', '+');
-        return {
+        const release: JavaDownloadRelease = {
           version: formattedVersion,
           url: item.binaries[0].package.link,
           signatureUrl: item.binaries[0].package.signature_link,
@@ -79,11 +79,29 @@ export class TemurinDistribution extends JavaBase {
             value: item.binaries[0].package.checksum,
             source: item.binaries[0].package.checksum_link
           }
-        } as JavaDownloadRelease;
+        };
+        return {
+          release,
+          openjdkVersion: getOpenJdkSemverVersion(item.version_data)
+        };
       });
 
+    // The Adoptium API `semver` folds the JEP 322 patch field into the build
+    // number ('26.0.2.1+1' -> '26.0.2+101') and appends extra metadata for LTS
+    // releases ('25.0.4+7' -> '25.0.4+7.0.LTS'). Exact versions requested by
+    // users follow the OpenJDK notation instead, so also match them against a
+    // key derived from the OpenJDK version fields ('26.0.2+1.1', '25.0.4+7').
+    const isExactBuildRequest = (semver.parse(version)?.build.length ?? 0) > 0;
+
     const satisfiedVersions = availableVersionsWithBinaries
-      .filter(item => isVersionSatisfies(version, item.version))
+      .filter(
+        ({release, openjdkVersion}) =>
+          isVersionSatisfies(version, release.version) ||
+          (isExactBuildRequest &&
+            openjdkVersion !== null &&
+            semver.compareBuild(version, openjdkVersion) === 0)
+      )
+      .map(({release}) => release)
       .sort((a, b) => {
         return -semver.compareBuild(a.version, b.version);
       });
@@ -92,7 +110,7 @@ export class TemurinDistribution extends JavaBase {
       satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
     if (!resolvedFullVersion) {
       const availableVersionStrings = availableVersionsWithBinaries.map(
-        item => item.version
+        ({release}) => release.version
       );
       throw this.createVersionNotFoundError(version, availableVersionStrings);
     }
@@ -308,4 +326,21 @@ export class TemurinDistribution extends JavaBase {
     const architecture = super.distributionArchitecture();
     return architecture === 'armv7' ? 'arm' : architecture;
   }
+}
+
+/**
+ * Builds a SemVer version from the OpenJDK version fields reported by the
+ * Adoptium API, e.g. '26.0.2.1+1' -> '26.0.2+1.1' and '25.0.4+7-LTS' ->
+ * '25.0.4+7'. Returns null if the fields cannot form a valid SemVer version.
+ */
+function getOpenJdkSemverVersion(
+  versionData: ITemurinAvailableVersions['version_data']
+): string | null {
+  const {major, minor, security, patch, build} = versionData;
+  if (build === undefined || build === null) {
+    return null;
+  }
+  const buildMetadata = patch ? `${patch}.${build}` : `${build}`;
+  const version = `${major}.${minor}.${security}+${buildMetadata}`;
+  return semver.valid(version) ? version : null;
 }
