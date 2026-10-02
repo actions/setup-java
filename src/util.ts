@@ -511,6 +511,21 @@ export function convertVersionToSemver(version: number[] | string) {
 }
 
 /**
+ * Java versions (JEP 322) can contain more numeric fields than SemVer allows,
+ * e.g. '11.0.9.1' or Temurin respins such as '26.0.2.1+1'. Move the extra
+ * fields into SemVer build metadata ('11.0.9+1', '26.0.2+1.1'). Any other
+ * input (ranges, regular SemVer versions) is returned unchanged.
+ */
+export function normalizeJavaVersionToSemver(version: string): string {
+  const match = /^(\d+(?:\.\d+){3,})(?:\+([0-9A-Za-z.-]+))?$/.exec(version);
+  if (!match) {
+    return version;
+  }
+  const converted = convertVersionToSemver(match[1]);
+  return match[2] ? `${converted}.${match[2]}` : converted;
+}
+
+/**
  * Builds a validator for the bytes currently served by a URL from the response
  * headers of a HEAD request. A vendor's `/latest/` URL never changes, so this
  * is what lets a republished artifact be told apart from the previous one when

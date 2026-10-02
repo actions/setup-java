@@ -31109,12 +31109,7 @@ function canResolveTemurinJmods(version) {
     if (normalizedVersion === 'latest') {
         return true;
     }
-    let normalizedRange = normalizedVersion
-        .replace(/-ea$/, '')
-        .replace('-ea.', '+');
-    if (/^\d+(\.\d+){3,}$/.test(normalizedRange)) {
-        normalizedRange = (0,_util_js__WEBPACK_IMPORTED_MODULE_1__/* .convertVersionToSemver */ .ZY)(normalizedRange);
-    }
+    const normalizedRange = (0,_util_js__WEBPACK_IMPORTED_MODULE_1__/* .normalizeJavaVersionToSemver */ .zZ)(normalizedVersion.replace(/-ea$/, '').replace('-ea.', '+'));
     if (!semver__WEBPACK_IMPORTED_MODULE_0___default().validRange(normalizedRange)) {
         // JavaBase owns general version validation and its targeted error messages.
         return true;
@@ -31445,7 +31440,8 @@ function validateToolchainIds(versions, versionFile, toolchainIds) {
 /* harmony export */   rC: () => (/* binding */ getNextPageUrlFromLinkHeader),
 /* harmony export */   ri: () => (/* binding */ getLatestMajorVersion),
 /* harmony export */   y: () => (/* binding */ isVersionSatisfies),
-/* harmony export */   yH: () => (/* binding */ getToolcachePath)
+/* harmony export */   yH: () => (/* binding */ getToolcachePath),
+/* harmony export */   zZ: () => (/* binding */ normalizeJavaVersionToSemver)
 /* harmony export */ });
 /* unused harmony exports getVersionFromToolcachePath, isJobStatusSuccess */
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(857);
@@ -31845,6 +31841,20 @@ function convertVersionToSemver(version) {
         return `${mainVersion}+${versionArray.slice(3).join('.')}`;
     }
     return mainVersion;
+}
+/**
+ * Java versions (JEP 322) can contain more numeric fields than SemVer allows,
+ * e.g. '11.0.9.1' or Temurin respins such as '26.0.2.1+1'. Move the extra
+ * fields into SemVer build metadata ('11.0.9+1', '26.0.2+1.1'). Any other
+ * input (ranges, regular SemVer versions) is returned unchanged.
+ */
+function normalizeJavaVersionToSemver(version) {
+    const match = /^(\d+(?:\.\d+){3,})(?:\+([0-9A-Za-z.-]+))?$/.exec(version);
+    if (!match) {
+        return version;
+    }
+    const converted = convertVersionToSemver(match[1]);
+    return match[2] ? `${converted}.${match[2]}` : converted;
 }
 /**
  * Builds a validator for the bytes currently served by a URL from the response

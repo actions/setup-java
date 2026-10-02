@@ -30982,7 +30982,7 @@ const DISTRIBUTIONS_ONLY_MAJOR_VERSION = (/* unused pure expression or super */ 
 /* harmony export */   Vt: () => (/* binding */ getBooleanInput),
 /* harmony export */   lN: () => (/* binding */ isJdkCacheEnabled)
 /* harmony export */ });
-/* unused harmony exports getVersionFromToolcachePath, extractJdkFile, cacheJdkDir, getJavaVersionFromReleaseFile, getDownloadArchiveExtension, isVersionSatisfies, getToolcachePath, isGhes, getVersionFromFileContent, convertVersionToSemver, getArtifactFingerprint, getGitHubToken, getGitHubHttpHeaders, MAX_PAGINATION_PAGES, getNextPageUrlFromLinkHeader, validatePaginationUrl, renameWinArchive, getLatestMajorVersion */
+/* unused harmony exports getVersionFromToolcachePath, extractJdkFile, cacheJdkDir, getJavaVersionFromReleaseFile, getDownloadArchiveExtension, isVersionSatisfies, getToolcachePath, isGhes, getVersionFromFileContent, convertVersionToSemver, normalizeJavaVersionToSemver, getArtifactFingerprint, getGitHubToken, getGitHubHttpHeaders, MAX_PAGINATION_PAGES, getNextPageUrlFromLinkHeader, validatePaginationUrl, renameWinArchive, getLatestMajorVersion */
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(857);
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(os__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(6928);
@@ -31380,6 +31380,20 @@ function convertVersionToSemver(version) {
         return `${mainVersion}+${versionArray.slice(3).join('.')}`;
     }
     return mainVersion;
+}
+/**
+ * Java versions (JEP 322) can contain more numeric fields than SemVer allows,
+ * e.g. '11.0.9.1' or Temurin respins such as '26.0.2.1+1'. Move the extra
+ * fields into SemVer build metadata ('11.0.9+1', '26.0.2+1.1'). Any other
+ * input (ranges, regular SemVer versions) is returned unchanged.
+ */
+function normalizeJavaVersionToSemver(version) {
+    const match = /^(\d+(?:\.\d+){3,})(?:\+([0-9A-Za-z.-]+))?$/.exec(version);
+    if (!match) {
+        return version;
+    }
+    const converted = convertVersionToSemver(match[1]);
+    return match[2] ? `${converted}.${match[2]}` : converted;
 }
 /**
  * Builds a validator for the bytes currently served by a URL from the response

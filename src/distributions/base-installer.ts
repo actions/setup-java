@@ -5,9 +5,9 @@ import semver from 'semver';
 import path from 'path';
 import * as httpm from '@actions/http-client';
 import {
-  convertVersionToSemver,
   getToolcachePath,
-  isVersionSatisfies
+  isVersionSatisfies,
+  normalizeJavaVersionToSemver
 } from '../util.js';
 import type {
   ChecksumAlgorithm,
@@ -675,12 +675,9 @@ export abstract class JavaBase {
 
     // Java uses a versioning scheme (JEP 322) that can contain more numeric
     // fields than SemVer allows, e.g. '18.0.1.1' or '11.0.9.1'. Convert such
-    // exact versions to SemVer build notation ('18.0.1+1') so they are
-    // accepted. Ranges and versions that already carry build metadata are
-    // left untouched.
-    if (/^\d+(\.\d+){3,}$/.test(version)) {
-      version = convertVersionToSemver(version);
-    }
+    // exact versions to SemVer build notation ('18.0.1+1', or '26.0.2+1.1'
+    // for '26.0.2.1+1') so they are accepted. Ranges are left untouched.
+    version = normalizeJavaVersionToSemver(version);
 
     if (!semver.validRange(version)) {
       throw new Error(
