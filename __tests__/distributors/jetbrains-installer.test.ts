@@ -14,7 +14,6 @@ import type {IncomingMessage} from 'http';
 import {Readable} from 'stream';
 
 import manifestData from '../data/jetbrains.json' with {type: 'json'};
-import os from 'os';
 
 // Mock @actions/core before importing source modules that depend on it
 jest.unstable_mockModule('@actions/core', () => ({
@@ -81,6 +80,7 @@ describe('getAvailableVersions', () => {
   jest.setTimeout(10_000);
 
   let spyHttpClient: any;
+  let spyHttpClientHead: any;
   let spyCoreError: any;
   const originalGitHubToken = process.env.GITHUB_TOKEN;
 
@@ -93,6 +93,10 @@ describe('getAvailableVersions', () => {
       headers: {},
       result: []
     });
+    spyHttpClientHead = jest.spyOn(HttpClient.prototype, 'head');
+    spyHttpClientHead.mockResolvedValue({
+      message: {statusCode: 200}
+    } as any);
 
     // Mock core.error to suppress error logs
     spyCoreError = core.error as jest.Mock;
@@ -133,9 +137,7 @@ describe('getAvailableVersions', () => {
     const availableVersions = await distribution['getAvailableVersions']();
     expect(availableVersions).not.toBeNull();
 
-    const length =
-      os.platform() === 'win32' ? manifestData.length : manifestData.length + 2;
-    expect(availableVersions.length).toBe(length);
+    expect(availableVersions.length).toBe(manifestData.length + 2);
   }, 10_000);
 
   it('continues a stable request after an all-prerelease page', async () => {
@@ -358,6 +360,7 @@ describe('getAvailableVersions', () => {
 
   it('retries a GitHub rate limit using Retry-After', async () => {
     spyHttpClient.mockRestore();
+    spyHttpClientHead.mockRestore();
     const sleep = jest.fn(async () => undefined);
     const requestRaw = jest
       .spyOn(HttpClient.prototype, 'requestRaw')
