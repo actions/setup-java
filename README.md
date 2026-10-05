@@ -168,6 +168,7 @@ steps:
 | `server-username-env-var` | Environment variable name for Maven repository username. | `GITHUB_ACTOR` |
 | `server-password-env-var` | Environment variable name for Maven repository password or token. | `GITHUB_TOKEN` |
 | `mvn-server-credentials` | Multiline Maven server credentials in the format `server-id:USERNAME_ENV:PASSWORD_ENV`. Replaces the single server configured by the three inputs above when set. | |
+| `mvn-server-repository-origins` | Multiline Maven credential origins in the format `server-id:repository-origin`. Each origin must belong to a configured server ID. | |
 | `mvn-repositories` | Multiline Maven dependency repositories in the format `repository-id:repository-url:snapshots-enabled`. | |
 | `mvn-repositories-include-central` | Include Maven Central in the generated dependency repositories profile. When `false`, Central is disabled unless an explicit `central` repository is declared. | `true` |
 | `mvn-repositories-prioritize-central` | Place Maven Central before custom dependency repositories. Has no effect when Maven Central is excluded. | `true` |

@@ -7,6 +7,7 @@ export const modules = {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   addMavenServerRepositoryOrigins: () => (/* binding */ addMavenServerRepositoryOrigins),
 /* harmony export */   configureAuthentication: () => (/* binding */ configureAuthentication),
 /* harmony export */   createAuthenticationSettings: () => (/* binding */ createAuthenticationSettings),
 /* harmony export */   generate: () => (/* binding */ generate),
@@ -74,16 +75,16 @@ function getInputWithDeprecatedAlias(inputName, deprecatedInputName, defaultValu
 // only exported for testing purposes
 function getMavenServerSettings() {
     const entries = _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .getMultilineInput */ .q3(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_MVN_SERVER_CREDENTIALS */ .MM);
-    if (entries.some(entry => entry.trim())) {
-        return parseMavenServerCredentials(entries);
-    }
-    return [
-        {
-            id: _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_ID */ .fd),
-            usernameEnvVar: getInputWithDeprecatedAlias(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_USERNAME_ENV_VAR */ .sc, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_USERNAME_DEPRECATED */ .sp, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_DEFAULT_SERVER_USERNAME */ .Wj),
-            passwordEnvVar: getInputWithDeprecatedAlias(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_PASSWORD_ENV_VAR */ .r4, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_PASSWORD_DEPRECATED */ .Vt, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_DEFAULT_SERVER_PASSWORD */ .xp)
-        }
-    ];
+    const servers = entries.some(entry => entry.trim())
+        ? parseMavenServerCredentials(entries)
+        : [
+            {
+                id: _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_ID */ .fd),
+                usernameEnvVar: getInputWithDeprecatedAlias(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_USERNAME_ENV_VAR */ .sc, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_USERNAME_DEPRECATED */ .sp, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_DEFAULT_SERVER_USERNAME */ .Wj),
+                passwordEnvVar: getInputWithDeprecatedAlias(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_PASSWORD_ENV_VAR */ .r4, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SERVER_PASSWORD_DEPRECATED */ .Vt, _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_DEFAULT_SERVER_PASSWORD */ .xp)
+            }
+        ];
+    return addMavenServerRepositoryOrigins(servers, _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .getMultilineInput */ .q3(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_MVN_SERVER_REPOSITORY_ORIGINS */ .gR));
 }
 // only exported for testing purposes
 function parseMavenServerCredentials(entries) {
@@ -108,6 +109,53 @@ function parseMavenServerCredentials(entries) {
         servers.push({ id, usernameEnvVar, passwordEnvVar });
     });
     return servers;
+}
+// only exported for testing purposes
+function addMavenServerRepositoryOrigins(servers, entries) {
+    const serverIds = new Set(servers.map(server => server.id));
+    const originsByServer = new Map();
+    entries.forEach((entry, index) => {
+        if (!entry.trim()) {
+            return;
+        }
+        const separator = entry.indexOf(':');
+        if (separator <= 0 || separator === entry.length - 1) {
+            throw new Error(`Invalid mvn-server-repository-origins entry at line ${index + 1}. Expected format: server-id:repository-origin`);
+        }
+        const id = entry.slice(0, separator).trim();
+        const value = entry.slice(separator + 1).trim();
+        if (!id || !value) {
+            throw new Error(`Invalid mvn-server-repository-origins entry at line ${index + 1}. Server ID and repository origin are required`);
+        }
+        if (!serverIds.has(id)) {
+            throw new Error(`Unknown server-id '${id}' in mvn-server-repository-origins at line ${index + 1}`);
+        }
+        let url;
+        try {
+            url = new URL(value);
+        }
+        catch {
+            throw new Error(`Invalid repository origin '${value}' in mvn-server-repository-origins at line ${index + 1}`);
+        }
+        if (!url.host ||
+            url.username ||
+            url.password ||
+            (url.pathname !== '' && url.pathname !== '/') ||
+            url.search ||
+            url.hash) {
+            throw new Error(`Invalid repository origin '${value}' in mvn-server-repository-origins at line ${index + 1}`);
+        }
+        const origin = `${url.protocol}//${url.host}`;
+        const origins = originsByServer.get(id) || [];
+        if (!origins.includes(origin)) {
+            origins.push(origin);
+            originsByServer.set(id, origins);
+        }
+    });
+    return servers.map(server => {
+        const repositoryOrigins = originsByServer.get(server.id);
+        return repositoryOrigins ? { ...server, repositoryOrigins } : server;
+    });
 }
 // only exported for testing purposes
 function getMavenRepositorySettings() {
@@ -187,7 +235,15 @@ function generate(servers, gpgPassphraseEnvVar, repositorySettings) {
         '  <servers>'
     ];
     for (const server of servers) {
-        lines.push('    <server>', `      <id>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(server.id)}</id>`, `      <username>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(`\${env.${server.usernameEnvVar}}`)}</username>`, `      <password>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(`\${env.${server.passwordEnvVar}}`)}</password>`, '    </server>');
+        lines.push('    <server>', `      <id>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(server.id)}</id>`, `      <username>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(`\${env.${server.usernameEnvVar}}`)}</username>`, `      <password>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(`\${env.${server.passwordEnvVar}}`)}</password>`);
+        if (server.repositoryOrigins) {
+            lines.push('      <repositoryOrigins>');
+            for (const origin of server.repositoryOrigins) {
+                lines.push(`        <repositoryOrigin>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(origin)}</repositoryOrigin>`);
+            }
+            lines.push('      </repositoryOrigins>');
+        }
+        lines.push('    </server>');
     }
     lines.push('  </servers>');
     if (repositorySettings || includeGpgPassphraseProfile) {

@@ -13,6 +13,7 @@ export interface MavenServerCredentials {
   id: string;
   usernameEnvVar: string;
   passwordEnvVar: string;
+  repositoryOrigins?: string[];
 }
 
 export interface MavenRepository {
@@ -95,25 +96,28 @@ export function getMavenServerSettings(): MavenServerCredentials[] {
     constants.INPUT_MVN_SERVER_CREDENTIALS
   );
 
-  if (entries.some(entry => entry.trim())) {
-    return parseMavenServerCredentials(entries);
-  }
+  const servers = entries.some(entry => entry.trim())
+    ? parseMavenServerCredentials(entries)
+    : [
+        {
+          id: core.getInput(constants.INPUT_SERVER_ID),
+          usernameEnvVar: getInputWithDeprecatedAlias(
+            constants.INPUT_SERVER_USERNAME_ENV_VAR,
+            constants.INPUT_SERVER_USERNAME_DEPRECATED,
+            constants.INPUT_DEFAULT_SERVER_USERNAME
+          ),
+          passwordEnvVar: getInputWithDeprecatedAlias(
+            constants.INPUT_SERVER_PASSWORD_ENV_VAR,
+            constants.INPUT_SERVER_PASSWORD_DEPRECATED,
+            constants.INPUT_DEFAULT_SERVER_PASSWORD
+          )
+        }
+      ];
 
-  return [
-    {
-      id: core.getInput(constants.INPUT_SERVER_ID),
-      usernameEnvVar: getInputWithDeprecatedAlias(
-        constants.INPUT_SERVER_USERNAME_ENV_VAR,
-        constants.INPUT_SERVER_USERNAME_DEPRECATED,
-        constants.INPUT_DEFAULT_SERVER_USERNAME
-      ),
-      passwordEnvVar: getInputWithDeprecatedAlias(
-        constants.INPUT_SERVER_PASSWORD_ENV_VAR,
-        constants.INPUT_SERVER_PASSWORD_DEPRECATED,
-        constants.INPUT_DEFAULT_SERVER_PASSWORD
-      )
-    }
-  ];
+  return addMavenServerRepositoryOrigins(
+    servers,
+    core.getMultilineInput(constants.INPUT_MVN_SERVER_REPOSITORY_ORIGINS)
+  );
 }
 
 // only exported for testing purposes
@@ -154,6 +158,74 @@ export function parseMavenServerCredentials(
   });
 
   return servers;
+}
+
+// only exported for testing purposes
+export function addMavenServerRepositoryOrigins(
+  servers: MavenServerCredentials[],
+  entries: string[]
+): MavenServerCredentials[] {
+  const serverIds = new Set(servers.map(server => server.id));
+  const originsByServer = new Map<string, string[]>();
+
+  entries.forEach((entry, index) => {
+    if (!entry.trim()) {
+      return;
+    }
+
+    const separator = entry.indexOf(':');
+    if (separator <= 0 || separator === entry.length - 1) {
+      throw new Error(
+        `Invalid mvn-server-repository-origins entry at line ${index + 1}. Expected format: server-id:repository-origin`
+      );
+    }
+
+    const id = entry.slice(0, separator).trim();
+    const value = entry.slice(separator + 1).trim();
+    if (!id || !value) {
+      throw new Error(
+        `Invalid mvn-server-repository-origins entry at line ${index + 1}. Server ID and repository origin are required`
+      );
+    }
+    if (!serverIds.has(id)) {
+      throw new Error(
+        `Unknown server-id '${id}' in mvn-server-repository-origins at line ${index + 1}`
+      );
+    }
+
+    let url: URL;
+    try {
+      url = new URL(value);
+    } catch {
+      throw new Error(
+        `Invalid repository origin '${value}' in mvn-server-repository-origins at line ${index + 1}`
+      );
+    }
+    if (
+      !url.host ||
+      url.username ||
+      url.password ||
+      (url.pathname !== '' && url.pathname !== '/') ||
+      url.search ||
+      url.hash
+    ) {
+      throw new Error(
+        `Invalid repository origin '${value}' in mvn-server-repository-origins at line ${index + 1}`
+      );
+    }
+
+    const origin = `${url.protocol}//${url.host}`;
+    const origins = originsByServer.get(id) || [];
+    if (!origins.includes(origin)) {
+      origins.push(origin);
+      originsByServer.set(id, origins);
+    }
+  });
+
+  return servers.map(server => {
+    const repositoryOrigins = originsByServer.get(server.id);
+    return repositoryOrigins ? {...server, repositoryOrigins} : server;
+  });
 }
 
 // only exported for testing purposes
@@ -286,9 +358,18 @@ export function generate(
       '    <server>',
       `      <id>${escapeXmlText(server.id)}</id>`,
       `      <username>${escapeXmlText(`\${env.${server.usernameEnvVar}}`)}</username>`,
-      `      <password>${escapeXmlText(`\${env.${server.passwordEnvVar}}`)}</password>`,
-      '    </server>'
+      `      <password>${escapeXmlText(`\${env.${server.passwordEnvVar}}`)}</password>`
     );
+    if (server.repositoryOrigins) {
+      lines.push('      <repositoryOrigins>');
+      for (const origin of server.repositoryOrigins) {
+        lines.push(
+          `        <repositoryOrigin>${escapeXmlText(origin)}</repositoryOrigin>`
+        );
+      }
+      lines.push('      </repositoryOrigins>');
+    }
+    lines.push('    </server>');
   }
   lines.push('  </servers>');
 

@@ -66,6 +66,9 @@ inputs:
   mvn-server-credentials:
     description: 'Multiline list of Maven server credentials in the format `server-id:USERNAME_ENV:PASSWORD_ENV`. When set, replaces the single server configured by server-id, server-username-env-var, and server-password-env-var.'
     required: false
+  mvn-server-repository-origins:
+    description: 'Multiline list of Maven credential origins in the format `server-id:repository-origin`. Each origin must belong to a configured server ID.'
+    required: false
   mvn-repositories:
     description: 'Multiline list of Maven dependency repositories in the format `repository-id:repository-url:snapshots-enabled`.'
     required: false

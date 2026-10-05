@@ -885,6 +885,8 @@ Use `mvn-server-credentials` to add more than one credential entry to the genera
 
 When this input is set, it replaces the single server configured by `server-id`, `server-username-env-var`, and `server-password-env-var`.
 
+Use `mvn-server-repository-origins` when a Maven server credential must be allowed for an explicit repository origin. Each line has the format `server-id:repository-origin`; a server can have multiple origins. This is required by Maven 3.10 and later when the repository URL is not otherwise associated with the server ID.
+
 ```yaml
 steps:
   - uses: actions/checkout@v7
@@ -896,6 +898,9 @@ steps:
       mvn-server-credentials: |
         releases:RELEASES_USERNAME:RELEASES_PASSWORD
         snapshots:SNAPSHOTS_USERNAME:SNAPSHOTS_PASSWORD
+      mvn-server-repository-origins: |
+        releases:https://central.sonatype.com
+        snapshots:https://central.sonatype.com
   - name: Publish with Maven
     run: mvn deploy
     env:
@@ -913,11 +918,17 @@ This configuration produces the following server entries:
     <id>releases</id>
     <username>${env.RELEASES_USERNAME}</username>
     <password>${env.RELEASES_PASSWORD}</password>
+    <repositoryOrigins>
+      <repositoryOrigin>https://central.sonatype.com</repositoryOrigin>
+    </repositoryOrigins>
   </server>
   <server>
     <id>snapshots</id>
     <username>${env.SNAPSHOTS_USERNAME}</username>
     <password>${env.SNAPSHOTS_PASSWORD}</password>
+    <repositoryOrigins>
+      <repositoryOrigin>https://central.sonatype.com</repositoryOrigin>
+    </repositoryOrigins>
   </server>
 </servers>
 ```
