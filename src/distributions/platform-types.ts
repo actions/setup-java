@@ -1,5 +1,6 @@
 import fs from 'fs';
 import semver from 'semver';
+import {normalizeJavaVersionToSemver} from '../util.js';
 import {JavaDistribution} from './package-types.js';
 
 export type JavaPlatform = 'linux' | 'macos' | 'windows' | 'solaris';
@@ -289,29 +290,18 @@ function isJavaDistribution(value: string): value is JavaDistribution {
 }
 
 function isVersionCompatible(version: string, supportedRange: string): boolean {
-  let normalizedVersion = version.trim().toLowerCase();
+  const normalizedVersion = version.trim().toLowerCase();
   if (normalizedVersion === 'latest') {
     return true;
   }
-  if (/^\d+(\.\d+){3,}$/.test(normalizedVersion)) {
-    normalizedVersion = normalizeExtendedVersionToSemver(normalizedVersion);
-  }
-
   const requestedRange = semver.validRange(
-    normalizedVersion.replace(/-ea$/, '')
+    normalizeJavaVersionToSemver(
+      normalizedVersion.replace(/-ea$/, '').replace('-ea.', '+')
+    )
   );
   const capabilityRange = semver.validRange(supportedRange);
   if (!requestedRange || !capabilityRange) {
     return true;
-  }
-
-  function normalizeExtendedVersionToSemver(version: string): string {
-    const versionParts = version.split('.');
-    const mainVersion = versionParts.slice(0, 3).join('.');
-    if (versionParts.length > 3) {
-      return `${mainVersion}+${versionParts.slice(3).join('.')}`;
-    }
-    return version;
   }
 
   return semver.intersects(requestedRange, capabilityRange, {

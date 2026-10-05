@@ -82,7 +82,7 @@ describe('getJavaDistribution', () => {
     );
   });
 
-  it.each(['8', '23.x', '23.0.1.1', '23.0.1.1+1', '<24'])(
+  it.each(['8', '23.x', '23.0.1.1', '23.0.1.1+1', '<24', 'jdk-23+35'])(
     "rejects Temurin java-package 'jdk+jmods' for version %s",
     async version => {
       await expect(
@@ -96,7 +96,15 @@ describe('getJavaDistribution', () => {
     }
   );
 
-  it.each(['24', '24.0.1.1', '25.0.4.1+1', '25-ea', '>=21', 'latest'])(
+  it.each([
+    '24',
+    '24.0.1.1',
+    '25.0.4.1+1',
+    '25-ea',
+    '>=21',
+    'latest',
+    'jdk-27+35'
+  ])(
     "accepts Temurin java-package 'jdk+jmods' for version %s",
     async version => {
       expect(
@@ -115,6 +123,17 @@ describe('getJavaDistribution', () => {
         installerOptions('not-a-package')
       )
     ).toBeNull();
+  });
+
+  it('does not change the distribution or package for a jdk-prefixed version', async () => {
+    const distribution = await getJavaDistribution(
+      JavaDistribution.Zulu,
+      installerOptions('jre', 'jdk-27+35')
+    );
+
+    expect(distribution!['distribution']).toBe('Zulu');
+    expect(distribution!['packageType']).toBe('jre');
+    expect(distribution!['version']).toBe('27.0.0+35');
   });
 
   it.each(['adopt', 'adopt-hotspot', 'adopt-openj9'])(

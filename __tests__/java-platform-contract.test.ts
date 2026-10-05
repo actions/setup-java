@@ -102,6 +102,24 @@ describe('Java platform capabilities', () => {
     }
   );
 
+  it.each(['jdk-27+35', '27+35', 'jdk-27-ea.35'])(
+    'enforces version-dependent architecture restrictions for %s',
+    version => {
+      expect(() =>
+        validateJavaPlatform('corretto', 'linux', 'x86', version)
+      ).toThrow(/x86 \(<12\)/);
+    }
+  );
+
+  it.each(['jdk-11+9', '11+9', 'jdk-11-ea.9'])(
+    'accepts compatible numeric release tags: %s',
+    version => {
+      expect(validateJavaPlatform('corretto', 'linux', 'x86', version)).toBe(
+        'x86'
+      );
+    }
+  );
+
   it('allows local archives on any platform and architecture', () => {
     expect(validateJavaPlatform('jdkfile', 'aix', 'mips64', '21')).toBe(
       'mips64'

@@ -511,18 +511,28 @@ export function convertVersionToSemver(version: number[] | string) {
 }
 
 /**
- * Java versions (JEP 322) can contain more numeric fields than SemVer allows,
- * e.g. '11.0.9.1' or Temurin respins such as '26.0.2.1+1'. Move the extra
- * fields into SemVer build metadata ('11.0.9+1', '26.0.2+1.1'). Any other
- * input (ranges, regular SemVer versions) is returned unchanged.
+ * Normalize numeric Java versions, optionally prefixed with 'jdk-'. Pad
+ * abbreviated build requests ('27+35' -> '27.0.0+35') to preserve exact
+ * matching, and move extra JEP 322 fields into build metadata
+ * ('26.0.2.1+1' -> '26.0.2+1.1'). Leave ranges unchanged.
  */
 export function normalizeJavaVersionToSemver(version: string): string {
-  const match = /^(\d+(?:\.\d+){3,})(?:\+([0-9A-Za-z.-]+))?$/.exec(version);
+  const match = /^(?:jdk-)?(\d+(?:\.\d+)*)(?:\+([0-9A-Za-z.-]+))?$/.exec(
+    version
+  );
   if (!match) {
     return version;
   }
-  const converted = convertVersionToSemver(match[1]);
-  return match[2] ? `${converted}.${match[2]}` : converted;
+  const versionParts = match[1].split('.');
+  if (match[2]) {
+    while (versionParts.length < 3) {
+      versionParts.push('0');
+    }
+  }
+  const converted = convertVersionToSemver(versionParts.join('.'));
+  return match[2]
+    ? `${converted}${versionParts.length > 3 ? '.' : '+'}${match[2]}`
+    : converted;
 }
 
 /**

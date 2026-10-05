@@ -233,9 +233,12 @@ Additional distribution notes:
 | --- | --- |
 | Major version | `8`, `11`, `17`, `21`, `25` |
 | Specific feature or patch version | `11.0`, `11.0.4`, `17.0`, `8.0.282+8` |
+| Exact build, with optional `jdk-` prefix | `27+35`, `27.0+35`, `27.0.0+35`, `jdk-27+35` |
 | JEP 322 multi-field versions | `11.0.9.1`, `18.0.1.1`, `26.0.2.1+1` |
 | Early access | `15-ea`, `15.0.0-ea`, `27-ea` |
 | Latest stable GA release | `latest` |
+
+Numeric Java versions can use a `jdk-` prefix. For example, `jdk-27+35`, `27+35`, and `27.0+35` all normalize to `27.0.0+35` and pin that exact build; `jdk-27` and `27` remain major-version ranges. The prefix does not select a distribution or package type. Release availability depends on the selected distribution and platform.
 
 When `check-latest` is `false`, the action first tries the runner tool cache for the requested distribution, package type, architecture, and version range. It downloads Java only when no matching cached version is found. When `check-latest` is `true`, the action checks remote metadata first and downloads if the cached version is not current.
 

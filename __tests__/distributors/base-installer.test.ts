@@ -374,6 +374,49 @@ describe('findInToolcache', () => {
   );
 });
 
+describe('exact build requests in tool-cache', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it.each(['jdk-27+35', '27+35', '27.0+35', '27.0.0+35'])(
+    'only matches the requested build for %s',
+    input => {
+      const findAllVersions = jest.mocked(tc.findAllVersions);
+      findAllVersions.mockReturnValue([
+        '27.0.1-35',
+        '27.0.0-36',
+        '27.0.0-ea.35',
+        '27.0.0-35'
+      ]);
+      jest
+        .mocked(util.getToolcachePath)
+        .mockImplementation(
+          (toolname, version, architecture) =>
+            `/hostedtoolcache/${toolname}/${version}/${architecture}`
+        );
+      const distribution = new EmptyJavaBase({
+        version: input,
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+
+      expect(distribution['findInToolcache']()).toEqual({
+        version: '27.0.0+35',
+        path: '/hostedtoolcache/Java_Empty_jdk/27.0.0-35/x64'
+      });
+
+      findAllVersions.mockReturnValue([
+        '27.0.1-35',
+        '27.0.0-36',
+        '27.0.0-ea.35'
+      ]);
+      expect(distribution['findInToolcache']()).toBeNull();
+    }
+  );
+});
+
 describe('setupJava', () => {
   const actualJavaVersion = '11.0.9';
   const installedJavaVersion = '11.0.8';
@@ -1749,6 +1792,15 @@ describe('normalizeVersion', () => {
   const DummyJavaBase = JavaBase as any;
 
   it.each([
+    ['jdk-27+35', {version: '27.0.0+35', stable: true, latest: false}],
+    ['27+35', {version: '27.0.0+35', stable: true, latest: false}],
+    ['27.0+35', {version: '27.0.0+35', stable: true, latest: false}],
+    ['jdk-27', {version: '27', stable: true, latest: false}],
+    ['jdk-27.0', {version: '27.0', stable: true, latest: false}],
+    ['jdk-27-ea', {version: '27', stable: false, latest: false}],
+    ['jdk-27+35-ea', {version: '27.0.0+35', stable: false, latest: false}],
+    ['jdk-27-ea.35', {version: '27.0.0+35', stable: false, latest: false}],
+    ['jdk-26.0.2.1+1', {version: '26.0.2+1.1', stable: true, latest: false}],
     ['11', {version: '11', stable: true, latest: false}],
     ['11.0', {version: '11.0', stable: true, latest: false}],
     ['11.0.10', {version: '11.0.10', stable: true, latest: false}],
@@ -1776,6 +1828,24 @@ describe('normalizeVersion', () => {
     ).toThrow(
       `The string '${version}' is not valid SemVer notation for a Java version. Please check README file for code snippets and more detailed information`
     );
+  });
+
+  it.each([
+    'jdk-',
+    'jdk-latest',
+    'jdk-27.x',
+    'jdk->=27',
+    'jdk8u442-b06',
+    'temurin-27+35',
+    'jdk-27-ea+35',
+    'jdk-27+',
+    'jdk-27+35..1',
+    '27+35..1',
+    'jdk-27..0+35'
+  ])('rejects malformed or unsupported release tags: %s', input => {
+    expect(() =>
+      DummyJavaBase.prototype.normalizeVersion.call(null, input)
+    ).toThrow(/is not valid SemVer notation for a Java version/);
   });
 
   it.each(['latest-ea', 'latest.1', 'LATEST-EA', '  latest-ea  '])(

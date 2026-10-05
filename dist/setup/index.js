@@ -31278,7 +31278,9 @@ function createUnsupportedPackageError(distributionName, packageType, supportedP
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(2088);
 /* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(semver__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _package_types_js__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(7835);
+/* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(4527);
+/* harmony import */ var _package_types_js__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(7835);
+
 
 
 
@@ -31292,21 +31294,21 @@ const STANDARD_LINUX = [
     's390x'
 ];
 const JAVA_PLATFORM_CAPABILITIES = {
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Temurin]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.Temurin]: {
         platforms: {
             linux: [...STANDARD_LINUX, { architecture: 'armv7', versionRange: '<18' }],
             macos: X64_ARM64,
             windows: ['x64', 'x86', 'aarch64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Zulu]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.Zulu]: {
         platforms: {
             linux: ['x64', 'x86', 'armv7', 'aarch64'],
             macos: X64_ARM64,
             windows: ['x64', 'x86', 'aarch64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Liberica]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.Liberica]: {
         platforms: {
             linux: ['x64', 'x86', 'armv7', 'aarch64', 'ppc64le'],
             macos: X64_ARM64,
@@ -31314,31 +31316,31 @@ const JAVA_PLATFORM_CAPABILITIES = {
             solaris: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.LibericaNik]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.LibericaNik]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: X64_ARM64
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.JdkFile]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.JdkFile]: {
         unrestricted: true
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Microsoft]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.Microsoft]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: X64_ARM64
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Semeru]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.Semeru]: {
         platforms: {
             linux: ['x64', 'x86', 'ppc64le', 'ppc64', 's390x', 'aarch64'],
             macos: X64_ARM64,
             windows: ['x64', 'aarch64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Corretto]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.Corretto]: {
         platforms: {
             linux: [
                 'x64',
@@ -31350,62 +31352,62 @@ const JAVA_PLATFORM_CAPABILITIES = {
             windows: ['x64', { architecture: 'x86', versionRange: '<12' }]
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Oracle]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.Oracle]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Dragonwell]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.Dragonwell]: {
         platforms: {
             linux: X64_ARM64,
             windows: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.SapMachine]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.SapMachine]: {
         platforms: {
             linux: ['x64', 'aarch64', 'ppc64le'],
             macos: X64_ARM64,
             windows: X64_ARM64
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.GraalVM]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.GraalVM]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.GraalVMCommunity]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.GraalVMCommunity]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.JetBrains]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.JetBrains]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: X64_ARM64
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.Kona]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.Kona]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.OracleOpenJdk]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.OracleOpenJdk]: {
         platforms: {
             linux: X64_ARM64,
             macos: X64_ARM64,
             windows: ['x64']
         }
     },
-    [_package_types_js__WEBPACK_IMPORTED_MODULE_2__/* .JavaDistribution */ .zS.RedHat]: {
+    [_package_types_js__WEBPACK_IMPORTED_MODULE_3__/* .JavaDistribution */ .zS.RedHat]: {
         platforms: {
             linux: [
                 'x64',
@@ -31492,25 +31494,14 @@ function isJavaDistribution(value) {
     return Object.prototype.hasOwnProperty.call(JAVA_PLATFORM_CAPABILITIES, value);
 }
 function isVersionCompatible(version, supportedRange) {
-    let normalizedVersion = version.trim().toLowerCase();
+    const normalizedVersion = version.trim().toLowerCase();
     if (normalizedVersion === 'latest') {
         return true;
     }
-    if (/^\d+(\.\d+){3,}$/.test(normalizedVersion)) {
-        normalizedVersion = normalizeExtendedVersionToSemver(normalizedVersion);
-    }
-    const requestedRange = semver__WEBPACK_IMPORTED_MODULE_1___default().validRange(normalizedVersion.replace(/-ea$/, ''));
+    const requestedRange = semver__WEBPACK_IMPORTED_MODULE_1___default().validRange((0,_util_js__WEBPACK_IMPORTED_MODULE_2__/* .normalizeJavaVersionToSemver */ .zZ)(normalizedVersion.replace(/-ea$/, '').replace('-ea.', '+')));
     const capabilityRange = semver__WEBPACK_IMPORTED_MODULE_1___default().validRange(supportedRange);
     if (!requestedRange || !capabilityRange) {
         return true;
-    }
-    function normalizeExtendedVersionToSemver(version) {
-        const versionParts = version.split('.');
-        const mainVersion = versionParts.slice(0, 3).join('.');
-        if (versionParts.length > 3) {
-            return `${mainVersion}+${versionParts.slice(3).join('.')}`;
-        }
-        return version;
     }
     return semver__WEBPACK_IMPORTED_MODULE_1___default().intersects(requestedRange, capabilityRange, {
         includePrerelease: true
@@ -31975,18 +31966,26 @@ function convertVersionToSemver(version) {
     return mainVersion;
 }
 /**
- * Java versions (JEP 322) can contain more numeric fields than SemVer allows,
- * e.g. '11.0.9.1' or Temurin respins such as '26.0.2.1+1'. Move the extra
- * fields into SemVer build metadata ('11.0.9+1', '26.0.2+1.1'). Any other
- * input (ranges, regular SemVer versions) is returned unchanged.
+ * Normalize numeric Java versions, optionally prefixed with 'jdk-'. Pad
+ * abbreviated build requests ('27+35' -> '27.0.0+35') to preserve exact
+ * matching, and move extra JEP 322 fields into build metadata
+ * ('26.0.2.1+1' -> '26.0.2+1.1'). Leave ranges unchanged.
  */
 function normalizeJavaVersionToSemver(version) {
-    const match = /^(\d+(?:\.\d+){3,})(?:\+([0-9A-Za-z.-]+))?$/.exec(version);
+    const match = /^(?:jdk-)?(\d+(?:\.\d+)*)(?:\+([0-9A-Za-z.-]+))?$/.exec(version);
     if (!match) {
         return version;
     }
-    const converted = convertVersionToSemver(match[1]);
-    return match[2] ? `${converted}.${match[2]}` : converted;
+    const versionParts = match[1].split('.');
+    if (match[2]) {
+        while (versionParts.length < 3) {
+            versionParts.push('0');
+        }
+    }
+    const converted = convertVersionToSemver(versionParts.join('.'));
+    return match[2]
+        ? `${converted}${versionParts.length > 3 ? '.' : '+'}${match[2]}`
+        : converted;
 }
 /**
  * Builds a validator for the bytes currently served by a URL from the response
