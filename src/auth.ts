@@ -29,6 +29,8 @@ export interface MavenRepositorySettings {
   prioritizeCentral: boolean;
 }
 
+const MAVEN_REPOSITORY_ORIGIN = /^[A-Za-z][A-Za-z0-9+.-]*:\/\/[^/?#@]+\/?$/;
+
 export async function configureAuthentication() {
   const servers = getMavenServerSettings();
   const repositorySettings = getMavenRepositorySettings();
@@ -195,6 +197,9 @@ export function addMavenServerRepositoryOrigins(
 
     let url: URL;
     try {
+      if (!MAVEN_REPOSITORY_ORIGIN.test(value)) {
+        throw new Error();
+      }
       url = new URL(value);
     } catch {
       throw new Error(
@@ -215,9 +220,7 @@ export function addMavenServerRepositoryOrigins(
     }
 
     const explicitPort = /:(\d+)\/?$/.exec(value)?.[1];
-    const port = explicitPort
-      ? Number.parseInt(explicitPort, 10)
-      : undefined;
+    const port = explicitPort ? Number.parseInt(explicitPort, 10) : undefined;
     const includePort =
       port !== undefined &&
       !(

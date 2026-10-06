@@ -38,6 +38,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+const MAVEN_REPOSITORY_ORIGIN = /^[A-Za-z][A-Za-z0-9+.-]*:\/\/[^/?#@]+\/?$/;
 async function configureAuthentication() {
     const servers = getMavenServerSettings();
     const repositorySettings = getMavenRepositorySettings();
@@ -132,6 +133,9 @@ function addMavenServerRepositoryOrigins(servers, entries) {
         }
         let url;
         try {
+            if (!MAVEN_REPOSITORY_ORIGIN.test(value)) {
+                throw new Error();
+            }
             url = new URL(value);
         }
         catch {
@@ -145,7 +149,12 @@ function addMavenServerRepositoryOrigins(servers, entries) {
             url.hash) {
             throw new Error(`Invalid repository origin '${value}' in mvn-server-repository-origins at line ${index + 1}`);
         }
-        const origin = `${url.protocol}//${url.host}`;
+        const explicitPort = /:(\d+)\/?$/.exec(value)?.[1];
+        const port = explicitPort ? Number.parseInt(explicitPort, 10) : undefined;
+        const includePort = port !== undefined &&
+            !((url.protocol === 'http:' && port === 80) ||
+                (url.protocol === 'https:' && port === 443));
+        const origin = `${url.protocol}//${url.hostname}${includePort ? `:${port}` : ''}`;
         const origins = originsByServer.get(id) || [];
         if (!origins.includes(origin)) {
             origins.push(origin);

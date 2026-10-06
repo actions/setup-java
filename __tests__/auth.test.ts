@@ -843,8 +843,10 @@ describe('auth tests', () => {
         [
           'central:https://central.sonatype.com/',
           'central:https://central.sonatype.com',
+          'central:https://central.sonatype.com:443',
           'packages:https://maven.pkg.github.com',
-          'packages:ssh://packages.example.com'
+          'packages:ssh://packages.example.com:22',
+          'packages:ftp://packages.example.com:21'
         ]
       )
     ).toEqual([
@@ -860,7 +862,8 @@ describe('auth tests', () => {
         passwordEnvVar: 'GITHUB_TOKEN',
         repositoryOrigins: [
           'https://maven.pkg.github.com',
-          'ssh://packages.example.com'
+          'ssh://packages.example.com:22',
+          'ftp://packages.example.com:21'
         ]
       }
     ]);
@@ -881,6 +884,31 @@ describe('auth tests', () => {
       entries: ['central:https://repo.example.com/path'],
       error:
         "Invalid repository origin 'https://repo.example.com/path' in mvn-server-repository-origins at line 1"
+    },
+    {
+      entries: ['central:https:repo.example.com'],
+      error:
+        "Invalid repository origin 'https:repo.example.com' in mvn-server-repository-origins at line 1"
+    },
+    {
+      entries: ['central:https:/repo.example.com'],
+      error:
+        "Invalid repository origin 'https:/repo.example.com' in mvn-server-repository-origins at line 1"
+    },
+    {
+      entries: ['central:https://repo.example.com?'],
+      error:
+        "Invalid repository origin 'https://repo.example.com?' in mvn-server-repository-origins at line 1"
+    },
+    {
+      entries: ['central:https://repo.example.com#'],
+      error:
+        "Invalid repository origin 'https://repo.example.com#' in mvn-server-repository-origins at line 1"
+    },
+    {
+      entries: ['central:https://@repo.example.com'],
+      error:
+        "Invalid repository origin 'https://@repo.example.com' in mvn-server-repository-origins at line 1"
     }
   ])('rejects invalid Maven server repository origins', ({entries, error}) => {
     expect(() =>
