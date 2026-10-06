@@ -214,7 +214,17 @@ export function addMavenServerRepositoryOrigins(
       );
     }
 
-    const origin = `${url.protocol}//${url.host}`;
+    const explicitPort = /:(\d+)\/?$/.exec(value)?.[1];
+    const port = explicitPort
+      ? Number.parseInt(explicitPort, 10)
+      : undefined;
+    const includePort =
+      port !== undefined &&
+      !(
+        (url.protocol === 'http:' && port === 80) ||
+        (url.protocol === 'https:' && port === 443)
+      );
+    const origin = `${url.protocol}//${url.hostname}${includePort ? `:${port}` : ''}`;
     const origins = originsByServer.get(id) || [];
     if (!origins.includes(origin)) {
       origins.push(origin);
