@@ -318,6 +318,21 @@ describe('auth tests', () => {
     ).toEqual(expectedSettings);
   });
 
+  it('generates repository origins for a Maven server', () => {
+    const settings = auth.generate([
+      {
+        id: 'central',
+        usernameEnvVar: 'CENTRAL_USER',
+        passwordEnvVar: 'CENTRAL_PASS',
+        repositoryOrigins: ['https://central.sonatype.com']
+      }
+    ]);
+
+    expect(settings).toContain(`      <repositoryOrigins>
+        <repositoryOrigin>https://central.sonatype.com</repositoryOrigin>
+      </repositoryOrigins>`);
+  });
+
   it('does not add a gpg profile when the passphrase env var is the maven-gpg-plugin default', () => {
     const id = 'packages';
     const username = 'USER';
@@ -749,16 +764,23 @@ describe('auth tests', () => {
   });
 
   it('uses multiline Maven server credentials instead of single-server inputs', () => {
-    (core.getMultilineInput as jest.Mock).mockReturnValue([
-      'releases:RELEASES_USERNAME:RELEASES_PASSWORD',
-      'snapshots:SNAPSHOTS_USERNAME:SNAPSHOTS_PASSWORD'
-    ]);
+    (core.getMultilineInput as jest.Mock).mockImplementation((name: string) =>
+      name === 'mvn-server-credentials'
+        ? [
+            'releases:RELEASES_USERNAME:RELEASES_PASSWORD',
+            'snapshots:SNAPSHOTS_USERNAME:SNAPSHOTS_PASSWORD'
+          ]
+        : name === 'mvn-server-repository-origins'
+          ? ['releases:https://repo.example.com']
+          : []
+    );
 
     expect(auth.getMavenServerSettings()).toEqual([
       {
         id: 'releases',
         usernameEnvVar: 'RELEASES_USERNAME',
-        passwordEnvVar: 'RELEASES_PASSWORD'
+        passwordEnvVar: 'RELEASES_PASSWORD',
+        repositoryOrigins: ['https://repo.example.com']
       },
       {
         id: 'snapshots',
@@ -801,6 +823,106 @@ describe('auth tests', () => {
       }
     ]);
     expect(core.warning).toHaveBeenCalledTimes(2);
+  });
+
+  it('adds normalized repository origins to matching Maven servers', () => {
+    expect(
+      auth.addMavenServerRepositoryOrigins(
+        [
+          {
+            id: 'central',
+            usernameEnvVar: 'CENTRAL_USER',
+            passwordEnvVar: 'CENTRAL_PASS'
+          },
+          {
+            id: 'packages',
+            usernameEnvVar: 'GITHUB_ACTOR',
+            passwordEnvVar: 'GITHUB_TOKEN'
+          }
+        ],
+        [
+          'central:https://central.sonatype.com/',
+          'central:https://central.sonatype.com',
+          'central:https://central.sonatype.com:443',
+          'packages:https://maven.pkg.github.com',
+          'packages:ssh://packages.example.com:22',
+          'packages:ftp://packages.example.com:21'
+        ]
+      )
+    ).toEqual([
+      {
+        id: 'central',
+        usernameEnvVar: 'CENTRAL_USER',
+        passwordEnvVar: 'CENTRAL_PASS',
+        repositoryOrigins: ['https://central.sonatype.com']
+      },
+      {
+        id: 'packages',
+        usernameEnvVar: 'GITHUB_ACTOR',
+        passwordEnvVar: 'GITHUB_TOKEN',
+        repositoryOrigins: [
+          'https://maven.pkg.github.com',
+          'ssh://packages.example.com:22',
+          'ftp://packages.example.com:21'
+        ]
+      }
+    ]);
+  });
+
+  it.each([
+    {
+      entries: ['central'],
+      error:
+        'Invalid mvn-server-repository-origins entry at line 1. Expected format: server-id:repository-origin'
+    },
+    {
+      entries: ['other:https://repo.example.com'],
+      error:
+        "Unknown server-id 'other' in mvn-server-repository-origins at line 1"
+    },
+    {
+      entries: ['central:https://repo.example.com/path'],
+      error:
+        "Invalid repository origin 'https://repo.example.com/path' in mvn-server-repository-origins at line 1"
+    },
+    {
+      entries: ['central:https:repo.example.com'],
+      error:
+        "Invalid repository origin 'https:repo.example.com' in mvn-server-repository-origins at line 1"
+    },
+    {
+      entries: ['central:https:/repo.example.com'],
+      error:
+        "Invalid repository origin 'https:/repo.example.com' in mvn-server-repository-origins at line 1"
+    },
+    {
+      entries: ['central:https://repo.example.com?'],
+      error:
+        "Invalid repository origin 'https://repo.example.com?' in mvn-server-repository-origins at line 1"
+    },
+    {
+      entries: ['central:https://repo.example.com#'],
+      error:
+        "Invalid repository origin 'https://repo.example.com#' in mvn-server-repository-origins at line 1"
+    },
+    {
+      entries: ['central:https://@repo.example.com'],
+      error:
+        "Invalid repository origin 'https://@repo.example.com' in mvn-server-repository-origins at line 1"
+    }
+  ])('rejects invalid Maven server repository origins', ({entries, error}) => {
+    expect(() =>
+      auth.addMavenServerRepositoryOrigins(
+        [
+          {
+            id: 'central',
+            usernameEnvVar: 'CENTRAL_USER',
+            passwordEnvVar: 'CENTRAL_PASS'
+          }
+        ],
+        entries
+      )
+    ).toThrow(error);
   });
 
   function xmlElementText(xml: string, tagName: string): string {
