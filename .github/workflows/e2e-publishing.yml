@@ -174,3 +174,115 @@ jobs:
           if (-not (Test-Path $path)) {
             throw "settings.xml file is not found in expected location"
           }
+
+  test-maven-repositories:
+    name: Maven ${{ matrix.repositories }} repositories
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        repositories: [dependencies, plugins, both]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Prepare Maven model inspection
+        run: |
+          $directory = Join-Path $env:RUNNER_TEMP "maven-repository-test"
+          New-Item -Path $directory -ItemType Directory -Force | Out-Null
+          $pomPath = Join-Path $directory "pom.xml"
+          $warmSettingsPath = Join-Path $directory "warm-settings.xml"
+          $cachePath = Join-Path $directory "repository"
+          $outputPath = Join-Path $directory "warm-effective-pom.xml"
+
+          # This project repository keeps the inspection plugin available offline
+          # after the generated settings disable inherited plugin Central.
+          @'
+          <project xmlns="http://maven.apache.org/POM/4.0.0">
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>setup-java.test</groupId>
+            <artifactId>repository-settings</artifactId>
+            <version>1.0</version>
+            <pluginRepositories>
+              <pluginRepository>
+                <id>inspection</id>
+                <url>https://repo.maven.apache.org/maven2</url>
+              </pluginRepository>
+            </pluginRepositories>
+          </project>
+          '@ | Set-Content -Path $pomPath
+          '<settings />' | Set-Content -Path $warmSettingsPath
+
+          mvn --batch-mode --no-transfer-progress --settings $warmSettingsPath `
+            "-Dmaven.repo.local=$cachePath" --file $pomPath `
+            org.apache.maven.plugins:maven-help-plugin:3.5.1:effective-pom `
+            "-Doutput=$outputPath"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not prepare the Maven Help Plugin"
+          }
+      - name: Configure dependency and plugin repositories
+        uses: ./
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          settings-path: ${{ runner.temp }}/maven-repository-test/settings
+          mvn-server-credentials: |
+            private:PRIVATE_USERNAME:PRIVATE_TOKEN
+          mvn-repositories: ${{ matrix.repositories != 'plugins' && 'private:https://repo.example.invalid/maven:false' || '' }}
+          mvn-plugin-repositories: ${{ matrix.repositories != 'dependencies' && 'private:https://repo.example.invalid/maven:false' || '' }}
+          mvn-repositories-include-central: false
+      - name: Validate generated settings and effective Maven repositories
+        env:
+          REPOSITORY_CONFIGURATION: ${{ matrix.repositories }}
+        run: |
+          $directory = Join-Path $env:RUNNER_TEMP "maven-repository-test"
+          $settingsPath = Join-Path $directory "settings/settings.xml"
+          [xml]$settings = Get-Content -Path $settingsPath -Raw
+          $profiles = @($settings.settings.profiles.profile)
+          if ($profiles.Count -ne 1 -or $profiles[0].id -ne "setup-java-repositories") {
+            throw "Expected one repository profile"
+          }
+          $activeProfiles = @($settings.settings.activeProfiles.activeProfile)
+          if ($activeProfiles.Count -ne 1 -or $activeProfiles[0] -ne "setup-java-repositories") {
+            throw "Expected one active repository profile"
+          }
+          $server = $settings.settings.servers.server
+          if ($server.id -ne "private" -or $server.username -ne '${env.PRIVATE_USERNAME}' -or $server.password -ne '${env.PRIVATE_TOKEN}') {
+            throw "Repository credentials were not preserved"
+          }
+
+          function Assert-Repositories($repositories, $expectPrivate, $context) {
+            $central = @($repositories | Where-Object { $_.id -eq "central" })
+            if ($central.Count -ne 1 -or $central[0].releases.enabled -ne "false" -or $central[0].snapshots.enabled -ne "false") {
+              throw "$context did not disable inherited Maven Central"
+            }
+            $private = @($repositories | Where-Object { $_.id -eq "private" })
+            $expectedCount = if ($expectPrivate) { 1 } else { 0 }
+            if ($private.Count -ne $expectedCount) {
+              throw "$context has incorrect private repositories"
+            }
+            if ($expectPrivate -and ($private[0].url -ne "https://repo.example.invalid/maven" -or $private[0].snapshots.enabled -ne "false")) {
+              throw "$context has incorrect private repository settings"
+            }
+          }
+
+          $expectDependencies = $env:REPOSITORY_CONFIGURATION -ne "plugins"
+          $expectPlugins = $env:REPOSITORY_CONFIGURATION -ne "dependencies"
+          Assert-Repositories @($profiles[0].repositories.repository) $expectDependencies "Settings dependency repositories"
+          Assert-Repositories @($profiles[0].pluginRepositories.pluginRepository) $expectPlugins "Settings plugin repositories"
+
+          $pomPath = Join-Path $directory "pom.xml"
+          $cachePath = Join-Path $directory "repository"
+          $outputPath = Join-Path $directory "effective-pom.xml"
+          mvn --batch-mode --no-transfer-progress --offline --settings $settingsPath `
+            "-Dmaven.repo.local=$cachePath" --file $pomPath `
+            org.apache.maven.plugins:maven-help-plugin:3.5.1:effective-pom `
+            "-Doutput=$outputPath"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not inspect the effective Maven model"
+          }
+          [xml]$effectivePom = Get-Content -Path $outputPath -Raw
+          Assert-Repositories @($effectivePom.project.repositories.repository) $expectDependencies "Effective dependency repositories"
+          Assert-Repositories @($effectivePom.project.pluginRepositories.pluginRepository) $expectPlugins "Effective plugin repositories"
