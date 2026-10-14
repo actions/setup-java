@@ -170,8 +170,9 @@ steps:
 | `mvn-server-credentials` | Multiline Maven server credentials in the format `server-id:USERNAME_ENV:PASSWORD_ENV`. Replaces the single server configured by the three inputs above when set. | |
 | `mvn-server-repository-origins` | Multiline Maven credential origins in the format `server-id:repository-origin`. Each origin must belong to a configured server ID. Requires Maven 3.10+. | |
 | `mvn-repositories` | Multiline Maven dependency repositories in the format `repository-id:repository-url:snapshots-enabled`. | |
-| `mvn-repositories-include-central` | Include Maven Central in the generated dependency repositories profile. When `false`, Central is disabled unless an explicit `central` repository is declared. | `true` |
-| `mvn-repositories-prioritize-central` | Place Maven Central before custom dependency repositories. Has no effect when Maven Central is excluded. | `true` |
+| `mvn-plugin-repositories` | Multiline Maven plugin repositories in the format `repository-id:repository-url:snapshots-enabled`. Can be used independently of `mvn-repositories`. | |
+| `mvn-repositories-include-central` | Include Maven Central for dependency and plugin repositories in the generated profile. When `false`, Central is disabled for both types unless that type explicitly declares `central`. Has no effect when neither repository list is configured. | `true` |
+| `mvn-repositories-prioritize-central` | Place Maven Central before custom dependency and plugin repositories. Has no effect when Central is excluded or neither repository list is configured. | `true` |
 | `settings-path` | Directory where `settings.xml` is written. | `~/.m2` |
 | `overwrite-settings` | Overwrite an existing `settings.xml`. | `true` |
 | `gpg-private-key` | GPG private key to import into an isolated temporary keyring. | |
@@ -482,10 +483,20 @@ steps:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-For dependencies hosted outside Maven Central, use `mvn-repositories` to add
-resolution repositories to an active profile in the generated `settings.xml`.
-Repository IDs can match `mvn-server-credentials` IDs when authentication is
-required. See [Resolving Maven dependencies from custom repositories](docs/advanced-usage.md#resolving-maven-dependencies-from-custom-repositories).
+For dependencies hosted outside Maven Central, use `mvn-repositories`; for build
+plugins, use `mvn-plugin-repositories`. Either input adds its own repository type
+to the same active profile in the generated `settings.xml`. Repository IDs can
+match `mvn-server-credentials` IDs when authentication is required.
+See [Resolving Maven dependencies from custom repositories](docs/advanced-usage.md#resolving-maven-dependencies-from-custom-repositories)
+and [Resolving Maven plugins from custom repositories](docs/advanced-usage.md#resolving-maven-plugins-from-custom-repositories).
+
+> [!WARNING]
+> `mvn-repositories-include-central: false` now disables inherited Maven Central
+> for **both dependencies and plugins**, even in existing workflows that only
+> configure `mvn-repositories`. Builds relying on uncached plugins from Central
+> must configure `mvn-plugin-repositories` with an accessible plugin repository
+> or explicitly declare `central` there. Neither repository list configured
+> means the Central controls remain inactive.
 
 ### GPG signing
 
