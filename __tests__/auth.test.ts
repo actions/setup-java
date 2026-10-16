@@ -914,8 +914,27 @@ describe('auth tests', () => {
   });
 
   it.each([
+    'https://repo.example.com:8443',
+    'https://repo.example.com:8443/maven',
+    'https://[2001:db8::1]',
+    'https://[2001:db8::1]/maven',
+    'https://[2001:db8::1]:8443',
+    'https://[2001:db8::1]:8443/maven'
+  ])('preserves the complete mirror URL %s with an explicit selector', url => {
+    expect(
+      auth.parseMavenMirrors([`private:${url}:external:http:*,!internal`])
+    ).toEqual([{id: 'private', url, mirrorOf: 'external:http:*,!internal'}]);
+  });
+
+  it.each([
     'private',
     'private:https://repo.example.com',
+    'private:https://repo.example.com:8443',
+    'private:https://repo.example.com:8443/maven',
+    'private:https://[2001:db8::1]',
+    'private:https://[2001:db8::1]/maven',
+    'private:https://[2001:db8::1]:8443',
+    'private:https://[2001:db8::1]:8443/maven',
     ':https://repo.example.com:*',
     'private::*',
     'private:https://repo.example.com:',

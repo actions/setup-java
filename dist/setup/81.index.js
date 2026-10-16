@@ -234,15 +234,15 @@ function parseMavenMirrors(entries) {
         }
         const separator = entry.indexOf(':');
         const remainder = entry.slice(separator + 1).trim();
-        // Consume the URL scheme before looking for the selector delimiter. Selector
-        // tokens may themselves contain colons (external:* and external:http:*).
-        const scheme = /^[A-Za-z][A-Za-z0-9+.-]*:/.exec(remainder)?.[0] ?? '';
-        const fields = /^(.*?):((?:\s*!?external:(?:http:)?\*\s*|[^:,]*)(?:,(?:\s*!?external:(?:http:)?\*\s*|[^:,]*))*)$/.exec(remainder.slice(scheme.length));
+        // Protect scheme/authority colons (including IPv6 and ports) before
+        // finding the selector, which may itself contain external:http:*.
+        const urlPrefix = /^[A-Za-z][A-Za-z0-9+.-]*:(?:\/\/(?:[^/?#@\s]*@)?(?:\[[^\]]+\]|[^:/?#\s]+)(?::\d+(?=[/?#:\s]|$))?)?/.exec(remainder)?.[0] ?? '';
+        const fields = /^(.*?):((?:\s*!?external:(?:http:)?\*\s*|[^:,]*)(?:,(?:\s*!?external:(?:http:)?\*\s*|[^:,]*))*)$/.exec(remainder.slice(urlPrefix.length));
         if (separator < 0 || !fields) {
             throw new Error(`Invalid mvn-mirrors entry at line ${index + 1}. Expected format: mirror-id:mirror-url:mirror-of`);
         }
         const id = entry.slice(0, separator).trim();
-        const url = `${scheme}${fields[1]}`.trim();
+        const url = `${urlPrefix}${fields[1]}`.trim();
         const mirrorOf = fields[2].trim();
         if (!id || !url || !mirrorOf) {
             throw new Error(`Invalid mvn-mirrors entry at line ${index + 1}. mirror-id, mirror URL, and mirror-of are required`);
