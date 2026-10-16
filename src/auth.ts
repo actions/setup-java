@@ -30,11 +30,20 @@ export interface MavenRepositorySettings {
   prioritizeCentral: boolean;
 }
 
+export interface MavenMirror {
+  id: string;
+  url: string;
+  mirrorOf: string;
+}
+
 const MAVEN_REPOSITORY_ORIGIN = /^[A-Za-z][A-Za-z0-9+.-]*:\/\/[^/?#@]+\/?$/;
 
 export async function configureAuthentication() {
   const servers = getMavenServerSettings();
   const repositorySettings = getMavenRepositorySettings();
+  const mirrors = parseMavenMirrors(
+    core.getMultilineInput(constants.INPUT_MVN_MIRRORS)
+  );
   const settingsDirectory =
     core.getInput(constants.INPUT_SETTINGS_PATH) ||
     path.join(os.homedir(), constants.M2_DIR);
@@ -60,7 +69,8 @@ export async function configureAuthentication() {
     settingsDirectory,
     overwriteSettings,
     gpgPassphraseEnvVar,
-    repositorySettings
+    repositorySettings,
+    mirrors
   );
 
   if (gpgPrivateKey) {
@@ -333,6 +343,55 @@ export function parseMavenRepositories(
   return repositories;
 }
 
+// only exported for testing purposes
+export function parseMavenMirrors(entries: string[]): MavenMirror[] {
+  const mirrors: MavenMirror[] = [];
+  const mirrorIds = new Set<string>();
+
+  entries.forEach((entry, index) => {
+    if (!entry.trim()) {
+      return;
+    }
+
+    const separator = entry.indexOf(':');
+    const remainder = entry.slice(separator + 1).trim();
+    // Protect scheme/authority colons (including IPv6 and ports) before
+    // finding the selector, which may itself contain external:http:*.
+    const urlPrefix =
+      /^[A-Za-z][A-Za-z0-9+.-]*:(?:\/\/(?:[^/?#@\s]*@)?(?:\[[^\]]+\]|[^:/?#\s]+)(?::\d+(?=[/?#:\s]|$))?)?/.exec(
+        remainder
+      )?.[0] ?? '';
+    const fields =
+      /^(.*?):((?:\s*!?external:(?:http:)?\*\s*|[^:,]*)(?:,(?:\s*!?external:(?:http:)?\*\s*|[^:,]*))*)$/.exec(
+        remainder.slice(urlPrefix.length)
+      );
+    if (separator < 0 || !fields) {
+      throw new Error(
+        `Invalid mvn-mirrors entry at line ${index + 1}. Expected format: mirror-id:mirror-url:mirror-of`
+      );
+    }
+
+    const id = entry.slice(0, separator).trim();
+    const url = `${urlPrefix}${fields[1]}`.trim();
+    const mirrorOf = fields[2].trim();
+    if (!id || !url || !mirrorOf) {
+      throw new Error(
+        `Invalid mvn-mirrors entry at line ${index + 1}. mirror-id, mirror URL, and mirror-of are required`
+      );
+    }
+    if (mirrorIds.has(id)) {
+      throw new Error(
+        `Duplicate mirror-id '${id}' in mvn-mirrors input at line ${index + 1}`
+      );
+    }
+
+    mirrorIds.add(id);
+    mirrors.push({id, url, mirrorOf});
+  });
+
+  return mirrors;
+}
+
 function generateRepositorySection(
   customRepositories: MavenRepository[],
   settings: MavenRepositorySettings,
@@ -388,7 +447,8 @@ export async function createAuthenticationSettings(
   settingsDirectory: string,
   overwriteSettings: boolean,
   gpgPassphraseEnvVar: string | undefined = undefined,
-  repositorySettings: MavenRepositorySettings | undefined = undefined
+  repositorySettings: MavenRepositorySettings | undefined = undefined,
+  mirrors: MavenMirror[] = []
 ) {
   core.info(
     `Creating ${constants.MVN_SETTINGS_FILE} with server-id: ${servers.map(server => server.id).join(', ')}`
@@ -398,7 +458,7 @@ export async function createAuthenticationSettings(
   await io.mkdirP(settingsDirectory);
   await write(
     settingsDirectory,
-    generate(servers, gpgPassphraseEnvVar, repositorySettings),
+    generate(servers, gpgPassphraseEnvVar, repositorySettings, mirrors),
     overwriteSettings
   );
 }
@@ -407,7 +467,8 @@ export async function createAuthenticationSettings(
 export function generate(
   servers: MavenServerCredentials[],
   gpgPassphraseEnvVar?: string | undefined,
-  repositorySettings?: MavenRepositorySettings | undefined
+  repositorySettings?: MavenRepositorySettings | undefined,
+  mirrors: MavenMirror[] = []
 ) {
   // The maven-gpg-plugin reads the passphrase from the environment variable
   // named by the `gpg.passphraseEnvName` property (default MAVEN_GPG_PASSPHRASE).
@@ -446,6 +507,20 @@ export function generate(
     lines.push('    </server>');
   }
   lines.push('  </servers>');
+
+  if (mirrors.length) {
+    lines.push('  <mirrors>');
+    for (const mirror of mirrors) {
+      lines.push(
+        '    <mirror>',
+        `      <id>${escapeXmlText(mirror.id)}</id>`,
+        `      <url>${escapeXmlText(mirror.url)}</url>`,
+        `      <mirrorOf>${escapeXmlText(mirror.mirrorOf)}</mirrorOf>`,
+        '    </mirror>'
+      );
+    }
+    lines.push('  </mirrors>');
+  }
 
   if (repositorySettings || includeGpgPassphraseProfile) {
     lines.push('  <profiles>');

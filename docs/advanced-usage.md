@@ -28,6 +28,7 @@
 - [Testing against different platforms](#Testing-against-different-platforms)
 - [Publishing using Apache Maven](#Publishing-using-Apache-Maven)
 - [Publishing to multiple Maven servers](#publishing-to-multiple-maven-servers)
+- [Redirecting Maven repositories with mirrors](#redirecting-maven-repositories-with-mirrors)
 - [Apache Maven with a settings path](#apache-maven-with-a-settings-path)
 - [Maven transfer progress (download logs)](#Maven-transfer-progress-download-logs)
 - [Java problem matcher (compiler annotations)](#java-problem-matcher-compiler-annotations)
@@ -1089,6 +1090,73 @@ With Central included, it is placed before custom plugin repositories by
 default; `mvn-repositories-prioritize-central: false` places it after them.
 All repository generation respects `settings-path` and `overwrite-settings`;
 an existing settings file is left untouched when `overwrite-settings: false`.
+
+### Redirecting Maven repositories with mirrors
+
+Use `mvn-mirrors` to redirect matching dependency and plugin repositories,
+including Maven Central and repositories declared in project or parent POMs.
+Unlike repository profiles, mirrors replace the destination Maven contacts.
+The Central controls described above do not redirect arbitrary POM repositories.
+
+Each nonblank line has the format `mirror-id:mirror-url:mirror-of`. IDs must be
+unique within this input. URL schemes, ports, IPv6 addresses, and colons in
+`mirrorOf` selectors are preserved. An explicit `mirror-of` field is required
+after the complete URL, including any port. For example:
+
+```yaml
+steps:
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+      mvn-server-credentials: |
+        private:PRIVATE_REPOSITORY_USERNAME:PRIVATE_REPOSITORY_TOKEN
+      mvn-mirrors: |
+        private:https://maven.example.com/releases:*
+  - run: mvn --batch-mode verify
+    env:
+      PRIVATE_REPOSITORY_USERNAME: ${{ secrets.PRIVATE_REPOSITORY_USERNAME }}
+      PRIVATE_REPOSITORY_TOKEN: ${{ secrets.PRIVATE_REPOSITORY_TOKEN }}
+```
+
+This adds the following directly under `<settings>`, not inside a profile:
+
+```xml
+<mirrors>
+  <mirror>
+    <id>private</id>
+    <url>https://maven.example.com/releases</url>
+    <mirrorOf>*</mirrorOf>
+  </mirror>
+</mirrors>
+```
+
+For authentication, the mirror ID must match a server ID configured through
+`mvn-server-credentials` or the single-server inputs. Public mirrors do not need
+matching credentials. Credentials remain environment-variable references in the
+generated settings; do not put credential values in `mvn-mirrors`.
+
+Mirrors can be used alone, as above, or alongside `mvn-repositories` and
+`mvn-plugin-repositories`. They do not change those inputs or the Central
+controls. Omitting `mvn-mirrors`, or supplying only blank lines, adds no
+`<mirrors>` section or repository profile.
+
+Maven interprets `mirrorOf`: `*` matches every repository, `central` matches
+only that repository ID, `external:*` matches external repositories, and
+`external:http:*` matches external HTTP repositories. Comma-separated patterns
+such as `external:*,!internal` exclude specific IDs. Selector text and mirror
+order are retained; Maven applies its own matching and precedence rules.
+For example, a public mirror needs no additional repository or credential input:
+
+```yaml
+mvn-mirrors: |
+  public:https://mirror.example.com:8443/maven:external:*,!internal
+```
+
+Mirror generation respects `settings-path` and `overwrite-settings`. An existing
+settings file is left untouched when `overwrite-settings: false`; this input
+does not merge mirrors into that file.
 
 ### GPG
 

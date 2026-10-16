@@ -75,6 +75,9 @@ inputs:
   mvn-plugin-repositories:
     description: 'Multiline list of Maven plugin repositories in the format `repository-id:repository-url:snapshots-enabled`.'
     required: false
+  mvn-mirrors:
+    description: 'Multiline list of Maven mirrors in the format `mirror-id:mirror-url:mirror-of`. Use a matching server ID for authentication. Can be used independently of repository inputs.'
+    required: false
   mvn-repositories-include-central:
     description: 'Include Maven Central for dependency and plugin repositories in the generated profile. When false, Central is disabled for both types unless that type explicitly declares ID `central`. Has no effect when neither repository list is configured.'
     required: false
