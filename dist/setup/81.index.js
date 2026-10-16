@@ -14,6 +14,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   getInputWithDeprecatedAlias: () => (/* binding */ getInputWithDeprecatedAlias),
 /* harmony export */   getMavenRepositorySettings: () => (/* binding */ getMavenRepositorySettings),
 /* harmony export */   getMavenServerSettings: () => (/* binding */ getMavenServerSettings),
+/* harmony export */   parseMavenMirrors: () => (/* binding */ parseMavenMirrors),
 /* harmony export */   parseMavenRepositories: () => (/* binding */ parseMavenRepositories),
 /* harmony export */   parseMavenServerCredentials: () => (/* binding */ parseMavenServerCredentials)
 /* harmony export */ });
@@ -42,6 +43,7 @@ const MAVEN_REPOSITORY_ORIGIN = /^[A-Za-z][A-Za-z0-9+.-]*:\/\/[^/?#@]+\/?$/;
 async function configureAuthentication() {
     const servers = getMavenServerSettings();
     const repositorySettings = getMavenRepositorySettings();
+    const mirrors = parseMavenMirrors(_actions_core__WEBPACK_IMPORTED_MODULE_1__/* .getMultilineInput */ .q3(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_MVN_MIRRORS */ .K));
     const settingsDirectory = _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .getInput */ .V4(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_SETTINGS_PATH */ .Xh) ||
         path__WEBPACK_IMPORTED_MODULE_0__.join(os__WEBPACK_IMPORTED_MODULE_4__.homedir(), _constants_js__WEBPACK_IMPORTED_MODULE_7__/* .M2_DIR */ .iT);
     const overwriteSettings = (0,_util_js__WEBPACK_IMPORTED_MODULE_6__/* .getBooleanInput */ .Vt)(_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .INPUT_OVERWRITE_SETTINGS */ .TS, true);
@@ -51,7 +53,7 @@ async function configureAuthentication() {
     if (gpgPrivateKey) {
         _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .setSecret */ .Pq(gpgPrivateKey);
     }
-    await createAuthenticationSettings(servers, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar, repositorySettings);
+    await createAuthenticationSettings(servers, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar, repositorySettings, mirrors);
     if (gpgPrivateKey) {
         _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq('Importing private gpg key');
         const gpgHome = await _gpg_js__WEBPACK_IMPORTED_MODULE_5__/* .importKey */ .Fh(gpgPrivateKey);
@@ -222,6 +224,37 @@ function parseMavenRepositories(entries, includeCentral, inputName = _constants_
     });
     return repositories;
 }
+// only exported for testing purposes
+function parseMavenMirrors(entries) {
+    const mirrors = [];
+    const mirrorIds = new Set();
+    entries.forEach((entry, index) => {
+        if (!entry.trim()) {
+            return;
+        }
+        const separator = entry.indexOf(':');
+        const remainder = entry.slice(separator + 1).trim();
+        // Consume the URL scheme before looking for the selector delimiter. Selector
+        // tokens may themselves contain colons (external:* and external:http:*).
+        const scheme = /^[A-Za-z][A-Za-z0-9+.-]*:/.exec(remainder)?.[0] ?? '';
+        const fields = /^(.*?):((?:\s*!?external:(?:http:)?\*\s*|[^:,]*)(?:,(?:\s*!?external:(?:http:)?\*\s*|[^:,]*))*)$/.exec(remainder.slice(scheme.length));
+        if (separator < 0 || !fields) {
+            throw new Error(`Invalid mvn-mirrors entry at line ${index + 1}. Expected format: mirror-id:mirror-url:mirror-of`);
+        }
+        const id = entry.slice(0, separator).trim();
+        const url = `${scheme}${fields[1]}`.trim();
+        const mirrorOf = fields[2].trim();
+        if (!id || !url || !mirrorOf) {
+            throw new Error(`Invalid mvn-mirrors entry at line ${index + 1}. mirror-id, mirror URL, and mirror-of are required`);
+        }
+        if (mirrorIds.has(id)) {
+            throw new Error(`Duplicate mirror-id '${id}' in mvn-mirrors input at line ${index + 1}`);
+        }
+        mirrorIds.add(id);
+        mirrors.push({ id, url, mirrorOf });
+    });
+    return mirrors;
+}
 function generateRepositorySection(customRepositories, settings, element) {
     if (!customRepositories.length && settings.includeCentral) {
         return [];
@@ -253,15 +286,15 @@ function generateRepositorySection(customRepositories, settings, element) {
     lines.push(`      </${container}>`);
     return lines;
 }
-async function createAuthenticationSettings(servers, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar = undefined, repositorySettings = undefined) {
+async function createAuthenticationSettings(servers, settingsDirectory, overwriteSettings, gpgPassphraseEnvVar = undefined, repositorySettings = undefined, mirrors = []) {
     _actions_core__WEBPACK_IMPORTED_MODULE_1__/* .info */ .pq(`Creating ${_constants_js__WEBPACK_IMPORTED_MODULE_7__/* .MVN_SETTINGS_FILE */ .vO} with server-id: ${servers.map(server => server.id).join(', ')}`);
     // when an alternate m2 location is specified use only that location (no .m2 directory)
     // otherwise use the home/.m2/ path
     await _actions_io__WEBPACK_IMPORTED_MODULE_2__/* .mkdirP */ .U$(settingsDirectory);
-    await write(settingsDirectory, generate(servers, gpgPassphraseEnvVar, repositorySettings), overwriteSettings);
+    await write(settingsDirectory, generate(servers, gpgPassphraseEnvVar, repositorySettings, mirrors), overwriteSettings);
 }
 // only exported for testing purposes
-function generate(servers, gpgPassphraseEnvVar, repositorySettings) {
+function generate(servers, gpgPassphraseEnvVar, repositorySettings, mirrors = []) {
     // The maven-gpg-plugin reads the passphrase from the environment variable
     // named by the `gpg.passphraseEnvName` property (default MAVEN_GPG_PASSPHRASE).
     // Only configure it when the requested env var name differs from that default;
@@ -289,6 +322,13 @@ function generate(servers, gpgPassphraseEnvVar, repositorySettings) {
         lines.push('    </server>');
     }
     lines.push('  </servers>');
+    if (mirrors.length) {
+        lines.push('  <mirrors>');
+        for (const mirror of mirrors) {
+            lines.push('    <mirror>', `      <id>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(mirror.id)}</id>`, `      <url>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(mirror.url)}</url>`, `      <mirrorOf>${(0,_xml_js__WEBPACK_IMPORTED_MODULE_8__/* .escapeXmlText */ .I)(mirror.mirrorOf)}</mirrorOf>`, '    </mirror>');
+        }
+        lines.push('  </mirrors>');
+    }
     if (repositorySettings || includeGpgPassphraseProfile) {
         lines.push('  <profiles>');
         if (repositorySettings) {
