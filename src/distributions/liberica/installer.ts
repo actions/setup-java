@@ -171,6 +171,10 @@ export class LibericaDistributions extends JavaBase {
     const mainVersion = [featureVersion, interimVersion, updateVersion].join(
       '.'
     );
+    const patchVersion = version.version.split('+')[0].split('.')[3];
+    if (patchVersion) {
+      return `${mainVersion}+${patchVersion}.${buildVersion}`;
+    }
     if (buildVersion != 0) {
       return `${mainVersion}+${buildVersion}`;
     }

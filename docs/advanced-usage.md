@@ -83,6 +83,9 @@ steps:
 
 ### Liberica
 
+Exact patch releases use SDKMAN's `X.Y.Z+P.B` notation, including in `.sdkmanrc`.
+For example, `java=17.0.20+1.1-librca` selects BellSoft's `17.0.20.1+1` release.
+
 ```yaml
 steps:
   - uses: actions/checkout@v7

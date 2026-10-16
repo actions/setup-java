@@ -253,35 +253,51 @@ describe('findPackageForDownload', () => {
     expect(result.version).toBe(expected);
   });
 
-  describe('compound build versions', () => {
+  describe.each([
+    [17, 20],
+    [25, 4]
+  ])('patch releases for Java %s.0.%s', (featureVersion, updateVersion) => {
+    const mainVersion = `${featureVersion}.0.${updateVersion}`;
+
     beforeEach(() => {
       distribution['getAvailableVersions'] = async () =>
-        ['1', '1.1', '1.2', '1.10'].map(build => ({
-          featureVersion: 25,
+        ['+1', '.1+1', '.1+2', '.1+10', '.2+1', '.10+1'].map(suffix => ({
+          featureVersion,
           interimVersion: 0,
-          updateVersion: 4,
-          buildVersion: 1,
-          version: `25.0.4+${build}`,
-          downloadUrl: `https://download.bell-sw.com/java/25.0.4+${build}/bellsoft-jdk25.0.4+${build}-macos-aarch64.tar.gz`
+          updateVersion,
+          buildVersion: Number(suffix.split('+')[1]),
+          version: `${mainVersion}${suffix}`,
+          downloadUrl: `https://download.bell-sw.com/java/${mainVersion}${suffix}/bellsoft-jdk${mainVersion}${suffix}-macos-aarch64.tar.gz`
         }));
     });
 
     it.each([
-      ['25.0.4+1.1', '25.0.4+1.1'],
-      ['25.0.4+1', '25.0.4+1'],
-      ['25.0.4', '25.0.4+1.10'],
-      ['25', '25.0.4+1.10']
-    ])('version is %s -> %s', async (input, expected) => {
+      [`${mainVersion}+1.1`, `${mainVersion}+1.1`, '.1+1'],
+      [`${mainVersion}+1.2`, `${mainVersion}+1.2`, '.1+2'],
+      [`${mainVersion}+1.10`, `${mainVersion}+1.10`, '.1+10'],
+      [`${mainVersion}+1`, `${mainVersion}+1`, '+1'],
+      [mainVersion, `${mainVersion}+10.1`, '.10+1'],
+      [`${featureVersion}`, `${mainVersion}+10.1`, '.10+1']
+    ])('version is %s -> %s', async (input, expected, suffix) => {
       const result = await distribution['findPackageForDownload'](input);
       expect(result).toEqual({
         version: expected,
-        url: `https://download.bell-sw.com/java/${expected}/bellsoft-jdk${expected}-macos-aarch64.tar.gz`
+        url: `https://download.bell-sw.com/java/${mainVersion}${suffix}/bellsoft-jdk${mainVersion}${suffix}-macos-aarch64.tar.gz`
       });
+    });
+
+    it('sorts builds within the same patch numerically', async () => {
+      const versions = await distribution['getAvailableVersions']();
+      distribution['getAvailableVersions'] = async () =>
+        versions.filter(item => item.version.startsWith(`${mainVersion}.1+`));
+
+      const result = await distribution['findPackageForDownload'](mainVersion);
+      expect(result.version).toBe(`${mainVersion}+1.10`);
     });
 
     it('does not substitute a different compound build', async () => {
       await expect(
-        distribution['findPackageForDownload']('25.0.4+1.3')
+        distribution['findPackageForDownload'](`${mainVersion}+1.3`)
       ).rejects.toThrow(/No matching version found for SemVer/);
     });
   });
@@ -368,6 +384,36 @@ describe('convertVersionToSemver', () => {
         buildVersion: 13
       },
       '11.0.0+13'
+    ],
+    [
+      {
+        version: '17.0.20.1+1',
+        featureVersion: 17,
+        interimVersion: 0,
+        updateVersion: 20,
+        buildVersion: 1
+      },
+      '17.0.20+1.1'
+    ],
+    [
+      {
+        version: '25.0.4.1+1',
+        featureVersion: 25,
+        interimVersion: 0,
+        updateVersion: 4,
+        buildVersion: 1
+      },
+      '25.0.4+1.1'
+    ],
+    [
+      {
+        version: '17.0.20.1+2',
+        featureVersion: 17,
+        interimVersion: 0,
+        updateVersion: 20,
+        buildVersion: 2
+      },
+      '17.0.20+1.2'
     ],
     [
       {

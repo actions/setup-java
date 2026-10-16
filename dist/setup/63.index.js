@@ -131,6 +131,10 @@ class LibericaDistributions extends _base_installer_js__WEBPACK_IMPORTED_MODULE_
         const { featureVersion, interimVersion, updateVersion } = version;
         const buildVersion = version.version.split('+')[1] || version.buildVersion;
         const mainVersion = [featureVersion, interimVersion, updateVersion].join('.');
+        const patchVersion = version.version.split('+')[0].split('.')[3];
+        if (patchVersion) {
+            return `${mainVersion}+${patchVersion}.${buildVersion}`;
+        }
         if (buildVersion != 0) {
             return `${mainVersion}+${buildVersion}`;
         }
