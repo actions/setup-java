@@ -378,7 +378,7 @@ class JavaBase {
                         core/* info */.pq(`Java ${foundJava.version} was downloaded`);
                         if (javaRelease.floating) {
                             if (!semver_default().valid(foundJava.version) ||
-                                !(0,util/* isVersionSatisfies */.y)(this.version, foundJava.version)) {
+                                !this.isVersionSatisfied(this.version, foundJava.version)) {
                                 throw new Error(`The downloaded ${this.distribution} artifact reported Java ${foundJava.version}, which does not satisfy '${this.version}'.`);
                             }
                             javaRelease = { ...javaRelease, version: foundJava.version };
@@ -501,7 +501,7 @@ class JavaBase {
             return javaRelease;
         }
         if (!semver_default().valid(restored.release.version) ||
-            !(0,util/* isVersionSatisfies */.y)(this.version, restored.release.version)) {
+            !this.isVersionSatisfied(this.version, restored.release.version)) {
             core/* debug */.Yz(`Ignoring the cached concrete version '${restored.release.version}' for ${this.distribution} ${this.version}.`);
             return javaRelease;
         }
@@ -684,10 +684,10 @@ class JavaBase {
         })
             .filter(item => item.stable === this.stable);
         const satisfiedVersions = availableVersions
-            .filter(item => (0,util/* isVersionSatisfies */.y)(this.version, item.version))
+            .filter(item => this.isVersionSatisfied(this.version, item.version))
             .filter(item => item.path)
             .sort((a, b) => {
-            return -semver_default().compareBuild(a.version, b.version);
+            return -this.compareVersions(a.version, b.version);
         });
         if (!satisfiedVersions || satisfiedVersions.length === 0) {
             return null;
@@ -696,6 +696,12 @@ class JavaBase {
             version: satisfiedVersions[0].version,
             path: satisfiedVersions[0].path
         };
+    }
+    isVersionSatisfied(range, version) {
+        return (0,util/* isVersionSatisfies */.y)(range, version);
+    }
+    compareVersions(a, b) {
+        return semver_default().compareBuild(a, b);
     }
     normalizeVersion(version) {
         let stable = true;

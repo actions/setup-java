@@ -15,6 +15,7 @@ import type {
 } from '../../src/distributions/liberica/models.js';
 import {HttpClient} from '@actions/http-client';
 import os from 'os';
+import path from 'path';
 
 import manifestData from '../data/liberica.json' with {type: 'json'};
 
@@ -261,7 +262,7 @@ describe('findPackageForDownload', () => {
 
     beforeEach(() => {
       distribution['getAvailableVersions'] = async () =>
-        ['+1', '.1+1', '.1+2', '.1+10', '.2+1', '.10+1'].map(suffix => ({
+        ['+1', '+10', '.1+1', '.1+2', '.1+10', '.2+1', '.10+1'].map(suffix => ({
           featureVersion,
           interimVersion: 0,
           updateVersion,
@@ -295,6 +296,23 @@ describe('findPackageForDownload', () => {
       expect(result.version).toBe(`${mainVersion}+1.10`);
     });
 
+    it('selects the newest build for a four-component patch-only request', async () => {
+      const patchDistribution = new LibericaDistributions({
+        version: `${mainVersion}.1`,
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      patchDistribution['getAvailableVersions'] =
+        distribution['getAvailableVersions'];
+
+      await expect(
+        patchDistribution['findPackageForDownload'](
+          patchDistribution['version']
+        )
+      ).resolves.toMatchObject({version: `${mainVersion}+1.10`});
+    });
+
     it('does not substitute a different compound build', async () => {
       await expect(
         distribution['findPackageForDownload'](`${mainVersion}+1.3`)
@@ -306,6 +324,160 @@ describe('findPackageForDownload', () => {
     await expect(distribution['findPackageForDownload']('17')).rejects.toThrow(
       /No matching version found for SemVer/
     );
+  });
+});
+
+describe('patch request resolution from the constructor', () => {
+  const releases: LibericaVersion[] = ['17.0.20+10', '17.0.20.1+1'].map(
+    version => ({
+      featureVersion: 17,
+      interimVersion: 0,
+      updateVersion: 20,
+      buildVersion: Number(version.split('+')[1]),
+      version,
+      downloadUrl: `https://download.bell-sw.com/java/${version}/jdk.tar.gz`
+    })
+  );
+  let cacheRoot: string;
+  let previousToolcache: string | undefined;
+
+  beforeEach(async () => {
+    previousToolcache = process.env['RUNNER_TOOL_CACHE'];
+    cacheRoot = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'liberica-'));
+    process.env['RUNNER_TOOL_CACHE'] = cacheRoot;
+    for (const version of ['17.0.20-10', '17.0.20-1.1']) {
+      const javaPath = path.join(
+        cacheRoot,
+        'Java_Liberica_jdk',
+        version,
+        'x64'
+      );
+      await fs.promises.mkdir(javaPath, {recursive: true});
+      await fs.promises.writeFile(`${javaPath}.complete`, '');
+    }
+  });
+
+  afterEach(async () => {
+    if (previousToolcache === undefined) {
+      delete process.env['RUNNER_TOOL_CACHE'];
+    } else {
+      process.env['RUNNER_TOOL_CACHE'] = previousToolcache;
+    }
+    await fs.promises.rm(cacheRoot, {recursive: true, force: true});
+  });
+
+  it.each([
+    ['17', '17.0.20+1.1', '17.0.20.1+1'],
+    ['17.0.20', '17.0.20+1.1', '17.0.20.1+1'],
+    ['17.0.20+10', '17.0.20+10', '17.0.20+10'],
+    ['17.0.20+1.1', '17.0.20+1.1', '17.0.20.1+1'],
+    ['17.0.20.1', '17.0.20+1.1', '17.0.20.1+1'],
+    ['17.0.20.1+1', '17.0.20+1.1', '17.0.20.1+1'],
+    ['17.0.20.0', '17.0.20+10', '17.0.20+10']
+  ])(
+    'resolves %s consistently remotely and in cache',
+    async (input, expected, apiVersion) => {
+      const distribution = new LibericaDistributions({
+        version: input,
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      distribution['getAvailableVersions'] = async () => releases;
+
+      await expect(
+        distribution['findPackageForDownload'](distribution['version'])
+      ).resolves.toEqual({
+        version: expected,
+        url: `https://download.bell-sw.com/java/${apiVersion}/jdk.tar.gz`
+      });
+      expect(distribution['findInToolcache']()).toEqual({
+        version: expected,
+        path: path.join(
+          cacheRoot,
+          'Java_Liberica_jdk',
+          expected.replace('+', '-'),
+          'x64'
+        )
+      });
+    }
+  );
+
+  it.each(['17.0.20.2', '17.0.20+1.2'])(
+    'does not substitute a different patch or exact build for %s',
+    async version => {
+      const distribution = new LibericaDistributions({
+        version,
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      distribution['getAvailableVersions'] = async () => releases;
+
+      await expect(
+        distribution['findPackageForDownload'](distribution['version'])
+      ).rejects.toThrow(/No matching version found/);
+      expect(distribution['findInToolcache']()).toBeNull();
+    }
+  );
+
+  it('keeps patch-only and exact-build resolution cache identities distinct', () => {
+    const distribution = new LibericaDistributions({
+      version: '17.0.20.1',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    expect(distribution['version']).toBe('17.0.20.1');
+  });
+
+  it('orders main versions, patches, and builds consistently in cache', async () => {
+    for (const version of ['17.0.20-1.2', '17.0.20-1.10', '17.0.21-1']) {
+      const javaPath = path.join(
+        cacheRoot,
+        'Java_Liberica_jdk',
+        version,
+        'x64'
+      );
+      await fs.promises.mkdir(javaPath, {recursive: true});
+      await fs.promises.writeFile(`${javaPath}.complete`, '');
+    }
+
+    for (const [version, expected] of [
+      ['17', '17.0.21+1'],
+      ['17.0.20', '17.0.20+1.10'],
+      ['17.0.20.1', '17.0.20+1.10']
+    ]) {
+      const distribution = new LibericaDistributions({
+        version,
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      expect(distribution['findInToolcache']()?.version).toBe(expected);
+    }
+  });
+
+  it('preserves early-access handling for patch-only requests', async () => {
+    const javaPath = path.join(
+      cacheRoot,
+      'Java_Liberica_jdk',
+      '17.0.20-ea.1.2',
+      'x64'
+    );
+    await fs.promises.mkdir(javaPath, {recursive: true});
+    await fs.promises.writeFile(`${javaPath}.complete`, '');
+    const distribution = new LibericaDistributions({
+      version: '17.0.20.1-ea',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    expect(distribution['stable']).toBe(false);
+    expect(distribution['findInToolcache']()).toEqual({
+      version: '17.0.20+1.2',
+      path: javaPath
+    });
   });
 });
 
