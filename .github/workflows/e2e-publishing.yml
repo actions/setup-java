@@ -189,7 +189,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Configure Maven mirrors without repository inputs
-        uses: ./
+        uses: $/
         with:
           distribution: 'temurin'
           java-version: '21'
