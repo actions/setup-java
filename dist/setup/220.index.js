@@ -13,8 +13,8 @@ __webpack_require__.d(__webpack_exports__, {
 
 // UNUSED EXPORTS: MICROSOFT_PUBLIC_KEY
 
-// EXTERNAL MODULE: ./src/distributions/base-installer.ts + 2 modules
-var base_installer = __webpack_require__(6242);
+// EXTERNAL MODULE: ./src/distributions/base-installer.ts + 3 modules
+var base_installer = __webpack_require__(370);
 // EXTERNAL MODULE: ./src/util.ts
 var util = __webpack_require__(4527);
 // EXTERNAL MODULE: ./src/gpg.ts

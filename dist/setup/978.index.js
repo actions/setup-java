@@ -13,7 +13,7 @@ export const modules = {
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(9896);
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(fs__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(6242);
+/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(370);
 /* harmony import */ var _platform_types_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(7444);
 /* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(4527);
 

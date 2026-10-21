@@ -31,6 +31,7 @@
 - [Apache Maven with a settings path](#apache-maven-with-a-settings-path)
 - [Maven transfer progress (download logs)](#Maven-transfer-progress-download-logs)
 - [Java problem matcher (compiler annotations)](#java-problem-matcher-compiler-annotations)
+- [Blocking compromised CA certificates](#blocking-compromised-ca-certificates)
 - [Publishing using Gradle](#Publishing-using-Gradle)
 - [Hosted Tool Cache](#Hosted-Tool-Cache)
 - [Modifying Maven Toolchains](#Modifying-Maven-Toolchains)
@@ -1259,6 +1260,25 @@ jobs:
 ```
 
 Disabling the matcher only stops annotations from being created. Compiler output remains in the log, and compilation errors still fail the build step.
+
+## Blocking compromised CA certificates
+
+By default, `setup-java` adds the SHA-256 fingerprints of known compromised CA certificates to the installed JDK's blocked certificates list (`lib/security/blocked.certs`, or `blacklisted.certs` on older JDKs, including the bundled `jre/` of JDK 8). Java then rejects any TLS certificate chain that includes one of those CAs, even if the CA is still in the JDK's `cacerts` trust store.
+
+The list currently contains the compromised eMudhra intermediate CAs. Fingerprints already present in the JDK's list are not added again.
+
+If a build must still connect to a server whose certificate chains through one of these CAs, opt out:
+
+```yaml
+steps:
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+      block-compromised-certs: false
+```
+
+> **Note:** The fingerprints are written into the JDK installation itself. On self-hosted runners, a JDK that an earlier job already set up from the tool cache keeps them even when a later job sets `block-compromised-certs: false`; use `force-download: true` to get an unmodified copy.
 
 ## Publishing using Gradle
 ```yaml

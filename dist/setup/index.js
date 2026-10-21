@@ -31073,6 +31073,7 @@ module.exports = {
 /* harmony export */   ko: () => (/* binding */ MAVEN_GPG_PASSPHRASE_DEFAULT_ENV),
 /* harmony export */   m7: () => (/* binding */ INPUT_MVN_TOOLCHAIN_VENDOR),
 /* harmony export */   nr: () => (/* binding */ INPUT_MVN_TOOLCHAIN_ID),
+/* harmony export */   ot: () => (/* binding */ INPUT_BLOCK_COMPROMISED_CERTS),
 /* harmony export */   p1: () => (/* binding */ INPUT_JAVA_PACKAGE),
 /* harmony export */   qm: () => (/* binding */ MAVEN_ARGS_ENV),
 /* harmony export */   qs: () => (/* binding */ MVN_TOOLCHAINS_FILE),
@@ -31103,6 +31104,7 @@ const INPUT_CHECK_LATEST = 'check-latest';
 const INPUT_FORCE_DOWNLOAD = 'force-download';
 const INPUT_SET_DEFAULT = 'set-default';
 const INPUT_PROBLEM_MATCHER = 'problem-matcher';
+const INPUT_BLOCK_COMPROMISED_CERTS = 'block-compromised-certs';
 const INPUT_VERIFY_SIGNATURE = 'verify-signature';
 const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
 const SIGNATURE_VERIFICATION_DOCUMENTATION_URL = 'https://github.com/actions/setup-java#download-integrity-and-signatures';
@@ -36555,71 +36557,71 @@ async function getJavaDistribution(distributionName, installerOptions, jdkFile) 
     };
     switch (distributionName) {
         case package_types/* JavaDistribution */.zS.JdkFile: {
-            const { LocalDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(19)]).then(__nccwpck_require__.bind(__nccwpck_require__, 1019));
+            const { LocalDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(19)]).then(__nccwpck_require__.bind(__nccwpck_require__, 1019));
             return new LocalDistribution(normalizedInstallerOptions, jdkFile);
         }
         case package_types/* JavaDistribution */.zS.Temurin: {
-            const { TemurinDistribution, TemurinImplementation } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(463)]).then(__nccwpck_require__.bind(__nccwpck_require__, 463));
+            const { TemurinDistribution, TemurinImplementation } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(463)]).then(__nccwpck_require__.bind(__nccwpck_require__, 463));
             return new TemurinDistribution(normalizedInstallerOptions, TemurinImplementation.Hotspot);
         }
         case package_types/* JavaDistribution */.zS.Zulu: {
-            const { ZuluDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(978)]).then(__nccwpck_require__.bind(__nccwpck_require__, 9597));
+            const { ZuluDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(978)]).then(__nccwpck_require__.bind(__nccwpck_require__, 9597));
             return new ZuluDistribution(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.Liberica: {
-            const { LibericaDistributions } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(63)]).then(__nccwpck_require__.bind(__nccwpck_require__, 2063));
+            const { LibericaDistributions } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(63)]).then(__nccwpck_require__.bind(__nccwpck_require__, 2063));
             return new LibericaDistributions(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.LibericaNik: {
-            const { LibericaNikDistributions } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(524)]).then(__nccwpck_require__.bind(__nccwpck_require__, 8524));
+            const { LibericaNikDistributions } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(524)]).then(__nccwpck_require__.bind(__nccwpck_require__, 8524));
             return new LibericaNikDistributions(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.Microsoft: {
-            const { MicrosoftDistributions } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(220)]).then(__nccwpck_require__.bind(__nccwpck_require__, 3220));
+            const { MicrosoftDistributions } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(220)]).then(__nccwpck_require__.bind(__nccwpck_require__, 3220));
             return new MicrosoftDistributions(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.Semeru: {
-            const { SemeruDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(939)]).then(__nccwpck_require__.bind(__nccwpck_require__, 9939));
+            const { SemeruDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(939)]).then(__nccwpck_require__.bind(__nccwpck_require__, 9939));
             return new SemeruDistribution(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.Corretto: {
-            const { CorrettoDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(126)]).then(__nccwpck_require__.bind(__nccwpck_require__, 4126));
+            const { CorrettoDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(126)]).then(__nccwpck_require__.bind(__nccwpck_require__, 4126));
             return new CorrettoDistribution(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.Oracle: {
-            const { OracleDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(182)]).then(__nccwpck_require__.bind(__nccwpck_require__, 1182));
+            const { OracleDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(182)]).then(__nccwpck_require__.bind(__nccwpck_require__, 1182));
             return new OracleDistribution(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.Dragonwell: {
-            const { DragonwellDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(675)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7675));
+            const { DragonwellDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(675)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7675));
             return new DragonwellDistribution(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.SapMachine: {
-            const { SapMachineDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(557)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7557));
+            const { SapMachineDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(557)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7557));
             return new SapMachineDistribution(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.GraalVM: {
-            const { GraalVMDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(968)]).then(__nccwpck_require__.bind(__nccwpck_require__, 6968));
+            const { GraalVMDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(968)]).then(__nccwpck_require__.bind(__nccwpck_require__, 6968));
             return new GraalVMDistribution(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.GraalVMCommunity: {
-            const { GraalVMCommunityDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(968)]).then(__nccwpck_require__.bind(__nccwpck_require__, 6968));
+            const { GraalVMCommunityDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(968)]).then(__nccwpck_require__.bind(__nccwpck_require__, 6968));
             return new GraalVMCommunityDistribution(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.JetBrains: {
-            const { JetBrainsDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(282)]).then(__nccwpck_require__.bind(__nccwpck_require__, 2282));
+            const { JetBrainsDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(282)]).then(__nccwpck_require__.bind(__nccwpck_require__, 2282));
             return new JetBrainsDistribution(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.Kona: {
-            const { KonaDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(151)]).then(__nccwpck_require__.bind(__nccwpck_require__, 8151));
+            const { KonaDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(151)]).then(__nccwpck_require__.bind(__nccwpck_require__, 8151));
             return new KonaDistribution(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.OracleOpenJdk: {
-            const { OpenJdkDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(735)]).then(__nccwpck_require__.bind(__nccwpck_require__, 3735));
+            const { OpenJdkDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(735)]).then(__nccwpck_require__.bind(__nccwpck_require__, 3735));
             return new OpenJdkDistribution(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.RedHat: {
-            const { RedHatDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(228)]).then(__nccwpck_require__.bind(__nccwpck_require__, 8228));
+            const { RedHatDistribution } = await Promise.all(/* import() */[__nccwpck_require__.e(370), __nccwpck_require__.e(228)]).then(__nccwpck_require__.bind(__nccwpck_require__, 8228));
             return new RedHatDistribution(normalizedInstallerOptions);
         }
         default:
@@ -36691,6 +36693,7 @@ async function run() {
     const checkLatest = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_CHECK_LATEST */.YM, false);
     const forceDownload = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_FORCE_DOWNLOAD */.I9, false);
     const setDefault = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_SET_DEFAULT */.E8, true);
+    const blockCompromisedCerts = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_BLOCK_COMPROMISED_CERTS */.ot, true);
     const verifySignaturePublicKey = setup_java_core/* getInput */.V4(constants/* INPUT_VERIFY_SIGNATURE_PUBLIC_KEY */.u) || undefined;
     const toolchainIds = setup_java_core/* getMultilineInput */.q3(constants/* INPUT_MVN_TOOLCHAIN_ID */.nr);
     let actionError;
@@ -36726,6 +36729,7 @@ async function run() {
                 forceDownload,
                 cacheJdk,
                 setDefault,
+                blockCompromisedCerts,
                 verifySignature,
                 verifySignaturePublicKey,
                 distributionName,
@@ -36751,6 +36755,7 @@ async function run() {
                 forceDownload,
                 cacheJdk,
                 setDefault,
+                blockCompromisedCerts,
                 verifySignature,
                 verifySignaturePublicKey,
                 distributionName,
@@ -36814,7 +36819,7 @@ function getVerifySignatureInput() {
         : undefined;
 }
 async function installVersion(version, options, toolchainId = 0) {
-    const { distributionName, jdkFile, architecture, packageType, checkLatest, forceDownload, cacheJdk, setDefault, verifySignature, verifySignaturePublicKey, toolchainIds } = options;
+    const { distributionName, jdkFile, architecture, packageType, checkLatest, forceDownload, cacheJdk, setDefault, blockCompromisedCerts, verifySignature, verifySignaturePublicKey, toolchainIds } = options;
     const installerOptions = {
         architecture,
         packageType,
@@ -36822,6 +36827,7 @@ async function installVersion(version, options, toolchainId = 0) {
         forceDownload,
         cacheJdk,
         setDefault,
+        blockCompromisedCerts,
         verifySignature,
         verifySignaturePublicKey,
         version

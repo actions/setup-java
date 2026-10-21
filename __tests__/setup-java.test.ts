@@ -232,6 +232,7 @@ describe('setup action orchestration', () => {
     booleanInputs.set('check-latest', true);
     booleanInputs.set('force-download', true);
     booleanInputs.set('set-default', false);
+    booleanInputs.set('block-compromised-certs', false);
     inputs.set('verify-signature-public-key', 'public-key');
     (fs.readFileSync as jest.Mock).mockReturnValue(
       Buffer.from('java=21.0.5-tem')
@@ -263,6 +264,7 @@ describe('setup action orchestration', () => {
         forceDownload: true,
         cacheJdk: false,
         setDefault: false,
+        blockCompromisedCerts: false,
         verifySignature: undefined,
         verifySignaturePublicKey: 'public-key'
       },

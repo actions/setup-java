@@ -26,6 +26,7 @@ import {
   normalizeArchitecture
 } from './platform-types.js';
 import type {JdkCache} from '../jdk-cache.js';
+import {blockCompromisedCertificates} from '../blocked-certs.js';
 
 export abstract class JavaBase {
   protected http: httpm.HttpClient;
@@ -44,6 +45,7 @@ export abstract class JavaBase {
    */
   private floatingVersionVerified = false;
   protected setDefault: boolean;
+  protected blockCompromisedCerts: boolean;
   protected verifySignature: boolean;
   protected verifySignatureExplicitlyRequested: boolean;
   protected verifySignaturePublicKey: SignatureVerificationKey | undefined;
@@ -70,6 +72,7 @@ export abstract class JavaBase {
       installerOptions.setDefault !== undefined
         ? installerOptions.setDefault
         : true;
+    this.blockCompromisedCerts = installerOptions.blockCompromisedCerts ?? true;
     this.verifySignature =
       installerOptions.verifySignature ?? this.supportsSignatureVerification();
     this.verifySignatureExplicitlyRequested =
@@ -278,6 +281,10 @@ export abstract class JavaBase {
     );
     if (process.platform === 'darwin' && fs.existsSync(macOSPostfixPath)) {
       foundJava.path = macOSPostfixPath;
+    }
+
+    if (this.blockCompromisedCerts) {
+      blockCompromisedCertificates(foundJava.path);
     }
 
     if (this.setDefault) {

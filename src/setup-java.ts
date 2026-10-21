@@ -30,6 +30,10 @@ export async function run() {
   const checkLatest = getBooleanInput(constants.INPUT_CHECK_LATEST, false);
   const forceDownload = getBooleanInput(constants.INPUT_FORCE_DOWNLOAD, false);
   const setDefault = getBooleanInput(constants.INPUT_SET_DEFAULT, true);
+  const blockCompromisedCerts = getBooleanInput(
+    constants.INPUT_BLOCK_COMPROMISED_CERTS,
+    true
+  );
   const verifySignaturePublicKey =
     core.getInput(constants.INPUT_VERIFY_SIGNATURE_PUBLIC_KEY) || undefined;
   const toolchainIds = core.getMultilineInput(constants.INPUT_MVN_TOOLCHAIN_ID);
@@ -86,6 +90,7 @@ export async function run() {
         forceDownload,
         cacheJdk,
         setDefault,
+        blockCompromisedCerts,
         verifySignature,
         verifySignaturePublicKey,
         distributionName,
@@ -115,6 +120,7 @@ export async function run() {
         forceDownload,
         cacheJdk,
         setDefault,
+        blockCompromisedCerts,
         verifySignature,
         verifySignaturePublicKey,
         distributionName,
@@ -213,6 +219,7 @@ async function installVersion(
     forceDownload,
     cacheJdk,
     setDefault,
+    blockCompromisedCerts,
     verifySignature,
     verifySignaturePublicKey,
     toolchainIds
@@ -225,6 +232,7 @@ async function installVersion(
     forceDownload,
     cacheJdk,
     setDefault,
+    blockCompromisedCerts,
     verifySignature,
     verifySignaturePublicKey,
     version
@@ -270,6 +278,7 @@ interface installerInputsOptions {
   forceDownload: boolean;
   cacheJdk: boolean;
   setDefault: boolean;
+  blockCompromisedCerts: boolean;
   verifySignature: boolean | undefined;
   verifySignaturePublicKey: string | undefined;
   distributionName: string;

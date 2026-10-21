@@ -156,6 +156,7 @@ steps:
 | `force-download` | Always download Java and replace any matching version in the tool cache. | `false` |
 | `set-default` | Add Java to `PATH` and set `JAVA_HOME`. When `false`, only version-specific `JAVA_HOME_<major>_<arch>` variables are set. | `true` |
 | `problem-matcher` | Register Java compiler and uncaught exception problem matchers. | `true` |
+| `block-compromised-certs` | Add known compromised CA certificates to the installed JDK's blocked certificates list. See [Blocking compromised CA certificates](docs/advanced-usage.md#blocking-compromised-ca-certificates). | `true` |
 | `verify-signature` | Verify downloaded Java package signatures when supported. Explicitly setting this to `true` makes verification failures fatal. | Distribution-dependent; see [Download integrity and signatures](#download-integrity-and-signatures) |
 | `verify-signature-public-key` | One or more ASCII-armored GPG public keys used for signature verification. Concatenate multiple armored key blocks. Custom keys replace the bundled distribution keys. | |
 | `token` | Token for fetching GitHub.com-hosted version manifests, useful on GitHub Enterprise Server when unauthenticated requests are rate-limited. | `${{ github.token }}` on GitHub.com; empty string on GHES |

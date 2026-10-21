@@ -10,6 +10,7 @@ export const INPUT_CHECK_LATEST = 'check-latest';
 export const INPUT_FORCE_DOWNLOAD = 'force-download';
 export const INPUT_SET_DEFAULT = 'set-default';
 export const INPUT_PROBLEM_MATCHER = 'problem-matcher';
+export const INPUT_BLOCK_COMPROMISED_CERTS = 'block-compromised-certs';
 export const INPUT_VERIFY_SIGNATURE = 'verify-signature';
 export const INPUT_VERIFY_SIGNATURE_PUBLIC_KEY = 'verify-signature-public-key';
 export const SIGNATURE_VERIFICATION_DOCUMENTATION_URL =

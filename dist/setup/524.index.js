@@ -8,7 +8,7 @@ export const modules = {
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   LibericaNikDistributions: () => (/* binding */ LibericaNikDistributions)
 /* harmony export */ });
-/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(6242);
+/* harmony import */ var _base_installer_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(370);
 /* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2088);
 /* harmony import */ var semver__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(semver__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _util_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4527);

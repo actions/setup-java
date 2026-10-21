@@ -138,6 +138,10 @@ inputs:
     description: 'Whether to register the Java problem matcher (compiler errors/warnings and uncaught exceptions). Set to "false" to disable annotations.'
     required: false
     default: true
+  block-compromised-certs:
+    description: 'Add the fingerprints of known compromised CA certificates to the installed JDK''s blocked certificates list, so TLS connections through those CAs are rejected. Set to "false" to leave the JDK''s list unchanged.'
+    required: false
+    default: true
 outputs:
   distribution:
     description: 'Distribution of Java that has been installed'

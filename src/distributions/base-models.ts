@@ -8,6 +8,7 @@ export interface JavaInstallerOptions {
   forceDownload?: boolean;
   cacheJdk?: boolean;
   setDefault?: boolean;
+  blockCompromisedCerts?: boolean;
   verifySignature?: boolean;
   verifySignaturePublicKey?: SignatureVerificationKey;
 }
