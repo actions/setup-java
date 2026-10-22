@@ -1099,9 +1099,12 @@ Unlike repository profiles, mirrors replace the destination Maven contacts.
 The Central controls described above do not redirect arbitrary POM repositories.
 
 Each nonblank line has the format `mirror-id:mirror-url:mirror-of`. IDs must be
-unique within this input. URL schemes, ports, IPv6 addresses, and colons in
+unique within this input. `mirror-url` must be an absolute URL that includes a
+scheme, such as `https://`. URL schemes, ports, IPv6 addresses, and colons in
 `mirrorOf` selectors are preserved. An explicit `mirror-of` field is required
-after the complete URL, including any port. For example:
+after the complete URL, including any port. Percent-encode colons in the URL
+path, query, or fragment as `%3A`. Otherwise, text after the last unencoded
+colon may be read as the `mirror-of` value. For example:
 
 ```yaml
 steps:

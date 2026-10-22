@@ -919,7 +919,11 @@ describe('auth tests', () => {
     'https://[2001:db8::1]',
     'https://[2001:db8::1]/maven',
     'https://[2001:db8::1]:8443',
-    'https://[2001:db8::1]:8443/maven'
+    'https://[2001:db8::1]:8443/maven',
+    'https://repo.example.com/maven?redirect=https%3A//upstream.example.com%3A8443',
+    'https://repo.example.com/maven#urn%3Aartifact',
+    'https://repo.example.com/maven?redirect=https://upstream.example.com:8443',
+    'https://repo.example.com/maven#urn:artifact'
   ])('preserves the complete mirror URL %s with an explicit selector', url => {
     expect(
       auth.parseMavenMirrors([`private:${url}:external:http:*,!internal`])
@@ -935,6 +939,7 @@ describe('auth tests', () => {
     'private:https://[2001:db8::1]/maven',
     'private:https://[2001:db8::1]:8443',
     'private:https://[2001:db8::1]:8443/maven',
+    'private:repo.example.com:central',
     ':https://repo.example.com:*',
     'private::*',
     'private:https://repo.example.com:',
