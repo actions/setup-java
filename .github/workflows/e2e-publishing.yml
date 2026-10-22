@@ -175,6 +175,94 @@ jobs:
             throw "settings.xml file is not found in expected location"
           }
 
+  test-maven-mirrors:
+    name: Maven mirrors (${{ matrix.mirror-of }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        mirror-of: ['*', 'external:*']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Configure Maven mirrors without repository inputs
+        uses: $/
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          settings-path: ${{ runner.temp }}/maven-mirror-test
+          mvn-server-credentials: |
+            private:PRIVATE_USERNAME:PRIVATE_TOKEN
+          mvn-mirrors: |
+            private:https://mirror.example.invalid/maven:${{ matrix.mirror-of }}
+      - name: Validate generated settings and Maven mirror selection
+        env:
+          MIRROR_OF: ${{ matrix.mirror-of }}
+          PRIVATE_USERNAME: mirror-test-user
+          PRIVATE_TOKEN: mirror-test-token
+        run: |
+          $directory = Join-Path $env:RUNNER_TEMP "maven-mirror-test"
+          $settingsPath = Join-Path $directory "settings.xml"
+          [xml]$settings = Get-Content -Path $settingsPath -Raw
+          $mirrors = @($settings.settings.mirrors.mirror)
+          if ($mirrors.Count -ne 1 -or $mirrors[0].id -ne "private" -or $mirrors[0].url -ne "https://mirror.example.invalid/maven" -or $mirrors[0].mirrorOf -ne $env:MIRROR_OF) {
+            throw "Incorrect generated mirror"
+          }
+          if ($settings.settings.profiles -or $settings.settings.activeProfiles) {
+            throw "Mirror-only settings must not add repository profiles"
+          }
+          $server = $settings.settings.servers.server
+          if ($server.id -ne "private" -or $server.username -ne '${env.PRIVATE_USERNAME}' -or $server.password -ne '${env.PRIVATE_TOKEN}') {
+            throw "Mirror credentials were not preserved"
+          }
+
+          $pomPath = Join-Path $directory "pom.xml"
+          @'
+          <project xmlns="http://maven.apache.org/POM/4.0.0">
+            <modelVersion>4.0.0</modelVersion>
+            <groupId>setup-java.test</groupId>
+            <artifactId>mirror-settings</artifactId>
+            <version>1.0</version>
+            <repositories>
+              <repository>
+                <id>pom-dependencies</id>
+                <url>https://dependencies.example.invalid/maven</url>
+              </repository>
+            </repositories>
+            <pluginRepositories>
+              <pluginRepository>
+                <id>pom-plugins</id>
+                <url>https://plugins.example.invalid/maven</url>
+              </pluginRepository>
+            </pluginRepositories>
+          </project>
+          '@ | Set-Content -Path $pomPath
+
+          # validate requires no plugins or dependencies, so mirror selection can
+          # be inspected offline without contacting the deliberately invalid URLs.
+          $output = & mvn --batch-mode --no-transfer-progress --offline --debug `
+            --settings $settingsPath --file $pomPath `
+            "-Dmaven.repo.local=$directory/repository" validate 2>&1
+          if ($LASTEXITCODE -ne 0) {
+            throw "Could not inspect Maven mirror selection: $output"
+          }
+          $log = $output -join "`n"
+          foreach ($id in @("central", "pom-dependencies")) {
+            $expected = "Using mirror private (https://mirror.example.invalid/maven) for $id ("
+            if (-not $log.Contains($expected)) {
+              throw "Maven did not select the mirror for ${id}: $log"
+            }
+          }
+          foreach ($type in @("dependencies", "plugins")) {
+            $pattern = 'Repositories \(' + $type + '\)\s*: \[private \(https://mirror\.example\.invalid/maven, [^\]]+\)\]'
+            if ($log -notmatch $pattern) {
+              throw "Maven did not redirect all $type repositories: $log"
+            }
+          }
+
   test-maven-repositories:
     name: Maven ${{ matrix.repositories }} repositories
     runs-on: ${{ matrix.os }}

@@ -171,6 +171,7 @@ steps:
 | `mvn-server-repository-origins` | Multiline Maven credential origins in the format `server-id:repository-origin`. Each origin must belong to a configured server ID. Requires Maven 3.10+. | |
 | `mvn-repositories` | Multiline Maven dependency repositories in the format `repository-id:repository-url:snapshots-enabled`. | |
 | `mvn-plugin-repositories` | Multiline Maven plugin repositories in the format `repository-id:repository-url:snapshots-enabled`. Can be used independently of `mvn-repositories`. | |
+| `mvn-mirrors` | Multiline Maven mirrors in the format `mirror-id:mirror-url:mirror-of`. Redirect matching dependency and plugin repositories; use a matching server ID for authentication. | |
 | `mvn-repositories-include-central` | Include Maven Central for dependency and plugin repositories in the generated profile. When `false`, Central is disabled for both types unless that type explicitly declares `central`. Has no effect when neither repository list is configured. | `true` |
 | `mvn-repositories-prioritize-central` | Place Maven Central before custom dependency and plugin repositories. Has no effect when Central is excluded or neither repository list is configured. | `true` |
 | `settings-path` | Directory where `settings.xml` is written. | `~/.m2` |
@@ -489,6 +490,11 @@ to the same active profile in the generated `settings.xml`. Repository IDs can
 match `mvn-server-credentials` IDs when authentication is required.
 See [Resolving Maven dependencies from custom repositories](docs/advanced-usage.md#resolving-maven-dependencies-from-custom-repositories)
 and [Resolving Maven plugins from custom repositories](docs/advanced-usage.md#resolving-maven-plugins-from-custom-repositories).
+
+To redirect repositories, including Central and repositories declared in project
+or parent POMs, use [`mvn-mirrors`](docs/advanced-usage.md#redirecting-maven-repositories-with-mirrors).
+It works independently of the repository inputs; a `mirrorOf` pattern of `*`
+routes all dependency and plugin repositories through the configured mirror.
 
 > [!WARNING]
 > `mvn-repositories-include-central: false` now disables inherited Maven Central
