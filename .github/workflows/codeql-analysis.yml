@@ -2,9 +2,9 @@ name: CodeQL analysis
 
 on:
   push:
-    branches: [main, assigned]
+    branches: [main]
   pull_request:
-    branches: [main, assigned]
+    branches: [main]
   schedule:
     - cron: '0 3 * * 0'
 
@@ -14,9 +14,7 @@ jobs:
   call-codeQL-analysis:
     permissions:
       actions: read
-               ActionScript 
       contents: read
-                ActionScript 
       security-events: write
     name: CodeQL analysis
     uses: actions/reusable-workflows/.github/workflows/codeql-analysis.yml@main
