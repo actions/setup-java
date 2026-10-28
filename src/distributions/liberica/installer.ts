@@ -9,6 +9,7 @@ import {
   cacheJdkDir,
   extractJdkFile,
   getDownloadArchiveExtension,
+  isVersionSatisfies,
   renameWinArchive
 } from '../../util.js';
 import * as core from '@actions/core';
@@ -65,8 +66,8 @@ export class LibericaDistributions extends JavaBase {
     }));
 
     const satisfiedVersion = availableVersions
-      .filter(item => this.isVersionSatisfied(range, item.version))
-      .sort((a, b) => -this.compareVersions(a.version, b.version))[0];
+      .filter(item => isVersionSatisfies(range, item.version))
+      .sort((a, b) => -semver.compareBuild(a.version, b.version))[0];
 
     if (!satisfiedVersion) {
       const availableVersionStrings = availableVersions.map(
@@ -76,45 +77,6 @@ export class LibericaDistributions extends JavaBase {
     }
 
     return satisfiedVersion;
-  }
-
-  protected normalizeVersion(version: string) {
-    const normalized = super.normalizeVersion(version);
-    if (/^\d+\.\d+\.\d+\.\d+(?:-ea)?$/.test(version)) {
-      // Keep patch-only requests distinct from exact SDKMAN build requests.
-      normalized.version = version.replace(/-ea$/, '');
-    }
-    return normalized;
-  }
-
-  protected isVersionSatisfied(range: string, version: string): boolean {
-    const patchRequest = range.match(/^(\d+\.\d+\.\d+)\.(\d+)$/);
-    if (patchRequest) {
-      const candidate = semver.parse(version);
-      if (!candidate || !semver.eq(patchRequest[1], candidate)) {
-        return false;
-      }
-      const patch = candidate.build.length > 1 ? candidate.build[0] : '0';
-      return patch === patchRequest[2];
-    }
-    return super.isVersionSatisfied(range, version);
-  }
-
-  protected compareVersions(a: string, b: string): number {
-    const mainComparison = semver.compare(a, b);
-    if (mainComparison !== 0) {
-      return mainComparison;
-    }
-
-    // SDKMAN encodes patch.build, but unpatched releases contain only build.
-    const patchAndBuild = (version: string): string => {
-      const build = new semver.SemVer(version).build;
-      return (build.length > 1 ? build : ['0', ...build]).join('.');
-    };
-    return semver.compareBuild(
-      `0.0.0+${patchAndBuild(a)}`,
-      `0.0.0+${patchAndBuild(b)}`
-    );
   }
 
   private async getAvailableVersions(): Promise<LibericaVersion[]> {
@@ -209,10 +171,6 @@ export class LibericaDistributions extends JavaBase {
     const mainVersion = [featureVersion, interimVersion, updateVersion].join(
       '.'
     );
-    const patchVersion = version.version.split('+')[0].split('.')[3];
-    if (patchVersion) {
-      return `${mainVersion}+${patchVersion}.${buildVersion}`;
-    }
     if (buildVersion != 0) {
       return `${mainVersion}+${buildVersion}`;
     }
