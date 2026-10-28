@@ -25,7 +25,6 @@ export interface MavenRepository {
 
 export interface MavenRepositorySettings {
   repositories: MavenRepository[];
-  pluginRepositories?: MavenRepository[];
   includeCentral: boolean;
   prioritizeCentral: boolean;
 }
@@ -246,13 +245,7 @@ export function addMavenServerRepositoryOrigins(
 export function getMavenRepositorySettings():
   MavenRepositorySettings | undefined {
   const entries = core.getMultilineInput(constants.INPUT_MVN_REPOSITORIES);
-  const pluginEntries = core.getMultilineInput(
-    constants.INPUT_MVN_PLUGIN_REPOSITORIES
-  );
-  if (
-    !entries.some(entry => entry.trim()) &&
-    !pluginEntries.some(entry => entry.trim())
-  ) {
+  if (!entries.some(entry => entry.trim())) {
     return undefined;
   }
 
@@ -262,11 +255,6 @@ export function getMavenRepositorySettings():
   );
   return {
     repositories: parseMavenRepositories(entries, includeCentral),
-    pluginRepositories: parseMavenRepositories(
-      pluginEntries,
-      includeCentral,
-      constants.INPUT_MVN_PLUGIN_REPOSITORIES
-    ),
     includeCentral,
     prioritizeCentral: getBooleanInput(
       constants.INPUT_MVN_REPOSITORIES_PRIORITIZE_CENTRAL,
@@ -278,8 +266,7 @@ export function getMavenRepositorySettings():
 // only exported for testing purposes
 export function parseMavenRepositories(
   entries: string[],
-  includeCentral: boolean,
-  inputName = constants.INPUT_MVN_REPOSITORIES
+  includeCentral: boolean
 ): MavenRepository[] {
   const repositories: MavenRepository[] = [];
   const repositoryIds = new Set<string>();
@@ -293,7 +280,7 @@ export function parseMavenRepositories(
     const lastSeparator = entry.lastIndexOf(':');
     if (firstSeparator <= 0 || lastSeparator <= firstSeparator) {
       throw new Error(
-        `Invalid ${inputName} entry at line ${index + 1}. Expected format: repository-id:repository-url:snapshots-enabled`
+        `Invalid mvn-repositories entry at line ${index + 1}. Expected format: repository-id:repository-url:snapshots-enabled`
       );
     }
 
@@ -305,16 +292,18 @@ export function parseMavenRepositories(
       .toLowerCase();
     if (!id || !url || !snapshotsValue) {
       throw new Error(
-        `Invalid ${inputName} entry at line ${index + 1}. repository-id, repository URL, and snapshots-enabled are required`
+        `Invalid mvn-repositories entry at line ${index + 1}. repository-id, repository URL, and snapshots-enabled are required`
       );
     }
     if (snapshotsValue !== 'true' && snapshotsValue !== 'false') {
       throw new Error(
-        `Invalid snapshots-enabled value '${snapshotsValue}' in ${inputName} entry at line ${index + 1}. Expected true or false`
+        `Invalid snapshots-enabled value '${snapshotsValue}' in mvn-repositories entry at line ${index + 1}. Expected true or false`
       );
     }
     if (repositoryIds.has(id)) {
-      throw new Error(`Duplicate repository-id '${id}' in ${inputName} input`);
+      throw new Error(
+        `Duplicate repository-id '${id}' in mvn-repositories input`
+      );
     }
     if (includeCentral && id === constants.MAVEN_CENTRAL_REPOSITORY_ID) {
       throw new Error(
@@ -331,56 +320,6 @@ export function parseMavenRepositories(
   });
 
   return repositories;
-}
-
-function generateRepositorySection(
-  customRepositories: MavenRepository[],
-  settings: MavenRepositorySettings,
-  element: 'repository' | 'pluginRepository'
-): string[] {
-  if (!customRepositories.length && settings.includeCentral) {
-    return [];
-  }
-
-  const centralRepository: MavenRepository = {
-    id: constants.MAVEN_CENTRAL_REPOSITORY_ID,
-    url: constants.MAVEN_CENTRAL_REPOSITORY_URL,
-    snapshotsEnabled: false
-  };
-  const customCentralConfigured = customRepositories.some(
-    repository => repository.id === constants.MAVEN_CENTRAL_REPOSITORY_ID
-  );
-  const repositories = settings.includeCentral
-    ? settings.prioritizeCentral
-      ? [centralRepository, ...customRepositories]
-      : [...customRepositories, centralRepository]
-    : customCentralConfigured
-      ? customRepositories
-      : [...customRepositories, {...centralRepository, releasesEnabled: false}];
-  const container =
-    element === 'repository' ? 'repositories' : 'pluginRepositories';
-  const lines = [`      <${container}>`];
-
-  for (const repository of repositories) {
-    lines.push(
-      `        <${element}>`,
-      `          <id>${escapeXmlText(repository.id)}</id>`,
-      `          <url>${escapeXmlText(repository.url)}</url>`,
-      ...(repository.releasesEnabled === undefined
-        ? []
-        : [
-            '          <releases>',
-            `            <enabled>${repository.releasesEnabled}</enabled>`,
-            '          </releases>'
-          ]),
-      '          <snapshots>',
-      `            <enabled>${repository.snapshotsEnabled}</enabled>`,
-      '          </snapshots>',
-      `        </${element}>`
-    );
-  }
-  lines.push(`      </${container}>`);
-  return lines;
 }
 
 export async function createAuthenticationSettings(
@@ -450,21 +389,49 @@ export function generate(
   if (repositorySettings || includeGpgPassphraseProfile) {
     lines.push('  <profiles>');
     if (repositorySettings) {
+      const centralRepository: MavenRepository = {
+        id: constants.MAVEN_CENTRAL_REPOSITORY_ID,
+        url: constants.MAVEN_CENTRAL_REPOSITORY_URL,
+        snapshotsEnabled: false
+      };
+      const customCentralConfigured = repositorySettings.repositories.some(
+        repository => repository.id === constants.MAVEN_CENTRAL_REPOSITORY_ID
+      );
+      const repositories = repositorySettings.includeCentral
+        ? repositorySettings.prioritizeCentral
+          ? [centralRepository, ...repositorySettings.repositories]
+          : [...repositorySettings.repositories, centralRepository]
+        : customCentralConfigured
+          ? repositorySettings.repositories
+          : [
+              ...repositorySettings.repositories,
+              {...centralRepository, releasesEnabled: false}
+            ];
+
       lines.push(
         '    <profile>',
         `      <id>${constants.MAVEN_REPOSITORIES_PROFILE_ID}</id>`,
-        ...generateRepositorySection(
-          repositorySettings.repositories,
-          repositorySettings,
-          'repository'
-        ),
-        ...generateRepositorySection(
-          repositorySettings.pluginRepositories ?? [],
-          repositorySettings,
-          'pluginRepository'
-        ),
-        '    </profile>'
+        '      <repositories>'
       );
+      for (const repository of repositories) {
+        lines.push(
+          '        <repository>',
+          `          <id>${escapeXmlText(repository.id)}</id>`,
+          `          <url>${escapeXmlText(repository.url)}</url>`,
+          ...(repository.releasesEnabled === undefined
+            ? []
+            : [
+                '          <releases>',
+                `            <enabled>${repository.releasesEnabled}</enabled>`,
+                '          </releases>'
+              ]),
+          '          <snapshots>',
+          `            <enabled>${repository.snapshotsEnabled}</enabled>`,
+          '          </snapshots>',
+          '        </repository>'
+        );
+      }
+      lines.push('      </repositories>', '    </profile>');
     }
     if (includeGpgPassphraseProfile) {
       lines.push(

@@ -1009,92 +1009,14 @@ This configuration adds the following active profile to `settings.xml`:
 </activeProfiles>
 ```
 
-Maven Central is included first by default. The Central controls apply to both
-dependency and plugin repositories. Set
-`mvn-repositories-prioritize-central: false` to place custom repositories first
-within each configured list, or set `mvn-repositories-include-central: false` to
-disable Central for both types. The generated profile overrides the dependency
-and plugin Central repositories inherited from Maven's Super POM with releases
-and snapshots disabled, even if only one custom repository list is supplied.
-These controls have no effect when neither list contains a nonblank entry.
-
-When automatic Central inclusion is off, the ID `central` may instead be
-declared explicitly in `mvn-repositories` or `mvn-plugin-repositories` to replace
-it with a user-specified repository for that type. Declaring it in one list
-does not enable Central in the other. Otherwise that ID is reserved to prevent
-duplicate entries. Other repositories declared in your project's POM are not
-disabled by these controls.
-
-### Resolving Maven plugins from custom repositories
-
-Maven resolves build plugins through `<pluginRepositories>`, separately from
-dependency `<repositories>`. Use `mvn-plugin-repositories` to configure plugin
-resolution with the same multiline `repository-id:repository-url:snapshots-enabled`
-format. It can be supplied without `mvn-repositories`; dependency repositories
-are not automatically used as plugin repositories.
-
-For example, configure the same private repository for dependencies and plugins
-and disable inherited Maven Central for both:
-
-```yaml
-steps:
-  - uses: actions/checkout@v7
-  - uses: actions/setup-java@v6
-    with:
-      distribution: 'temurin'
-      java-version: '21'
-      mvn-server-credentials: |
-        private:PRIVATE_REPOSITORY_USERNAME:PRIVATE_REPOSITORY_TOKEN
-      mvn-repositories: |
-        private:https://maven.example.com/releases:false
-      mvn-plugin-repositories: |
-        private:https://maven.example.com/releases:false
-      mvn-repositories-include-central: false
-  - run: mvn --batch-mode verify
-    env:
-      PRIVATE_REPOSITORY_USERNAME: ${{ secrets.PRIVATE_REPOSITORY_USERNAME }}
-      PRIVATE_REPOSITORY_TOKEN: ${{ secrets.PRIVATE_REPOSITORY_TOKEN }}
-```
-
-The matching ID `private` selects the same server credentials for both types.
-IDs must be unique within each list, but can be shared across the two lists.
-Public repositories do not require a matching credential entry.
-
-Alongside dependency repositories, the active `setup-java-repositories` profile
-contains:
-
-```xml
-<pluginRepositories>
-  <pluginRepository>
-    <id>private</id>
-    <url>https://maven.example.com/releases</url>
-    <snapshots>
-      <enabled>false</enabled>
-    </snapshots>
-  </pluginRepository>
-  <pluginRepository>
-    <id>central</id>
-    <url>https://repo.maven.apache.org/maven2</url>
-    <releases>
-      <enabled>false</enabled>
-    </releases>
-    <snapshots>
-      <enabled>false</enabled>
-    </snapshots>
-  </pluginRepository>
-</pluginRepositories>
-```
-
-Omitting a Central override would leave the Super POM's plugin repository
-enabled. In particular, `mvn-repositories-include-central: false` now disables
-inherited plugin Central even for existing workflows that only configure
-`mvn-repositories`. To download plugins in such workflows, configure a plugin
-repository or explicitly declare `central` in `mvn-plugin-repositories`.
-
-With Central included, it is placed before custom plugin repositories by
-default; `mvn-repositories-prioritize-central: false` places it after them.
-All repository generation respects `settings-path` and `overwrite-settings`;
-an existing settings file is left untouched when `overwrite-settings: false`.
+Maven Central is included first by default. Set
+`mvn-repositories-prioritize-central: false` to place custom repositories
+first, or set `mvn-repositories-include-central: false` to disable Central. The
+generated profile overrides the Central repository inherited from Maven's Super
+POM with releases and snapshots disabled. When automatic Central inclusion is
+off, the ID `central` may instead be declared explicitly in `mvn-repositories`
+to replace it with a user-specified repository; otherwise that ID is reserved
+to prevent duplicate entries.
 
 ### GPG
 
