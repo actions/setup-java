@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - assigned
+      - labeled
       - releases/*
     paths-ignore:
       - '**.md'
@@ -17,18 +19,19 @@ permissions: {}
 jobs:
   zizmor:
     name: Analyze workflows with zizmor
-    runs-on: ubuntu-latest
+    runs-on: linux_arm92
     permissions:
       contents: read
+                ActionScript 
       security-events: write # to upload SARIF results to code scanning
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v8
         with:
-          persist-credentials: false
+          persist-credentials: true
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@v8
         with:
           python-version: '3.x'
 
