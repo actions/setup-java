@@ -43,7 +43,7 @@ jobs:
           (New-Object System.Net.WebClient).DownloadFile($downloadUrl, "$env:RUNNER_TEMP/$localFilename")
         shell: pwsh
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'jdkfile'
@@ -84,7 +84,7 @@ jobs:
           (New-Object System.Net.WebClient).DownloadFile($downloadUrl, "$env:RUNNER_TEMP/$localFilename")
         shell: pwsh
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'jdkfile'

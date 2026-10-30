@@ -20,6 +20,9 @@ defaults:
   run:
     shell: bash
 
+# The baseline and candidate actions are intentionally loaded from runtime
+# checkouts of the user-supplied refs, which the self-repository (`$/`) syntax
+# cannot express, so those `uses: ./...` steps are exempt from that audit.
 jobs:
   warm-caches:
     name: Warm ${{ matrix.tool }} ${{ matrix.profile }} caches (${{ matrix.os }})
@@ -51,7 +54,7 @@ jobs:
       - name: Prepare benchmark inputs
         run: bash __tests__/benchmark-cache-restore.sh prepare "${{ matrix.tool }}" "${{ matrix.profile }}"
       - name: Prepare cache save
-        uses: ./candidate
+        uses: ./candidate # zizmor: ignore[self-repository]
         with:
           distribution: temurin
           java-version: '17'
@@ -99,7 +102,7 @@ jobs:
         run: bash __tests__/benchmark-cache-restore.sh start "${{ matrix.tool }}"
       - name: Restore with baseline iteration 1
         id: baseline-1
-        uses: ./baseline
+        uses: ./baseline # zizmor: ignore[self-repository]
         with:
           distribution: temurin
           java-version: '17'
@@ -117,7 +120,7 @@ jobs:
         run: bash __tests__/benchmark-cache-restore.sh start "${{ matrix.tool }}"
       - name: Restore with candidate iteration 1
         id: candidate-1
-        uses: ./candidate
+        uses: ./candidate # zizmor: ignore[self-repository]
         with:
           distribution: temurin
           java-version: '17'
@@ -135,7 +138,7 @@ jobs:
         run: bash __tests__/benchmark-cache-restore.sh start "${{ matrix.tool }}"
       - name: Restore with candidate iteration 2
         id: candidate-2
-        uses: ./candidate
+        uses: ./candidate # zizmor: ignore[self-repository]
         with:
           distribution: temurin
           java-version: '17'
@@ -153,7 +156,7 @@ jobs:
         run: bash __tests__/benchmark-cache-restore.sh start "${{ matrix.tool }}"
       - name: Restore with baseline iteration 2
         id: baseline-2
-        uses: ./baseline
+        uses: ./baseline # zizmor: ignore[self-repository]
         with:
           distribution: temurin
           java-version: '17'
@@ -171,7 +174,7 @@ jobs:
         run: bash __tests__/benchmark-cache-restore.sh start "${{ matrix.tool }}"
       - name: Restore with baseline iteration 3
         id: baseline-3
-        uses: ./baseline
+        uses: ./baseline # zizmor: ignore[self-repository]
         with:
           distribution: temurin
           java-version: '17'
@@ -189,7 +192,7 @@ jobs:
         run: bash __tests__/benchmark-cache-restore.sh start "${{ matrix.tool }}"
       - name: Restore with candidate iteration 3
         id: candidate-3
-        uses: ./candidate
+        uses: ./candidate # zizmor: ignore[self-repository]
         with:
           distribution: temurin
           java-version: '17'

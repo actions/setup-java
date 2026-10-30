@@ -106,7 +106,7 @@ jobs:
         with:
           persist-credentials: false
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           java-version: ${{ matrix.version }}
@@ -128,7 +128,7 @@ jobs:
     steps:
       - *checkout_step
       - name: setup-java with forced download
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           java-version: '21'
@@ -157,7 +157,7 @@ jobs:
       - name: Install bash and GnuPG
         run: apk add --no-cache bash gnupg
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           java-version: ${{ matrix.version }}
@@ -207,7 +207,7 @@ jobs:
     steps:
       - *checkout_step
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           java-version: ${{ matrix.version }}
@@ -243,7 +243,7 @@ jobs:
     steps:
       - *checkout_step
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: ${{ matrix.distribution }}
@@ -280,7 +280,7 @@ jobs:
     steps:
       - *checkout_step
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: ${{ matrix.distribution }}
@@ -335,7 +335,7 @@ jobs:
     steps:
       - *checkout_step
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           java-version: ${{ matrix.version }}
@@ -361,7 +361,7 @@ jobs:
     steps:
       - *checkout_step
       - name: setup-java with signature verification
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           java-version: ${{ matrix.version }}
@@ -455,7 +455,7 @@ jobs:
     steps:
       - *checkout_step
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           java-version: ${{ matrix.version }}
@@ -485,7 +485,7 @@ jobs:
     steps:
       - *checkout_step
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: ${{ matrix.distribution }}
@@ -506,7 +506,7 @@ jobs:
       - name: Attempt unsupported setup
         id: unsupported-setup
         continue-on-error: true
-        uses: ./
+        uses: $/
         with:
           distribution: oracle
           java-version: '21'
@@ -535,7 +535,7 @@ jobs:
         shell: bash
         run: echo "java 17" > .tool-versions
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: ${{ matrix.distribution }}
@@ -565,7 +565,7 @@ jobs:
         shell: bash
         run: echo "java 11" > .tool-versions
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: ${{ matrix.distribution }}
@@ -594,7 +594,7 @@ jobs:
         shell: bash
         run: echo "java 17.0.10" > .tool-versions
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: ${{ matrix.distribution }}
@@ -626,7 +626,7 @@ jobs:
         shell: bash
         run: echo "java=17.0.10-tem" > .sdkmanrc
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: ${{ matrix.distribution }}
@@ -647,7 +647,7 @@ jobs:
           echo "java=26-tem" > .sdkmanrc
           touch build.gradle
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           java-version-file: .sdkmanrc
@@ -668,7 +668,7 @@ jobs:
     steps:
       - *checkout_step
       - name: Setup Java 17 as default
-        uses: ./
+        uses: $/
         id: setup-java-17
         with:
           distribution: 'temurin'
@@ -676,7 +676,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Setup Java 21 without setting as default
-        uses: ./
+        uses: $/
         id: setup-java-21
         with:
           distribution: 'temurin'

@@ -32,7 +32,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for gradle
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -61,7 +61,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for gradle
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -85,7 +85,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for maven
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -112,7 +112,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for maven
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -140,7 +140,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for sbt
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -181,7 +181,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for sbt
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -211,7 +211,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for gradle
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -241,7 +241,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for gradle
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -266,7 +266,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for gradle
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -288,7 +288,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for maven
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -316,7 +316,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for maven
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -341,7 +341,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for maven
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -369,7 +369,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for sbt
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -411,7 +411,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for sbt
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -446,7 +446,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with the cache for sbt
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -472,7 +472,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with a custom Maven cache path
-        uses: ./
+        uses: $/
         with:
           distribution: 'temurin'
           java-version: '11'
@@ -498,7 +498,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Run setup-java with a custom Maven cache path
-        uses: ./
+        uses: $/
         with:
           distribution: 'temurin'
           java-version: '11'

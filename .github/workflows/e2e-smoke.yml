@@ -71,7 +71,7 @@ jobs:
         with:
           persist-credentials: false
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           java-version: ${{ matrix.version }}

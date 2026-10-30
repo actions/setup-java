@@ -32,7 +32,7 @@ jobs:
         with:
           persist-credentials: false
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -87,7 +87,7 @@ jobs:
           New-Item -Path $xmlDirectory -ItemType Directory
           Set-Content -Path $xmlPath -Value "Fake_XML"
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -125,7 +125,7 @@ jobs:
           New-Item -Path $xmlDirectory -ItemType Directory
           Set-Content -Path $xmlPath -Value "Fake_XML"
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -158,7 +158,7 @@ jobs:
         with:
           persist-credentials: false
       - name: setup-java
-        uses: ./
+        uses: $/
         id: setup-java
         with:
           distribution: 'temurin'
@@ -223,7 +223,7 @@ jobs:
             throw "Could not prepare the Maven Help Plugin"
           }
       - name: Configure dependency and plugin repositories
-        uses: ./
+        uses: $/
         with:
           distribution: 'temurin'
           java-version: '21'
