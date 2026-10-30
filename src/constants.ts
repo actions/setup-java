@@ -20,6 +20,7 @@ export const INPUT_MVN_SERVER_REPOSITORY_ORIGINS =
   'mvn-server-repository-origins';
 export const INPUT_MVN_REPOSITORIES = 'mvn-repositories';
 export const INPUT_MVN_PLUGIN_REPOSITORIES = 'mvn-plugin-repositories';
+export const INPUT_MVN_MIRRORS = 'mvn-mirrors';
 export const INPUT_MVN_REPOSITORIES_INCLUDE_CENTRAL =
   'mvn-repositories-include-central';
 export const INPUT_MVN_REPOSITORIES_PRIORITIZE_CENTRAL =

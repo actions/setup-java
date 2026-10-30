@@ -882,6 +882,186 @@ describe('auth tests', () => {
     ]);
   });
 
+  it.each([
+    '*',
+    'central',
+    'external:*',
+    'external:http:*',
+    '*,!internal',
+    'external:*,!internal',
+    '!internal,external:http:*',
+    'external:*,!external:http:*'
+  ])('preserves the mirror selector %s and URL colons', mirrorOf => {
+    expect(
+      auth.parseMavenMirrors([
+        '',
+        ' \t ',
+        ` private : https://[2001:db8::1]:8443/maven : ${mirrorOf} `,
+        'public:https://repo.example.com:443/releases:central'
+      ])
+    ).toEqual([
+      {
+        id: 'private',
+        url: 'https://[2001:db8::1]:8443/maven',
+        mirrorOf
+      },
+      {
+        id: 'public',
+        url: 'https://repo.example.com:443/releases',
+        mirrorOf: 'central'
+      }
+    ]);
+  });
+
+  it.each([
+    'https://repo.example.com:8443',
+    'https://repo.example.com:8443/maven',
+    'https://[2001:db8::1]',
+    'https://[2001:db8::1]/maven',
+    'https://[2001:db8::1]:8443',
+    'https://[2001:db8::1]:8443/maven',
+    'https://repo.example.com/maven?redirect=https%3A//upstream.example.com%3A8443',
+    'https://repo.example.com/maven#urn%3Aartifact',
+    'https://repo.example.com/maven?redirect=https://upstream.example.com:8443',
+    'https://repo.example.com/maven#urn:artifact'
+  ])('preserves the complete mirror URL %s with an explicit selector', url => {
+    expect(
+      auth.parseMavenMirrors([`private:${url}:external:http:*,!internal`])
+    ).toEqual([{id: 'private', url, mirrorOf: 'external:http:*,!internal'}]);
+  });
+
+  it.each([
+    'private',
+    'private:https://repo.example.com',
+    'private:https://repo.example.com:8443',
+    'private:https://repo.example.com:8443/maven',
+    'private:https://[2001:db8::1]',
+    'private:https://[2001:db8::1]/maven',
+    'private:https://[2001:db8::1]:8443',
+    'private:https://[2001:db8::1]:8443/maven',
+    'private:repo.example.com:central',
+    ':https://repo.example.com:*',
+    'private::*',
+    'private:https://repo.example.com:',
+    'private: :*',
+    'private:https://repo.example.com: '
+  ])('rejects malformed mirror entry %s with a line number', entry => {
+    expect(() => auth.parseMavenMirrors(['', entry])).toThrow(
+      'Invalid mvn-mirrors entry at line 2.'
+    );
+  });
+
+  it('rejects duplicate mirror IDs after trimming', () => {
+    expect(() =>
+      auth.parseMavenMirrors([
+        'private:https://first.example.com:*',
+        ' private :https://second.example.com:central'
+      ])
+    ).toThrow("Duplicate mirror-id 'private' in mvn-mirrors input at line 2");
+  });
+
+  it('leaves settings unchanged for absent or blank mirrors', () => {
+    const servers = credentials('github', 'USERNAME', 'PASSWORD');
+    expect(auth.parseMavenMirrors(['', ' ', '\t'])).toEqual([]);
+    expect(auth.generate(servers, undefined, undefined, [])).toBe(
+      auth.generate(servers)
+    );
+    expect(auth.generate(servers)).not.toContain('<mirrors>');
+  });
+
+  it('generates public mirrors without credentials or repository profiles', () => {
+    const mirrors = auth.parseMavenMirrors([
+      'public:https://repo.example.com:external:*',
+      'fallback:https://other.example.com:central'
+    ]);
+    const xml = auth.generate([], undefined, undefined, mirrors);
+    expect(parseXmlObject(xml)).toMatchObject({
+      settings: {mirrors: {mirror: mirrors}}
+    });
+    expect(xml).not.toContain('<profiles>');
+    expect(xml).not.toContain('<activeProfiles>');
+  });
+
+  it('escapes all mirror fields as XML text', () => {
+    const mirror = {
+      id: 'private<&>',
+      url: 'https://repo.example.com/maven?a=1&b=<value>',
+      mirrorOf: '*,!internal<&>'
+    };
+    const xml = auth.generate([], undefined, undefined, [mirror]);
+    expect(xml).toContain('<id>private&lt;&amp;&gt;</id>');
+    expect(xml).toContain('a=1&amp;b=&lt;value&gt;');
+    expect(xml).toContain('<mirrorOf>*,!internal&lt;&amp;&gt;</mirrorOf>');
+    expect(parseXmlObject(xml)).toMatchObject({
+      settings: {mirrors: {mirror}}
+    });
+  });
+
+  it.each([
+    {combined: false, overwrite: true},
+    {combined: true, overwrite: true},
+    {combined: true, overwrite: false}
+  ])(
+    'configures mirrors with combined=$combined and overwrite=$overwrite',
+    async ({combined, overwrite}) => {
+      const directory = path.join(m2Dir, 'mirrors');
+      const location = path.join(directory, MVN_SETTINGS_FILE);
+      fs.mkdirSync(directory, {recursive: true});
+      fs.writeFileSync(location, 'EXISTING SETTINGS');
+      const url = 'https://maven.example.com/releases';
+      const inputs: Record<string, string> = {
+        'settings-path': directory,
+        'overwrite-settings': String(overwrite),
+        'mvn-repositories-include-central': 'false',
+        ...(combined ? {'gpg-passphrase-env-var': 'GPG_PASSPHRASE'} : {})
+      };
+      const multilineInputs: Record<string, string[]> = {
+        'mvn-server-credentials': ['private:PRIVATE_USERNAME:PRIVATE_TOKEN'],
+        'mvn-mirrors': [`private:${url}:*`],
+        ...(combined
+          ? {
+              'mvn-repositories': [`private:${url}:false`],
+              'mvn-plugin-repositories': [`private:${url}:false`]
+            }
+          : {})
+      };
+      jest.mocked(core.getInput).mockImplementation(name => inputs[name] ?? '');
+      jest
+        .mocked(core.getMultilineInput)
+        .mockImplementation(name => multilineInputs[name] ?? []);
+
+      await auth.configureAuthentication();
+
+      const xml = fs.readFileSync(location, 'utf8');
+      if (!overwrite) {
+        expect(xml).toBe('EXISTING SETTINGS');
+        return;
+      }
+      expect(parseXmlObject(xml)).toMatchObject({
+        settings: {
+          mirrors: {mirror: {id: 'private', url, mirrorOf: '*'}},
+          servers: {
+            server: {
+              id: 'private',
+              username: '${env.PRIVATE_USERNAME}',
+              password: '${env.PRIVATE_TOKEN}'
+            }
+          }
+        }
+      });
+      if (combined) {
+        expect(xml).toContain('<repositories>');
+        expect(xml).toContain('<pluginRepositories>');
+        expect(xml).toContain('<gpg.passphraseEnvName>GPG_PASSPHRASE');
+      } else {
+        expect(xml).not.toContain('<profiles>');
+        expect(core.getInput).not.toHaveBeenCalledWith(
+          'mvn-repositories-include-central'
+        );
+      }
+    }
+  );
+
   it.each(repositoryInputs)(
     'parses %s while preserving colons in URLs',
     inputName => {
