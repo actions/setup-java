@@ -157,7 +157,16 @@ steps:
 ```
 
 ### Amazon Corretto
-**NOTE:** Amazon Corretto only supports the major version specification.
+Amazon Corretto supports major versions (for example, `25`) and full release numbers
+(for example, `25.0.5.0.10`). Full release numbers select the versioned archive directly,
+including older releases no longer listed in the latest-version feed. SHA-256 checksums
+for exact releases come from Amazon's current download catalog or GitHub release notes.
+Historical releases without a published SHA-256 cannot be downloaded.
+
+Full Corretto release numbers supplied through `java-version-file` now select that exact
+release; previously they selected the latest matching major. Update MD5-only file pins
+to a release with a published SHA-256. Partial version-file values keep their existing
+major-version behavior.
 
 ```yaml
 steps:
@@ -165,7 +174,7 @@ steps:
   - uses: actions/setup-java@v6
     with:
       distribution: 'corretto'
-      java-version: '25'
+      java-version: '25.0.5.0.10'
   - run: java --version
 ```
 
@@ -336,7 +345,7 @@ The package types have these meanings:
 | `liberica-nik` | `jdk`, `jdk+fx` | `java-version` selects the embedded JDK version, not the NIK/GraalVM release number. BellSoft currently publishes matching standard and JavaFX "full" bundles for JDK 11 and later, with gaps between feature releases. Any other `java-package` value is rejected. |
 | `microsoft` | `jdk` | Stable builds only. The bundled manifest contains Java 11, 16, 17, 21, and 25 releases; platform availability varies by release. |
 | `semeru` | `jdk`, `jre` | Stable OpenJ9 builds only. IBM publishes both image types for the supported release lines (currently 8, 11, 17, 21, and 25), subject to platform availability. |
-| `corretto` | `jdk`, `jre` | Accepts major versions only. JDK availability follows Amazon's platform catalog. For the operating systems directly selected by `setup-java`, JRE downloads are limited to Java 8 on Windows; Linux and macOS use `jdk`. |
+| `corretto` | `jdk`, `jre` | Accepts major versions and full Corretto release numbers. JDK availability follows Amazon's platform catalog. For the operating systems directly selected by `setup-java`, JRE downloads are limited to Java 8 on Windows; Linux and macOS use `jdk`. |
 | `oracle` | `jdk` | Stable Oracle JDK 17 and later only. |
 | `oracle-openjdk` | `jdk` | Installs the GA or early-access JDK builds currently listed or archived on `jdk.java.net`; use a `-ea` version such as `27-ea` for early access. |
 | `redhat` | `jdk`, `jre` | Stable builds only. Version availability follows the Foojay Disco catalog for Red Hat Build of OpenJDK and can lag Red Hat's downloads page. |

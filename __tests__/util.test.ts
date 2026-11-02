@@ -278,6 +278,27 @@ describe('validatePaginationUrl', () => {
 });
 
 describe('getVersionFromFileContent', () => {
+  it.each(['25.0.5.0.10', '8.472.08.1', '25.0.5+0.10'])(
+    'preserves full Corretto release %s in .java-version',
+    version => {
+      expect(
+        getVersionFromFileContent(version, 'corretto', '.java-version')
+      ).toEqual({version, distribution: undefined});
+    }
+  );
+
+  it.each([
+    ['17.0.3.1', '.java-version', '17'],
+    ['1.8.0.472.1', '.java-version', '8'],
+    ['8.0.472.08.1', '.java-version', '8'],
+    ['java corretto-17.0.13.11.1-jre', '.tool-versions', '17'],
+    ['java corretto-17.0.13.11.1+1', '.tool-versions', '17']
+  ])('keeps the existing major selection for %s', (content, file, version) => {
+    expect(getVersionFromFileContent(content, 'corretto', file)?.version).toBe(
+      version
+    );
+  });
+
   describe('.sdkmanrc', () => {
     it.each([
       ['java=26-tem', '26', 'temurin'],
@@ -290,6 +311,8 @@ describe('getVersionFromFileContent', () => {
       ['java=21.0.5-zulu', '21.0.5', 'zulu'],
       ['java=17.0.13-albba', '17.0.13', 'dragonwell'],
       ['java=17.0.13-amzn', '17', 'corretto'],
+      ['java=25.0.5.0.10-amzn', '25.0.5.0.10', 'corretto'],
+      ['java=8.472.08.1-amzn', '8.472.08.1', 'corretto'],
       ['java=21.0.5-graal', '21.0.5', 'graalvm'],
       ['java=17.0.9-graalce', '17.0.9', 'graalvm'],
       ['java=11.0.25-librca', '11.0.25', 'liberica'],
@@ -368,7 +391,8 @@ describe('getVersionFromFileContent', () => {
       ['java adoptopenjdk-11.0.16+8', '11.0.16+8', 'temurin'],
       ['java adoptopenjdk-openj9-11.0.16+8', '11.0.16+8', 'temurin'],
       ['java zulu-11.56.19', '11.56.19', 'zulu'],
-      ['java corretto-17.0.13.11.1', '17', 'corretto'], // corretto -> major only
+      ['java corretto-17.0.13.11.1', '17.0.13.11.1', 'corretto'],
+      ['java corretto-8.472.08.1', '8.472.08.1', 'corretto'],
       ['java liberica-11.0.15+10', '11.0.15+10', 'liberica'],
       ['java microsoft-11.0.13.8.1', '11.0.13', 'microsoft'],
       ['java semeru-openj9-11.0.25+9', '11.0.25+9', 'semeru'],

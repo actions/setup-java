@@ -31220,7 +31220,7 @@ const DISTRIBUTIONS_ONLY_MAJOR_VERSION = (/* unused pure expression or super */ 
 /* harmony export */   Vt: () => (/* binding */ getBooleanInput),
 /* harmony export */   lN: () => (/* binding */ isJdkCacheEnabled)
 /* harmony export */ });
-/* unused harmony exports getVersionFromToolcachePath, extractJdkFile, cacheJdkDir, getJavaVersionFromReleaseFile, getDownloadArchiveExtension, isVersionSatisfies, getToolcachePath, isGhes, getVersionFromFileContent, convertVersionToSemver, normalizeJavaVersionToSemver, getArtifactFingerprint, getGitHubToken, getGitHubHttpHeaders, MAX_PAGINATION_PAGES, getNextPageUrlFromLinkHeader, validatePaginationUrl, renameWinArchive, getLatestMajorVersion */
+/* unused harmony exports getVersionFromToolcachePath, extractJdkFile, cacheJdkDir, getJavaVersionFromReleaseFile, getDownloadArchiveExtension, isVersionSatisfies, getToolcachePath, isGhes, getVersionFromFileContent, isExactCorrettoVersion, convertVersionToSemver, normalizeJavaVersionToSemver, getArtifactFingerprint, getGitHubToken, getGitHubHttpHeaders, MAX_PAGINATION_PAGES, getNextPageUrlFromLinkHeader, validatePaginationUrl, renameWinArchive, getLatestMajorVersion */
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(857);
 /* harmony import */ var os__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(os__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(6928);
@@ -31527,6 +31527,15 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     }
     const tentativeVersion = avoidOldNotation(capturedVersion);
     const rawVersion = tentativeVersion.split('-')[0];
+    // Preserve Corretto's full vendor release before generic coercion drops its extra numeric fields.
+    if ((extractedDistribution || distributionName) === 'corretto' &&
+        capturedVersion === tentativeVersion &&
+        isExactCorrettoVersion(tentativeVersion)) {
+        return {
+            version: tentativeVersion,
+            distribution: extractedDistribution
+        };
+    }
     let version = semver.validRange(rawVersion)
         ? tentativeVersion
         : semver.coerce(tentativeVersion);
@@ -31609,6 +31618,10 @@ function mapAsdfDistribution(asdfDist) {
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
 function avoidOldNotation(content) {
     return content.startsWith('1.') ? content.substring(2) : content;
+}
+function isExactCorrettoVersion(version) {
+    // Java 8 uses four numeric fields; later Corretto releases use five.
+    return /^(?:8(?:\.\d+){3}|(?!8\.)\d+(?:\.\d+){4})$/.test(version.replace('+', '.'));
 }
 function convertVersionToSemver(version) {
     // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1)

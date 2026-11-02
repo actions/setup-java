@@ -31674,6 +31674,7 @@ function validateToolchainIds(versions, versionFile, toolchainIds) {
 /* harmony export */   ZY: () => (/* binding */ convertVersionToSemver),
 /* harmony export */   aT: () => (/* binding */ isGhes),
 /* harmony export */   ag: () => (/* binding */ getDownloadArchiveExtension),
+/* harmony export */   kI: () => (/* binding */ isExactCorrettoVersion),
 /* harmony export */   lK: () => (/* binding */ getGitHubToken),
 /* harmony export */   lN: () => (/* binding */ isJdkCacheEnabled),
 /* harmony export */   n2: () => (/* binding */ renameWinArchive),
@@ -31990,6 +31991,15 @@ function getVersionFromFileContent(content, distributionName, versionFile) {
     }
     const tentativeVersion = avoidOldNotation(capturedVersion);
     const rawVersion = tentativeVersion.split('-')[0];
+    // Preserve Corretto's full vendor release before generic coercion drops its extra numeric fields.
+    if ((extractedDistribution || distributionName) === 'corretto' &&
+        capturedVersion === tentativeVersion &&
+        isExactCorrettoVersion(tentativeVersion)) {
+        return {
+            version: tentativeVersion,
+            distribution: extractedDistribution
+        };
+    }
     let version = semver__WEBPACK_IMPORTED_MODULE_3__.validRange(rawVersion)
         ? tentativeVersion
         : semver__WEBPACK_IMPORTED_MODULE_3__.coerce(tentativeVersion);
@@ -32072,6 +32082,10 @@ function mapAsdfDistribution(asdfDist) {
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
 function avoidOldNotation(content) {
     return content.startsWith('1.') ? content.substring(2) : content;
+}
+function isExactCorrettoVersion(version) {
+    // Java 8 uses four numeric fields; later Corretto releases use five.
+    return /^(?:8(?:\.\d+){3}|(?!8\.)\d+(?:\.\d+){4})$/.test(version.replace('+', '.'));
 }
 function convertVersionToSemver(version) {
     // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1)

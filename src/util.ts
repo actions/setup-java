@@ -397,6 +397,18 @@ export function getVersionFromFileContent(
   const tentativeVersion = avoidOldNotation(capturedVersion);
   const rawVersion = tentativeVersion.split('-')[0];
 
+  // Preserve Corretto's full vendor release before generic coercion drops its extra numeric fields.
+  if (
+    (extractedDistribution || distributionName) === 'corretto' &&
+    capturedVersion === tentativeVersion &&
+    isExactCorrettoVersion(tentativeVersion)
+  ) {
+    return {
+      version: tentativeVersion,
+      distribution: extractedDistribution
+    };
+  }
+
   let version = semver.validRange(rawVersion)
     ? tentativeVersion
     : semver.coerce(tentativeVersion);
@@ -498,6 +510,13 @@ function mapAsdfDistribution(asdfDist: string): string | undefined {
 // By convention, action expects version 8 in the format `8.*` instead of `1.8`
 function avoidOldNotation(content: string): string {
   return content.startsWith('1.') ? content.substring(2) : content;
+}
+
+export function isExactCorrettoVersion(version: string): boolean {
+  // Java 8 uses four numeric fields; later Corretto releases use five.
+  return /^(?:8(?:\.\d+){3}|(?!8\.)\d+(?:\.\d+){4})$/.test(
+    version.replace('+', '.')
+  );
 }
 
 export function convertVersionToSemver(version: number[] | string) {

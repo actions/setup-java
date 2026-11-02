@@ -1,10 +1,13 @@
 import * as core from '@actions/core';
 import fs from 'fs';
 import path from 'path';
+import {HttpCodes} from '@actions/http-client';
 import {
   cacheJdkDir,
   extractJdkFile,
   getDownloadArchiveExtension,
+  getGitHubHttpHeaders,
+  isExactCorrettoVersion,
   convertVersionToSemver,
   renameWinArchive
 } from '../../util.js';
@@ -24,8 +27,19 @@ const CORRETTO_VERSIONS_URL =
   'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json';
 
 export class CorrettoDistribution extends JavaBase {
+  private readonly requestedVersion: string;
+
   constructor(installerOptions: JavaInstallerOptions) {
-    super('Corretto', installerOptions);
+    super('Corretto', {
+      ...installerOptions,
+      // Java 8 releases use zero-padded fields, e.g. 8.472.08.1.
+      version: isExactCorrettoVersion(installerOptions.version)
+        ? installerOptions.version.replace(/(^|\.)0+(?=\d)/g, '$1')
+        : installerOptions.version
+    });
+    this.requestedVersion = installerOptions.version
+      .replace('+', '.')
+      .replace(/^8\.(\d+)\.(\d)\./, '8.$1.0$2.');
   }
 
   protected async downloadTool(
@@ -63,6 +77,9 @@ export class CorrettoDistribution extends JavaBase {
     if (!this.stable) {
       throw new Error('Early access versions are not supported');
     }
+    if (isExactCorrettoVersion(this.requestedVersion)) {
+      return this.findExactRelease();
+    }
     const availableVersions = await this.getAvailableVersions();
 
     // The `latest` alias is normalized to the SemVer wildcard, but Corretto
@@ -83,7 +100,9 @@ export class CorrettoDistribution extends JavaBase {
     }
 
     if (version.includes('.')) {
-      throw new Error('Only major versions are supported');
+      throw new Error(
+        'Specify a major version or a full Corretto release, such as 25.0.5.0.10'
+      );
     }
     const matchingVersions = availableVersions
       .filter(item => item.version == version)
@@ -108,6 +127,72 @@ export class CorrettoDistribution extends JavaBase {
       throw this.createVersionNotFoundError(version, availableVersionStrings);
     }
     return resolvedVersion;
+  }
+
+  private async findExactRelease(): Promise<JavaDownloadRelease> {
+    const version = this.requestedVersion;
+    const major = version.split('.')[0];
+    const platform = this.getPlatformOption();
+    const arch = this.architecture;
+    if (platform !== 'windows' && this.packageType !== 'jdk') {
+      throw new Error('Corretto JRE archives are only available for Windows');
+    }
+    const os =
+      platform === 'macos'
+        ? 'macosx'
+        : platform === 'alpine'
+          ? 'alpine-linux'
+          : platform;
+    const suffix =
+      platform === 'windows' ? `-${this.packageType}.zip` : '.tar.gz';
+    const url = `https://corretto.aws/downloads/resources/${version}/amazon-corretto-${version}-${os}-${arch}${suffix}`;
+
+    // Versioned archives have no checksum sidecar; Amazon publishes their SHA-256s in the release notes.
+    const source = `https://api.github.com/repos/corretto/corretto-${major}/releases/tags/${version}`;
+    const response = await this.http.getJson<{body: string | null}>(source, {
+      ...getGitHubHttpHeaders(),
+      accept: 'application/vnd.github+json'
+    });
+    const row = response.result?.body
+      ?.split(/\r?\n/)
+      .find(line => line.includes(`](${url})`));
+    const checksum = row?.match(/`([a-fA-F0-9]{64})`/)?.[1];
+    if (checksum) {
+      return {
+        version: this.version,
+        url,
+        checksum: {algorithm: 'sha256', value: checksum, source}
+      };
+    }
+
+    // The current catalog also covers releases missing from GitHub, such as Corretto 15 and 16.
+    const archive = (await this.getAvailableVersions()).find(
+      item => item.downloadLink === url
+    );
+    if (archive) {
+      return {
+        version: this.version,
+        url,
+        checksum: {
+          algorithm: 'sha256',
+          value: archive.checksum_sha256,
+          source: CORRETTO_VERSIONS_URL
+        }
+      };
+    }
+    if (response.statusCode === HttpCodes.NotFound) {
+      throw new Error(
+        `Corretto release ${version} was not found in Amazon's GitHub releases or current download catalog`
+      );
+    }
+    if (!row) {
+      throw new Error(
+        `No ${platform}/${arch} ${this.packageType} archive is listed for Corretto ${version}`
+      );
+    }
+    throw new Error(
+      `No SHA-256 checksum is published for Corretto ${version} (${platform}, ${arch}, ${this.packageType})`
+    );
   }
 
   private async getAvailableVersions(): Promise<ICorrettoAvailableVersions[]> {

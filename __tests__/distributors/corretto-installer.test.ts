@@ -244,19 +244,257 @@ describe('getAvailableVersions', () => {
       ).rejects.toThrow('Early access versions are not supported');
     });
 
-    it('with non major version expect to throw not supported error', async () => {
-      const version = '18.0.1';
+    it.each(['18.0.1', '17.0.13.11', '17.0.13.11.1.1'])(
+      'rejects partial or malformed release %s',
+      async version => {
+        const distribution = new CorrettoDistribution({
+          version,
+          architecture: 'x64',
+          packageType: 'jdk',
+          checkLatest: false
+        });
+        mockPlatform(distribution, 'linux');
+
+        await expect(
+          distribution['findPackageForDownload'](version)
+        ).rejects.toThrow(
+          'Specify a major version or a full Corretto release, such as 25.0.5.0.10'
+        );
+      }
+    );
+
+    it.each([
+      [
+        '25.0.5.0.10',
+        'linux',
+        'x64',
+        'jdk',
+        '25.0.5+0.10',
+        'https://corretto.aws/downloads/resources/25.0.5.0.10/amazon-corretto-25.0.5.0.10-linux-x64.tar.gz'
+      ],
+      [
+        '25.0.5+0.10',
+        'macos',
+        'arm64',
+        'jdk',
+        '25.0.5+0.10',
+        'https://corretto.aws/downloads/resources/25.0.5.0.10/amazon-corretto-25.0.5.0.10-macosx-aarch64.tar.gz'
+      ],
+      [
+        '17.0.2.8.1',
+        'windows',
+        'x64',
+        'jdk',
+        '17.0.2+8.1',
+        'https://corretto.aws/downloads/resources/17.0.2.8.1/amazon-corretto-17.0.2.8.1-windows-x64-jdk.zip'
+      ],
+      [
+        '25.0.5.0.10',
+        'alpine',
+        'aarch64',
+        'jdk',
+        '25.0.5+0.10',
+        'https://corretto.aws/downloads/resources/25.0.5.0.10/amazon-corretto-25.0.5.0.10-alpine-linux-aarch64.tar.gz'
+      ],
+      [
+        '11.0.14.10.1',
+        'linux',
+        'armv7',
+        'jdk',
+        '11.0.14+10.1',
+        'https://corretto.aws/downloads/resources/11.0.14.10.1/amazon-corretto-11.0.14.10.1-linux-armv7.tar.gz'
+      ],
+      [
+        '8.472.8+1',
+        'linux',
+        'x64',
+        'jdk',
+        '8.472.8+1',
+        'https://corretto.aws/downloads/resources/8.472.08.1/amazon-corretto-8.472.08.1-linux-x64.tar.gz'
+      ],
+      [
+        '8.472.08.1',
+        'linux',
+        'x64',
+        'jdk',
+        '8.472.8+1',
+        'https://corretto.aws/downloads/resources/8.472.08.1/amazon-corretto-8.472.08.1-linux-x64.tar.gz'
+      ],
+      [
+        '8.472.08.1',
+        'windows',
+        'x86',
+        'jre',
+        '8.472.8+1',
+        'https://corretto.aws/downloads/resources/8.472.08.1/amazon-corretto-8.472.08.1-windows-x86-jre.zip'
+      ]
+    ])(
+      'resolves exact release %s on %s/%s (%s)',
+      async (
+        requestedVersion,
+        platform,
+        architecture,
+        packageType,
+        expectedVersion,
+        url
+      ) => {
+        const checksum = 'a'.repeat(64);
+        spyHttpClient.mockResolvedValue({
+          statusCode: 200,
+          headers: {},
+          result: {
+            body: `|JDK|[archive](${url})|\`md5\` /<br /> \`${checksum}\`|`
+          }
+        });
+        const distribution = new CorrettoDistribution({
+          version: requestedVersion,
+          architecture,
+          packageType,
+          checkLatest: false
+        });
+        mockPlatform(distribution, platform);
+
+        const release = await distribution['findPackageForDownload'](
+          distribution['version']
+        );
+        const rawVersion = new URL(url).pathname.split('/')[3];
+        const source = `https://api.github.com/repos/corretto/corretto-${rawVersion.split('.')[0]}/releases/tags/${rawVersion}`;
+        expect(release).toEqual({
+          version: expectedVersion,
+          url,
+          checksum: {algorithm: 'sha256', value: checksum, source}
+        });
+        expect(spyHttpClient).toHaveBeenCalledTimes(1);
+        expect(spyHttpClient).toHaveBeenCalledWith(
+          source,
+          expect.objectContaining({accept: 'application/vnd.github+json'})
+        );
+      }
+    );
+
+    it('rejects exact releases without an archive for the requested platform', async () => {
+      spyHttpClient.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        result: {
+          body:
+            '|[other archive](https://example.com/archive)|`' +
+            'a'.repeat(64) +
+            '`|'
+        }
+      });
       const distribution = new CorrettoDistribution({
-        version,
+        version: '25.0.5.0.10',
         architecture: 'x64',
         packageType: 'jdk',
         checkLatest: false
       });
       mockPlatform(distribution, 'linux');
-
       await expect(
-        distribution['findPackageForDownload'](version)
-      ).rejects.toThrow('Only major versions are supported');
+        distribution['findPackageForDownload'](distribution['version'])
+      ).rejects.toThrow(
+        'No linux/x64 jdk archive is listed for Corretto 25.0.5.0.10'
+      );
+    });
+
+    it('rejects historical archives with only an MD5 checksum', async () => {
+      spyHttpClient.mockResolvedValueOnce({
+        statusCode: 200,
+        headers: {},
+        result: {
+          body:
+            '|[archive](https://corretto.aws/downloads/resources/17.0.1.12.1/amazon-corretto-17.0.1.12.1-linux-x64.tar.gz)|`' +
+            'a'.repeat(32) +
+            '`|'
+        }
+      });
+      const distribution = new CorrettoDistribution({
+        version: '17.0.1.12.1',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      mockPlatform(distribution, 'linux');
+      await expect(
+        distribution['findPackageForDownload'](distribution['version'])
+      ).rejects.toThrow(
+        'No SHA-256 checksum is published for Corretto 17.0.1.12.1 (linux, x64, jdk)'
+      );
+    });
+
+    it('does not substitute a JDK for an exact Linux JRE request', async () => {
+      const distribution = new CorrettoDistribution({
+        version: '25.0.5.0.10',
+        architecture: 'x64',
+        packageType: 'jre',
+        checkLatest: false
+      });
+      mockPlatform(distribution, 'linux');
+      await expect(
+        distribution['findPackageForDownload'](distribution['version'])
+      ).rejects.toThrow('Corretto JRE archives are only available for Windows');
+      expect(spyHttpClient).not.toHaveBeenCalled();
+    });
+
+    it('resolves catalog-only releases without a GitHub release', async () => {
+      spyHttpClient.mockResolvedValueOnce({
+        statusCode: 404,
+        headers: {},
+        result: null
+      });
+      const distribution = new CorrettoDistribution({
+        version: '15.0.2.7.1',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      mockPlatform(distribution, 'linux');
+      expect(
+        await distribution['findPackageForDownload'](distribution['version'])
+      ).toEqual({
+        version: '15.0.2+7.1',
+        url: 'https://corretto.aws/downloads/resources/15.0.2.7.1/amazon-corretto-15.0.2.7.1-linux-x64.tar.gz',
+        checksum: {
+          algorithm: 'sha256',
+          value: manifestData.linux.x64.jdk['15']['tar.gz'].checksum_sha256,
+          source:
+            'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json'
+        }
+      });
+    });
+
+    it('reports missing release metadata without substituting the latest release', async () => {
+      spyHttpClient.mockResolvedValueOnce({
+        statusCode: 404,
+        headers: {},
+        result: null
+      });
+      const distribution = new CorrettoDistribution({
+        version: '17.0.0.0.999',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      mockPlatform(distribution, 'linux');
+      await expect(
+        distribution['findPackageForDownload'](distribution['version'])
+      ).rejects.toThrow(
+        "Corretto release 17.0.0.0.999 was not found in Amazon's GitHub releases or current download catalog"
+      );
+    });
+
+    it('does not normalize zero-padded major-only inputs', () => {
+      expect(
+        () =>
+          new CorrettoDistribution({
+            version: '08',
+            architecture: 'x64',
+            packageType: 'jdk',
+            checkLatest: false
+          })
+      ).toThrow(
+        "The string '08' is not valid SemVer notation for a Java version"
+      );
     });
 
     it('with unfound version throw could not find error', async () => {
