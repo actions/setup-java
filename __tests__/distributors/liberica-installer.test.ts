@@ -320,6 +320,34 @@ describe('findPackageForDownload', () => {
     });
   });
 
+  it('selects the latest multi-component patch release for Java 25', async () => {
+    const releases: LibericaVersion[] = [
+      '25.0.5+11',
+      '25.0.5.0.2+5',
+      '25.0.5.0.3+5'
+    ].map(version => {
+      const [versionWithoutBuild, buildVersion] = version.split('+');
+      const [featureVersion, interimVersion, updateVersion] =
+        versionWithoutBuild.split('.').map(Number);
+      return {
+        version,
+        featureVersion,
+        interimVersion,
+        updateVersion,
+        buildVersion: Number(buildVersion),
+        downloadUrl: `https://download.bell-sw.com/java/${version}/jdk.tar.gz`
+      };
+    });
+    distribution['getAvailableVersions'] = async () => releases;
+
+    await expect(distribution['findPackageForDownload']('25')).resolves.toEqual(
+      {
+        version: '25.0.5+0.3.5',
+        url: 'https://download.bell-sw.com/java/25.0.5.0.3+5/jdk.tar.gz'
+      }
+    );
+  });
+
   it('should throw an error', async () => {
     await expect(distribution['findPackageForDownload']('17')).rejects.toThrow(
       /No matching version found for SemVer/
@@ -429,6 +457,39 @@ describe('patch request resolution from the constructor', () => {
       checkLatest: false
     });
     expect(distribution['version']).toBe('17.0.20.1');
+  });
+
+  it('normalizes multi-component patch-only requests for exact matching', async () => {
+    const releases: LibericaVersion[] = ['25.0.5.0.2+5', '25.0.5.0.3+5'].map(
+      version => {
+        const [versionWithoutBuild, buildVersion] = version.split('+');
+        const [featureVersion, interimVersion, updateVersion] =
+          versionWithoutBuild.split('.').map(Number);
+        return {
+          version,
+          featureVersion,
+          interimVersion,
+          updateVersion,
+          buildVersion: Number(buildVersion),
+          downloadUrl: `https://download.bell-sw.com/java/${version}/jdk.tar.gz`
+        };
+      }
+    );
+    const distribution = new LibericaDistributions({
+      version: '25.0.5.0.3',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    distribution['getAvailableVersions'] = async () => releases;
+
+    expect(distribution['version']).toBe('25.0.5.0.3');
+    await expect(
+      distribution['findPackageForDownload'](distribution['version'])
+    ).resolves.toEqual({
+      version: '25.0.5+0.3.5',
+      url: 'https://download.bell-sw.com/java/25.0.5.0.3+5/jdk.tar.gz'
+    });
   });
 
   it('orders main versions, patches, and builds consistently in cache', async () => {
@@ -576,6 +637,16 @@ describe('convertVersionToSemver', () => {
         buildVersion: 1
       },
       '25.0.4+1.1'
+    ],
+    [
+      {
+        version: '25.0.5.0.3+5',
+        featureVersion: 25,
+        interimVersion: 0,
+        updateVersion: 5,
+        buildVersion: 5
+      },
+      '25.0.5+0.3.5'
     ],
     [
       {
