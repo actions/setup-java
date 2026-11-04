@@ -360,7 +360,7 @@ class JavaBase {
                         ? await this.createJdkCache(javaRelease)
                         : undefined;
                     if (!this.forceDownload && jdkCache) {
-                        const { restoreJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                        const { restoreJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
                         const restored = await restoreJdk(jdkCache);
                         if (restored) {
                             const restoredPath = this.getRestoredJdkPath(javaRelease.version);
@@ -392,7 +392,7 @@ class JavaBase {
                             // Register after the installation exists so its identity is
                             // captured; the post-job save refuses to upload a path whose
                             // installation was replaced afterwards.
-                            const { registerJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                            const { registerJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
                             registerJdk(jdkCache);
                         }
                     }
@@ -441,7 +441,7 @@ class JavaBase {
             const release = await this.findPackageForDownload(this.version);
             return this.restoreFloatingResolution(release);
         }
-        const { restoreJdkResolution, registerJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
+        const { restoreJdkResolution, registerJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
         const request = {
             distribution: this.distribution,
             packageType: this.packageType,
@@ -477,7 +477,7 @@ class JavaBase {
         return false;
     }
     async createJdkCache(javaRelease) {
-        const { getJdkVerificationIdentity } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+        const { getJdkVerificationIdentity } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
         return {
             distribution: this.distribution,
             packageType: this.packageType,
@@ -495,7 +495,7 @@ class JavaBase {
             this.forceDownload) {
             return javaRelease;
         }
-        const { restoreJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
+        const { restoreJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
         const restored = await restoreJdkResolution(this.getFloatingResolutionRequest(javaRelease));
         if (!restored) {
             return javaRelease;
@@ -515,7 +515,7 @@ class JavaBase {
             this.forceDownload) {
             return;
         }
-        const { registerJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
+        const { registerJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
         registerJdkResolution(this.getFloatingResolutionRequest(javaRelease), javaRelease);
     }
     getFloatingResolutionRequest(javaRelease) {
