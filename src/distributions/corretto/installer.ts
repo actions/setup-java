@@ -149,10 +149,39 @@ export class CorrettoDistribution extends JavaBase {
 
     // Versioned archives have no checksum sidecar; Amazon publishes their SHA-256s in the release notes.
     const source = `https://api.github.com/repos/corretto/corretto-${major}/releases/tags/${version}`;
-    const response = await this.http.getJson<{body: string | null}>(source, {
-      ...getGitHubHttpHeaders(),
-      accept: 'application/vnd.github+json'
-    });
+    const findCatalogRelease = async (): Promise<
+      JavaDownloadRelease | undefined
+    > => {
+      const archive = (await this.getAvailableVersions()).find(
+        item => item.downloadLink === url
+      );
+      if (!archive) {
+        return undefined;
+      }
+      return {
+        version: this.version,
+        url,
+        checksum: {
+          algorithm: 'sha256',
+          value: archive.checksum_sha256,
+          source: CORRETTO_VERSIONS_URL
+        }
+      };
+    };
+
+    let response;
+    try {
+      response = await this.http.getJson<{body: string | null}>(source, {
+        ...getGitHubHttpHeaders(),
+        accept: 'application/vnd.github+json'
+      });
+    } catch (error) {
+      const catalogRelease = await findCatalogRelease();
+      if (catalogRelease) {
+        return catalogRelease;
+      }
+      throw error;
+    }
     const row = response.result?.body
       ?.split(/\r?\n/)
       .find(line => line.includes(`](${url})`));
@@ -166,19 +195,9 @@ export class CorrettoDistribution extends JavaBase {
     }
 
     // The current catalog also covers releases missing from GitHub, such as Corretto 15 and 16.
-    const archive = (await this.getAvailableVersions()).find(
-      item => item.downloadLink === url
-    );
-    if (archive) {
-      return {
-        version: this.version,
-        url,
-        checksum: {
-          algorithm: 'sha256',
-          value: archive.checksum_sha256,
-          source: CORRETTO_VERSIONS_URL
-        }
-      };
+    const catalogRelease = await findCatalogRelease();
+    if (catalogRelease) {
+      return catalogRelease;
     }
     if (response.statusCode === HttpCodes.NotFound) {
       throw new Error(

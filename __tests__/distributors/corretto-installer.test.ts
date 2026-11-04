@@ -463,6 +463,31 @@ describe('getAvailableVersions', () => {
       });
     });
 
+    it('falls back to the catalog when the GitHub lookup fails', async () => {
+      spyHttpClient.mockRejectedValueOnce(new Error('GitHub rate limit'));
+      const distribution = new CorrettoDistribution({
+        version: '15.0.2.7.1',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      mockPlatform(distribution, 'linux');
+
+      expect(
+        await distribution['findPackageForDownload'](distribution['version'])
+      ).toEqual({
+        version: '15.0.2+7.1',
+        url: 'https://corretto.aws/downloads/resources/15.0.2.7.1/amazon-corretto-15.0.2.7.1-linux-x64.tar.gz',
+        checksum: {
+          algorithm: 'sha256',
+          value: manifestData.linux.x64.jdk['15']['tar.gz'].checksum_sha256,
+          source:
+            'https://corretto.github.io/corretto-downloads/latest_links/indexmap_with_checksum.json'
+        }
+      });
+      expect(spyHttpClient).toHaveBeenCalledTimes(2);
+    });
+
     it('reports missing release metadata without substituting the latest release', async () => {
       spyHttpClient.mockResolvedValueOnce({
         statusCode: 404,

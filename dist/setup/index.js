@@ -32084,8 +32084,8 @@ function avoidOldNotation(content) {
     return content.startsWith('1.') ? content.substring(2) : content;
 }
 function isExactCorrettoVersion(version) {
-    // Java 8 uses four numeric fields; later Corretto releases use five.
-    return /^(?:8(?:\.\d+){3}|(?!8\.)\d+(?:\.\d+){4})$/.test(version.replace('+', '.'));
+    // Java 8 releases have a nonzero update field; later releases use five numeric fields.
+    return /^(?:8\.(?!0+(?:\.|$))\d+(?:\.\d+){2}|(?!8\.)\d+(?:\.\d+){4})$/.test(version.replace('+', '.'));
 }
 function convertVersionToSemver(version) {
     // Some distributions may use semver-like notation (12.10.2.1, 12.10.2.1.1)

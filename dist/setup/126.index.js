@@ -114,10 +114,35 @@ class CorrettoDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5
         const url = `https://corretto.aws/downloads/resources/${version}/amazon-corretto-${version}-${os}-${arch}${suffix}`;
         // Versioned archives have no checksum sidecar; Amazon publishes their SHA-256s in the release notes.
         const source = `https://api.github.com/repos/corretto/corretto-${major}/releases/tags/${version}`;
-        const response = await this.http.getJson(source, {
-            ...(0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .getGitHubHttpHeaders */ .U_)(),
-            accept: 'application/vnd.github+json'
-        });
+        const findCatalogRelease = async () => {
+            const archive = (await this.getAvailableVersions()).find(item => item.downloadLink === url);
+            if (!archive) {
+                return undefined;
+            }
+            return {
+                version: this.version,
+                url,
+                checksum: {
+                    algorithm: 'sha256',
+                    value: archive.checksum_sha256,
+                    source: CORRETTO_VERSIONS_URL
+                }
+            };
+        };
+        let response;
+        try {
+            response = await this.http.getJson(source, {
+                ...(0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .getGitHubHttpHeaders */ .U_)(),
+                accept: 'application/vnd.github+json'
+            });
+        }
+        catch (error) {
+            const catalogRelease = await findCatalogRelease();
+            if (catalogRelease) {
+                return catalogRelease;
+            }
+            throw error;
+        }
         const row = response.result?.body
             ?.split(/\r?\n/)
             .find(line => line.includes(`](${url})`));
@@ -130,17 +155,9 @@ class CorrettoDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_5
             };
         }
         // The current catalog also covers releases missing from GitHub, such as Corretto 15 and 16.
-        const archive = (await this.getAvailableVersions()).find(item => item.downloadLink === url);
-        if (archive) {
-            return {
-                version: this.version,
-                url,
-                checksum: {
-                    algorithm: 'sha256',
-                    value: archive.checksum_sha256,
-                    source: CORRETTO_VERSIONS_URL
-                }
-            };
+        const catalogRelease = await findCatalogRelease();
+        if (catalogRelease) {
+            return catalogRelease;
         }
         if (response.statusCode === _actions_http_client__WEBPACK_IMPORTED_MODULE_3__/* .HttpCodes */ .Hv.NotFound) {
             throw new Error(`Corretto release ${version} was not found in Amazon's GitHub releases or current download catalog`);

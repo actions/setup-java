@@ -291,6 +291,7 @@ describe('getVersionFromFileContent', () => {
     ['17.0.3.1', '.java-version', '17'],
     ['1.8.0.472.1', '.java-version', '8'],
     ['8.0.472.08.1', '.java-version', '8'],
+    ['8.0.282+8', '.java-version', '8'],
     ['java corretto-17.0.13.11.1-jre', '.tool-versions', '17'],
     ['java corretto-17.0.13.11.1+1', '.tool-versions', '17']
   ])('keeps the existing major selection for %s', (content, file, version) => {
