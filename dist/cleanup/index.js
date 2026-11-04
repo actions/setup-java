@@ -31894,13 +31894,6 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:https")
 
 /***/ }),
 
-/***/ 8995:
-/***/ ((module) => {
-
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:module");
-
-/***/ }),
-
 /***/ 7030:
 /***/ ((module) => {
 
@@ -31912,13 +31905,6 @@ module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:net");
 /***/ ((module) => {
 
 module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:os");
-
-/***/ }),
-
-/***/ 6760:
-/***/ ((module) => {
-
-module.exports = __WEBPACK_EXTERNAL_createRequire(import.meta.url)("node:path");
 
 /***/ }),
 
@@ -36343,12 +36329,12 @@ async function saveCaches() {
     }
     const saves = [];
     if (cache) {
-        const { save } = await Promise.all(/* import() */[__nccwpck_require__.e(767), __nccwpck_require__.e(377)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7377));
+        const { save } = await Promise.all(/* import() */[__nccwpck_require__.e(80), __nccwpck_require__.e(377)]).then(__nccwpck_require__.bind(__nccwpck_require__, 7377));
         saves.push(save(cache));
     }
     if (cacheJdk) {
-        const { saveJdkCaches } = await Promise.all(/* import() */[__nccwpck_require__.e(767), __nccwpck_require__.e(314)]).then(__nccwpck_require__.bind(__nccwpck_require__, 2314));
-        const { saveJdkResolutionCaches } = await Promise.all(/* import() */[__nccwpck_require__.e(767), __nccwpck_require__.e(348)]).then(__nccwpck_require__.bind(__nccwpck_require__, 967));
+        const { saveJdkCaches } = await Promise.all(/* import() */[__nccwpck_require__.e(80), __nccwpck_require__.e(314)]).then(__nccwpck_require__.bind(__nccwpck_require__, 2314));
+        const { saveJdkResolutionCaches } = await Promise.all(/* import() */[__nccwpck_require__.e(80), __nccwpck_require__.e(348)]).then(__nccwpck_require__.bind(__nccwpck_require__, 967));
         saves.push(saveJdkCaches());
         saves.push(saveJdkResolutionCaches());
     }
