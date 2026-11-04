@@ -360,7 +360,7 @@ class JavaBase {
                         ? await this.createJdkCache(javaRelease)
                         : undefined;
                     if (!this.forceDownload && jdkCache) {
-                        const { restoreJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                        const { restoreJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
                         const restored = await restoreJdk(jdkCache);
                         if (restored) {
                             const restoredPath = this.getRestoredJdkPath(javaRelease.version);
@@ -378,7 +378,7 @@ class JavaBase {
                         core/* info */.pq(`Java ${foundJava.version} was downloaded`);
                         if (javaRelease.floating) {
                             if (!semver_default().valid(foundJava.version) ||
-                                !(0,util/* isVersionSatisfies */.y)(this.version, foundJava.version)) {
+                                !this.isVersionSatisfied(this.version, foundJava.version)) {
                                 throw new Error(`The downloaded ${this.distribution} artifact reported Java ${foundJava.version}, which does not satisfy '${this.version}'.`);
                             }
                             javaRelease = { ...javaRelease, version: foundJava.version };
@@ -392,7 +392,7 @@ class JavaBase {
                             // Register after the installation exists so its identity is
                             // captured; the post-job save refuses to upload a path whose
                             // installation was replaced afterwards.
-                            const { registerJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                            const { registerJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
                             registerJdk(jdkCache);
                         }
                     }
@@ -441,7 +441,7 @@ class JavaBase {
             const release = await this.findPackageForDownload(this.version);
             return this.restoreFloatingResolution(release);
         }
-        const { restoreJdkResolution, registerJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
+        const { restoreJdkResolution, registerJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
         const request = {
             distribution: this.distribution,
             packageType: this.packageType,
@@ -477,7 +477,7 @@ class JavaBase {
         return false;
     }
     async createJdkCache(javaRelease) {
-        const { getJdkVerificationIdentity } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+        const { getJdkVerificationIdentity } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
         return {
             distribution: this.distribution,
             packageType: this.packageType,
@@ -495,13 +495,13 @@ class JavaBase {
             this.forceDownload) {
             return javaRelease;
         }
-        const { restoreJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
+        const { restoreJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
         const restored = await restoreJdkResolution(this.getFloatingResolutionRequest(javaRelease));
         if (!restored) {
             return javaRelease;
         }
         if (!semver_default().valid(restored.release.version) ||
-            !(0,util/* isVersionSatisfies */.y)(this.version, restored.release.version)) {
+            !this.isVersionSatisfied(this.version, restored.release.version)) {
             core/* debug */.Yz(`Ignoring the cached concrete version '${restored.release.version}' for ${this.distribution} ${this.version}.`);
             return javaRelease;
         }
@@ -515,7 +515,7 @@ class JavaBase {
             this.forceDownload) {
             return;
         }
-        const { registerJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
+        const { registerJdkResolution } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(348)]).then(__webpack_require__.bind(__webpack_require__, 967));
         registerJdkResolution(this.getFloatingResolutionRequest(javaRelease), javaRelease);
     }
     getFloatingResolutionRequest(javaRelease) {
@@ -684,10 +684,10 @@ class JavaBase {
         })
             .filter(item => item.stable === this.stable);
         const satisfiedVersions = availableVersions
-            .filter(item => (0,util/* isVersionSatisfies */.y)(this.version, item.version))
+            .filter(item => this.isVersionSatisfied(this.version, item.version))
             .filter(item => item.path)
             .sort((a, b) => {
-            return -semver_default().compareBuild(a.version, b.version);
+            return -this.compareVersions(a.version, b.version);
         });
         if (!satisfiedVersions || satisfiedVersions.length === 0) {
             return null;
@@ -696,6 +696,12 @@ class JavaBase {
             version: satisfiedVersions[0].version,
             path: satisfiedVersions[0].path
         };
+    }
+    isVersionSatisfied(range, version) {
+        return (0,util/* isVersionSatisfies */.y)(range, version);
+    }
+    compareVersions(a, b) {
+        return semver_default().compareBuild(a, b);
     }
     normalizeVersion(version) {
         let stable = true;

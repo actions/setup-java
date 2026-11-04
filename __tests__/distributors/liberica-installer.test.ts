@@ -15,6 +15,7 @@ import type {
 } from '../../src/distributions/liberica/models.js';
 import {HttpClient} from '@actions/http-client';
 import os from 'os';
+import path from 'path';
 
 import manifestData from '../data/liberica.json' with {type: 'json'};
 
@@ -253,36 +254,123 @@ describe('findPackageForDownload', () => {
     expect(result.version).toBe(expected);
   });
 
-  describe('compound build versions', () => {
+  describe.each([
+    [17, 20],
+    [25, 4]
+  ])('patch releases for Java %s.0.%s', (featureVersion, updateVersion) => {
+    const mainVersion = `${featureVersion}.0.${updateVersion}`;
+
     beforeEach(() => {
       distribution['getAvailableVersions'] = async () =>
-        ['1', '1.1', '1.2', '1.10'].map(build => ({
-          featureVersion: 25,
+        ['+1', '+10', '.1+1', '.1+2', '.1+10', '.2+1', '.10+1'].map(suffix => ({
+          featureVersion,
           interimVersion: 0,
-          updateVersion: 4,
-          buildVersion: 1,
-          version: `25.0.4+${build}`,
-          downloadUrl: `https://download.bell-sw.com/java/25.0.4+${build}/bellsoft-jdk25.0.4+${build}-macos-aarch64.tar.gz`
+          updateVersion,
+          buildVersion: Number(suffix.split('+')[1]),
+          version: `${mainVersion}${suffix}`,
+          downloadUrl: `https://download.bell-sw.com/java/${mainVersion}${suffix}/bellsoft-jdk${mainVersion}${suffix}-macos-aarch64.tar.gz`
         }));
     });
 
     it.each([
-      ['25.0.4+1.1', '25.0.4+1.1'],
-      ['25.0.4+1', '25.0.4+1'],
-      ['25.0.4', '25.0.4+1.10'],
-      ['25', '25.0.4+1.10']
-    ])('version is %s -> %s', async (input, expected) => {
+      [`${mainVersion}+1.1`, `${mainVersion}+1.1`, '.1+1'],
+      [`${mainVersion}+1.2`, `${mainVersion}+1.2`, '.1+2'],
+      [`${mainVersion}+1.10`, `${mainVersion}+1.10`, '.1+10'],
+      [`${mainVersion}+1`, `${mainVersion}+1`, '+1'],
+      [mainVersion, `${mainVersion}+10.1`, '.10+1'],
+      [`${featureVersion}`, `${mainVersion}+10.1`, '.10+1']
+    ])('version is %s -> %s', async (input, expected, suffix) => {
       const result = await distribution['findPackageForDownload'](input);
       expect(result).toEqual({
         version: expected,
-        url: `https://download.bell-sw.com/java/${expected}/bellsoft-jdk${expected}-macos-aarch64.tar.gz`
+        url: `https://download.bell-sw.com/java/${mainVersion}${suffix}/bellsoft-jdk${mainVersion}${suffix}-macos-aarch64.tar.gz`
       });
+    });
+
+    it('sorts builds within the same patch numerically', async () => {
+      const versions = await distribution['getAvailableVersions']();
+      distribution['getAvailableVersions'] = async () =>
+        versions.filter(item => item.version.startsWith(`${mainVersion}.1+`));
+
+      const result = await distribution['findPackageForDownload'](mainVersion);
+      expect(result.version).toBe(`${mainVersion}+1.10`);
+    });
+
+    it('selects the newest build for a four-component patch-only request', async () => {
+      const patchDistribution = new LibericaDistributions({
+        version: `${mainVersion}.1`,
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      patchDistribution['getAvailableVersions'] =
+        distribution['getAvailableVersions'];
+
+      await expect(
+        patchDistribution['findPackageForDownload'](
+          patchDistribution['version']
+        )
+      ).resolves.toMatchObject({version: `${mainVersion}+1.10`});
     });
 
     it('does not substitute a different compound build', async () => {
       await expect(
-        distribution['findPackageForDownload']('25.0.4+1.3')
+        distribution['findPackageForDownload'](`${mainVersion}+1.3`)
       ).rejects.toThrow(/No matching version found for SemVer/);
+    });
+  });
+
+  it('selects the latest multi-component patch release for Java 25', async () => {
+    const releases: LibericaVersion[] = [
+      '25.0.5+11',
+      '25.0.5.0.2+5',
+      '25.0.5.0.3+5'
+    ].map(version => {
+      const [versionWithoutBuild, buildVersion] = version.split('+');
+      const [featureVersion, interimVersion, updateVersion] =
+        versionWithoutBuild.split('.').map(Number);
+      return {
+        version,
+        featureVersion,
+        interimVersion,
+        updateVersion,
+        buildVersion: Number(buildVersion),
+        downloadUrl: `https://download.bell-sw.com/java/${version}/jdk.tar.gz`
+      };
+    });
+    distribution['getAvailableVersions'] = async () => releases;
+
+    await expect(distribution['findPackageForDownload']('25')).resolves.toEqual(
+      {
+        version: '25.0.5+0.3.5',
+        url: 'https://download.bell-sw.com/java/25.0.5.0.3+5/jdk.tar.gz'
+      }
+    );
+  });
+
+  it('compares patch components before build numbers when patch lengths differ', async () => {
+    const releases: LibericaVersion[] = ['25.0.5.1+10', '25.0.5.1.1+1'].map(
+      version => {
+        const [versionWithoutBuild, buildVersion] = version.split('+');
+        const [featureVersion, interimVersion, updateVersion] =
+          versionWithoutBuild.split('.').map(Number);
+        return {
+          version,
+          featureVersion,
+          interimVersion,
+          updateVersion,
+          buildVersion: Number(buildVersion),
+          downloadUrl: `https://download.bell-sw.com/java/${version}/jdk.tar.gz`
+        };
+      }
+    );
+    distribution['getAvailableVersions'] = async () => releases;
+
+    await expect(
+      distribution['findPackageForDownload']('25.0.5')
+    ).resolves.toEqual({
+      version: '25.0.5+1.1.1',
+      url: 'https://download.bell-sw.com/java/25.0.5.1.1+1/jdk.tar.gz'
     });
   });
 
@@ -290,6 +378,193 @@ describe('findPackageForDownload', () => {
     await expect(distribution['findPackageForDownload']('17')).rejects.toThrow(
       /No matching version found for SemVer/
     );
+  });
+});
+
+describe('patch request resolution from the constructor', () => {
+  const releases: LibericaVersion[] = ['17.0.20+10', '17.0.20.1+1'].map(
+    version => ({
+      featureVersion: 17,
+      interimVersion: 0,
+      updateVersion: 20,
+      buildVersion: Number(version.split('+')[1]),
+      version,
+      downloadUrl: `https://download.bell-sw.com/java/${version}/jdk.tar.gz`
+    })
+  );
+  let cacheRoot: string;
+  let previousToolcache: string | undefined;
+
+  beforeEach(async () => {
+    previousToolcache = process.env['RUNNER_TOOL_CACHE'];
+    cacheRoot = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'liberica-'));
+    process.env['RUNNER_TOOL_CACHE'] = cacheRoot;
+    for (const version of ['17.0.20-10', '17.0.20-1.1']) {
+      const javaPath = path.join(
+        cacheRoot,
+        'Java_Liberica_jdk',
+        version,
+        'x64'
+      );
+      await fs.promises.mkdir(javaPath, {recursive: true});
+      await fs.promises.writeFile(`${javaPath}.complete`, '');
+    }
+  });
+
+  afterEach(async () => {
+    if (previousToolcache === undefined) {
+      delete process.env['RUNNER_TOOL_CACHE'];
+    } else {
+      process.env['RUNNER_TOOL_CACHE'] = previousToolcache;
+    }
+    await fs.promises.rm(cacheRoot, {recursive: true, force: true});
+  });
+
+  it.each([
+    ['17', '17.0.20+1.1', '17.0.20.1+1'],
+    ['17.0.20', '17.0.20+1.1', '17.0.20.1+1'],
+    ['17.0.20+10', '17.0.20+10', '17.0.20+10'],
+    ['17.0.20+1.1', '17.0.20+1.1', '17.0.20.1+1'],
+    ['17.0.20.1', '17.0.20+1.1', '17.0.20.1+1'],
+    ['17.0.20.1+1', '17.0.20+1.1', '17.0.20.1+1'],
+    ['17.0.20.0', '17.0.20+10', '17.0.20+10']
+  ])(
+    'resolves %s consistently remotely and in cache',
+    async (input, expected, apiVersion) => {
+      const distribution = new LibericaDistributions({
+        version: input,
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      distribution['getAvailableVersions'] = async () => releases;
+
+      await expect(
+        distribution['findPackageForDownload'](distribution['version'])
+      ).resolves.toEqual({
+        version: expected,
+        url: `https://download.bell-sw.com/java/${apiVersion}/jdk.tar.gz`
+      });
+      expect(distribution['findInToolcache']()).toEqual({
+        version: expected,
+        path: path.join(
+          cacheRoot,
+          'Java_Liberica_jdk',
+          expected.replace('+', '-'),
+          'x64'
+        )
+      });
+    }
+  );
+
+  it.each(['17.0.20.2', '17.0.20+1.2'])(
+    'does not substitute a different patch or exact build for %s',
+    async version => {
+      const distribution = new LibericaDistributions({
+        version,
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      distribution['getAvailableVersions'] = async () => releases;
+
+      await expect(
+        distribution['findPackageForDownload'](distribution['version'])
+      ).rejects.toThrow(/No matching version found/);
+      expect(distribution['findInToolcache']()).toBeNull();
+    }
+  );
+
+  it('keeps patch-only and exact-build resolution cache identities distinct', () => {
+    const distribution = new LibericaDistributions({
+      version: '17.0.20.1',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    expect(distribution['version']).toBe('17.0.20.1');
+  });
+
+  it('normalizes multi-component patch-only requests for exact matching', async () => {
+    const releases: LibericaVersion[] = ['25.0.5.0.2+5', '25.0.5.0.3+5'].map(
+      version => {
+        const [versionWithoutBuild, buildVersion] = version.split('+');
+        const [featureVersion, interimVersion, updateVersion] =
+          versionWithoutBuild.split('.').map(Number);
+        return {
+          version,
+          featureVersion,
+          interimVersion,
+          updateVersion,
+          buildVersion: Number(buildVersion),
+          downloadUrl: `https://download.bell-sw.com/java/${version}/jdk.tar.gz`
+        };
+      }
+    );
+    const distribution = new LibericaDistributions({
+      version: '25.0.5.0.3',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    distribution['getAvailableVersions'] = async () => releases;
+
+    expect(distribution['version']).toBe('25.0.5.0.3');
+    await expect(
+      distribution['findPackageForDownload'](distribution['version'])
+    ).resolves.toEqual({
+      version: '25.0.5+0.3.5',
+      url: 'https://download.bell-sw.com/java/25.0.5.0.3+5/jdk.tar.gz'
+    });
+  });
+
+  it('orders main versions, patches, and builds consistently in cache', async () => {
+    for (const version of ['17.0.20-1.2', '17.0.20-1.10', '17.0.21-1']) {
+      const javaPath = path.join(
+        cacheRoot,
+        'Java_Liberica_jdk',
+        version,
+        'x64'
+      );
+      await fs.promises.mkdir(javaPath, {recursive: true});
+      await fs.promises.writeFile(`${javaPath}.complete`, '');
+    }
+
+    for (const [version, expected] of [
+      ['17', '17.0.21+1'],
+      ['17.0.20', '17.0.20+1.10'],
+      ['17.0.20.1', '17.0.20+1.10']
+    ]) {
+      const distribution = new LibericaDistributions({
+        version,
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+      expect(distribution['findInToolcache']()?.version).toBe(expected);
+    }
+  });
+
+  it('preserves early-access handling for patch-only requests', async () => {
+    const javaPath = path.join(
+      cacheRoot,
+      'Java_Liberica_jdk',
+      '17.0.20-ea.1.2',
+      'x64'
+    );
+    await fs.promises.mkdir(javaPath, {recursive: true});
+    await fs.promises.writeFile(`${javaPath}.complete`, '');
+    const distribution = new LibericaDistributions({
+      version: '17.0.20.1-ea',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+    expect(distribution['stable']).toBe(false);
+    expect(distribution['findInToolcache']()).toEqual({
+      version: '17.0.20+1.2',
+      path: javaPath
+    });
   });
 });
 
@@ -368,6 +643,46 @@ describe('convertVersionToSemver', () => {
         buildVersion: 13
       },
       '11.0.0+13'
+    ],
+    [
+      {
+        version: '17.0.20.1+1',
+        featureVersion: 17,
+        interimVersion: 0,
+        updateVersion: 20,
+        buildVersion: 1
+      },
+      '17.0.20+1.1'
+    ],
+    [
+      {
+        version: '25.0.4.1+1',
+        featureVersion: 25,
+        interimVersion: 0,
+        updateVersion: 4,
+        buildVersion: 1
+      },
+      '25.0.4+1.1'
+    ],
+    [
+      {
+        version: '25.0.5.0.3+5',
+        featureVersion: 25,
+        interimVersion: 0,
+        updateVersion: 5,
+        buildVersion: 5
+      },
+      '25.0.5+0.3.5'
+    ],
+    [
+      {
+        version: '17.0.20.1+2',
+        featureVersion: 17,
+        interimVersion: 0,
+        updateVersion: 20,
+        buildVersion: 2
+      },
+      '17.0.20+1.2'
     ],
     [
       {
