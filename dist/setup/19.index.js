@@ -56,7 +56,7 @@ class LocalDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_3__/
             let jdkCache;
             if (this.cacheJdk) {
                 const [{ getJdkVerificationIdentity }, source] = await Promise.all([
-                    Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779)),
+                    Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779)),
                     hashFile(jdkFilePath)
                 ]);
                 jdkCache = {
@@ -70,7 +70,7 @@ class LocalDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_3__/
                 };
             }
             if (!this.forceDownload && jdkCache) {
-                const { restoreJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                const { restoreJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
                 const restored = await restoreJdk(jdkCache);
                 const restoredPath = restored
                     ? this.getRestoredJdkPath(this.version)
@@ -94,7 +94,7 @@ class LocalDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_3__/
                     path: javaPath
                 };
                 if (jdkCache) {
-                    const { registerJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(971), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
+                    const { registerJdk } = await Promise.all(/* import() */[__webpack_require__.e(824), __webpack_require__.e(219), __webpack_require__.e(779)]).then(__webpack_require__.bind(__webpack_require__, 5779));
                     registerJdk(jdkCache);
                 }
             }
