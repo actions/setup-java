@@ -109,15 +109,32 @@ export class LibericaDistributions extends JavaBase {
       return mainComparison;
     }
 
-    // SDKMAN encodes patch components followed by build; base releases have only build.
-    const patchAndBuild = (version: string): string => {
+    const getPatchAndBuild = (version: string) => {
       const build = new semver.SemVer(version).build;
-      return (build.length > 1 ? ['1', ...build] : ['0', ...build]).join('.');
+      return build.length > 1
+        ? {patch: build.slice(0, -1), build: build[build.length - 1]}
+        : {patch: [], build: build[0] ?? '0'};
     };
-    return semver.compareBuild(
-      `0.0.0+${patchAndBuild(a)}`,
-      `0.0.0+${patchAndBuild(b)}`
-    );
+    const first = getPatchAndBuild(a);
+    const second = getPatchAndBuild(b);
+    const compareNumericIdentifiers = (left: string, right: string) =>
+      semver.compareBuild(`0.0.0+${left}`, `0.0.0+${right}`);
+
+    for (
+      let index = 0;
+      index < Math.max(first.patch.length, second.patch.length);
+      index++
+    ) {
+      const patchComparison = compareNumericIdentifiers(
+        first.patch[index] ?? '0',
+        second.patch[index] ?? '0'
+      );
+      if (patchComparison !== 0) {
+        return patchComparison;
+      }
+    }
+
+    return compareNumericIdentifiers(first.build, second.build);
   }
 
   private async getAvailableVersions(): Promise<LibericaVersion[]> {

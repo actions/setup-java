@@ -348,6 +348,32 @@ describe('findPackageForDownload', () => {
     );
   });
 
+  it('compares patch components before build numbers when patch lengths differ', async () => {
+    const releases: LibericaVersion[] = ['25.0.5.1+10', '25.0.5.1.1+1'].map(
+      version => {
+        const [versionWithoutBuild, buildVersion] = version.split('+');
+        const [featureVersion, interimVersion, updateVersion] =
+          versionWithoutBuild.split('.').map(Number);
+        return {
+          version,
+          featureVersion,
+          interimVersion,
+          updateVersion,
+          buildVersion: Number(buildVersion),
+          downloadUrl: `https://download.bell-sw.com/java/${version}/jdk.tar.gz`
+        };
+      }
+    );
+    distribution['getAvailableVersions'] = async () => releases;
+
+    await expect(
+      distribution['findPackageForDownload']('25.0.5')
+    ).resolves.toEqual({
+      version: '25.0.5+1.1.1',
+      url: 'https://download.bell-sw.com/java/25.0.5.1.1+1/jdk.tar.gz'
+    });
+  });
+
   it('should throw an error', async () => {
     await expect(distribution['findPackageForDownload']('17')).rejects.toThrow(
       /No matching version found for SemVer/
