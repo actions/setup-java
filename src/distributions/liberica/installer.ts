@@ -80,7 +80,7 @@ export class LibericaDistributions extends JavaBase {
 
   protected normalizeVersion(version: string) {
     const normalized = super.normalizeVersion(version);
-    if (/^\d+\.\d+\.\d+\.\d+(?:-ea)?$/.test(version)) {
+    if (/^\d+\.\d+\.\d+(?:\.\d+)+(?:-ea)?$/.test(version)) {
       // Keep patch-only requests distinct from exact SDKMAN build requests.
       normalized.version = version.replace(/-ea$/, '');
     }
@@ -88,14 +88,17 @@ export class LibericaDistributions extends JavaBase {
   }
 
   protected isVersionSatisfied(range: string, version: string): boolean {
-    const patchRequest = range.match(/^(\d+\.\d+\.\d+)\.(\d+)$/);
+    const patchRequest = range.match(/^(\d+\.\d+\.\d+)((?:\.\d+)+)$/);
     if (patchRequest) {
       const candidate = semver.parse(version);
       if (!candidate || !semver.eq(patchRequest[1], candidate)) {
         return false;
       }
-      const patch = candidate.build.length > 1 ? candidate.build[0] : '0';
-      return patch === patchRequest[2];
+      const patch =
+        candidate.build.length > 1
+          ? candidate.build.slice(0, -1).join('.')
+          : '0';
+      return patch === patchRequest[2].slice(1);
     }
     return super.isVersionSatisfied(range, version);
   }
@@ -106,15 +109,32 @@ export class LibericaDistributions extends JavaBase {
       return mainComparison;
     }
 
-    // SDKMAN encodes patch.build, but unpatched releases contain only build.
-    const patchAndBuild = (version: string): string => {
+    const getPatchAndBuild = (version: string) => {
       const build = new semver.SemVer(version).build;
-      return (build.length > 1 ? build : ['0', ...build]).join('.');
+      return build.length > 1
+        ? {patch: build.slice(0, -1), build: build[build.length - 1]}
+        : {patch: [], build: build[0] ?? '0'};
     };
-    return semver.compareBuild(
-      `0.0.0+${patchAndBuild(a)}`,
-      `0.0.0+${patchAndBuild(b)}`
-    );
+    const first = getPatchAndBuild(a);
+    const second = getPatchAndBuild(b);
+    const compareNumericIdentifiers = (left: string, right: string) =>
+      semver.compareBuild(`0.0.0+${left}`, `0.0.0+${right}`);
+
+    for (
+      let index = 0;
+      index < Math.max(first.patch.length, second.patch.length);
+      index++
+    ) {
+      const patchComparison = compareNumericIdentifiers(
+        first.patch[index] ?? '0',
+        second.patch[index] ?? '0'
+      );
+      if (patchComparison !== 0) {
+        return patchComparison;
+      }
+    }
+
+    return compareNumericIdentifiers(first.build, second.build);
   }
 
   private async getAvailableVersions(): Promise<LibericaVersion[]> {
@@ -209,7 +229,11 @@ export class LibericaDistributions extends JavaBase {
     const mainVersion = [featureVersion, interimVersion, updateVersion].join(
       '.'
     );
-    const patchVersion = version.version.split('+')[0].split('.')[3];
+    const patchVersion = version.version
+      .split('+')[0]
+      .split('.')
+      .slice(3)
+      .join('.');
     if (patchVersion) {
       return `${mainVersion}+${patchVersion}.${buildVersion}`;
     }
