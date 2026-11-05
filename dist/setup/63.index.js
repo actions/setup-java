@@ -62,21 +62,23 @@ class LibericaDistributions extends _base_installer_js__WEBPACK_IMPORTED_MODULE_
     }
     normalizeVersion(version) {
         const normalized = super.normalizeVersion(version);
-        if (/^\d+\.\d+\.\d+\.\d+(?:-ea)?$/.test(version)) {
+        if (/^\d+\.\d+\.\d+(?:\.\d+)+(?:-ea)?$/.test(version)) {
             // Keep patch-only requests distinct from exact SDKMAN build requests.
             normalized.version = version.replace(/-ea$/, '');
         }
         return normalized;
     }
     isVersionSatisfied(range, version) {
-        const patchRequest = range.match(/^(\d+\.\d+\.\d+)\.(\d+)$/);
+        const patchRequest = range.match(/^(\d+\.\d+\.\d+)((?:\.\d+)+)$/);
         if (patchRequest) {
             const candidate = semver__WEBPACK_IMPORTED_MODULE_1___default().parse(version);
             if (!candidate || !semver__WEBPACK_IMPORTED_MODULE_1___default().eq(patchRequest[1], candidate)) {
                 return false;
             }
-            const patch = candidate.build.length > 1 ? candidate.build[0] : '0';
-            return patch === patchRequest[2];
+            const patch = candidate.build.length > 1
+                ? candidate.build.slice(0, -1).join('.')
+                : '0';
+            return patch === patchRequest[2].slice(1);
         }
         return super.isVersionSatisfied(range, version);
     }
@@ -85,12 +87,22 @@ class LibericaDistributions extends _base_installer_js__WEBPACK_IMPORTED_MODULE_
         if (mainComparison !== 0) {
             return mainComparison;
         }
-        // SDKMAN encodes patch.build, but unpatched releases contain only build.
-        const patchAndBuild = (version) => {
+        const getPatchAndBuild = (version) => {
             const build = new (semver__WEBPACK_IMPORTED_MODULE_1___default().SemVer)(version).build;
-            return (build.length > 1 ? build : ['0', ...build]).join('.');
+            return build.length > 1
+                ? { patch: build.slice(0, -1), build: build[build.length - 1] }
+                : { patch: [], build: build[0] ?? '0' };
         };
-        return semver__WEBPACK_IMPORTED_MODULE_1___default().compareBuild(`0.0.0+${patchAndBuild(a)}`, `0.0.0+${patchAndBuild(b)}`);
+        const first = getPatchAndBuild(a);
+        const second = getPatchAndBuild(b);
+        const compareNumericIdentifiers = (left, right) => semver__WEBPACK_IMPORTED_MODULE_1___default().compareBuild(`0.0.0+${left}`, `0.0.0+${right}`);
+        for (let index = 0; index < Math.max(first.patch.length, second.patch.length); index++) {
+            const patchComparison = compareNumericIdentifiers(first.patch[index] ?? '0', second.patch[index] ?? '0');
+            if (patchComparison !== 0) {
+                return patchComparison;
+            }
+        }
+        return compareNumericIdentifiers(first.build, second.build);
     }
     async getAvailableVersions() {
         if (_actions_core__WEBPACK_IMPORTED_MODULE_3__/* .isDebug */ ._o()) {
@@ -163,7 +175,11 @@ class LibericaDistributions extends _base_installer_js__WEBPACK_IMPORTED_MODULE_
         const { featureVersion, interimVersion, updateVersion } = version;
         const buildVersion = version.version.split('+')[1] || version.buildVersion;
         const mainVersion = [featureVersion, interimVersion, updateVersion].join('.');
-        const patchVersion = version.version.split('+')[0].split('.')[3];
+        const patchVersion = version.version
+            .split('+')[0]
+            .split('.')
+            .slice(3)
+            .join('.');
         if (patchVersion) {
             return `${mainVersion}+${patchVersion}.${buildVersion}`;
         }
