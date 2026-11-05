@@ -28,6 +28,7 @@
 - [Testing against different platforms](#Testing-against-different-platforms)
 - [Publishing using Apache Maven](#Publishing-using-Apache-Maven)
 - [Publishing to multiple Maven servers](#publishing-to-multiple-maven-servers)
+- [Redirecting Maven repositories with mirrors](#redirecting-maven-repositories-with-mirrors)
 - [Apache Maven with a settings path](#apache-maven-with-a-settings-path)
 - [Maven transfer progress (download logs)](#Maven-transfer-progress-download-logs)
 - [Java problem matcher (compiler annotations)](#java-problem-matcher-compiler-annotations)
@@ -157,7 +158,16 @@ steps:
 ```
 
 ### Amazon Corretto
-**NOTE:** Amazon Corretto only supports the major version specification.
+Amazon Corretto supports major versions (for example, `25`) and full release numbers
+(for example, `25.0.5.0.10`). Full release numbers select the versioned archive directly,
+including older releases no longer listed in the latest-version feed. SHA-256 checksums
+for exact releases come from Amazon's current download catalog or GitHub release notes.
+Historical releases without a published SHA-256 cannot be downloaded.
+
+Full Corretto release numbers supplied through `java-version-file` now select that exact
+release; previously they selected the latest matching major. Update MD5-only file pins
+to a release with a published SHA-256. Partial version-file values keep their existing
+major-version behavior.
 
 ```yaml
 steps:
@@ -165,7 +175,7 @@ steps:
   - uses: actions/setup-java@v6
     with:
       distribution: 'corretto'
-      java-version: '25'
+      java-version: '25.0.5.0.10'
   - run: java --version
 ```
 
@@ -336,7 +346,7 @@ The package types have these meanings:
 | `liberica-nik` | `jdk`, `jdk+fx` | `java-version` selects the embedded JDK version, not the NIK/GraalVM release number. BellSoft currently publishes matching standard and JavaFX "full" bundles for JDK 11 and later, with gaps between feature releases. Any other `java-package` value is rejected. |
 | `microsoft` | `jdk` | Stable builds only. The bundled manifest contains Java 11, 16, 17, 21, and 25 releases; platform availability varies by release. |
 | `semeru` | `jdk`, `jre` | Stable OpenJ9 builds only. IBM publishes both image types for the supported release lines (currently 8, 11, 17, 21, and 25), subject to platform availability. |
-| `corretto` | `jdk`, `jre` | Accepts major versions only. JDK availability follows Amazon's platform catalog. For the operating systems directly selected by `setup-java`, JRE downloads are limited to Java 8 on Windows; Linux and macOS use `jdk`. |
+| `corretto` | `jdk`, `jre` | Accepts major versions and full Corretto release numbers. JDK availability follows Amazon's platform catalog. For the operating systems directly selected by `setup-java`, JRE downloads are limited to Java 8 on Windows; Linux and macOS use `jdk`. |
 | `oracle` | `jdk` | Stable Oracle JDK 17 and later only. |
 | `oracle-openjdk` | `jdk` | Installs the GA or early-access JDK builds currently listed or archived on `jdk.java.net`; use a `-ea` version such as `27-ea` for early access. |
 | `redhat` | `jdk`, `jre` | Stable builds only. Version availability follows the Foojay Disco catalog for Red Hat Build of OpenJDK and can lag Red Hat's downloads page. |
@@ -1095,6 +1105,76 @@ With Central included, it is placed before custom plugin repositories by
 default; `mvn-repositories-prioritize-central: false` places it after them.
 All repository generation respects `settings-path` and `overwrite-settings`;
 an existing settings file is left untouched when `overwrite-settings: false`.
+
+### Redirecting Maven repositories with mirrors
+
+Use `mvn-mirrors` to redirect matching dependency and plugin repositories,
+including Maven Central and repositories declared in project or parent POMs.
+Unlike repository profiles, mirrors replace the destination Maven contacts.
+The Central controls described above do not redirect arbitrary POM repositories.
+
+Each nonblank line has the format `mirror-id:mirror-url:mirror-of`. IDs must be
+unique within this input. `mirror-url` must be an absolute URL that includes a
+scheme, such as `https://`. URL schemes, ports, IPv6 addresses, and colons in
+`mirrorOf` selectors are preserved. An explicit `mirror-of` field is required
+after the complete URL, including any port. Percent-encode colons in the URL
+path, query, or fragment as `%3A`. Otherwise, text after the last unencoded
+colon may be read as the `mirror-of` value. For example:
+
+```yaml
+steps:
+  - uses: actions/checkout@v7
+  - uses: actions/setup-java@v6
+    with:
+      distribution: 'temurin'
+      java-version: '21'
+      mvn-server-credentials: |
+        private:PRIVATE_REPOSITORY_USERNAME:PRIVATE_REPOSITORY_TOKEN
+      mvn-mirrors: |
+        private:https://maven.example.com/releases:*
+  - run: mvn --batch-mode verify
+    env:
+      PRIVATE_REPOSITORY_USERNAME: ${{ secrets.PRIVATE_REPOSITORY_USERNAME }}
+      PRIVATE_REPOSITORY_TOKEN: ${{ secrets.PRIVATE_REPOSITORY_TOKEN }}
+```
+
+This adds the following directly under `<settings>`, not inside a profile:
+
+```xml
+<mirrors>
+  <mirror>
+    <id>private</id>
+    <url>https://maven.example.com/releases</url>
+    <mirrorOf>*</mirrorOf>
+  </mirror>
+</mirrors>
+```
+
+For authentication, the mirror ID must match a server ID configured through
+`mvn-server-credentials` or the single-server inputs. Public mirrors do not need
+matching credentials. Credentials remain environment-variable references in the
+generated settings; do not put credential values in `mvn-mirrors`.
+
+Mirrors can be used alone, as above, or alongside `mvn-repositories` and
+`mvn-plugin-repositories`. They do not change those inputs or the Central
+controls. Omitting `mvn-mirrors`, or supplying only blank lines, adds no
+`<mirrors>` section or repository profile.
+
+Maven interprets `mirrorOf`: `*` matches every repository, `central` matches
+only that repository ID, `external:*` matches external repositories, and
+`external:http:*` matches external HTTP repositories. Comma-separated patterns
+such as `external:*,!internal` exclude specific IDs. Selector text and mirror
+order are retained; Maven applies its own matching and precedence rules.
+For example, a public mirror needs no additional repository or credential input:
+
+```yaml
+mvn-mirrors: |
+  public:https://mirror.example.com:8443/maven:external:*,!internal
+```
+
+Mirror generation respects `settings-path` and `overwrite-settings`. An existing
+settings file is left untouched when `overwrite-settings: false`; this input
+does not merge mirrors into that file.
 
 ### GPG
 
