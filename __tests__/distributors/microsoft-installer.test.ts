@@ -216,6 +216,90 @@ describe('findPackageForDownload', () => {
     expect(result.signatureUrl).toBe(`${url}.sig`);
   });
 
+  describe.each(['25.0.5.0.2', '25.0.5+0.2', '25.0.5'])(
+    'version %s missing from the live manifest',
+    version => {
+      it.each([
+        ['darwin', 'x64', 'macos', 'tar.gz'],
+        ['linux', 'x64', 'linux', 'tar.gz'],
+        ['win32', 'x64', 'windows', 'zip'],
+        ['darwin', 'aarch64', 'macos', 'tar.gz'],
+        ['linux', 'aarch64', 'linux', 'tar.gz'],
+        ['win32', 'aarch64', 'windows', 'zip']
+      ])(
+        'resolves the bundled release for %s/%s',
+        async (platform, architecture, osType, extension) => {
+          mockOsPlatform.mockReturnValue(platform);
+          const distro = new MicrosoftDistributions({
+            version,
+            architecture,
+            packageType: 'jdk',
+            checkLatest: false
+          });
+
+          const result = await distro['findPackageForDownload'](
+            distro['version']
+          );
+          const url = `https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-${osType}-${architecture}.${extension}`;
+
+          expect(result).toEqual({
+            version: '25.0.5+0.2',
+            url,
+            signatureUrl: `${url}.sig`,
+            checksum: {
+              algorithm: 'sha256',
+              value: MICROSOFT_CHECKSUM,
+              source: `${url}.sha256sum.txt`
+            }
+          });
+          expect(spyHttpClientGet).toHaveBeenCalledWith(`${url}.sha256sum.txt`);
+        }
+      );
+    }
+  );
+
+  it('prefers the live manifest when it contains the requested release', async () => {
+    mockOsPlatform.mockReturnValue('linux');
+    const url =
+      'https://example.test/microsoft-jdk-25.0.5.0.2-linux-x64.tar.gz';
+    spyGetManifestFromRepo.mockResolvedValue({
+      result: [
+        {
+          version: '25.0.5+0.2',
+          stable: true,
+          release_url: 'https://aka.ms/download-jdk',
+          files: [
+            {
+              filename: 'microsoft-jdk-25.0.5.0.2-linux-x64.tar.gz',
+              arch: 'x64',
+              platform: 'linux',
+              download_url: url
+            }
+          ]
+        }
+      ],
+      statusCode: 200,
+      headers: {}
+    });
+
+    const result = await distribution['findPackageForDownload']('25.0.5+0.2');
+
+    expect(result.version).toBe('25.0.5+0.2');
+    expect(result.url).toBe(url);
+    expect(spyGetManifestFromRepo).toHaveBeenCalledWith(
+      'https://aka.ms/download-jdk/microsoft-openjdk-versions.json',
+      {accept: 'application/json'}
+    );
+  });
+
+  it('preserves the error when the live manifest cannot be loaded', async () => {
+    spyGetManifestFromRepo.mockRejectedValue(new Error('Network error'));
+
+    await expect(
+      distribution['findPackageForDownload']('25.0.5+0.2')
+    ).rejects.toThrow('Could not load manifest for Microsoft Build of OpenJDK');
+  });
+
   it.each([
     ['amd64', 'x64'],
     ['arm64', 'aarch64']

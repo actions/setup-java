@@ -12,6 +12,7 @@ import {
 } from '../../util.js';
 import * as gpg from '../../gpg.js';
 import {MICROSOFT_PUBLIC_KEY} from './microsoft-key.js';
+import bundledVersions from './microsoft-openjdk-versions.json' with {type: 'json'};
 import {SIGNATURE_VERIFICATION_FAILURE_HELP} from '../../constants.js';
 import * as core from '@actions/core';
 import * as tc from '@actions/tool-cache';
@@ -108,7 +109,9 @@ export class MicrosoftDistributions extends JavaBase {
       throw new Error('Could not load manifest for Microsoft Build of OpenJDK');
     }
 
-    const foundRelease = await tc.findFromManifest(range, true, manifest, arch);
+    const foundRelease =
+      (await tc.findFromManifest(range, true, manifest, arch)) ??
+      (await tc.findFromManifest(range, true, bundledVersions, arch));
 
     if (!foundRelease) {
       const availableVersionStrings = manifest.map(item => item.version);
