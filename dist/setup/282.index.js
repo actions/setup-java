@@ -34,16 +34,16 @@ class JetBrainsDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_
     async findPackageForDownload(range) {
         const versionsRaw = await this.getAvailableVersions();
         const versions = versionsRaw.map(v => {
-            const formattedVersion = `${v.semver}+${v.build}`;
+            const formattedVersion = (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .normalizeJavaVersionToSemver */ .zZ)(`${v.semver}+${v.build}`);
             return {
                 version: formattedVersion,
                 url: v.url
             };
         });
         const satisfiedVersions = versions
-            .filter(item => (0,_util_js__WEBPACK_IMPORTED_MODULE_5__/* .isVersionSatisfies */ .y)(range, item.version))
+            .filter(item => this.isVersionSatisfied(range, item.version))
             .sort((a, b) => {
-            return -semver__WEBPACK_IMPORTED_MODULE_3___default().compareBuild(a.version, b.version);
+            return -this.compareVersions(a.version, b.version);
         });
         const resolvedFullVersion = satisfiedVersions.length > 0 ? satisfiedVersions[0] : null;
         if (!resolvedFullVersion) {
@@ -58,6 +58,44 @@ class JetBrainsDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_
             // the stronger SHA-512 when the digest length is ambiguous.
             checksum: await this.fetchChecksum(`${resolvedFullVersion.url}.checksum`, ['sha512', 'sha256'])
         };
+    }
+    normalizeVersion(version) {
+        const normalized = super.normalizeVersion(version);
+        if (/^\d+\.\d+\.\d+(?:\.\d+)+(?:-ea)?$/.test(version)) {
+            // A patch-only request must match any JBR build of that patch.
+            normalized.version = version.replace(/-ea$/, '');
+        }
+        return normalized;
+    }
+    isVersionSatisfied(range, version) {
+        const patchRequest = range.match(/^(\d+\.\d+\.\d+)((?:\.\d+)+)$/);
+        if (patchRequest) {
+            const candidate = semver__WEBPACK_IMPORTED_MODULE_3___default().parse(version);
+            return (candidate !== null &&
+                semver__WEBPACK_IMPORTED_MODULE_3___default().eq(patchRequest[1], candidate) &&
+                (candidate.build.slice(0, -2).join('.') || '0') ===
+                    patchRequest[2].slice(1));
+        }
+        return super.isVersionSatisfied(range, version);
+    }
+    compareVersions(a, b) {
+        const mainComparison = semver__WEBPACK_IMPORTED_MODULE_3___default().compare(a, b);
+        if (mainComparison !== 0) {
+            return mainComparison;
+        }
+        // JBR builds have two components (one in older releases). Any preceding
+        // metadata components are Java patch fields and take priority over builds.
+        const first = new (semver__WEBPACK_IMPORTED_MODULE_3___default().SemVer)(a).build;
+        const second = new (semver__WEBPACK_IMPORTED_MODULE_3___default().SemVer)(b).build;
+        const firstPatch = first.slice(0, -2);
+        const secondPatch = second.slice(0, -2);
+        for (let index = 0; index < Math.max(firstPatch.length, secondPatch.length); index++) {
+            const patchComparison = semver__WEBPACK_IMPORTED_MODULE_3___default().compareIdentifiers(firstPatch[index] ?? '0', secondPatch[index] ?? '0');
+            if (patchComparison !== 0) {
+                return patchComparison;
+            }
+        }
+        return semver__WEBPACK_IMPORTED_MODULE_3___default().compareBuild(first.length ? `0.0.0+${first.slice(-2).join('.')}` : '0.0.0', second.length ? `0.0.0+${second.slice(-2).join('.')}` : '0.0.0');
     }
     async downloadTool(javaRelease) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .info */ .pq(`Downloading Java ${javaRelease.version} (${this.distribution}) from ${javaRelease.url} ...`);

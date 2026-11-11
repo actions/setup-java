@@ -16,8 +16,8 @@ import {
   extractJdkFile,
   getGitHubToken,
   getNextPageUrlFromLinkHeader,
-  isVersionSatisfies,
   MAX_PAGINATION_PAGES,
+  normalizeJavaVersionToSemver,
   validatePaginationUrl
 } from '../../util.js';
 import {OutgoingHttpHeaders} from 'http';
@@ -38,7 +38,9 @@ export class JetBrainsDistribution extends JavaBase {
     const versionsRaw = await this.getAvailableVersions();
 
     const versions = versionsRaw.map(v => {
-      const formattedVersion = `${v.semver}+${v.build}`;
+      const formattedVersion = normalizeJavaVersionToSemver(
+        `${v.semver}+${v.build}`
+      );
 
       return {
         version: formattedVersion,
@@ -47,9 +49,9 @@ export class JetBrainsDistribution extends JavaBase {
     });
 
     const satisfiedVersions = versions
-      .filter(item => isVersionSatisfies(range, item.version))
+      .filter(item => this.isVersionSatisfied(range, item.version))
       .sort((a, b) => {
-        return -semver.compareBuild(a.version, b.version);
+        return -this.compareVersions(a.version, b.version);
       });
 
     const resolvedFullVersion =
@@ -72,6 +74,61 @@ export class JetBrainsDistribution extends JavaBase {
         ['sha512', 'sha256']
       )
     };
+  }
+
+  protected normalizeVersion(version: string) {
+    const normalized = super.normalizeVersion(version);
+    if (/^\d+\.\d+\.\d+(?:\.\d+)+(?:-ea)?$/.test(version)) {
+      // A patch-only request must match any JBR build of that patch.
+      normalized.version = version.replace(/-ea$/, '');
+    }
+    return normalized;
+  }
+
+  protected isVersionSatisfied(range: string, version: string): boolean {
+    const patchRequest = range.match(/^(\d+\.\d+\.\d+)((?:\.\d+)+)$/);
+    if (patchRequest) {
+      const candidate = semver.parse(version);
+      return (
+        candidate !== null &&
+        semver.eq(patchRequest[1], candidate) &&
+        (candidate.build.slice(0, -2).join('.') || '0') ===
+          patchRequest[2].slice(1)
+      );
+    }
+    return super.isVersionSatisfied(range, version);
+  }
+
+  protected compareVersions(a: string, b: string): number {
+    const mainComparison = semver.compare(a, b);
+    if (mainComparison !== 0) {
+      return mainComparison;
+    }
+
+    // JBR builds have two components (one in older releases). Any preceding
+    // metadata components are Java patch fields and take priority over builds.
+    const first = new semver.SemVer(a).build;
+    const second = new semver.SemVer(b).build;
+    const firstPatch = first.slice(0, -2);
+    const secondPatch = second.slice(0, -2);
+    for (
+      let index = 0;
+      index < Math.max(firstPatch.length, secondPatch.length);
+      index++
+    ) {
+      const patchComparison = semver.compareIdentifiers(
+        firstPatch[index] ?? '0',
+        secondPatch[index] ?? '0'
+      );
+      if (patchComparison !== 0) {
+        return patchComparison;
+      }
+    }
+
+    return semver.compareBuild(
+      first.length ? `0.0.0+${first.slice(-2).join('.')}` : '0.0.0',
+      second.length ? `0.0.0+${second.slice(-2).join('.')}` : '0.0.0'
+    );
   }
 
   protected async downloadTool(
