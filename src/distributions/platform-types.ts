@@ -192,6 +192,9 @@ const CANONICAL_ARCHITECTURES: readonly JavaArchitecture[] = [
   's390x'
 ];
 
+// Used in environment-variable names and tool-cache paths.
+const ARCHITECTURE_TOKEN = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
+
 const PLATFORM_ALIASES: Readonly<
   Partial<Record<NodeJS.Platform, JavaPlatform>>
 > = {
@@ -204,14 +207,21 @@ const PLATFORM_ALIASES: Readonly<
 export function normalizeArchitecture(architecture: string): string {
   const trimmedArchitecture = architecture.trim();
   const normalizedArchitecture = trimmedArchitecture.toLowerCase();
-  return (
+  const result =
     ARCHITECTURE_ALIASES[normalizedArchitecture] ??
     (CANONICAL_ARCHITECTURES.includes(
       normalizedArchitecture as JavaArchitecture
     )
       ? normalizedArchitecture
-      : trimmedArchitecture)
-  );
+      : trimmedArchitecture);
+
+  if (!ARCHITECTURE_TOKEN.test(result)) {
+    throw new Error(
+      `Unsupported architecture value: ${JSON.stringify(architecture)}`
+    );
+  }
+
+  return result;
 }
 
 export function normalizePlatform(

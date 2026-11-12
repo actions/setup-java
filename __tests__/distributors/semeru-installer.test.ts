@@ -272,7 +272,7 @@ describe('findPackageForDownload', () => {
     }
   );
 
-  it.each(['zos', 'z/OS', 'z/os', 'test0987654321=', '++=++', 'myArch'])(
+  it.each(['zos', 'myArch'])(
     'incorrect Semeru `%s` architecture throws',
     async (arch: string) => {
       const distribution = new SemeruDistribution({

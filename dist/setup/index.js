@@ -31545,6 +31545,8 @@ const CANONICAL_ARCHITECTURES = [
     'riscv64',
     's390x'
 ];
+// Used in environment-variable names and tool-cache paths.
+const ARCHITECTURE_TOKEN = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 const PLATFORM_ALIASES = {
     darwin: 'macos',
     linux: 'linux',
@@ -31554,10 +31556,14 @@ const PLATFORM_ALIASES = {
 function normalizeArchitecture(architecture) {
     const trimmedArchitecture = architecture.trim();
     const normalizedArchitecture = trimmedArchitecture.toLowerCase();
-    return (ARCHITECTURE_ALIASES[normalizedArchitecture] ??
+    const result = ARCHITECTURE_ALIASES[normalizedArchitecture] ??
         (CANONICAL_ARCHITECTURES.includes(normalizedArchitecture)
             ? normalizedArchitecture
-            : trimmedArchitecture));
+            : trimmedArchitecture);
+    if (!ARCHITECTURE_TOKEN.test(result)) {
+        throw new Error(`Unsupported architecture value: ${JSON.stringify(architecture)}`);
+    }
+    return result;
 }
 function normalizePlatform(platform) {
     return PLATFORM_ALIASES[platform];

@@ -31,6 +31,19 @@ describe('Java platform capabilities', () => {
     expect(normalizeArchitecture(input)).toBe(expected);
   });
 
+  it('rejects an architecture that is not an identifier token', () => {
+    const architecture = 'x64<<end\nvalue\nend';
+
+    expect(() => normalizeArchitecture(architecture)).toThrow(
+      `Unsupported architecture value: ${JSON.stringify(architecture)}`
+    );
+    expect(() =>
+      validateJavaPlatform('jdkfile', 'linux', architecture, '17')
+    ).toThrow(
+      `Unsupported architecture value: ${JSON.stringify(architecture)}`
+    );
+  });
+
   it.each([
     ['linux', false, 'linux-glibc'],
     ['linux', true, 'linux-musl'],
