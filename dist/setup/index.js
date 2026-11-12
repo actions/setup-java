@@ -31556,7 +31556,10 @@ const PLATFORM_ALIASES = {
 function normalizeArchitecture(architecture) {
     const trimmedArchitecture = architecture.trim();
     const normalizedArchitecture = trimmedArchitecture.toLowerCase();
-    const result = ARCHITECTURE_ALIASES[normalizedArchitecture] ??
+    const alias = Object.prototype.hasOwnProperty.call(ARCHITECTURE_ALIASES, normalizedArchitecture)
+        ? ARCHITECTURE_ALIASES[normalizedArchitecture]
+        : undefined;
+    const result = alias ??
         (CANONICAL_ARCHITECTURES.includes(normalizedArchitecture)
             ? normalizedArchitecture
             : trimmedArchitecture);

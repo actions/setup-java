@@ -207,8 +207,14 @@ const PLATFORM_ALIASES: Readonly<
 export function normalizeArchitecture(architecture: string): string {
   const trimmedArchitecture = architecture.trim();
   const normalizedArchitecture = trimmedArchitecture.toLowerCase();
+  const alias = Object.prototype.hasOwnProperty.call(
+    ARCHITECTURE_ALIASES,
+    normalizedArchitecture
+  )
+    ? ARCHITECTURE_ALIASES[normalizedArchitecture]
+    : undefined;
   const result =
-    ARCHITECTURE_ALIASES[normalizedArchitecture] ??
+    alias ??
     (CANONICAL_ARCHITECTURES.includes(
       normalizedArchitecture as JavaArchitecture
     )

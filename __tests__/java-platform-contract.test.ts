@@ -31,6 +31,16 @@ describe('Java platform capabilities', () => {
     expect(normalizeArchitecture(input)).toBe(expected);
   });
 
+  it.each(['constructor', 'Constructor'])(
+    'preserves custom architecture token %s for jdkfile',
+    architecture => {
+      expect(normalizeArchitecture(architecture)).toBe(architecture);
+      expect(validateJavaPlatform('jdkfile', 'linux', architecture, '17')).toBe(
+        architecture
+      );
+    }
+  );
+
   it('rejects an architecture that is not an identifier token', () => {
     const architecture = 'x64<<end\nvalue\nend';
 
