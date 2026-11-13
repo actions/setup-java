@@ -41,17 +41,24 @@ describe('Java platform capabilities', () => {
     }
   );
 
-  it('rejects an architecture that is not an identifier token', () => {
-    const architecture = 'x64<<end\nvalue\nend';
+  it.each([
+    'x64<<end\nvalue\nend',
+    'z/OS',
+    'z/os',
+    'test0987654321=',
+    '++=++',
+    '../x64',
+    'x64\\other',
+    'x64 other',
+    '-x64',
+    '_x64'
+  ])('rejects invalid architecture token %s', architecture => {
+    const message = `Unsupported architecture value: ${JSON.stringify(architecture)}`;
 
-    expect(() => normalizeArchitecture(architecture)).toThrow(
-      `Unsupported architecture value: ${JSON.stringify(architecture)}`
-    );
+    expect(() => normalizeArchitecture(architecture)).toThrow(message);
     expect(() =>
       validateJavaPlatform('jdkfile', 'linux', architecture, '17')
-    ).toThrow(
-      `Unsupported architecture value: ${JSON.stringify(architecture)}`
-    );
+    ).toThrow(message);
   });
 
   it.each([
