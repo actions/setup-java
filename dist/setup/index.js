@@ -36690,7 +36690,7 @@ async function getJavaDistribution(distributionName, installerOptions, jdkFile) 
             return new LibericaNikDistributions(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.Microsoft: {
-            const { MicrosoftDistributions } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(220)]).then(__nccwpck_require__.bind(__nccwpck_require__, 3220));
+            const { MicrosoftDistributions } = await Promise.all(/* import() */[__nccwpck_require__.e(242), __nccwpck_require__.e(772)]).then(__nccwpck_require__.bind(__nccwpck_require__, 4772));
             return new MicrosoftDistributions(normalizedInstallerOptions);
         }
         case package_types/* JavaDistribution */.zS.Semeru: {
