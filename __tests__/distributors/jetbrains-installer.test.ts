@@ -9,6 +9,9 @@ import {
   afterAll
 } from '@jest/globals';
 import https from 'https';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import {HttpClient, HttpClientResponse} from '@actions/http-client';
 import type {IncomingMessage} from 'http';
 import {Readable} from 'stream';
@@ -476,6 +479,109 @@ describe('findPackageForDownload', () => {
     }
   );
 
+  describe('hotfix releases', () => {
+    beforeEach(() => {
+      jest.spyOn(HttpClient.prototype, 'getJson').mockResolvedValue({
+        statusCode: 200,
+        headers: {},
+        result: [
+          release('jbr-release-25.0.4b508.27', false),
+          release('jbr-release-25.0.4.1b635.9', false),
+          release('jbr-release-25.0.4.1b635.79', false),
+          release('jbr-release-25.0.3.2b1000.1', false)
+        ]
+      });
+      jest.spyOn(HttpClient.prototype, 'head').mockResolvedValue(response(200));
+    });
+
+    it.each(['linux', 'osx', 'windows'])(
+      'selects the patched JBR archive and checksum on %s',
+      async platform => {
+        const distribution = new JetBrainsDistribution({
+          version: '25',
+          architecture: 'x64',
+          packageType: 'jdk',
+          checkLatest: true
+        });
+        distribution['getPlatformOption'] = () => platform;
+        const url = `https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk-25.0.4.1-${platform}-x64-b635.79.tar.gz`;
+
+        const result = await distribution['findPackageForDownload']('25');
+
+        expect(result).toEqual({
+          version: '25.0.4+1.635.79',
+          url,
+          checksum: {
+            algorithm: 'sha512',
+            value: JETBRAINS_CHECKSUM,
+            source: `${url}.checksum`
+          }
+        });
+        expect(HttpClient.prototype.head).toHaveBeenCalledWith(url);
+        expect(spyHttpClientGet).toHaveBeenCalledTimes(1);
+        expect(spyHttpClientGet).toHaveBeenCalledWith(`${url}.checksum`);
+      }
+    );
+
+    it.each([
+      ['latest', '25.0.4+1.635.79'],
+      ['25.0.4', '25.0.4+1.635.79'],
+      ['25.0.4.0', '25.0.4+508.27'],
+      ['25.0.4.1', '25.0.4+1.635.79'],
+      ['25.0.4.1+635.79', '25.0.4+1.635.79'],
+      ['25.0.4+1.635.9', '25.0.4+1.635.9'],
+      ['25.0.4+508.27', '25.0.4+508.27']
+    ])('resolves %s to %s', async (input, expected) => {
+      const distribution = new JetBrainsDistribution({
+        version: input,
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: true
+      });
+
+      await expect(
+        distribution['findPackageForDownload'](distribution['version'])
+      ).resolves.toMatchObject({version: expected});
+    });
+
+    it('resolves early-access hotfix releases separately', async () => {
+      jest.spyOn(HttpClient.prototype, 'getJson').mockResolvedValue({
+        statusCode: 200,
+        headers: {},
+        result: [
+          release('jbr-release-25.0.4.1b635.79', true),
+          release('jbr-release-25.0.4.2b636.1', false)
+        ]
+      });
+      const distribution = new JetBrainsDistribution({
+        version: '25.0.4.1-ea',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: true
+      });
+
+      await expect(
+        distribution['findPackageForDownload'](distribution['version'])
+      ).resolves.toMatchObject({version: '25.0.4+1.635.79'});
+    });
+
+    it.each(['25.0.4.2', '25.0.4.1+635.80'])(
+      'does not substitute another patch or build for %s',
+      async input => {
+        const distribution = new JetBrainsDistribution({
+          version: input,
+          architecture: 'x64',
+          packageType: 'jdk',
+          checkLatest: true
+        });
+
+        await expect(
+          distribution['findPackageForDownload'](distribution['version'])
+        ).rejects.toThrow(/No matching version found/);
+      }
+    );
+  });
+
   it('version is not found', async () => {
     const distribution = new JetBrainsDistribution({
       version: '8.0.452',
@@ -568,5 +674,85 @@ describe('findPackageForDownload', () => {
       value: sha256Checksum,
       source: `${result.url}.checksum`
     });
+  });
+
+  describe('compareVersions', () => {
+    it.each([
+      ['25.0.4+1.635.79', '25.0.4+508.27', 1],
+      ['25.0.5+1.1', '25.0.4+1.635.79', 1],
+      ['25.0.4+10.1.1', '25.0.4+2.999.99', 1],
+      ['25.0.4+1.635.79', '25.0.4+1.635.9', 1],
+      ['25.0.4+1.636.1', '25.0.4+1.635.79', 1],
+      ['25.0.4+0.635.79', '25.0.4+635.79', 0],
+      ['11.0.11+1522', '11.0.11+1522.1', -1],
+      ['25.0.4', '25.0.4+508.27', -1]
+    ])('compares %s with %s', (first, second, expected) => {
+      const distribution = new JetBrainsDistribution({
+        version: '25',
+        architecture: 'x64',
+        packageType: 'jdk',
+        checkLatest: false
+      });
+
+      expect(Math.sign(distribution['compareVersions'](first, second))).toBe(
+        expected
+      );
+      expect(
+        Math.sign(distribution['compareVersions'](second, first)) || 0
+      ).toBe(-expected || 0);
+    });
+  });
+
+  describe('hotfix releases in the tool cache', () => {
+    let cacheRoot: string;
+    const previousToolcache = process.env['RUNNER_TOOL_CACHE'];
+
+    beforeEach(async () => {
+      cacheRoot = await fs.promises.mkdtemp(
+        path.join(os.tmpdir(), 'jetbrains-')
+      );
+      process.env['RUNNER_TOOL_CACHE'] = cacheRoot;
+      for (const version of ['25.0.4-508.27', '25.0.4-1.635.79']) {
+        const javaPath = path.join(
+          cacheRoot,
+          'Java_JetBrains_jdk',
+          version,
+          'x64'
+        );
+        await fs.promises.mkdir(javaPath, {recursive: true});
+        await fs.promises.writeFile(`${javaPath}.complete`, '');
+      }
+    });
+
+    afterEach(async () => {
+      if (previousToolcache === undefined) {
+        delete process.env['RUNNER_TOOL_CACHE'];
+      } else {
+        process.env['RUNNER_TOOL_CACHE'] = previousToolcache;
+      }
+      await fs.promises.rm(cacheRoot, {recursive: true, force: true});
+    });
+
+    it.each(['25', '25.0.4.1', '25.0.4.1+635.79'])(
+      'reuses the patched JBR for %s',
+      input => {
+        const distribution = new JetBrainsDistribution({
+          version: input,
+          architecture: 'x64',
+          packageType: 'jdk',
+          checkLatest: false
+        });
+
+        expect(distribution['findInToolcache']()).toEqual({
+          version: '25.0.4+1.635.79',
+          path: path.join(
+            cacheRoot,
+            'Java_JetBrains_jdk',
+            '25.0.4-1.635.79',
+            'x64'
+          )
+        });
+      }
+    );
   });
 });
