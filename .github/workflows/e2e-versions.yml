@@ -80,10 +80,14 @@ jobs:
             version: 25
           - distribution: oracle
             os: macos-15-intel
-            version: 21
+            version: 25
           - distribution: oracle
             os: windows-latest
-            version: 21
+            version: 25
+          - distribution: oracle
+            os: ubuntu-latest
+            version: 25
+          # Oracle no longer publishes JDK 21 under /latest, so a major-only request resolves to the archived GA build.
           - distribution: oracle
             os: ubuntu-latest
             version: 21
@@ -127,7 +131,7 @@ jobs:
           JAVA_VERSION: ${{ matrix.version }}
           JAVA_PATH: ${{ steps.setup-java.outputs.path }}
           SETUP_JAVA_VERSION: ${{ steps.setup-java.outputs.version }}
-          REQUIRE_CONCRETE_VERSION: ${{ (matrix.distribution == 'oracle' || matrix.distribution == 'graalvm') && !contains(matrix.version, '.') && !contains(matrix.version, '-ea') }}
+          REQUIRE_CONCRETE_VERSION: ${{ ((matrix.distribution == 'oracle' && matrix.version != 21) || matrix.distribution == 'graalvm') && !contains(matrix.version, '.') && !contains(matrix.version, '-ea') }}
         run: bash __tests__/verify-java.sh "$JAVA_VERSION" "$JAVA_PATH" "$SETUP_JAVA_VERSION" "$REQUIRE_CONCRETE_VERSION"
         shell: bash
 

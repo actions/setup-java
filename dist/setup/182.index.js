@@ -82,6 +82,7 @@ class OracleDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_3__
             possibleUrls.push(`${ORACLE_DL_BASE}/${major}/latest/jdk-${major}_${platform}-${arch}_bin.${extension}`);
         }
         const floatingUrl = isOnlyMajorProvided ? possibleUrls[0] : undefined;
+        let latestUrlNotFound = false;
         possibleUrls.push(`${ORACLE_DL_BASE}/${major}/archive/jdk-${range}_${platform}-${arch}_bin.${extension}`);
         if (parseInt(major) < 17) {
             throw new Error('Oracle JDK is only supported for JDK 17 and later');
@@ -90,6 +91,9 @@ class OracleDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_3__
             const response = await this.http.head(url);
             if (response.message.statusCode === _actions_http_client__WEBPACK_IMPORTED_MODULE_5__/* .HttpCodes */ .Hv.OK) {
                 const floating = url === floatingUrl;
+                if (latestUrlNotFound) {
+                    _actions_core__WEBPACK_IMPORTED_MODULE_0__/* .warning */ .$e(`Oracle JDK ${major} is no longer available from the latest endpoint. Falling back to its archived GA release, which may not include security updates.`);
+                }
                 return {
                     url,
                     version: range,
@@ -99,6 +103,9 @@ class OracleDistribution extends _base_installer_js__WEBPACK_IMPORTED_MODULE_3__
                         ? (0,_util_js__WEBPACK_IMPORTED_MODULE_4__/* .getArtifactFingerprint */ .VX)(response.message.headers)
                         : undefined
                 };
+            }
+            if (url === floatingUrl) {
+                latestUrlNotFound = true;
             }
             if (response.message.statusCode !== _actions_http_client__WEBPACK_IMPORTED_MODULE_5__/* .HttpCodes */ .Hv.NotFound) {
                 throw new Error(`Http request for Oracle JDK failed with status code: ${response.message.statusCode}`);

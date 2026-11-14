@@ -185,6 +185,19 @@ describe('findPackageForDownload', () => {
     expect(spyHttpClientGet).toHaveBeenCalledTimes(1);
   });
 
+  it('warns when a major-only request falls back to the archived GA release', async () => {
+    spyHttpClient = jest.spyOn(HttpClient.prototype, 'head');
+    spyHttpClient
+      .mockResolvedValueOnce({message: {statusCode: 404}})
+      .mockResolvedValueOnce({message: {statusCode: 200}});
+
+    await distribution['findPackageForDownload']('21');
+
+    expect(core.warning).toHaveBeenCalledWith(
+      'Oracle JDK 21 is no longer available from the latest endpoint. Falling back to its archived GA release, which may not include security updates.'
+    );
+  });
+
   it('always resolves major-only requests remotely', () => {
     expect(distribution['requiresRemoteResolution']()).toBe(true);
     const exactDistribution = new OracleDistribution({
