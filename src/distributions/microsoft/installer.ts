@@ -8,6 +8,7 @@ import {
   cacheJdkDir,
   extractJdkFile,
   getDownloadArchiveExtension,
+  normalizeJavaVersionToSemver,
   renameWinArchive
 } from '../../util.js';
 import * as gpg from '../../gpg.js';
@@ -109,9 +110,20 @@ export class MicrosoftDistributions extends JavaBase {
       throw new Error('Could not load manifest for Microsoft Build of OpenJDK');
     }
 
+    const findMatchingRelease = async (releases: tc.IToolRelease[]) => {
+      const matchingReleases = releases
+        .map(release => ({
+          ...release,
+          version: normalizeJavaVersionToSemver(release.version)
+        }))
+        .filter(release => this.isVersionSatisfied(range, release.version));
+
+      return tc.findFromManifest(range, true, matchingReleases, arch);
+    };
+
     const foundRelease =
-      (await tc.findFromManifest(range, true, manifest, arch)) ??
-      (await tc.findFromManifest(range, true, bundledVersions, arch));
+      (await findMatchingRelease(manifest)) ??
+      (await findMatchingRelease(bundledVersions));
 
     if (!foundRelease) {
       const availableVersionStrings = manifest.map(item => item.version);

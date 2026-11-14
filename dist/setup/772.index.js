@@ -121,8 +121,17 @@ class MicrosoftDistributions extends base_installer/* JavaBase */.O {
         if (!manifest) {
             throw new Error('Could not load manifest for Microsoft Build of OpenJDK');
         }
-        const foundRelease = (await tool_cache/* findFromManifest */.DC(range, true, manifest, arch)) ??
-            (await tool_cache/* findFromManifest */.DC(range, true, microsoft_openjdk_versions_namespaceObject, arch));
+        const findMatchingRelease = async (releases) => {
+            const matchingReleases = releases
+                .map(release => ({
+                ...release,
+                version: (0,util/* normalizeJavaVersionToSemver */.zZ)(release.version)
+            }))
+                .filter(release => this.isVersionSatisfied(range, release.version));
+            return tool_cache/* findFromManifest */.DC(range, true, matchingReleases, arch);
+        };
+        const foundRelease = (await findMatchingRelease(manifest)) ??
+            (await findMatchingRelease(microsoft_openjdk_versions_namespaceObject));
         if (!foundRelease) {
             const availableVersionStrings = manifest.map(item => item.version);
             throw this.createVersionNotFoundError(range, availableVersionStrings);

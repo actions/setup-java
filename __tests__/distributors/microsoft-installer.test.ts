@@ -292,6 +292,88 @@ describe('findPackageForDownload', () => {
     );
   });
 
+  it('falls back to the bundled build when the live manifest has another build', async () => {
+    mockOsPlatform.mockReturnValue('linux');
+    spyGetManifestFromRepo.mockResolvedValue({
+      result: [
+        {
+          version: '25.0.5+0.3',
+          stable: true,
+          release_url: 'https://aka.ms/download-jdk',
+          files: [
+            {
+              filename: 'microsoft-jdk-25.0.5.0.3-linux-x64.tar.gz',
+              arch: 'x64',
+              platform: 'linux',
+              download_url:
+                'https://example.test/microsoft-jdk-25.0.5.0.3-linux-x64.tar.gz'
+            }
+          ]
+        }
+      ],
+      statusCode: 200,
+      headers: {}
+    });
+
+    const result = await distribution['findPackageForDownload']('25.0.5+0.2');
+
+    expect(result.version).toBe('25.0.5+0.2');
+    expect(result.url).toBe(
+      'https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-linux-x64.tar.gz'
+    );
+  });
+
+  it('matches dotted Java versions without falling back to the base release', async () => {
+    mockOsPlatform.mockReturnValue('linux');
+    spyGetManifestFromRepo.mockResolvedValue({
+      result: [
+        {
+          version: '17.0.8',
+          stable: true,
+          release_url: 'https://aka.ms/download-jdk',
+          files: [
+            {
+              filename: 'microsoft-jdk-17.0.8-linux-x64.tar.gz',
+              arch: 'x64',
+              platform: 'linux',
+              download_url: 'https://example.test/microsoft-jdk-17.0.8.tar.gz'
+            }
+          ]
+        },
+        {
+          version: '17.0.8.1',
+          stable: true,
+          release_url: 'https://aka.ms/download-jdk',
+          files: [
+            {
+              filename: 'microsoft-jdk-17.0.8.1-linux-x64.tar.gz',
+              arch: 'x64',
+              platform: 'linux',
+              download_url: 'https://example.test/microsoft-jdk-17.0.8.1.tar.gz'
+            }
+          ]
+        }
+      ],
+      statusCode: 200,
+      headers: {}
+    });
+    distribution = new MicrosoftDistributions({
+      version: '17.0.8.1',
+      architecture: 'x64',
+      packageType: 'jdk',
+      checkLatest: false
+    });
+
+    const result = await distribution['findPackageForDownload'](
+      distribution['version']
+    );
+
+    expect(result.version).toBe('17.0.8+1');
+    expect(result.url).toBe(
+      'https://example.test/microsoft-jdk-17.0.8.1.tar.gz'
+    );
+  });
+
   it('preserves the error when the live manifest cannot be loaded', async () => {
     spyGetManifestFromRepo.mockRejectedValue(new Error('Network error'));
 
