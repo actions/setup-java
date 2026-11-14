@@ -3,7 +3,7 @@ import {INPUT_PROBLEM_MATCHER} from './constants.js';
 import {getBooleanInput} from './util.js';
 
 export function configureProblemMatcher(matcherPath: string): void {
-  const problemMatcherEnabled = getBooleanInput(INPUT_PROBLEM_MATCHER, true);
+  const problemMatcherEnabled = getBooleanInput(INPUT_PROBLEM_MATCHER, false);
 
   if (!problemMatcherEnabled) {
     core.debug('Java problem matcher is disabled');

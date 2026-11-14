@@ -59,7 +59,7 @@ steps:
 - Warm JDK-cached jobs can reuse cached release metadata, avoiding vendor API calls while retaining a stale-metadata fallback for vendor outages and rate limits.
 - Maven configuration now supports multiple server credentials and custom dependency-resolution repositories.
 - Maven signing keys are imported into an isolated temporary GPG home instead of the runner's default keyring.
-- Set `problem-matcher: false` to disable Java compiler and uncaught-exception annotations.
+- Java compiler and uncaught-exception annotations are now disabled by default. Set `problem-matcher: true` to enable them.
 - GraalVM distributions now set `GRAALVM_HOME` in addition to `JAVA_HOME`.
 - Invalid boolean values, unsupported distribution/package/platform combinations, and mismatched Maven toolchain ID counts now fail with targeted errors.
 - Renamed environment-variable-name inputs so they are not mistaken for secret values:
@@ -155,7 +155,7 @@ steps:
 | `check-latest` | Check remote metadata for the latest version satisfying the version spec before using the runner tool cache. | `false` |
 | `force-download` | Always download Java and replace any matching version in the tool cache. | `false` |
 | `set-default` | Add Java to `PATH` and set `JAVA_HOME`. When `false`, only version-specific `JAVA_HOME_<major>_<arch>` variables are set. | `true` |
-| `problem-matcher` | Register Java compiler and uncaught exception problem matchers. | `true` |
+| `problem-matcher` | Register Java compiler and uncaught exception problem matchers. | `false` |
 | `verify-signature` | Verify downloaded Java package signatures when supported. Explicitly setting this to `true` makes verification failures fatal. | Distribution-dependent; see [Download integrity and signatures](#download-integrity-and-signatures) |
 | `verify-signature-public-key` | One or more ASCII-armored GPG public keys used for signature verification. Concatenate multiple armored key blocks. Custom keys replace the bundled distribution keys. | |
 | `token` | Token for fetching GitHub.com-hosted version manifests, useful on GitHub Enterprise Server when unauthenticated requests are rate-limited. | `${{ github.token }}` on GitHub.com; empty string on GHES |

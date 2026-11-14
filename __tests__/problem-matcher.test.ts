@@ -27,7 +27,16 @@ describe('configureProblemMatcher', () => {
     jest.resetAllMocks();
   });
 
-  it('registers the Java problem matcher by default', () => {
+  it('does not register the Java problem matcher by default', () => {
+    configureProblemMatcher('/matchers/java.json');
+
+    expect(mockInfo).not.toHaveBeenCalled();
+    expect(mockDebug).toHaveBeenCalledWith('Java problem matcher is disabled');
+  });
+
+  it('registers the Java problem matcher when explicitly enabled', () => {
+    inputs[INPUT_PROBLEM_MATCHER] = 'true';
+
     configureProblemMatcher('/matchers/java.json');
 
     expect(mockInfo).toHaveBeenCalledWith('##[add-matcher]/matchers/java.json');
