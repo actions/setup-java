@@ -1310,7 +1310,7 @@ jobs:
 
 ## Java problem matcher (compiler annotations)
 
-By default, `setup-java` registers a [problem matcher](https://github.com/actions/toolkit/blob/main/docs/problem-matchers.md) for Java after installing the JDK. It scans the log output of subsequent steps and turns Java diagnostics into GitHub [annotations](https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message) that appear in the run summary and inline on the affected files. It matches three kinds of lines:
+Java [problem matcher](https://github.com/actions/toolkit/blob/main/docs/problem-matchers.md) registration is disabled by default. Set `problem-matcher: true` to have `setup-java` register the matcher after installing the JDK. When enabled, it scans the log output of subsequent steps and turns Java diagnostics into GitHub [annotations](https://docs.github.com/actions/using-workflows/workflow-commands-for-github-actions#setting-a-warning-message) that appear in the run summary and inline on the affected files. It matches three kinds of lines:
 
 - Compiler errors and warnings, e.g. `App.java:12: error: cannot find symbol` (owner `javac`).
 - Maven compiler errors and warnings, e.g. `[ERROR] /path/App.java:[12,5] cannot find symbol` (owner `maven-javac`).
@@ -1318,9 +1318,9 @@ By default, `setup-java` registers a [problem matcher](https://github.com/action
 
 GitHub Actions limits problem matcher annotations to 10 of each severity per step and 50 annotations per job. Additional diagnostics remain available in the build log. Log grouping does not change these limits because every matched diagnostic still counts as an annotation.
 
-### Disabling the problem matcher
+### Enabling the problem matcher
 
-Set `problem-matcher` to `false` to prevent the matcher from being registered:
+Set `problem-matcher` to `true` to enable annotations, including in workflows that previously relied on default registration:
 
 ```yaml
 jobs:
@@ -1333,13 +1333,13 @@ jobs:
         with:
           distribution: '<distribution>'
           java-version: '21'
-          problem-matcher: false
+          problem-matcher: true
 
       - name: Build with Maven
         run: mvn package --file pom.xml
 ```
 
-Disabling the matcher only stops annotations from being created. Compiler output remains in the log, and compilation errors still fail the build step.
+Omit `problem-matcher` or set it to `false` to prevent this action invocation from registering the matcher. Compiler output remains in the log, and compilation errors still fail the build step. This does not unregister matchers already registered by other steps or earlier action invocations.
 
 ## Publishing using Gradle
 ```yaml

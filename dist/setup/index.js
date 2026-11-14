@@ -36747,7 +36747,7 @@ async function getJavaDistribution(distributionName, installerOptions, jdkFile) 
 
 
 function configureProblemMatcher(matcherPath) {
-    const problemMatcherEnabled = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_PROBLEM_MATCHER */.Wt, true);
+    const problemMatcherEnabled = (0,util/* getBooleanInput */.Vt)(constants/* INPUT_PROBLEM_MATCHER */.Wt, false);
     if (!problemMatcherEnabled) {
         setup_java_core/* debug */.Yz('Java problem matcher is disabled');
         return;
