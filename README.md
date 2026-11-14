@@ -225,6 +225,7 @@ Additional distribution notes:
 
 - Oracle OpenJDK builds are archived after a limited number of releases and no longer receive security updates. To continue receiving security patches, use Oracle JDK or another vendor.
 - Azul Zulu maps `arm64` to `aarch64` when querying the Azul Metadata API.
+- Microsoft Build of OpenJDK uses Microsoft's live version manifest, falling back to the bundled version list when no release matches. Version `25.0.5.0.2` can also be requested as `25.0.5+0.2`.
 - GraalVM Community is available as `distribution: graalvm-community` for stable JDK 17 and later releases.
 - On Ubuntu runners, commands executed with `sudo` do not inherit the `JAVA_HOME` and `PATH` set by `setup-java` and may fall back to the system-default JDK.
 

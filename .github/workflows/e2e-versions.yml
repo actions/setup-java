@@ -51,6 +51,15 @@ jobs:
           - distribution: microsoft
             os: macos-latest
             version: 25
+          - distribution: microsoft
+            os: windows-latest
+            version: '25.0.5+0.2'
+          - distribution: microsoft
+            os: ubuntu-latest
+            version: '25.0.5+0.2'
+          - distribution: microsoft
+            os: macos-latest
+            version: '25.0.5+0.2'
           - distribution: kona
             os: windows-latest
             version: 25
