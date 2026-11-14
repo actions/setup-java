@@ -659,9 +659,10 @@ runner, distribution, JDK size, network, and cache eviction pressure.
 
 The `architecture` input is normalized before setup-java checks the tool cache
 or contacts a vendor. `amd64`, `ia32`, `arm`, and `arm64` are accepted aliases
-for `x64`, `x86`, `armv7`, and `aarch64`. The table lists the combinations
-setup-java validates up front; an individual Java patch release can still be
-absent from a vendor catalog.
+for `x64`, `x86`, `armv7`, and `aarch64`. Every value must be one token that
+starts with a letter or digit and contains only letters, digits, `_`, or `-`.
+The table lists the combinations setup-java validates up front; an individual
+Java patch release can still be absent from a vendor catalog.
 
 | Distribution | Linux | macOS | Windows | Other / version restrictions |
 | --- | --- | --- | --- | --- |
