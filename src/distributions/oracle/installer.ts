@@ -109,6 +109,7 @@ export class OracleDistribution extends JavaBase {
       );
     }
     const floatingUrl = isOnlyMajorProvided ? possibleUrls[0] : undefined;
+    let latestUrlNotFound = false;
 
     possibleUrls.push(
       `${ORACLE_DL_BASE}/${major}/archive/jdk-${range}_${platform}-${arch}_bin.${extension}`
@@ -123,6 +124,11 @@ export class OracleDistribution extends JavaBase {
 
       if (response.message.statusCode === HttpCodes.OK) {
         const floating = url === floatingUrl;
+        if (latestUrlNotFound) {
+          core.warning(
+            `Oracle JDK ${major} is no longer available from the latest endpoint. Falling back to its archived GA release, which may not include security updates.`
+          );
+        }
         return {
           url,
           version: range,
@@ -132,6 +138,10 @@ export class OracleDistribution extends JavaBase {
             ? getArtifactFingerprint(response.message.headers)
             : undefined
         };
+      }
+
+      if (url === floatingUrl) {
+        latestUrlNotFound = true;
       }
 
       if (response.message.statusCode !== HttpCodes.NotFound) {
