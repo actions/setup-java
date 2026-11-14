@@ -21,8 +21,8 @@ var external_fs_default = /*#__PURE__*/__webpack_require__.n(external_fs_);
 // EXTERNAL MODULE: external "path"
 var external_path_ = __webpack_require__(6928);
 var external_path_default = /*#__PURE__*/__webpack_require__.n(external_path_);
-// EXTERNAL MODULE: ./node_modules/@actions/cache/lib/cache.js + 322 modules
-var lib_cache = __webpack_require__(6080);
+// EXTERNAL MODULE: ./node_modules/@actions/cache/lib/cache.js + 323 modules
+var lib_cache = __webpack_require__(8230);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js + 7 modules
 var lib_core = __webpack_require__(3838);
 // EXTERNAL MODULE: ./src/util.ts
