@@ -31,6 +31,36 @@ describe('Java platform capabilities', () => {
     expect(normalizeArchitecture(input)).toBe(expected);
   });
 
+  it.each(['constructor', 'Constructor'])(
+    'preserves custom architecture token %s for jdkfile',
+    architecture => {
+      expect(normalizeArchitecture(architecture)).toBe(architecture);
+      expect(validateJavaPlatform('jdkfile', 'linux', architecture, '17')).toBe(
+        architecture
+      );
+    }
+  );
+
+  it.each([
+    'x64<<end\nvalue\nend',
+    'z/OS',
+    'z/os',
+    'test0987654321=',
+    '++=++',
+    '../x64',
+    'x64\\other',
+    'x64 other',
+    '-x64',
+    '_x64'
+  ])('rejects invalid architecture token %s', architecture => {
+    const message = `Unsupported architecture value: ${JSON.stringify(architecture)}`;
+
+    expect(() => normalizeArchitecture(architecture)).toThrow(message);
+    expect(() =>
+      validateJavaPlatform('jdkfile', 'linux', architecture, '17')
+    ).toThrow(message);
+  });
+
   it.each([
     ['linux', false, 'linux-glibc'],
     ['linux', true, 'linux-musl'],
