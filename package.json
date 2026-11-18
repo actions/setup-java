@@ -14,6 +14,7 @@
     "format-check": "prettier --no-error-on-unmatched-pattern --check \"**/*.{ts,yml,yaml}\"",
     "lint": "eslint \"**/*.ts\"",
     "lint:fix": "eslint \"**/*.ts\" --fix",
+    "build:latest-versions-report": "ncc build -o lib/latest-versions-report src/reports/latest-versions.ts",
     "check": "npm run format-check && npm run lint && npm run build && npm test",
     "fix": "npm run format && npm run lint:fix && npm run build",
     "prepare": "husky install",

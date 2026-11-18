@@ -203,7 +203,7 @@ export class LibericaDistributions extends JavaBase {
     }
   }
 
-  private getPlatformOption(
+  protected getPlatformOption(
     platform: NodeJS.Platform = process.platform
   ): OsVersions {
     switch (platform) {

@@ -3,6 +3,7 @@
 [![Basic validation](https://github.com/actions/setup-java/actions/workflows/basic-validation.yml/badge.svg?branch=main)](https://github.com/actions/setup-java/actions/workflows/basic-validation.yml)
 [![Validate Java e2e](https://github.com/actions/setup-java/actions/workflows/e2e-versions.yml/badge.svg?branch=main)](https://github.com/actions/setup-java/actions/workflows/e2e-versions.yml)
 [![Validate cache](https://github.com/actions/setup-java/actions/workflows/e2e-cache.yml/badge.svg?branch=main)](https://github.com/actions/setup-java/actions/workflows/e2e-cache.yml)
+[![Latest JDK versions report](https://github.com/actions/setup-java/actions/workflows/latest-jdk-versions.yml/badge.svg?branch=main)](https://github.com/actions/setup-java/actions/workflows/latest-jdk-versions.yml)
 
 Set up Java for GitHub Actions workflows. `setup-java` installs a requested Java distribution, adds it to `PATH`, configures `JAVA_HOME`, and can optionally cache build dependencies for Apache Maven, Gradle, and sbt; generate Maven publishing configuration, verify JDK package signatures, manage multiple JDKs, and manage Maven toolchains.
 
@@ -244,6 +245,8 @@ Additional distribution notes:
 When `check-latest` is `false`, the action first tries the runner tool cache for the requested distribution, package type, architecture, and version range. It downloads Java only when no matching cached version is found. When `check-latest` is `true`, the action checks remote metadata first and downloads if the cached version is not current.
 
 GitHub-hosted runners primarily pre-cache Eclipse Temurin JDKs. See the installed Java versions for [Ubuntu](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#java), [Windows](https://github.com/actions/runner-images/blob/main/images/windows/Windows2025-Readme.md#java), and [macOS](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md#java). On a fresh GitHub-hosted runner, requests for other distributions usually miss the tool cache and resolve from remote metadata. For broad version ranges such as a major version (`21`, `25`), this often behaves similarly to `check-latest: true` because the action downloads the latest available release that satisfies the range.
+
+To see which exact version a request resolves to today, open the summary of the latest run of the daily [Latest JDK versions report](https://github.com/actions/setup-java/actions/workflows/latest-jdk-versions.yml) workflow. For every supported distribution, it lists the version that `setup-java` currently resolves from vendor metadata for every major from Java 6 through the newest stable GA release (including non-LTS releases), plus `latest`, on every operating system and architecture the action supports for that distribution, including Alpine Linux and Solaris. Because vendors publish builds per platform, the same request can resolve to different versions on different platforms. The report doesn't download any JDKs. Floating vendor URLs are marked when their exact version cannot be established from metadata alone. It shows what a job installs on a tool-cache miss or with `check-latest: true`.
 
 ## Download integrity and signatures
 

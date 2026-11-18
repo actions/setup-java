@@ -1,0 +1,157 @@
+# Daily report of the exact JDK version each distribution currently resolves
+# for every major from Java 6 through the newest GA release, and `latest`, on every operating
+# system and architecture setup-java supports for it. Versions are resolved
+# from vendor metadata only; no JDK is downloaded.
+name: Latest JDK versions report
+
+on:
+  schedule:
+    - cron: '30 6 * * *'
+  workflow_dispatch:
+    inputs:
+      java-versions:
+        description: 'Comma-separated java-version values (default: every major from Java 6 through the newest GA release, and latest)'
+        required: false
+        default: ''
+  pull_request:
+    paths:
+      - 'src/reports/**'
+      - '.github/workflows/latest-jdk-versions.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Build report tool
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Bundle report tool
+        run: npm run build:latest-versions-report
+      - name: Upload report tool
+        uses: actions/upload-artifact@v7
+        with:
+          name: latest-versions-report-tool
+          path: lib/latest-versions-report/
+          retention-days: 1
+
+  resolve:
+    name: Resolve versions (${{ matrix.platform }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: macos-latest
+            platform: macos
+          - os: windows-latest
+            platform: windows
+          # Liberica's Solaris metadata is queried without running a Solaris JDK.
+          - os: ubuntu-latest
+            platform: solaris
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+      - name: Download report tool
+        uses: actions/download-artifact@v8
+        with:
+          name: latest-versions-report-tool
+          path: tool
+      - name: Resolve latest versions without downloading
+        run: node tool/index.js resolve "results/$REPORT_PLATFORM.json"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPORT_VERSIONS: ${{ inputs.java-versions }}
+          REPORT_PLATFORM: ${{ matrix.platform }}
+      - name: Upload resolved versions
+        uses: actions/upload-artifact@v7
+        with:
+          name: latest-jdk-versions-${{ matrix.platform }}
+          path: results/
+          retention-days: 1
+
+  # Installers pick musl builds on Alpine, which can resolve to other versions.
+  resolve-alpine:
+    name: Resolve versions (alpine)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: node:24-alpine
+    defaults:
+      run:
+        shell: sh
+    steps:
+      - name: Download report tool
+        uses: actions/download-artifact@v8
+        with:
+          name: latest-versions-report-tool
+          path: tool
+      - name: Resolve latest versions without downloading
+        run: node tool/index.js resolve results/alpine.json
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPORT_VERSIONS: ${{ inputs.java-versions }}
+      - name: Upload resolved versions
+        uses: actions/upload-artifact@v7
+        with:
+          name: latest-jdk-versions-alpine
+          path: results/
+          retention-days: 1
+
+  report:
+    name: Report
+    needs: [build, resolve, resolve-alpine]
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+      - name: Download report tool
+        uses: actions/download-artifact@v8
+        with:
+          name: latest-versions-report-tool
+          path: tool
+      - name: Download resolved versions
+        uses: actions/download-artifact@v8
+        with:
+          pattern: latest-jdk-versions-*
+          path: results
+          merge-multiple: true
+      - name: Write report
+        run: node tool/index.js summarize results latest-jdk-versions.md
+      - name: Upload report
+        uses: actions/upload-artifact@v7
+        with:
+          name: latest-jdk-versions-report
+          path: |
+            latest-jdk-versions.md
+            results/
+          retention-days: 30
