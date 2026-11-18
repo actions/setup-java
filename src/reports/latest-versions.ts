@@ -6,6 +6,12 @@ import {getJavaDistribution} from '../distributions/distribution-factory.js';
 import type {JavaBase} from '../distributions/base-installer.js';
 import type {JavaDownloadRelease} from '../distributions/base-models.js';
 import {JavaDistribution} from '../distributions/package-types.js';
+import {
+  isAlpineLinux,
+  JAVA_PLATFORM_CAPABILITIES,
+  JavaPlatform,
+  normalizePlatform
+} from '../distributions/platform-types.js';
 import {isMainModule} from '../is-main-module.js';
 import {RetryingHttpClient} from '../retrying-http-client.js';
 import {getLatestMajorVersion} from '../util.js';
@@ -17,7 +23,6 @@ import {getLatestMajorVersion} from '../util.js';
  */
 
 export const LTS_VERSIONS = ['8', '11', '17', '21', '25'];
-export const DEFAULT_ARCHITECTURES = ['x64', 'aarch64'];
 export const REPORTED_DISTRIBUTIONS: string[] = Object.values(
   JavaDistribution
 ).filter(distribution => distribution !== JavaDistribution.JdkFile);
@@ -25,6 +30,25 @@ export const REPORTED_DISTRIBUTIONS: string[] = Object.values(
 const PACKAGE_TYPE = 'jdk';
 const CONCURRENCY = 6;
 const ORACLE_RELEASES_URL = 'https://java.oraclecloud.com/currentJavaReleases';
+const MUSL_PLATFORM = 'linux-musl';
+const PLATFORM_LABELS: Record<string, string> = {
+  linux: 'Linux',
+  [MUSL_PLATFORM]: 'Alpine Linux',
+  macos: 'macOS',
+  windows: 'Windows',
+  solaris: 'Solaris'
+};
+const PLATFORM_ORDER = Object.keys(PLATFORM_LABELS);
+const ARCHITECTURE_ORDER = [
+  'x64',
+  'aarch64',
+  'x86',
+  'armv7',
+  'ppc64le',
+  'ppc64',
+  'riscv64',
+  's390x'
+];
 
 /**
  * - `unsupported`: excluded by the action's package/platform capability maps.
@@ -62,24 +86,45 @@ interface ReleaseResolver {
   findPackageForDownload(range: string): Promise<JavaDownloadRelease>;
 }
 
+/** Alpine is reported separately because installers pick musl builds there. */
 export function getReportPlatform(
-  platform: NodeJS.Platform = process.platform
+  platform: NodeJS.Platform = process.platform,
+  alpine = isAlpineLinux(platform)
 ): string {
-  switch (platform) {
-    case 'darwin':
-      return 'macos';
-    case 'win32':
-      return 'windows';
-    default:
-      return platform;
+  if (alpine) {
+    return MUSL_PLATFORM;
   }
+  return normalizePlatform(platform) ?? platform;
+}
+
+/**
+ * Architectures `setup-java` supports for a distribution on a report
+ * platform, including ones restricted to some Java versions.
+ */
+export function getSupportedArchitectures(
+  distribution: string,
+  platform: string
+): string[] {
+  const capability =
+    JAVA_PLATFORM_CAPABILITIES[distribution as JavaDistribution];
+  if (!capability || capability.unrestricted) {
+    return [];
+  }
+  const os = (platform === MUSL_PLATFORM ? 'linux' : platform) as JavaPlatform;
+  return [
+    ...new Set(
+      (capability.platforms[os] ?? []).map(item =>
+        typeof item === 'string' ? item : item.architecture
+      )
+    )
+  ];
 }
 
 export function classifyResolutionError(error: unknown): ResolutionStatus {
   const message = error instanceof Error ? error.message : String(error);
   if (
     (error instanceof Error && error.name === 'VersionNotFoundError') ||
-    /no matching version|no \w+ release for|not supported|only supported|does not support|not available|could not find|unsupported/i.test(
+    /no matching version|no \w+ release for|could not determine the latest available|not supported|only supported|does not support|not available|could not find|unsupported/i.test(
       message
     )
   ) {
@@ -89,26 +134,41 @@ export function classifyResolutionError(error: unknown): ResolutionStatus {
 }
 
 /**
- * Shares JSON metadata responses between installer instances. Most installers
- * fetch a vendor's whole release list for every request, so resolving many
- * version/architecture combinations would otherwise refetch identical
- * documents and exhaust API rate limits.
+ * Shares metadata responses between installer instances. Most installers
+ * fetch a vendor's whole release list for every request, and JetBrains probes
+ * each release URL with HEAD, so resolving many version/architecture
+ * combinations would otherwise repeat identical requests and exhaust API rate
+ * limits. Installers only read the status and headers of HEAD responses.
  */
-function shareJsonResponses(
+function shareMetadataResponses(
   http: httpm.HttpClient,
   cache: Map<string, Promise<unknown>>
 ): void {
-  const getJson = http.getJson.bind(http);
-  http.getJson = (async (requestUrl: string, additionalHeaders?: object) => {
-    const key = `${requestUrl}\n${JSON.stringify(additionalHeaders ?? {})}`;
-    let response = cache.get(key);
+  const share = <T>(key: string, request: () => Promise<T>): Promise<T> => {
+    let response = cache.get(key) as Promise<T> | undefined;
     if (!response) {
-      response = getJson(requestUrl, additionalHeaders as never);
+      response = request();
       cache.set(key, response);
       response.catch(() => cache.delete(key));
     }
-    return structuredClone(await response);
-  }) as typeof http.getJson;
+    return response;
+  };
+
+  const getJson = http.getJson.bind(http);
+  http.getJson = (async (requestUrl: string, additionalHeaders?: object) =>
+    structuredClone(
+      await share(
+        `GET ${requestUrl}\n${JSON.stringify(additionalHeaders ?? {})}`,
+        () => getJson(requestUrl, additionalHeaders as never)
+      )
+    )) as typeof http.getJson;
+
+  const head = http.head.bind(http);
+  http.head = (requestUrl, additionalHeaders) =>
+    share(
+      `HEAD ${requestUrl}\n${JSON.stringify(additionalHeaders ?? {})}`,
+      () => head(requestUrl, additionalHeaders)
+    );
 }
 
 async function describeFloatingRelease(
@@ -152,6 +212,7 @@ async function describeFloatingRelease(
 async function resolveOne(
   distributionName: string,
   versionSpec: string,
+  platform: string,
   architecture: string,
   cache: Map<string, Promise<unknown>>,
   http: httpm.HttpClient
@@ -159,7 +220,7 @@ async function resolveOne(
   const base = {
     distribution: distributionName,
     versionSpec,
-    platform: getReportPlatform(),
+    platform,
     architecture
   };
 
@@ -186,7 +247,7 @@ async function resolveOne(
   // before downloading; it is protected because the action never needs it on
   // its own.
   const resolver = installer as unknown as ReleaseResolver;
-  shareJsonResponses(resolver.http, cache);
+  shareMetadataResponses(resolver.http, cache);
   try {
     const release = await resolver.findPackageForDownload(resolver.version);
     return {
@@ -268,25 +329,37 @@ export function findSilentDistributions(
 export async function resolveLatestVersions(options: {
   distributions: string[];
   versions: string[];
-  architectures: string[];
+  /** Restricts the architectures; defaults to all supported ones. */
+  architectures?: string[];
 }): Promise<ResolutionReport> {
   const http = new RetryingHttpClient('actions/setup-java');
+  const platform = getReportPlatform();
   const tasks = options.distributions.map(distribution => async () => {
+    const architectures = getSupportedArchitectures(
+      distribution,
+      platform
+    ).filter(
+      architecture =>
+        !options.architectures?.length ||
+        options.architectures.includes(architecture)
+    );
     // Each distribution resolves sequentially so its shared metadata is
     // fetched once and requests to a single vendor API are not bursty.
     const cache = new Map<string, Promise<unknown>>();
     const results: VersionResolution[] = [];
+    const startedAt = Date.now();
     for (const versionSpec of options.versions) {
-      for (const architecture of options.architectures) {
+      for (const architecture of architectures) {
         const result = await resolveOne(
           distribution,
           versionSpec,
+          platform,
           architecture,
           cache,
           http
         );
         core.info(
-          `${distribution} ${versionSpec} (${result.platform}-${architecture}): ${
+          `${distribution} ${versionSpec} (${formatPlatform(result)}): ${
             result.status === 'resolved'
               ? `${result.version}${result.floating ? ' (floating)' : ''}`
               : `${result.status} - ${result.message?.split('\n')[0]}`
@@ -295,51 +368,62 @@ export async function resolveLatestVersions(options: {
         results.push(result);
       }
     }
+    core.info(
+      `${distribution}: ${results.length} lookups in ${Math.round((Date.now() - startedAt) / 1000)}s`
+    );
     return results;
   });
 
   const results = (await runWithConcurrency(tasks, CONCURRENCY)).flat();
   return {
-    platform: getReportPlatform(),
+    platform,
     generatedAt: new Date().toISOString(),
     results
   };
 }
 
-function formatResolvedVersion(result: VersionResolution): string {
-  if (!result.floating) {
-    return `\`${result.version}\``;
-  }
-  return `\`${result.advertisedVersion ?? result.version}\` ¹`;
+function formatPlatform(
+  result: Pick<VersionResolution, 'platform' | 'architecture'>
+): string {
+  return `${PLATFORM_LABELS[result.platform] ?? result.platform} ${result.architecture}`;
 }
 
-function formatCell(results: VersionResolution[]): string {
-  if (results.length === 0) {
-    return '';
-  }
-  const resolved = results.filter(result => result.status === 'resolved');
-  const hasErrors = results.some(result => result.status === 'error');
-  if (resolved.length === 0) {
-    return hasErrors ? '❗ error' : '—';
-  }
+function comparePlatforms(
+  a: Pick<VersionResolution, 'platform' | 'architecture'>,
+  b: Pick<VersionResolution, 'platform' | 'architecture'>
+): number {
+  const rank = (order: string[], value: string) => {
+    const index = order.indexOf(value);
+    return index === -1 ? order.length : index;
+  };
+  return (
+    rank(PLATFORM_ORDER, a.platform) - rank(PLATFORM_ORDER, b.platform) ||
+    a.platform.localeCompare(b.platform) ||
+    rank(ARCHITECTURE_ORDER, a.architecture) -
+      rank(ARCHITECTURE_ORDER, b.architecture) ||
+    a.architecture.localeCompare(b.architecture)
+  );
+}
 
-  const counts = new Map<string, number>();
-  for (const result of resolved) {
-    const formatted = formatResolvedVersion(result);
-    counts.set(formatted, (counts.get(formatted) ?? 0) + 1);
+function formatCell(result: VersionResolution | undefined): string {
+  switch (result?.status) {
+    case undefined:
+      return '';
+    case 'resolved':
+      if (!result.floating) {
+        return `\`${result.version}\``;
+      }
+      return (
+        `\`${result.advertisedVersion ?? result.version}\` ¹` +
+        (result.publishedAt ? ` (published ${result.publishedAt})` : '')
+      );
+    case 'unavailable':
+      return '—';
+    case 'unsupported':
+      return 'n/a';
+    case 'error':
+      return '❗ error';
   }
-  const versions = [...counts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([version]) => version);
-
-  let cell = versions.join(' / ');
-  if (versions.length > 1) {
-    cell += ' ⚠️';
-  }
-  if (hasErrors) {
-    cell += ' ❗';
-  }
-  return cell;
 }
 
 interface Problem {
@@ -361,21 +445,32 @@ function getProblems(results: VersionResolution[]): Problem[] {
       .map(r => ({
         distribution: r.distribution,
         versionSpec: r.versionSpec,
-        platform: `${r.platform} ${r.architecture}`,
+        platform: formatPlatform(r),
         message: r.message?.split('\n')[0] ?? 'Unknown error'
       }))
   ];
 }
 
-function escapeTableText(text: string): string {
-  return text.replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
+/** Supported operating systems for which no runner produced a report. */
+function getUncheckedPlatforms(
+  distribution: string,
+  reportedPlatforms: Set<string>
+): string[] {
+  const capability =
+    JAVA_PLATFORM_CAPABILITIES[distribution as JavaDistribution];
+  if (!capability || capability.unrestricted) {
+    return [];
+  }
+  return Object.keys(capability.platforms)
+    .filter(platform => !reportedPlatforms.has(platform))
+    .map(
+      platform =>
+        `${PLATFORM_LABELS[platform] ?? platform} (${getSupportedArchitectures(distribution, platform).join(', ')})`
+    );
 }
 
-function renderTableHeader(firstColumn: string, versionSpecs: string[]) {
-  return [
-    `| ${firstColumn} | ${versionSpecs.map(v => `\`${v}\``).join(' | ')} |`,
-    `| --- | ${versionSpecs.map(() => '---').join(' | ')} |`
-  ];
+function escapeTableText(text: string): string {
+  return text.replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
 }
 
 export function renderMarkdownReport(
@@ -385,86 +480,27 @@ export function renderMarkdownReport(
   const results = reports.flatMap(report => report.results);
   const distributions = [...new Set(results.map(r => r.distribution))].sort();
   const versionSpecs = [...new Set(results.map(r => r.versionSpec))];
-  const platforms = [
-    ...new Set(results.map(r => `${r.platform} ${r.architecture}`))
-  ].sort();
+  const reportedPlatforms = new Set(reports.map(report => report.platform));
   const generatedAt = reports
     .map(report => report.generatedAt)
     .sort()
     .at(-1);
-
   const silentDistributions = findSilentDistributions(results);
 
   const lines: string[] = ['# Latest JDK versions resolved by setup-java', ''];
   lines.push(
-    `Generated ${generatedAt ? `${generatedAt.replace('T', ' ').slice(0, 16)} UTC` : 'now'} for package type \`${PACKAGE_TYPE}\` on ${platforms.map(p => `\`${p}\``).join(', ')}.` +
+    `Generated ${generatedAt ? `${generatedAt.replace('T', ' ').slice(0, 16)} UTC` : 'now'} for package type \`${PACKAGE_TYPE}\` on ${PLATFORM_ORDER.filter(
+      p => reportedPlatforms.has(p)
+    )
+      .map(p => PLATFORM_LABELS[p])
+      .join(', ')}.` +
       (options.runUrl ? ` [Workflow run](${options.runUrl}).` : ''),
     '',
-    'Each cell shows the exact version `setup-java` resolves from the distribution’s metadata today for the requested `java-version`. That is what a job installs on a tool-cache miss or with `check-latest: true`. No JDK was downloaded to produce this report.',
+    'For each distribution, the table lists every operating system and architecture `setup-java` supports and the exact version it resolves from the distribution’s metadata today for each `java-version`. That is what a job installs on a tool-cache miss or with `check-latest: true`. Vendors publish builds per platform, so the same request can resolve to different versions on different platforms. No JDK was downloaded to produce this report.',
+    '',
+    '`—` no matching release is published for this platform · `n/a` `setup-java` does not support this version on this platform · ❗ the lookup failed',
     ''
   );
-
-  lines.push(...renderTableHeader('Distribution', versionSpecs));
-  for (const distribution of distributions) {
-    const cells = versionSpecs.map(versionSpec =>
-      formatCell(
-        results.filter(
-          r => r.distribution === distribution && r.versionSpec === versionSpec
-        )
-      )
-    );
-    const marker = silentDistributions.includes(distribution) ? ' ❗' : '';
-    lines.push(`| \`${distribution}\`${marker} | ${cells.join(' | ')} |`);
-  }
-  lines.push(
-    '',
-    '— not offered for this version or platform · ⚠️ differs by platform (see details) · ❗ needs attention (see below)',
-    '',
-    '¹ Major-only requests download the vendor’s mutable `/latest/` artifact, so the exact version is only known after download. The vendor-advertised release is shown when available.',
-    ''
-  );
-
-  lines.push('## Details by platform', '');
-  for (const distribution of distributions) {
-    const distributionResults = results.filter(
-      r => r.distribution === distribution
-    );
-    const needsAttention =
-      silentDistributions.includes(distribution) ||
-      versionSpecs.some(versionSpec =>
-        /[⚠❗]/u.test(
-          formatCell(
-            distributionResults.filter(r => r.versionSpec === versionSpec)
-          )
-        )
-      );
-    lines.push(
-      `<details${needsAttention ? ' open' : ''}><summary><code>${distribution}</code>${needsAttention ? ' ⚠️' : ''}</summary>`,
-      '',
-      ...renderTableHeader('Platform', versionSpecs)
-    );
-    for (const platform of platforms) {
-      const cells = versionSpecs.map(versionSpec => {
-        const result = distributionResults.find(
-          r =>
-            r.versionSpec === versionSpec &&
-            `${r.platform} ${r.architecture}` === platform
-        );
-        if (!result) {
-          return '';
-        }
-        if (result.status === 'resolved') {
-          return (
-            formatResolvedVersion(result) +
-            (result.publishedAt ? ` (published ${result.publishedAt})` : '')
-          );
-        }
-        return result.status === 'error' ? '❗ error' : '—';
-      });
-      lines.push(`| ${platform} | ${cells.join(' | ')} |`);
-    }
-    lines.push('', '</details>', '');
-  }
 
   const problems = getProblems(results);
   if (problems.length > 0) {
@@ -480,6 +516,60 @@ export function renderMarkdownReport(
       );
     }
     lines.push('');
+  }
+
+  for (const distribution of distributions) {
+    const distributionResults = results.filter(
+      r => r.distribution === distribution
+    );
+    const platforms = distributionResults
+      .filter(
+        (result, index) =>
+          distributionResults.findIndex(
+            other =>
+              other.platform === result.platform &&
+              other.architecture === result.architecture
+          ) === index
+      )
+      .sort(comparePlatforms);
+
+    lines.push(
+      `## \`${distribution}\`${silentDistributions.includes(distribution) ? ' ❗' : ''}`,
+      '',
+      `| Platform | ${versionSpecs.map(v => `\`${v}\``).join(' | ')} |`,
+      `| --- | ${versionSpecs.map(() => '---').join(' | ')} |`
+    );
+    for (const platform of platforms) {
+      const cells = versionSpecs.map(versionSpec =>
+        formatCell(
+          distributionResults.find(
+            r =>
+              r.versionSpec === versionSpec &&
+              r.platform === platform.platform &&
+              r.architecture === platform.architecture
+          )
+        )
+      );
+      lines.push(`| ${formatPlatform(platform)} | ${cells.join(' | ')} |`);
+    }
+    lines.push('');
+
+    const unchecked = getUncheckedPlatforms(distribution, reportedPlatforms);
+    if (unchecked.length > 0) {
+      lines.push(
+        `Not checked, because no runner reported these platforms: ${unchecked.join(', ')}.`,
+        ''
+      );
+    }
+  }
+
+  if (results.some(r => r.status === 'resolved' && r.floating)) {
+    lines.push(
+      '---',
+      '',
+      '¹ Major-only requests download the vendor’s mutable `/latest/` artifact, so the exact version is only known after download. The version the vendor advertises is shown when available.',
+      ''
+    );
   }
 
   return lines.join('\n');
@@ -521,10 +611,7 @@ export async function run(args: string[]): Promise<void> {
           : await getDefaultVersions(
               new RetryingHttpClient('actions/setup-java')
             ),
-      architectures: parseList(
-        process.env.REPORT_ARCHITECTURES,
-        DEFAULT_ARCHITECTURES
-      )
+      architectures: parseList(process.env.REPORT_ARCHITECTURES, [])
     });
     fs.mkdirSync(path.dirname(path.resolve(target)), {recursive: true});
     fs.writeFileSync(target, JSON.stringify(report, null, 2));

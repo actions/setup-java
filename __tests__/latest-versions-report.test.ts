@@ -1,6 +1,7 @@
 import {describe, expect, it} from '@jest/globals';
 import {
   classifyResolutionError,
+  getSupportedArchitectures,
   renderMarkdownReport,
   ResolutionReport,
   VersionResolution
@@ -18,14 +19,16 @@ function result(
   };
 }
 
-function report(results: VersionResolution[]): ResolutionReport {
-  return {platform: 'linux', generatedAt: '2026-11-18T06:30:00.000Z', results};
+function report(
+  platform: string,
+  results: VersionResolution[]
+): ResolutionReport {
+  return {platform, generatedAt: '2026-11-18T06:30:00.000Z', results};
 }
 
-function overviewRow(markdown: string, distribution: string): string {
-  return markdown
-    .split('\n')
-    .find(line => line.startsWith(`| \`${distribution}\``))!;
+function tableRows(markdown: string, distribution: string): string[] {
+  const section = markdown.split(`## \`${distribution}\``)[1].split('\n## ')[0];
+  return section.split('\n').filter(line => /^\| (?!Platform|---)/.test(line));
 }
 
 describe('latest versions report', () => {
@@ -49,38 +52,81 @@ describe('latest versions report', () => {
     expect(classifyResolutionError(new Error('socket hang up'))).toBe('error');
   });
 
-  it('shows one version when every platform agrees and flags differences', () => {
+  it('resolves Alpine with the Linux architectures, including version-restricted ones', () => {
+    expect(getSupportedArchitectures('redhat', 'linux-musl')).toEqual([
+      'x64',
+      'aarch64',
+      'ppc64le'
+    ]);
+    expect(getSupportedArchitectures('dragonwell', 'macos')).toEqual([]);
+  });
+
+  it('lists the exact version for every platform, ordered by operating system and architecture', () => {
     const markdown = renderMarkdownReport([
-      report([
-        result({distribution: 'zulu', versionSpec: '21', version: '21.0.9'}),
-        result({
-          distribution: 'zulu',
-          versionSpec: '21',
-          architecture: 'aarch64',
-          version: '21.0.9'
-        }),
-        result({distribution: 'temurin', versionSpec: '21', version: '21.0.9'}),
+      report('macos', [
         result({
           distribution: 'temurin',
           versionSpec: '21',
+          platform: 'macos',
           architecture: 'aarch64',
-          version: '21.0.8'
+          version: '21.0.13+100000002.0.LTS'
+        })
+      ]),
+      report('linux', [
+        result({
+          distribution: 'temurin',
+          versionSpec: '21',
+          architecture: 's390x',
+          version: '21.0.12+7'
+        }),
+        result({
+          distribution: 'temurin',
+          versionSpec: '21',
+          version: '21.0.13+9'
+        })
+      ]),
+      report('linux-musl', [
+        result({
+          distribution: 'temurin',
+          versionSpec: '21',
+          platform: 'linux-musl',
+          version: '21.0.13+9'
         })
       ])
     ]);
 
-    expect(overviewRow(markdown, 'zulu')).toBe('| `zulu` | `21.0.9` |');
-    expect(overviewRow(markdown, 'temurin')).toBe(
-      '| `temurin` | `21.0.9` / `21.0.8` ⚠️ |'
-    );
+    expect(tableRows(markdown, 'temurin')).toEqual([
+      '| Linux x64 | `21.0.13+9` |',
+      '| Linux s390x | `21.0.12+7` |',
+      '| Alpine Linux x64 | `21.0.13+9` |',
+      '| macOS aarch64 | `21.0.13+100000002.0.LTS` |'
+    ]);
+    expect(markdown).not.toContain('Needs attention');
     expect(markdown).toContain(
-      '<details open><summary><code>temurin</code> ⚠️</summary>'
+      'Not checked, because no runner reported these platforms: Windows (x64, x86, aarch64).'
     );
   });
 
-  it('marks floating releases and prefers the vendor-advertised version', () => {
+  it('distinguishes unsupported, unpublished, and floating releases', () => {
     const markdown = renderMarkdownReport([
-      report([
+      report('linux', [
+        result({
+          distribution: 'redhat',
+          versionSpec: '11',
+          architecture: 'aarch64',
+          version: '11.0.29'
+        }),
+        result({
+          distribution: 'redhat',
+          versionSpec: '25',
+          architecture: 'aarch64',
+          status: 'unsupported'
+        }),
+        result({
+          distribution: 'oracle',
+          versionSpec: '11',
+          status: 'unavailable'
+        }),
         result({
           distribution: 'oracle',
           versionSpec: '25',
@@ -92,25 +138,22 @@ describe('latest versions report', () => {
       ])
     ]);
 
-    expect(overviewRow(markdown, 'oracle')).toBe('| `oracle` | `25.0.5.1` ¹ |');
-    expect(markdown).toContain('`25.0.5.1` ¹ (published 2026-10-27)');
+    expect(tableRows(markdown, 'redhat')).toEqual([
+      '| Linux aarch64 | `11.0.29` | n/a |'
+    ]);
+    expect(tableRows(markdown, 'oracle')).toEqual([
+      '| Linux x64 | — | `25.0.5.1` ¹ (published 2026-10-27) |'
+    ]);
+    expect(markdown).toContain('¹ Major-only requests download');
   });
 
   it('reports lookup errors and distributions that resolved nothing', () => {
     const markdown = renderMarkdownReport([
-      report([
+      report('linux', [
         result({
           distribution: 'oracle-openjdk',
           versionSpec: '25',
-          status: 'unavailable',
-          message: "No matching version found for SemVer '25'."
-        }),
-        result({
-          distribution: 'redhat',
-          versionSpec: '25',
-          platform: 'macos',
-          status: 'unsupported',
-          message: "Distribution 'redhat' does not support operating system"
+          status: 'unavailable'
         }),
         result({
           distribution: 'zulu',
@@ -121,16 +164,13 @@ describe('latest versions report', () => {
       ])
     ]);
 
-    expect(overviewRow(markdown, 'oracle-openjdk')).toBe(
-      '| `oracle-openjdk` ❗ | — |'
-    );
-    expect(overviewRow(markdown, 'redhat')).toBe('| `redhat` | — |');
-    expect(overviewRow(markdown, 'zulu')).toBe('| `zulu` | ❗ error |');
+    expect(markdown).toContain('## `oracle-openjdk` ❗');
+    expect(tableRows(markdown, 'zulu')).toEqual(['| Linux x64 | ❗ error |']);
     expect(markdown).toContain(
       '| `oracle-openjdk` | all | all | No release matched any requested version'
     );
     expect(markdown).toContain(
-      '| `zulu` | `25` | linux x64 | socket hang up |'
+      '| `zulu` | `25` | Linux x64 | socket hang up |'
     );
   });
 });

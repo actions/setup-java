@@ -1,6 +1,7 @@
 # Daily report of the exact JDK version each distribution currently resolves
-# for LTS majors, the newest feature release, and `latest`. Versions are
-# resolved from vendor metadata only; no JDK is downloaded.
+# for LTS majors, the newest feature release, and `latest`, on every operating
+# system and architecture setup-java supports for it. Versions are resolved
+# from vendor metadata only; no JDK is downloaded.
 name: Latest JDK versions report
 
 on:
@@ -57,6 +58,7 @@ jobs:
     name: Resolve versions (${{ matrix.os }})
     needs: build
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -83,9 +85,38 @@ jobs:
           path: results/
           retention-days: 1
 
+  # Installers pick musl builds on Alpine, which can resolve to other versions.
+  resolve-alpine:
+    name: Resolve versions (alpine)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: node:24-alpine
+    defaults:
+      run:
+        shell: sh
+    steps:
+      - name: Download report tool
+        uses: actions/download-artifact@v8
+        with:
+          name: latest-versions-report-tool
+          path: tool
+      - name: Resolve latest versions without downloading
+        run: node tool/index.js resolve results/alpine.json
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPORT_VERSIONS: ${{ inputs.java-versions }}
+      - name: Upload resolved versions
+        uses: actions/upload-artifact@v7
+        with:
+          name: latest-jdk-versions-alpine
+          path: results/
+          retention-days: 1
+
   report:
     name: Report
-    needs: [build, resolve]
+    needs: [build, resolve, resolve-alpine]
     if: ${{ !cancelled() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
