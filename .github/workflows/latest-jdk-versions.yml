@@ -1,5 +1,5 @@
 # Daily report of the exact JDK version each distribution currently resolves
-# for LTS majors, the newest feature release, and `latest`, on every operating
+# for every major from Java 6 through the newest GA release, and `latest`, on every operating
 # system and architecture setup-java supports for it. Versions are resolved
 # from vendor metadata only; no JDK is downloaded.
 name: Latest JDK versions report
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       java-versions:
-        description: 'Comma-separated java-version values to resolve (default: LTS majors, newest feature release, and latest)'
+        description: 'Comma-separated java-version values (default: every major from Java 6 through the newest GA release, and latest)'
         required: false
         default: ''
   pull_request:
@@ -55,14 +55,23 @@ jobs:
           retention-days: 1
 
   resolve:
-    name: Resolve versions (${{ matrix.os }})
+    name: Resolve versions (${{ matrix.platform }})
     needs: build
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux
+          - os: macos-latest
+            platform: macos
+          - os: windows-latest
+            platform: windows
+          # Liberica's Solaris metadata is queried without running a Solaris JDK.
+          - os: ubuntu-latest
+            platform: solaris
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v7
@@ -74,14 +83,15 @@ jobs:
           name: latest-versions-report-tool
           path: tool
       - name: Resolve latest versions without downloading
-        run: node tool/index.js resolve "results/$RUNNER_OS.json"
+        run: node tool/index.js resolve "results/$REPORT_PLATFORM.json"
         env:
           GITHUB_TOKEN: ${{ github.token }}
           REPORT_VERSIONS: ${{ inputs.java-versions }}
+          REPORT_PLATFORM: ${{ matrix.platform }}
       - name: Upload resolved versions
         uses: actions/upload-artifact@v7
         with:
-          name: latest-jdk-versions-${{ matrix.os }}
+          name: latest-jdk-versions-${{ matrix.platform }}
           path: results/
           retention-days: 1
 

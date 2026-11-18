@@ -5,12 +5,14 @@ import path from 'path';
 import {getJavaDistribution} from '../distributions/distribution-factory.js';
 import type {JavaBase} from '../distributions/base-installer.js';
 import type {JavaDownloadRelease} from '../distributions/base-models.js';
+import {LibericaDistributions} from '../distributions/liberica/installer.js';
 import {JavaDistribution} from '../distributions/package-types.js';
 import {
   isAlpineLinux,
   JAVA_PLATFORM_CAPABILITIES,
   JavaPlatform,
-  normalizePlatform
+  normalizePlatform,
+  validateJavaPlatform
 } from '../distributions/platform-types.js';
 import {isMainModule} from '../is-main-module.js';
 import {RetryingHttpClient} from '../retrying-http-client.js';
@@ -22,7 +24,8 @@ import {getLatestMajorVersion} from '../util.js';
  * downloaded: resolution stops where `setup-java` would start the download.
  */
 
-export const LTS_VERSIONS = ['8', '11', '17', '21', '25'];
+// Zulu's supported JDK catalog starts at Java 6, including non-LTS releases.
+const FIRST_MAJOR_VERSION = 6;
 export const REPORTED_DISTRIBUTIONS: string[] = Object.values(
   JavaDistribution
 ).filter(distribution => distribution !== JavaDistribution.JdkFile);
@@ -84,6 +87,13 @@ interface ReleaseResolver {
   version: string;
   http: httpm.HttpClient;
   findPackageForDownload(range: string): Promise<JavaDownloadRelease>;
+}
+
+// Metadata resolution does not require a Solaris runner or executing its JDK.
+class SolarisLibericaDistribution extends LibericaDistributions {
+  protected override getPlatformOption() {
+    return super.getPlatformOption('sunos');
+  }
 }
 
 /** Alpine is reported separately because installers pick musl builds there. */
@@ -226,12 +236,30 @@ async function resolveOne(
 
   let installer: JavaBase | null;
   try {
-    installer = await getJavaDistribution(distributionName, {
+    const installerOptions = {
       version: versionSpec,
       architecture,
       packageType: PACKAGE_TYPE,
       checkLatest: true
-    });
+    };
+    if (platform === 'solaris') {
+      if (distributionName !== JavaDistribution.Liberica) {
+        return {
+          ...base,
+          status: 'error',
+          message: `No Solaris metadata resolver for '${distributionName}'.`
+        };
+      }
+      validateJavaPlatform(
+        distributionName,
+        'sunos',
+        architecture,
+        versionSpec
+      );
+      installer = new SolarisLibericaDistribution(installerOptions);
+    } else {
+      installer = await getJavaDistribution(distributionName, installerOptions);
+    }
   } catch (error) {
     return {
       ...base,
@@ -288,21 +316,20 @@ async function runWithConcurrency<T>(
   return results;
 }
 
-/** LTS majors, the newest feature release, and the `latest` alias. */
+/** Every supported stable major through the newest GA release, plus `latest`. */
 export async function getDefaultVersions(
   http: httpm.HttpClient
 ): Promise<string[]> {
-  const versions = [...LTS_VERSIONS];
-  try {
-    const featureRelease = String(await getLatestMajorVersion(http));
-    if (!versions.includes(featureRelease)) {
-      versions.push(featureRelease);
-    }
-  } catch (error) {
-    core.warning(
-      `Could not determine the newest Java feature release: ${error}`
+  const latestMajor = await getLatestMajorVersion(http);
+  if (!Number.isSafeInteger(latestMajor) || latestMajor < FIRST_MAJOR_VERSION) {
+    throw new Error(
+      `Invalid newest Java feature release in vendor metadata: ${latestMajor}`
     );
   }
+  const versions = Array.from(
+    {length: latestMajor - FIRST_MAJOR_VERSION + 1},
+    (_, index) => String(FIRST_MAJOR_VERSION + index)
+  );
   return [...versions, 'latest'];
 }
 
@@ -331,9 +358,17 @@ export async function resolveLatestVersions(options: {
   versions: string[];
   /** Restricts the architectures; defaults to all supported ones. */
   architectures?: string[];
+  /** Solaris metadata can be resolved on any host; other targets use the host. */
+  platform?: string;
 }): Promise<ResolutionReport> {
   const http = new RetryingHttpClient('actions/setup-java');
-  const platform = getReportPlatform();
+  const hostPlatform = getReportPlatform();
+  const platform = options.platform || hostPlatform;
+  if (platform !== hostPlatform && platform !== 'solaris') {
+    throw new Error(
+      `Cannot resolve '${platform}' metadata on '${hostPlatform}'; use a matching runner.`
+    );
+  }
   const tasks = options.distributions.map(distribution => async () => {
     const architectures = getSupportedArchitectures(
       distribution,
@@ -461,7 +496,11 @@ function getUncheckedPlatforms(
   if (!capability || capability.unrestricted) {
     return [];
   }
-  return Object.keys(capability.platforms)
+  const platforms = Object.keys(capability.platforms);
+  if (platforms.includes('linux')) {
+    platforms.push(MUSL_PLATFORM);
+  }
+  return platforms
     .filter(platform => !reportedPlatforms.has(platform))
     .map(
       platform =>
@@ -611,7 +650,8 @@ export async function run(args: string[]): Promise<void> {
           : await getDefaultVersions(
               new RetryingHttpClient('actions/setup-java')
             ),
-      architectures: parseList(process.env.REPORT_ARCHITECTURES, [])
+      architectures: parseList(process.env.REPORT_ARCHITECTURES, []),
+      platform: process.env.REPORT_PLATFORM
     });
     fs.mkdirSync(path.dirname(path.resolve(target)), {recursive: true});
     fs.writeFileSync(target, JSON.stringify(report, null, 2));
