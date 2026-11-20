@@ -1,6 +1,16 @@
 import {afterEach, describe, expect, it, jest} from '@jest/globals';
-import {HttpClient} from '@actions/http-client';
+import {HttpClient, HttpClientResponse} from '@actions/http-client';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import {IncomingMessage} from 'http';
+import {Socket} from 'net';
 import {JavaBase} from '../src/distributions/base-installer.js';
+import {
+  currentResolver,
+  loadMetadataResolver,
+  type MetadataResolver
+} from '../src/reports/resolver.js';
 import {
   classifyResolutionError,
   getDefaultVersions,
@@ -27,7 +37,12 @@ function report(
   platform: string,
   results: VersionResolution[]
 ): ResolutionReport {
-  return {platform, generatedAt: '2026-11-18T06:30:00.000Z', results};
+  return {
+    source: {ref: 'main'},
+    platform,
+    generatedAt: '2026-11-18T06:30:00.000Z',
+    results
+  };
 }
 
 function tableRows(markdown: string, distribution: string): string[] {
@@ -38,6 +53,7 @@ function tableRows(markdown: string, distribution: string): string[] {
 describe('latest versions report', () => {
   afterEach(() => {
     jest.restoreAllMocks();
+    jest.useRealTimers();
   });
 
   it('includes every major from Java 6 through GA, including non-LTS releases but not EA', async () => {
@@ -226,7 +242,7 @@ describe('latest versions report', () => {
       classifyResolutionError(
         new Error('Oracle JDK is only supported for JDK 17 and later')
       )
-    ).toBe('unavailable');
+    ).toBe('unsupported');
     expect(
       classifyResolutionError(
         new Error(
@@ -357,5 +373,286 @@ describe('latest versions report', () => {
     expect(markdown).toContain(
       '| `zulu` | `25` | Linux x64 | socket hang up |'
     );
+  });
+
+  it('uses the selected revision without substituting main for unsupported version syntax', async () => {
+    const mainFactory = jest.spyOn(currentResolver, 'getJavaDistribution');
+    const lookup = jest.fn(async () => ({
+      version: '21.0.8+9',
+      url: 'https://example.com/jdk.tar.gz'
+    }));
+    const legacy: MetadataResolver = {
+      source: {ref: 'v5', sha: 'a'.repeat(40), version: '5.6.0'},
+      distributions: ['adopt'],
+      getJavaDistribution: (_distribution, options) => {
+        if (options.version === 'latest') {
+          throw new Error("The string 'latest' is not valid SemVer notation");
+        }
+        return {
+          version: options.version,
+          http: new HttpClient(),
+          findPackageForDownload: lookup
+        };
+      },
+      createSolarisInstaller: () => {
+        throw new Error('Unexpected Solaris lookup');
+      }
+    };
+    const resolved = await resolveLatestVersions({
+      resolver: legacy,
+      distributions: legacy.distributions,
+      versions: ['21', 'latest'],
+      architectures: ['x64']
+    });
+
+    expect(resolved.source).toEqual(legacy.source);
+    expect(resolved.results).toEqual([
+      expect.objectContaining({
+        distribution: 'adopt',
+        versionSpec: '21',
+        version: '21.0.8+9'
+      }),
+      expect.objectContaining({
+        distribution: 'adopt',
+        versionSpec: 'latest',
+        status: 'unsupported'
+      })
+    ]);
+    expect(lookup).toHaveBeenCalledTimes(1);
+    expect(lookup).toHaveBeenCalledWith('21');
+    expect(mainFactory).not.toHaveBeenCalled();
+    expect(getSupportedArchitectures('adopt', 'linux', legacy)).toContain(
+      's390x'
+    );
+    expect(getSupportedArchitectures('redhat', 'linux', legacy)).toEqual([]);
+  });
+
+  it('marks legacy mutable Oracle URLs as floating instead of reporting a major as exact', async () => {
+    const response = new IncomingMessage(new Socket());
+    response.headers['last-modified'] = 'Tue, 27 Oct 2026 00:00:00 GMT';
+    jest
+      .spyOn(HttpClient.prototype, 'head')
+      .mockResolvedValue(new HttpClientResponse(response));
+    jest.spyOn(HttpClient.prototype, 'getJson').mockResolvedValue({
+      statusCode: 200,
+      headers: {},
+      result: {releaseVersion: '25.0.1', licenseDetails: {licenseType: 'NFTC'}}
+    });
+    const resolved = await resolveLatestVersions({
+      resolver: {
+        ...currentResolver,
+        source: {ref: 'v5'},
+        getJavaDistribution: () => ({
+          version: '25',
+          http: new HttpClient(),
+          findPackageForDownload: async () => ({
+            version: '25',
+            url: 'https://download.oracle.com/java/25/latest/jdk-25_linux-x64_bin.tar.gz'
+          })
+        })
+      },
+      distributions: ['oracle'],
+      versions: ['25'],
+      architectures: ['x64']
+    });
+
+    expect(resolved.results[0]).toMatchObject({
+      status: 'resolved',
+      floating: true,
+      advertisedVersion: '25.0.1',
+      publishedAt: '2026-10-27'
+    });
+  });
+
+  it('refuses to install if a revision crosses the metadata boundary', async () => {
+    const download = jest.fn();
+    const installer = {
+      version: '21',
+      http: new HttpClient(),
+      downloadTool: download,
+      async findPackageForDownload() {
+        this.downloadTool();
+        return {version: '21', url: 'https://example.com/jdk.tar.gz'};
+      }
+    };
+    const resolved = await resolveLatestVersions({
+      resolver: {...currentResolver, getJavaDistribution: () => installer},
+      distributions: ['temurin'],
+      versions: ['21'],
+      architectures: ['x64']
+    });
+    expect(resolved.results[0]).toMatchObject({
+      status: 'error',
+      message: 'JDK download/install is forbidden in the versions report.'
+    });
+    expect(download).not.toHaveBeenCalled();
+  });
+
+  it('records stalled legacy endpoints as errors and does not retry them for every major', async () => {
+    jest.useFakeTimers();
+    const request = jest
+      .spyOn(HttpClient.prototype, 'getJson')
+      .mockImplementation(() => new Promise(() => {}));
+    const dispose = jest.spyOn(HttpClient.prototype, 'dispose');
+    const pending = resolveLatestVersions({
+      resolver: {
+        ...currentResolver,
+        getJavaDistribution: (_distribution, options) => ({
+          version: options.version,
+          http: new HttpClient(),
+          async findPackageForDownload() {
+            await this.http.getJson('https://example.com/retired-api');
+            throw new Error('Unreachable');
+          }
+        })
+      },
+      distributions: ['temurin'],
+      versions: ['17', '21'],
+      architectures: ['x64']
+    });
+    await jest.advanceTimersByTimeAsync(60_000);
+    const resolved = await pending;
+    expect(resolved.results).toEqual([
+      expect.objectContaining({
+        versionSpec: '17',
+        status: 'error',
+        message: expect.stringContaining('Metadata request timed out')
+      }),
+      expect.objectContaining({
+        versionSpec: '21',
+        status: 'error',
+        message: expect.stringContaining('Metadata request timed out')
+      })
+    ]);
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps different revision results and failures separate, including missing runners', () => {
+    const main = report('linux', [
+      result({distribution: 'temurin', versionSpec: '21', version: '21.0.13+9'})
+    ]);
+    const v6 = {
+      ...report('linux', [
+        result({
+          distribution: 'temurin',
+          versionSpec: '21',
+          version: '21.0.12+7'
+        })
+      ]),
+      source: {ref: 'v6', sha: 'b'.repeat(40), version: '6.0.0'}
+    };
+    const v5 = {
+      ...report('linux', [
+        result({
+          distribution: 'adopt',
+          versionSpec: '21',
+          status: 'unavailable'
+        }),
+        result({
+          distribution: 'temurin',
+          versionSpec: '21',
+          status: 'error',
+          message: 'metadata failed'
+        })
+      ]),
+      source: {ref: 'v5', sha: 'a'.repeat(40), version: '5.6.0'},
+      targets: {adopt: {linux: ['x64'], windows: ['x64']}}
+    };
+    const markdown = renderMarkdownReport([main, v6, v5]);
+    const mainSection = markdown
+      .split('<summary>setup-java@main</summary>')[1]
+      .split('</details>')[0];
+    const v6Section = markdown
+      .split('<summary>setup-java@v6</summary>')[1]
+      .split('</details>')[0];
+    const v5Section = markdown
+      .split('<summary>setup-java@v5</summary>')[1]
+      .split('</details>')[0];
+    expect(mainSection).toContain('`21.0.13+9`');
+    expect(mainSection).not.toContain('Needs attention');
+    expect(v6Section).toContain('`21.0.12+7`');
+    expect(v6Section).not.toContain('`21.0.13+9`');
+    expect(v5Section).toContain('metadata failed');
+    expect(v5Section).toContain('## `adopt` ❗');
+    expect(v5Section).toContain(
+      'Not checked, because no runner reported these platforms: Windows (x64).'
+    );
+    expect(markdown).toContain(
+      `https://github.com/actions/setup-java/commit/${'a'.repeat(40)}`
+    );
+  });
+
+  it('shows missing revisions and rejects mixed commits within one revision', () => {
+    const main = report('linux', []);
+    expect(
+      renderMarkdownReport([main], {expectedRefs: ['main', 'v6', 'v5']})
+    ).toContain('| `v5` | - | - | Not checked: no reports received |');
+    expect(() =>
+      renderMarkdownReport([
+        {...main, source: {ref: 'v6', sha: 'a'.repeat(40)}},
+        {...main, source: {ref: 'v6', sha: 'b'.repeat(40)}}
+      ])
+    ).toThrow("Reports for 'v6' were produced from different revisions.");
+  });
+
+  it.each(['module', 'commonjs'])(
+    'loads a separate %s resolver with its provenance',
+    async type => {
+      const directory = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'setup-java resolver-')
+      );
+      try {
+        fs.writeFileSync(
+          path.join(directory, 'package.json'),
+          JSON.stringify({type})
+        );
+        const source = {ref: 'v5', sha: 'a'.repeat(40), version: '5.6.0'};
+        fs.writeFileSync(
+          path.join(directory, 'index.js'),
+          `
+        const source = ${JSON.stringify(source)};
+        const distributions = ['adopt'];
+        const getJavaDistribution = () => 'selected checkout';
+        const createSolarisInstaller = () => null;
+        ${type === 'module' ? 'export' : 'module.exports ='}
+        {source, distributions, getJavaDistribution, createSolarisInstaller};
+      `
+        );
+        const loaded = await loadMetadataResolver(directory);
+        expect(loaded.source).toEqual(source);
+        expect(
+          loaded.getJavaDistribution('adopt', {
+            version: '21',
+            architecture: 'x64',
+            packageType: 'jdk',
+            checkLatest: true
+          })
+        ).toBe('selected checkout');
+      } finally {
+        fs.rmSync(directory, {recursive: true, force: true});
+      }
+    }
+  );
+
+  it('fails explicitly instead of falling back to main when the resolver bundle is invalid', async () => {
+    const directory = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'setup-java resolver-')
+    );
+    try {
+      fs.writeFileSync(
+        path.join(directory, 'package.json'),
+        '{"type":"module"}'
+      );
+      fs.writeFileSync(
+        path.join(directory, 'index.js'),
+        'export const source = {ref: "v5"};'
+      );
+      await expect(loadMetadataResolver(directory)).rejects.toThrow(
+        'Invalid metadata resolver bundle'
+      );
+    } finally {
+      fs.rmSync(directory, {recursive: true, force: true});
+    }
   });
 });

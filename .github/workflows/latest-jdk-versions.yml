@@ -1,7 +1,8 @@
 # Daily report of the exact JDK version each distribution currently resolves
 # for every major from Java 6 through the newest GA release, and `latest`, on every operating
 # system and architecture setup-java supports for it. Versions are resolved
-# from vendor metadata only; no JDK is downloaded.
+# from vendor metadata only; no JDK is downloaded. Compare main and the latest
+# v6/v5 tags using each revision's own installers and locked dependencies.
 name: Latest JDK versions report
 
 on:
@@ -16,6 +17,8 @@ on:
   pull_request:
     paths:
       - 'src/reports/**'
+      - 'scripts/build-report-resolver.mjs'
+      - '__tests__/latest-versions-report.test.ts'
       - '.github/workflows/latest-jdk-versions.yml'
 
 permissions:
@@ -54,14 +57,56 @@ jobs:
           path: lib/latest-versions-report/
           retention-days: 1
 
+  build-resolvers:
+    name: Build resolver (${{ matrix.setup-java }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        setup-java: [main, v6, v5]
+    steps:
+      - name: Checkout report tooling
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Checkout setup-java revision
+        uses: actions/checkout@v7
+        with:
+          repository: actions/setup-java
+          ref: ${{ matrix.setup-java }}
+          path: resolver-source
+          persist-credentials: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+          cache: npm
+          cache-dependency-path: resolver-source/package-lock.json
+      - name: Install revision dependencies
+        working-directory: resolver-source
+        run: npm ci
+      - name: Bundle revision metadata resolver
+        run: node scripts/build-report-resolver.mjs resolver-source "$SETUP_JAVA_REF" resolver
+        env:
+          SETUP_JAVA_REF: ${{ matrix.setup-java }}
+      - name: Upload revision metadata resolver
+        uses: actions/upload-artifact@v7
+        with:
+          name: jdk-metadata-resolver-${{ matrix.setup-java }}
+          path: resolver/
+          retention-days: 1
+
   resolve:
-    name: Resolve versions (${{ matrix.platform }})
-    needs: build
+    name: Resolve versions (${{ matrix.setup-java }}, ${{ matrix.platform }})
+    needs: [build, build-resolvers]
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
+        setup-java: [main, v6, v5]
+        platform: [linux, macos, windows, solaris]
         include:
           - os: ubuntu-latest
             platform: linux
@@ -82,27 +127,39 @@ jobs:
         with:
           name: latest-versions-report-tool
           path: tool
+      - name: Download revision metadata resolver
+        uses: actions/download-artifact@v8
+        with:
+          name: jdk-metadata-resolver-${{ matrix.setup-java }}
+          path: resolver
       - name: Resolve latest versions without downloading
-        run: node tool/index.js resolve "results/$REPORT_PLATFORM.json"
+        run: node tool/index.js resolve "results/$SETUP_JAVA_REF-$REPORT_PLATFORM.json"
         env:
           GITHUB_TOKEN: ${{ github.token }}
           REPORT_VERSIONS: ${{ inputs.java-versions }}
           REPORT_PLATFORM: ${{ matrix.platform }}
+          REPORT_RESOLVER: resolver
+          SETUP_JAVA_REF: ${{ matrix.setup-java }}
       - name: Upload resolved versions
         uses: actions/upload-artifact@v7
         with:
-          name: latest-jdk-versions-${{ matrix.platform }}
+          name: latest-jdk-versions-${{ matrix.setup-java }}-${{ matrix.platform }}
           path: results/
           retention-days: 1
 
   # Installers pick musl builds on Alpine, which can resolve to other versions.
   resolve-alpine:
-    name: Resolve versions (alpine)
-    needs: build
+    name: Resolve versions (${{ matrix.setup-java }}, alpine)
+    needs: [build, build-resolvers]
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
       image: node:24-alpine
+    strategy:
+      fail-fast: false
+      matrix:
+        setup-java: [main, v6, v5]
     defaults:
       run:
         shell: sh
@@ -112,21 +169,28 @@ jobs:
         with:
           name: latest-versions-report-tool
           path: tool
+      - name: Download revision metadata resolver
+        uses: actions/download-artifact@v8
+        with:
+          name: jdk-metadata-resolver-${{ matrix.setup-java }}
+          path: resolver
       - name: Resolve latest versions without downloading
-        run: node tool/index.js resolve results/alpine.json
+        run: node tool/index.js resolve "results/$SETUP_JAVA_REF-alpine.json"
         env:
           GITHUB_TOKEN: ${{ github.token }}
           REPORT_VERSIONS: ${{ inputs.java-versions }}
+          REPORT_RESOLVER: resolver
+          SETUP_JAVA_REF: ${{ matrix.setup-java }}
       - name: Upload resolved versions
         uses: actions/upload-artifact@v7
         with:
-          name: latest-jdk-versions-alpine
+          name: latest-jdk-versions-${{ matrix.setup-java }}-alpine
           path: results/
           retention-days: 1
 
   report:
     name: Report
-    needs: [build, resolve, resolve-alpine]
+    needs: [build, build-resolvers, resolve, resolve-alpine]
     if: ${{ !cancelled() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
@@ -146,8 +210,12 @@ jobs:
           path: results
           merge-multiple: true
       - name: Write report
+        if: ${{ !cancelled() }}
         run: node tool/index.js summarize results latest-jdk-versions.md
+        env:
+          REPORT_REFS: main,v6,v5
       - name: Upload report
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7
         with:
           name: latest-jdk-versions-report
