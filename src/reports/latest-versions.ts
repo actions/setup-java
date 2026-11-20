@@ -2,21 +2,22 @@ import * as core from '@actions/core';
 import * as httpm from '@actions/http-client';
 import fs from 'fs';
 import path from 'path';
-import {getJavaDistribution} from '../distributions/distribution-factory.js';
-import type {JavaBase} from '../distributions/base-installer.js';
 import type {JavaDownloadRelease} from '../distributions/base-models.js';
-import {LibericaDistributions} from '../distributions/liberica/installer.js';
 import {JavaDistribution} from '../distributions/package-types.js';
 import {
   isAlpineLinux,
-  JAVA_PLATFORM_CAPABILITIES,
-  JavaPlatform,
-  normalizePlatform,
-  validateJavaPlatform
+  normalizePlatform
 } from '../distributions/platform-types.js';
 import {isMainModule} from '../is-main-module.js';
 import {RetryingHttpClient} from '../retrying-http-client.js';
 import {getLatestMajorVersion} from '../util.js';
+import {
+  type ActionSource,
+  type MetadataResolver,
+  currentResolver,
+  getResolverArchitectures,
+  loadMetadataResolver
+} from './resolver.js';
 
 /**
  * Reports the exact JDK version each distribution currently resolves for a set
@@ -26,12 +27,11 @@ import {getLatestMajorVersion} from '../util.js';
 
 // Zulu's supported JDK catalog starts at Java 6, including non-LTS releases.
 const FIRST_MAJOR_VERSION = 6;
-export const REPORTED_DISTRIBUTIONS: string[] = Object.values(
-  JavaDistribution
-).filter(distribution => distribution !== JavaDistribution.JdkFile);
+export const REPORTED_DISTRIBUTIONS = currentResolver.distributions;
 
 const PACKAGE_TYPE = 'jdk';
 const CONCURRENCY = 6;
+const METADATA_TIMEOUT_MS = 60_000;
 const ORACLE_RELEASES_URL = 'https://java.oraclecloud.com/currentJavaReleases';
 const MUSL_PLATFORM = 'linux-musl';
 const PLATFORM_LABELS: Record<string, string> = {
@@ -78,8 +78,11 @@ export interface VersionResolution {
 }
 
 export interface ResolutionReport {
+  source: ActionSource;
   platform: string;
   generatedAt: string;
+  /** Expected platform/architecture probes, from this revision rather than main. */
+  targets?: Record<string, Record<string, string[]>>;
   results: VersionResolution[];
 }
 
@@ -87,13 +90,6 @@ interface ReleaseResolver {
   version: string;
   http: httpm.HttpClient;
   findPackageForDownload(range: string): Promise<JavaDownloadRelease>;
-}
-
-// Metadata resolution does not require a Solaris runner or executing its JDK.
-class SolarisLibericaDistribution extends LibericaDistributions {
-  protected override getPlatformOption() {
-    return super.getPlatformOption('sunos');
-  }
 }
 
 /** Alpine is reported separately because installers pick musl builds there. */
@@ -113,25 +109,21 @@ export function getReportPlatform(
  */
 export function getSupportedArchitectures(
   distribution: string,
-  platform: string
+  platform: string,
+  resolver: MetadataResolver = currentResolver
 ): string[] {
-  const capability =
-    JAVA_PLATFORM_CAPABILITIES[distribution as JavaDistribution];
-  if (!capability || capability.unrestricted) {
-    return [];
-  }
-  const os = (platform === MUSL_PLATFORM ? 'linux' : platform) as JavaPlatform;
-  return [
-    ...new Set(
-      (capability.platforms[os] ?? []).map(item =>
-        typeof item === 'string' ? item : item.architecture
-      )
-    )
-  ];
+  return getResolverArchitectures(resolver, distribution, platform);
 }
 
 export function classifyResolutionError(error: unknown): ResolutionStatus {
   const message = error instanceof Error ? error.message : String(error);
+  if (
+    /not supported|only supported|does not support|unsupported|not valid SemVer/i.test(
+      message
+    )
+  ) {
+    return 'unsupported';
+  }
   if (
     (error instanceof Error && error.name === 'VersionNotFoundError') ||
     /no matching version|no \w+ release for|could not determine the latest available|not supported|only supported|does not support|not available|could not find|unsupported/i.test(
@@ -148,7 +140,9 @@ export function classifyResolutionError(error: unknown): ResolutionStatus {
  * fetch a vendor's whole release list for every request, and JetBrains probes
  * each release URL with HEAD, so resolving many version/architecture
  * combinations would otherwise repeat identical requests and exhaust API rate
- * limits. Installers only read the status and headers of HEAD responses.
+ * limits. Failed requests are also retained for this snapshot so an obsolete
+ * endpoint does not stall every major-version probe. Installers only read the
+ * status and headers of HEAD responses.
  */
 function shareMetadataResponses(
   http: httpm.HttpClient,
@@ -157,9 +151,29 @@ function shareMetadataResponses(
   const share = <T>(key: string, request: () => Promise<T>): Promise<T> => {
     let response = cache.get(key) as Promise<T> | undefined;
     if (!response) {
-      response = request();
+      response = new Promise<T>((resolve, reject) => {
+        const timer = setTimeout(() => {
+          http.dispose();
+          reject(
+            new Error(
+              `Metadata request timed out after ${METADATA_TIMEOUT_MS} ms: ${key.split('\n')[0]}`
+            )
+          );
+        }, METADATA_TIMEOUT_MS);
+        Promise.resolve()
+          .then(request)
+          .then(
+            value => {
+              clearTimeout(timer);
+              resolve(value);
+            },
+            error => {
+              clearTimeout(timer);
+              reject(error);
+            }
+          );
+      });
       cache.set(key, response);
-      response.catch(() => cache.delete(key));
     }
     return response;
   };
@@ -225,7 +239,8 @@ async function resolveOne(
   platform: string,
   architecture: string,
   cache: Map<string, Promise<unknown>>,
-  http: httpm.HttpClient
+  http: httpm.HttpClient,
+  metadataResolver: MetadataResolver
 ): Promise<VersionResolution> {
   const base = {
     distribution: distributionName,
@@ -234,7 +249,7 @@ async function resolveOne(
     architecture
   };
 
-  let installer: JavaBase | null;
+  let installer: unknown;
   try {
     const installerOptions = {
       version: versionSpec,
@@ -250,20 +265,18 @@ async function resolveOne(
           message: `No Solaris metadata resolver for '${distributionName}'.`
         };
       }
-      validateJavaPlatform(
-        distributionName,
-        'sunos',
-        architecture,
-        versionSpec
-      );
-      installer = new SolarisLibericaDistribution(installerOptions);
+      installer =
+        await metadataResolver.createSolarisInstaller(installerOptions);
     } else {
-      installer = await getJavaDistribution(distributionName, installerOptions);
+      installer = await metadataResolver.getJavaDistribution(
+        distributionName,
+        installerOptions
+      );
     }
   } catch (error) {
     return {
       ...base,
-      status: 'unsupported',
+      status: classifyResolutionError(error),
       message: error instanceof Error ? error.message : String(error)
     };
   }
@@ -274,15 +287,31 @@ async function resolveOne(
   // `findPackageForDownload` is the metadata step `setupJava` runs right
   // before downloading; it is protected because the action never needs it on
   // its own.
-  const resolver = installer as unknown as ReleaseResolver;
+  if (!isReleaseResolver(installer)) {
+    throw new Error(`Invalid metadata resolver for '${distributionName}'.`);
+  }
+  const resolver = installer;
+  // Fail closed if a resolver ever crosses the metadata/download boundary.
+  const forbidInstall = () => {
+    throw new Error(
+      'JDK download/install is forbidden in the versions report.'
+    );
+  };
+  Object.defineProperties(installer, {
+    setupJava: {value: forbidInstall},
+    downloadTool: {value: forbidInstall}
+  });
   shareMetadataResponses(resolver.http, cache);
   try {
     const release = await resolver.findPackageForDownload(resolver.version);
+    // Older releases returned the requested major without a floating marker.
+    const floating =
+      release.floating || new URL(release.url).pathname.includes('/latest/');
     return {
       ...base,
       status: 'resolved',
       version: release.version,
-      ...(release.floating
+      ...(floating
         ? {
             floating: true,
             ...(await describeFloatingRelease(http, distributionName, release))
@@ -296,6 +325,24 @@ async function resolveOne(
       message: error instanceof Error ? error.message : String(error)
     };
   }
+}
+
+function isReleaseResolver(value: unknown): value is ReleaseResolver {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'version' in value &&
+    typeof value.version === 'string' &&
+    'http' in value &&
+    typeof value.http === 'object' &&
+    value.http !== null &&
+    'getJson' in value.http &&
+    typeof value.http.getJson === 'function' &&
+    'head' in value.http &&
+    typeof value.http.head === 'function' &&
+    'findPackageForDownload' in value &&
+    typeof value.findPackageForDownload === 'function'
+  );
 }
 
 async function runWithConcurrency<T>(
@@ -320,6 +367,7 @@ async function runWithConcurrency<T>(
 export async function getDefaultVersions(
   http: httpm.HttpClient
 ): Promise<string[]> {
+  shareMetadataResponses(http, new Map());
   const latestMajor = await getLatestMajorVersion(http);
   if (!Number.isSafeInteger(latestMajor) || latestMajor < FIRST_MAJOR_VERSION) {
     throw new Error(
@@ -360,8 +408,11 @@ export async function resolveLatestVersions(options: {
   architectures?: string[];
   /** Solaris metadata can be resolved on any host; other targets use the host. */
   platform?: string;
+  resolver?: MetadataResolver;
 }): Promise<ResolutionReport> {
+  const resolver = options.resolver ?? currentResolver;
   const http = new RetryingHttpClient('actions/setup-java');
+  shareMetadataResponses(http, new Map());
   const hostPlatform = getReportPlatform();
   const platform = options.platform || hostPlatform;
   if (platform !== hostPlatform && platform !== 'solaris') {
@@ -372,7 +423,8 @@ export async function resolveLatestVersions(options: {
   const tasks = options.distributions.map(distribution => async () => {
     const architectures = getSupportedArchitectures(
       distribution,
-      platform
+      platform,
+      resolver
     ).filter(
       architecture =>
         !options.architectures?.length ||
@@ -391,7 +443,8 @@ export async function resolveLatestVersions(options: {
           platform,
           architecture,
           cache,
-          http
+          http,
+          resolver
         );
         core.info(
           `${distribution} ${versionSpec} (${formatPlatform(result)}): ${
@@ -411,8 +464,20 @@ export async function resolveLatestVersions(options: {
 
   const results = (await runWithConcurrency(tasks, CONCURRENCY)).flat();
   return {
+    source: resolver.source,
     platform,
     generatedAt: new Date().toISOString(),
+    targets: Object.fromEntries(
+      options.distributions.map(distribution => [
+        distribution,
+        Object.fromEntries(
+          PLATFORM_ORDER.map(target => [
+            target,
+            getSupportedArchitectures(distribution, target, resolver)
+          ]).filter(([, architectures]) => architectures.length > 0)
+        )
+      ])
+    ),
     results
   };
 }
@@ -489,22 +554,25 @@ function getProblems(results: VersionResolution[]): Problem[] {
 /** Supported operating systems for which no runner produced a report. */
 function getUncheckedPlatforms(
   distribution: string,
-  reportedPlatforms: Set<string>
+  reportedPlatforms: Set<string>,
+  targets?: Record<string, Record<string, string[]>>
 ): string[] {
-  const capability =
-    JAVA_PLATFORM_CAPABILITIES[distribution as JavaDistribution];
-  if (!capability || capability.unrestricted) {
-    return [];
-  }
-  const platforms = Object.keys(capability.platforms);
-  if (platforms.includes('linux')) {
-    platforms.push(MUSL_PLATFORM);
-  }
-  return platforms
-    .filter(platform => !reportedPlatforms.has(platform))
+  const platforms =
+    targets?.[distribution] ??
+    Object.fromEntries(
+      PLATFORM_ORDER.map(platform => [
+        platform,
+        getSupportedArchitectures(distribution, platform)
+      ])
+    );
+  return Object.entries(platforms)
+    .filter(
+      ([platform, architectures]) =>
+        architectures.length > 0 && !reportedPlatforms.has(platform)
+    )
     .map(
-      platform =>
-        `${PLATFORM_LABELS[platform] ?? platform} (${getSupportedArchitectures(distribution, platform).join(', ')})`
+      ([platform, architectures]) =>
+        `${PLATFORM_LABELS[platform] ?? platform} (${architectures.join(', ')})`
     );
 }
 
@@ -512,7 +580,7 @@ function escapeTableText(text: string): string {
   return text.replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
 }
 
-export function renderMarkdownReport(
+function renderSourceReport(
   reports: ResolutionReport[],
   options: {runUrl?: string} = {}
 ): string {
@@ -526,7 +594,7 @@ export function renderMarkdownReport(
     .at(-1);
   const silentDistributions = findSilentDistributions(results);
 
-  const lines: string[] = ['# Latest JDK versions resolved by setup-java', ''];
+  const lines: string[] = [`## setup-java@${reports[0].source.ref}`, ''];
   lines.push(
     `Generated ${generatedAt ? `${generatedAt.replace('T', ' ').slice(0, 16)} UTC` : 'now'} for package type \`${PACKAGE_TYPE}\` on ${PLATFORM_ORDER.filter(
       p => reportedPlatforms.has(p)
@@ -535,7 +603,7 @@ export function renderMarkdownReport(
       .join(', ')}.` +
       (options.runUrl ? ` [Workflow run](${options.runUrl}).` : ''),
     '',
-    'For each distribution, the table lists every operating system and architecture `setup-java` supports and the exact version it resolves from the distribution’s metadata today for each `java-version`. That is what a job installs on a tool-cache miss or with `check-latest: true`. Vendors publish builds per platform, so the same request can resolve to different versions on different platforms. No JDK was downloaded to produce this report.',
+    'For each distribution, the table lists platform/architecture probes and the exact version this revision resolves from the distribution’s metadata today for each `java-version`. That is what a job installs on a tool-cache miss or with `check-latest: true`. Vendors publish builds per platform, so the same request can resolve to different versions on different platforms. No JDK was downloaded to produce this report.',
     '',
     '`—` no matching release is published for this platform · `n/a` `setup-java` does not support this version on this platform · ❗ the lookup failed',
     ''
@@ -593,7 +661,11 @@ export function renderMarkdownReport(
     }
     lines.push('');
 
-    const unchecked = getUncheckedPlatforms(distribution, reportedPlatforms);
+    const unchecked = getUncheckedPlatforms(
+      distribution,
+      reportedPlatforms,
+      reports[0]?.targets
+    );
     if (unchecked.length > 0) {
       lines.push(
         `Not checked, because no runner reported these platforms: ${unchecked.join(', ')}.`,
@@ -611,6 +683,76 @@ export function renderMarkdownReport(
     );
   }
 
+  return lines.join('\n');
+}
+
+export function renderMarkdownReport(
+  reports: ResolutionReport[],
+  options: {
+    runUrl?: string;
+    expectedRefs?: string[];
+    overviewOnly?: boolean;
+  } = {}
+): string {
+  const refs = [
+    ...new Set([
+      ...(options.expectedRefs ?? []),
+      ...reports.map(report => report.source.ref)
+    ])
+  ];
+  const lines = [
+    '# Latest JDK versions by setup-java revision',
+    '',
+    "Each section uses that revision's own installers and dependencies. `v6` and `v5` track the latest major tags, pinned to the commits below for this run. No JDKs are downloaded.",
+    '',
+    "Older revisions may support different distributions, platforms or version syntax. In particular, `latest` is reported as `n/a` when that revision rejects it; it is not substituted with main's behavior. Revisions without capability maps probe all candidate architectures, leaving unsupported or unpublished combinations visible.",
+    '',
+    '| setup-java | Package version | Commit | Result |',
+    '| --- | --- | --- | --- |'
+  ];
+  for (const ref of refs) {
+    const group = reports.filter(report => report.source.ref === ref);
+    if (!group.length) {
+      lines.push(`| \`${ref}\` | - | - | Not checked: no reports received |`);
+      continue;
+    }
+    const source = group[0].source;
+    if (
+      group.some(
+        report =>
+          report.source.sha !== source.sha ||
+          report.source.version !== source.version
+      )
+    ) {
+      throw new Error(
+        `Reports for '${ref}' were produced from different revisions.`
+      );
+    }
+    const problems = getProblems(group.flatMap(report => report.results));
+    const platforms = new Set(group.map(report => report.platform));
+    const missing = PLATFORM_ORDER.filter(platform => !platforms.has(platform));
+    lines.push(
+      `| \`${ref}\` | ${source.version ?? 'local'} | ${source.sha ? `[\`${source.sha.slice(0, 12)}\`](https://github.com/actions/setup-java/commit/${source.sha})` : 'local checkout'} | ${platforms.size}/${PLATFORM_ORDER.length} platforms${missing.length ? `; not checked: ${missing.map(platform => PLATFORM_LABELS[platform]).join(', ')}` : ''}${problems.length ? `; ${problems.length} lookup problems` : ''} |`
+    );
+  }
+  if (options.overviewOnly) {
+    return lines.join('\n');
+  }
+  for (const ref of refs) {
+    const group = reports.filter(report => report.source.ref === ref);
+    if (!group.length) {
+      continue;
+    }
+    lines.push(
+      '',
+      '<details>',
+      `<summary>setup-java@${ref}</summary>`,
+      '',
+      renderSourceReport(group, options),
+      '</details>',
+      ''
+    );
+  }
   return lines.join('\n');
 }
 
@@ -638,11 +780,14 @@ function readReports(inputDir: string): ResolutionReport[] {
 export async function run(args: string[]): Promise<void> {
   const [command, target, markdownOutput] = args;
   if (command === 'resolve' && target) {
+    const resolver = process.env.REPORT_RESOLVER
+      ? await loadMetadataResolver(process.env.REPORT_RESOLVER)
+      : currentResolver;
     const versions = parseList(process.env.REPORT_VERSIONS, []);
     const report = await resolveLatestVersions({
       distributions: parseList(
         process.env.REPORT_DISTRIBUTIONS,
-        REPORTED_DISTRIBUTIONS
+        resolver.distributions
       ),
       versions:
         versions.length > 0
@@ -651,7 +796,8 @@ export async function run(args: string[]): Promise<void> {
               new RetryingHttpClient('actions/setup-java')
             ),
       architectures: parseList(process.env.REPORT_ARCHITECTURES, []),
-      platform: process.env.REPORT_PLATFORM
+      platform: process.env.REPORT_PLATFORM,
+      resolver
     });
     fs.mkdirSync(path.dirname(path.resolve(target)), {recursive: true});
     fs.writeFileSync(target, JSON.stringify(report, null, 2));
@@ -659,8 +805,9 @@ export async function run(args: string[]): Promise<void> {
   }
 
   if (command === 'summarize' && target) {
-    const reports = readReports(target);
-    if (reports.length === 0) {
+    const expectedRefs = parseList(process.env.REPORT_REFS, []);
+    const reports = fs.existsSync(target) ? readReports(target) : [];
+    if (reports.length === 0 && expectedRefs.length === 0) {
       throw new Error(`No resolution reports found in '${target}'.`);
     }
     const {GITHUB_SERVER_URL, GITHUB_REPOSITORY, GITHUB_RUN_ID} = process.env;
@@ -668,25 +815,57 @@ export async function run(args: string[]): Promise<void> {
       GITHUB_SERVER_URL && GITHUB_REPOSITORY && GITHUB_RUN_ID
         ? `${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}`
         : undefined;
-    const markdown = renderMarkdownReport(reports, {runUrl});
+    const markdown = renderMarkdownReport(reports, {
+      runUrl,
+      expectedRefs
+    });
     if (markdownOutput) {
       fs.writeFileSync(markdownOutput, markdown);
     }
     if (process.env.GITHUB_STEP_SUMMARY) {
-      await core.summary.addRaw(markdown).write();
+      // GitHub limits a step summary to 1 MiB. Keep the complete report in the
+      // artifact even when many legacy lookup errors make it too large.
+      if (Buffer.byteLength(markdown, 'utf8') > 1_000_000) {
+        core.warning(
+          'The full report exceeds the job summary size limit; showing its overview.'
+        );
+        const overview = renderMarkdownReport(reports, {
+          runUrl,
+          expectedRefs,
+          overviewOnly: true
+        });
+        await core.summary
+          .addRaw(
+            `${overview}\n\nFull per-platform tables are in the \`latest-jdk-versions-report\` artifact${runUrl ? ` on the [workflow run](${runUrl})` : ''}. The full report exceeded GitHub's summary size limit.\n`
+          )
+          .write();
+      } else {
+        await core.summary.addRaw(markdown).write();
+      }
     } else {
       core.info(markdown);
     }
 
-    for (const problem of getProblems(
-      reports.flatMap(report => report.results)
-    )) {
-      const scope = [problem.versionSpec, problem.platform]
-        .filter(Boolean)
-        .join(', ');
-      core.warning(
-        `${problem.distribution}${scope ? ` (${scope})` : ''}: ${problem.message}`
-      );
+    for (const ref of expectedRefs) {
+      if (!reports.some(report => report.source.ref === ref)) {
+        core.warning(
+          `${ref}: not checked because no resolution reports were received.`
+        );
+      }
+    }
+    for (const ref of new Set(reports.map(report => report.source.ref))) {
+      for (const problem of getProblems(
+        reports
+          .filter(report => report.source.ref === ref)
+          .flatMap(report => report.results)
+      )) {
+        const scope = [problem.versionSpec, problem.platform]
+          .filter(Boolean)
+          .join(', ');
+        core.warning(
+          `${ref}: ${problem.distribution}${scope ? ` (${scope})` : ''}: ${problem.message}`
+        );
+      }
     }
     return;
   }
